@@ -1,0 +1,21 @@
+// Prisma Schema Configuration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Base System Audit Log Model (Foundation)
+model SystemAuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  metadata  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_audit_logs")
+}
