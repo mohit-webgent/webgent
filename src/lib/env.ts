@@ -11,6 +11,9 @@ const envSchema = z.object({
   DATABASE_URL: z
     .string()
     .min(1, "DATABASE_URL is required"),
+  AUTH_SECRET: z
+    .string()
+    .default("a_very_secret_32_character_long_auth_secret_key_webgent"),
   LOG_LEVEL: z
     .enum(["debug", "info", "warn", "error"])
     .default("info"),
@@ -21,6 +24,7 @@ function parseEnv() {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     DATABASE_URL: process.env.DATABASE_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     LOG_LEVEL: process.env.LOG_LEVEL,
   });
 

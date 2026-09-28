@@ -1,19 +1,7 @@
 import { PrismaClient, UserRole, UserStatus } from "@prisma/client";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
-
-/**
- * Securely hashes a password using PBKDF2 with SHA-256 and a random salt.
- * Ensures no plaintext password is ever stored in database or logs.
- */
-function hashPassword(password: string): string {
-  const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto
-    .pbkdf2Sync(password, salt, 100000, 64, "sha256")
-    .toString("hex");
-  return `pbkdf2:${salt}:${hash}`;
-}
 
 async function main() {
   console.log("🌱 Starting development seed...");
@@ -27,7 +15,7 @@ async function main() {
   });
 
   if (!existingAdmin) {
-    const passwordHash = hashPassword(adminPassword);
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
     const admin = await prisma.user.create({
       data: {
         email: adminEmail,

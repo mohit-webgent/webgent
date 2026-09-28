@@ -7,7 +7,7 @@ import type { ApiSuccessResponse, ApiErrorResponse } from "@/types/api";
 export function apiSuccess<T>(
   data: T,
   statusCode: number = 200,
-  meta?: Record<string, unknown>,
+  meta?: Record<string, unknown>
 ): NextResponse<ApiSuccessResponse<T>> {
   const body: ApiSuccessResponse<T> = {
     success: true,
@@ -23,7 +23,7 @@ export function apiError(
   message: string,
   statusCode: number = 500,
   code: string = "INTERNAL_SERVER_ERROR",
-  details?: unknown,
+  details?: unknown
 ): NextResponse<ApiErrorResponse> {
   const body: ApiErrorResponse = {
     success: false,
@@ -57,7 +57,7 @@ export function handleApiError(error: unknown): NextResponse<ApiErrorResponse> {
       "Validation failed for request parameters",
       400,
       "VALIDATION_ERROR",
-      formattedErrors,
+      formattedErrors
     );
   }
 
@@ -65,6 +65,32 @@ export function handleApiError(error: unknown): NextResponse<ApiErrorResponse> {
   return apiError(
     "An internal server error occurred",
     500,
-    "INTERNAL_SERVER_ERROR",
+    "INTERNAL_SERVER_ERROR"
   );
 }
+
+export const ApiResponse = {
+  success: <T>(data: T, statusCode = 200, meta?: Record<string, unknown>) =>
+    apiSuccess(data, statusCode, meta),
+
+  badRequest: (message: string, code = "BAD_REQUEST", details?: unknown) =>
+    apiError(message, 400, code, details),
+
+  unauthorized: (message = "Authentication required", code = "UNAUTHORIZED") =>
+    apiError(message, 401, code),
+
+  forbidden: (message = "Access denied", code = "FORBIDDEN") =>
+    apiError(message, 403, code),
+
+  notFound: (message = "Resource not found", code = "NOT_FOUND") =>
+    apiError(message, 404, code),
+
+  tooManyRequests: (message = "Too many requests", code = "TOO_MANY_REQUESTS") =>
+    apiError(message, 429, code),
+
+  validationError: (message: string, details?: unknown) =>
+    apiError(message, 400, "VALIDATION_ERROR", details),
+
+  internalError: (message = "An internal error occurred", code = "INTERNAL_SERVER_ERROR") =>
+    apiError(message, 500, code),
+};
