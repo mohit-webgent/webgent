@@ -25,7 +25,7 @@
 }
 
 body {
-  color: rgb(var(--foreground));
-  background: rgb(var(--background));
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
   font-feature-settings: "rlig" 1, "calt" 1;
 }
