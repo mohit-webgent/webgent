@@ -28,10 +28,10 @@ enum UserStatus {
 enum LeadStatus {
   NEW
   CONTACTED
-  QUALIFIED
-  IN_PROGRESS
-  CLOSED_WON
-  CLOSED_LOST
+  PROPOSAL_SENT
+  WON
+  LOST
+  ON_HOLD
 }
 
 enum ProjectStatus {
@@ -83,21 +83,26 @@ model User {
 
 /// Lead model for capturing incoming inquiries and contacts
 model Lead {
-  id        String     @id @default(uuid())
-  name      String
-  email     String
-  phone     String?
-  company   String?
-  service   String?
-  budget    String?
-  message   String
-  status    LeadStatus @default(NEW)
-  notes     String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id           String     @id @default(uuid())
+  name         String
+  email        String
+  phone        String?
+  company      String?
+  service      String?
+  budget       String?
+  message      String
+  status       LeadStatus @default(NEW)
+  score        Int        @default(0)
+  notes        String?
+  followUpDate DateTime?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@index([email])
   @@index([status])
+  @@index([score])
   @@index([createdAt])
   @@index([status, createdAt])
   @@map("leads")
