@@ -110,27 +110,34 @@ model Lead {
 
 /// Project model for portfolio showcases and client case studies
 model Project {
-  id           String        @id @default(uuid())
-  title        String
-  slug         String        @unique
-  description  String
-  content      String?
-  clientName   String?
-  category     String?
-  imageUrl     String?
-  demoUrl      String?
-  githubUrl    String?
-  technologies String?
-  featured     Boolean       @default(false)
-  status       ProjectStatus @default(COMPLETED)
-  authorId     String?
-  author       User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  title          String
+  slug           String        @unique
+  description    String
+  content        String?
+  clientName     String?
+  category       String?
+  imageUrl       String?
+  screenshots    String?
+  demoUrl        String?
+  githubUrl      String?
+  technologies   String?
+  featured       Boolean       @default(false)
+  published      Boolean       @default(true)
+  order          Int           @default(0)
+  seoTitle       String?
+  seoDescription String?
+  status         ProjectStatus @default(COMPLETED)
+  authorId       String?
+  author         User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([slug])
   @@index([category])
   @@index([featured])
+  @@index([published])
+  @@index([order])
   @@index([status])
   @@index([createdAt])
   @@map("projects")
