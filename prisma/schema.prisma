@@ -1,15 +1,280 @@
-// Prisma Schema Configuration
+// Prisma Schema Configuration for Webgent
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Base System Audit Log Model (Foundation)
+// --------------------------------------------------------
+// Enums
+// --------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  IN_PROGRESS
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum ProjectStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ChatStatus {
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+// --------------------------------------------------------
+// Models
+// --------------------------------------------------------
+
+/// User model for authentication and system administration
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         UserRole   @default(USER)
+  status       UserStatus @default(ACTIVE)
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  posts    BlogPost[]
+  projects Project[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+/// Lead model for capturing incoming inquiries and contacts
+model Lead {
+  id        String     @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  service   String?
+  budget    String?
+  message   String
+  status    LeadStatus @default(NEW)
+  notes     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@map("leads")
+}
+
+/// Project model for portfolio showcases and client case studies
+model Project {
+  id           String        @id @default(uuid())
+  title        String
+  slug         String        @unique
+  description  String
+  content      String?
+  clientName   String?
+  category     String?
+  imageUrl     String?
+  demoUrl      String?
+  githubUrl    String?
+  technologies String?
+  featured     Boolean       @default(false)
+  status       ProjectStatus @default(COMPLETED)
+  authorId     String?
+  author       User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([featured])
+  @@index([status])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+/// BlogPost model for CMS articles and insights
+model BlogPost {
+  id          String     @id @default(uuid())
+  title       String
+  slug        String     @unique
+  excerpt     String?
+  content     String
+  coverImage  String?
+  category    String?
+  tags        String?
+  publishedAt DateTime?
+  status      PostStatus @default(DRAFT)
+  featured    Boolean    @default(false)
+  views       Int        @default(0)
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@index([featured])
+  @@index([status, publishedAt])
+  @@map("blog_posts")
+}
+
+/// Testimonial model for client reviews and social proof
+model Testimonial {
+  id          String   @id @default(uuid())
+  clientName  String
+  clientTitle String?
+  company     String?
+  avatarUrl   String?
+  content     String
+  rating      Int      @default(5)
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([featured])
+  @@index([order])
+  @@index([createdAt])
+  @@map("testimonials")
+}
+
+/// Subscriber model for newsletter subscriptions
+model Subscriber {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  name           String?
+  isActive       Boolean   @default(true)
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([email])
+  @@index([isActive])
+  @@index([subscribedAt])
+  @@map("subscribers")
+}
+
+/// PageView model for tracking site visits and traffic analytics
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  ipHash    String?
+  country   String?
+  device    String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@map("page_views")
+}
+
+/// Event model for tracking custom interaction events and conversion metrics
+model Event {
+  id        String   @id @default(uuid())
+  name      String
+  category  String?
+  metadata  String?
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  @@index([name])
+  @@index([category])
+  @@index([createdAt])
+  @@index([name, createdAt])
+  @@map("events")
+}
+
+/// SiteSetting model for global key-value application configurations
+model SiteSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([isPublic])
+  @@map("site_settings")
+}
+
+/// ChatSession model for managing live support or AI assistant conversations
+model ChatSession {
+  id        String        @id @default(uuid())
+  visitorId String
+  status    ChatStatus    @default(ACTIVE)
+  metadata  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+
+  @@index([visitorId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("chat_sessions")
+}
+
+/// ChatMessage model for storing messages within a ChatSession
+model ChatMessage {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender    String
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+/// SystemAuditLog model for tracking internal operations and audit events
 model SystemAuditLog {
   id        String   @id @default(uuid())
   action    String
@@ -17,5 +282,7 @@ model SystemAuditLog {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([action])
+  @@index([createdAt])
   @@map("system_audit_logs")
 }
