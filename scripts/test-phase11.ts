@@ -232,11 +232,11 @@ async function runTests() {
   const fs = await import("fs");
   const envExample = fs.readFileSync(".env.example", "utf8");
 
-  // assert(envExample.includes("TWILIO_ACCOUNT_SID="), ".env.example includes TWILIO_ACCOUNT_SID");
-  // assert(envExample.includes("TWILIO_AUTH_TOKEN="), ".env.example includes TWILIO_AUTH_TOKEN");
-  // assert(envExample.includes("TWILIO_WHATSAPP_FROM="), ".env.example includes TWILIO_WHATSAPP_FROM");
-  // assert(envExample.includes("ADMIN_WHATSAPP_TO="), ".env.example includes ADMIN_WHATSAPP_TO");
-  // assert(envExample.includes("SLACK_WEBHOOK_URL="), ".env.example includes SLACK_WEBHOOK_URL");
+  assert(envExample.includes("TWILIO_ACCOUNT_SID="), ".env.example includes TWILIO_ACCOUNT_SID");
+  assert(envExample.includes("TWILIO_AUTH_TOKEN="), ".env.example includes TWILIO_AUTH_TOKEN");
+  assert(envExample.includes("TWILIO_WHATSAPP_FROM="), ".env.example includes TWILIO_WHATSAPP_FROM");
+  assert(envExample.includes("ADMIN_WHATSAPP_TO="), ".env.example includes ADMIN_WHATSAPP_TO");
+  assert(envExample.includes("SLACK_WEBHOOK_URL="), ".env.example includes SLACK_WEBHOOK_URL");
 
   // Check no real hardcoded private keys or real personal phone numbers in code
   const notificationsCode = fs.readFileSync("src/lib/services/notifications.ts", "utf8");

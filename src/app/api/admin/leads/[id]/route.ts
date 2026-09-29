@@ -92,3 +92,37 @@ export async function PATCH(
     return ApiResponse.internalError("Failed to update lead.");
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
+    const { id } = params;
+
+    const existingLead = await prisma.lead.findUnique({
+      where: { id },
+    });
+
+    if (!existingLead) {
+      return ApiResponse.notFound("Lead not found.");
+    }
+
+    await prisma.lead.delete({
+      where: { id },
+    });
+
+    logger.info("Deleted lead record", { leadId: id });
+
+    return ApiResponse.success({ message: "Lead successfully deleted." });
+  } catch (error) {
+    logger.error("Error deleting lead", { error: String(error) });
+    return ApiResponse.internalError("Failed to delete lead.");
+  }
+}
+

@@ -17,9 +17,12 @@ import {
   AlertCircle,
   FileText,
   Globe,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
 interface Lead {
   id: string;
@@ -42,6 +45,7 @@ interface Lead {
 
 export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
   const router = useRouter();
+  const toast = useToast();
   const [status, setStatus] = useState(initialLead.status);
   const [notes, setNotes] = useState(initialLead.notes || "");
   const [followUpDate, setFollowUpDate] = useState(
@@ -53,6 +57,8 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,30 +80,77 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error?.message || "Failed to update lead.");
+        const errMsg = data.error?.message || "Failed to update lead.";
+        setError(errMsg);
+        toast.error(errMsg);
         setLoading(false);
         return;
       }
 
       setSuccess("Lead updated successfully!");
+      toast.success("Lead record saved successfully");
       router.refresh();
     } catch {
       setError("An unexpected network error occurred.");
+      toast.error("Network error while updating lead");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeleteLead = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/leads/${initialLead.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("Lead deleted successfully");
+        router.push("/admin/leads");
+      } else {
+        const data = await res.json();
+        toast.error(data.error?.message || "Failed to delete lead");
+      }
+    } catch {
+      toast.error("Network error deleting lead");
+    } finally {
+      setDeleting(false);
+      setDeleteModalOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Back Link */}
-      <Link
-        href="/admin/leads"
-        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Back to All Leads</span>
-      </Link>
+      {/* Back Link & Delete Action */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/admin/leads"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to All Leads</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setDeleteModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold transition-colors"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Delete Lead</span>
+        </button>
+      </div>
+
+      <ConfirmDialog
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteLead}
+        title="Delete Lead Record"
+        description={`Are you sure you want to permanently delete the inquiry from ${initialLead.name}? This action cannot be reversed.`}
+        confirmText="Delete Lead"
+        isLoading={deleting}
+      />
 
       {/* Header Overview */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">

@@ -20,6 +20,7 @@ import {
   Quote,
 } from "lucide-react";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Testimonial {
   id: string;
@@ -60,6 +61,8 @@ export function TestimonialsManager() {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchTestimonials = useCallback(async () => {
     try {
@@ -180,19 +183,24 @@ export function TestimonialsManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this testimonial?")) return;
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
     try {
-      setActionLoading(id);
-      const res = await fetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
+      setDeleting(true);
+      const res = await fetch(`/api/admin/testimonials/${deleteTargetId}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
-        setTestimonials((prev) => prev.filter((t) => t.id !== id));
+        setTestimonials((prev) => prev.filter((t) => t.id !== deleteTargetId));
       }
     } catch (err) {
       console.error("Delete error:", err);
     } finally {
-      setActionLoading(null);
+      setDeleting(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -643,6 +651,17 @@ export function TestimonialsManager() {
           </div>
         </div>
       )}
+
+      {/* Destructive Deletion Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={confirmDelete}
+        title="Delete Testimonial"
+        description="Are you sure you want to permanently delete this client review? This action cannot be reversed."
+        confirmText="Delete Review"
+        isLoading={deleting}
+      />
     </div>
   );
 }
