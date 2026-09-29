@@ -8,11 +8,15 @@ interface CtaLinkProps {
   label: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
-export function CtaLink({ href, label, children, className }: CtaLinkProps) {
+export function CtaLink({ href, label, children, className, onClick }: CtaLinkProps) {
   const handleClick = () => {
     trackCtaClick(label, href);
+    if (onClick) {
+      onClick();
+    }
   };
 
   return (

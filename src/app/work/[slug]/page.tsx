@@ -25,8 +25,14 @@ export async function generateMetadata({
     }
 
     return {
-      title: project.seoTitle || `${project.title} | Case Study | Webgent`,
+      title: project.seoTitle || `${project.title} — Case Study | Webgent`,
       description: project.seoDescription || project.description,
+      openGraph: {
+        title: project.seoTitle || `${project.title} — Webgent Case Study`,
+        description: project.seoDescription || project.description,
+        images: project.imageUrl ? [project.imageUrl] : [],
+        type: "article",
+      },
     };
   } catch {
     return { title: "Case Study | Webgent" };
@@ -174,6 +180,33 @@ export default async function PublicProjectDetailPage({
             </div>
           </div>
         )}
+
+        {/* Bottom Conversion CTA */}
+        <div className="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 sm:p-12 text-center space-y-6">
+          <div className="space-y-2 max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Ready to Build a Similar Solution?
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Let&apos;s evaluate your technical requirements and build an enterprise platform engineered for scale.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
+            >
+              <span>Discuss Your Architecture</span>
+              <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+            </Link>
+            <Link
+              href="/work"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-semibold text-xs rounded-xl transition-all"
+            >
+              <span>Browse More Projects</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

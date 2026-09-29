@@ -1,17 +1,19 @@
 export const siteConfig = {
   name: "Webgent",
-  description: "Enterprise Production Platform Architecture",
+  tagline: "Next-Gen Web Solutions & Engineering",
+  description:
+    "Webgent builds high-performance web applications, scalable cloud software, and digital platforms for ambitious modern brands.",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   mainNav: [
     { title: "Home", href: "/" },
-    { title: "Portfolio", href: "/work" },
+    { title: "Work", href: "/work" },
     { title: "Blog", href: "/blog" },
-    { title: "Admin Portfolio", href: "/admin/projects" },
-    { title: "Admin Blog", href: "/admin/blog" },
-    { title: "System Status", href: "/api/health" },
+    { title: "Testimonials", href: "/testimonials" },
+    { title: "Contact", href: "/contact" },
   ],
   links: {
-    docs: "#",
-    github: "#",
+    github: "https://github.com/mohit-webgent/webgent",
+    twitter: "https://twitter.com/webgent",
+    linkedin: "https://linkedin.com/company/webgent",
   },
 };

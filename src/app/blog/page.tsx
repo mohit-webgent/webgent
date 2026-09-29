@@ -10,6 +10,7 @@ import {
   Sparkles,
   Calendar,
 } from "lucide-react";
+import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 
 export const dynamic = "force-dynamic";
 
@@ -343,6 +344,15 @@ export default async function PublicBlogPage({
               </Link>
             </div>
           )}
+
+          {/* Newsletter Section */}
+          <div className="pt-8">
+            <NewsletterForm
+              variant="card"
+              title="Subscribe to Webgent Engineering Digest"
+              description="Stay updated with our newest in-depth guides, architecture reviews, and performance optimization case studies."
+            />
+          </div>
         </div>
       </div>
     </div>

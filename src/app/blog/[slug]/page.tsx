@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import { BlogReadTracker } from "@/components/blog/blog-read-tracker";
+import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 
 export const dynamic = "force-dynamic";
 
@@ -270,6 +271,15 @@ export default async function PublicBlogDetailPage({
             </div>
           </div>
         )}
+
+        {/* Newsletter Subscription Box */}
+        <div className="pt-6">
+          <NewsletterForm
+            variant="card"
+            title="Enjoyed this article? Get more delivered bi-weekly"
+            description="Subscribe for deep technical articles, system architecture breakdowns, and web performance insights."
+          />
+        </div>
       </div>
     </div>
   );
