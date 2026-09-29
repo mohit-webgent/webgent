@@ -9,7 +9,6 @@ import {
   FolderPlus,
   Globe,
   Github,
-  Image as ImageIcon,
   Tag,
   Star,
   Eye,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { projectSchema } from "@/lib/validations/project";
+import { ImageUpload } from "@/components/admin/image-upload";
 
 interface ProjectData {
   id?: string;
@@ -331,25 +331,16 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         <h3 className="text-lg font-bold text-white">Media & External Links</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Cover Image URL */}
+          {/* Cover Image */}
           <div>
-            <label
-              htmlFor="project-image"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
-            >
-              Cover Image URL
-            </label>
-            <div className="relative">
-              <ImageIcon className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500 pointer-events-none" />
-              <input
-                id="project-image"
-                type="text"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/photo-..."
-                className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+            <ImageUpload
+              label="Cover Image"
+              folder="projects"
+              value={imageUrl}
+              onChange={(url) => setImageUrl(url)}
+              description="Primary portfolio showcase image"
+              placeholder="https://images.unsplash.com/photo-..."
+            />
           </div>
 
           {/* Demo Live URL */}

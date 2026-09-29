@@ -19,6 +19,7 @@ import {
   User,
   Quote,
 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/image-upload";
 
 interface Testimonial {
   id: string;
@@ -529,28 +530,24 @@ export function TestimonialsManager() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-slate-300 font-semibold">Company / Organization</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Apex Global Systems"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-semibold">Company / Organization</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Apex Global Systems"
+                  value={formData.company}
+                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500"
+                />
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-300 font-semibold">Client Photo / Avatar URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/..."
-                    value={formData.avatarUrl}
-                    onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <ImageUpload
+                  label="Client Photo / Avatar"
+                  folder="testimonials"
+                  value={formData.avatarUrl}
+                  onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
+                />
               </div>
 
               <div className="space-y-1.5">

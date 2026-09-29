@@ -15,12 +15,13 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "test": "tsx --env-file=.env scripts/test-phase7.ts && tsx --env-file=.env scripts/test-phase8.ts"
+    "test": "tsx --env-file=.env scripts/test-phase7.ts && tsx --env-file=.env scripts/test-phase8.ts && tsx --env-file=.env scripts/test-phase9.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1142.0",
     "@prisma/client": "^5.22.0",
     "@react-email/components": "^1.0.12",
     "bcryptjs": "^3.0.3",

@@ -10,11 +10,11 @@ import {
   Tag,
   Eye,
   Clock,
-  Image as ImageIcon,
   Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { blogPostSchema } from "@/lib/validations/blog";
+import { ImageUpload } from "@/components/admin/image-upload";
 
 interface BlogPostData {
   id?: string;
@@ -311,36 +311,26 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Cover Image */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Cover Image URL
-            </label>
-            <div className="relative">
-              <ImageIcon className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500 pointer-events-none" />
-              <input
-                type="url"
-                value={coverImage}
-                onChange={(e) => setCoverImage(e.target.value)}
-                placeholder="https://images.unsplash.com/photo-..."
-                className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+            <ImageUpload
+              label="Cover Image"
+              folder="blog"
+              value={coverImage}
+              onChange={(url) => setCoverImage(url)}
+              description="Primary header banner for the article"
+              placeholder="https://images.unsplash.com/photo-..."
+            />
           </div>
 
           {/* OG Image */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Open Graph (OG) Social Image URL
-            </label>
-            <div className="relative">
-              <ImageIcon className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500 pointer-events-none" />
-              <input
-                type="url"
-                value={ogImage}
-                onChange={(e) => setOgImage(e.target.value)}
-                placeholder="https://images.unsplash.com/og-banner.png"
-                className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+            <ImageUpload
+              label="Open Graph (OG) Social Image"
+              folder="blog"
+              value={ogImage}
+              onChange={(url) => setOgImage(url)}
+              description="Preview card for Twitter, LinkedIn, and Discord"
+              placeholder="https://images.unsplash.com/og-banner.png"
+            />
           </div>
         </div>
       </div>
