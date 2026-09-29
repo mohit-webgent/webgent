@@ -145,22 +145,27 @@ model Project {
 
 /// BlogPost model for CMS articles and insights
 model BlogPost {
-  id          String     @id @default(uuid())
-  title       String
-  slug        String     @unique
-  excerpt     String?
-  content     String
-  coverImage  String?
-  category    String?
-  tags        String?
-  publishedAt DateTime?
-  status      PostStatus @default(DRAFT)
-  featured    Boolean    @default(false)
-  views       Int        @default(0)
-  authorId    String
-  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             String     @id @default(uuid())
+  title          String
+  slug           String     @unique
+  excerpt        String?
+  content        String
+  coverImage     String?
+  ogImage        String?
+  category       String?
+  tags           String?
+  readTime       Int?       @default(1)
+  seoTitle       String?
+  seoDescription String?
+  publishedAt    DateTime?
+  status         PostStatus @default(DRAFT)
+  featured       Boolean    @default(false)
+  views          Int        @default(0)
+  deletedAt      DateTime?
+  authorId       String
+  author         User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   @@index([slug])
   @@index([status])
@@ -168,6 +173,7 @@ model BlogPost {
   @@index([publishedAt])
   @@index([authorId])
   @@index([featured])
+  @@index([deletedAt])
   @@index([status, publishedAt])
   @@map("blog_posts")
 }

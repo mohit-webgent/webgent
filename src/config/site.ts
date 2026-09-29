@@ -5,7 +5,9 @@ export const siteConfig = {
   mainNav: [
     { title: "Home", href: "/" },
     { title: "Portfolio", href: "/work" },
-    { title: "Admin CMS", href: "/admin/projects" },
+    { title: "Blog", href: "/blog" },
+    { title: "Admin Portfolio", href: "/admin/projects" },
+    { title: "Admin Blog", href: "/admin/blog" },
     { title: "System Status", href: "/api/health" },
   ],
   links: {
