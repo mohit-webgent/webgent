@@ -88,9 +88,13 @@ export async function POST(req: NextRequest) {
 
     logger.info("New lead created successfully", { leadId: lead.id, score });
 
-    // 7. Invoke notification service hooks asynchronously
-    notificationService.sendLeadEmailNotification(lead).catch(() => {});
-    notificationService.sendLeadWhatsAppAlert(lead).catch(() => {});
+    // 7. Invoke notification service: WhatsApp / Slack / Email asynchronously
+    notificationService.sendNewLeadNotification(lead).catch((err) => {
+      logger.error("Failed to dispatch new lead notification", {
+        leadId: lead.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
 
     // 8. Return success response
     return ApiResponse.success(
