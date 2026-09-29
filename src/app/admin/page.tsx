@@ -116,7 +116,29 @@ export default async function AdminDashboardPage() {
       {/* Quick Access Modules */}
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-white tracking-tight">Content & Audience Modules</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href="/admin/analytics"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-sky-500/40 rounded-2xl p-5 transition-all space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold">
+                📊
+              </span>
+              <span className="text-xs text-sky-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                View &rarr;
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">
+                Traffic & Analytics
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Real-time page views, conversion funnels, and event telemetry.
+              </p>
+            </div>
+          </Link>
+
           <Link
             href="/admin/testimonials"
             className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-pink-500/40 rounded-2xl p-5 transition-all space-y-3"

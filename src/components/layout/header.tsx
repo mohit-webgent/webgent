@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
-import { Badge } from "@/components/ui/badge";
+import { CtaLink } from "@/components/ui/cta-link";
 
 export function Header() {
   return (
@@ -28,7 +28,13 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant="success">Phase 1: Foundation Ready</Badge>
+          <CtaLink
+            href="/contact"
+            label="Header Start Project"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors shadow-sm shadow-indigo-600/20"
+          >
+            Start Project
+          </CtaLink>
         </div>
       </div>
     </header>

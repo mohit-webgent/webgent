@@ -15,7 +15,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "test": "tsx --env-file=.env scripts/test-phase7.ts && tsx --env-file=.env scripts/test-phase8.ts && tsx --env-file=.env scripts/test-phase9.ts"
+    "test": "tsx --env-file=.env scripts/test-phase7.ts && tsx --env-file=.env scripts/test-phase8.ts && tsx --env-file=.env scripts/test-phase9.ts && tsx --env-file=.env scripts/test-phase10.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"

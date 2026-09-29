@@ -248,9 +248,11 @@ model PageView {
   ipHash    String?
   country   String?
   device    String?
+  sessionId String?
   createdAt DateTime @default(now())
 
   @@index([path])
+  @@index([sessionId])
   @@index([createdAt])
   @@index([path, createdAt])
   @@map("page_views")
@@ -261,12 +263,17 @@ model Event {
   id        String   @id @default(uuid())
   name      String
   category  String?
+  path      String?
   metadata  String?
   sessionId String?
+  country   String?
+  device    String?
   createdAt DateTime @default(now())
 
   @@index([name])
   @@index([category])
+  @@index([path])
+  @@index([sessionId])
   @@index([createdAt])
   @@index([name, createdAt])
   @@map("events")

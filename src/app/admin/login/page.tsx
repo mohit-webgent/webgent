@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Lock, Mail, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { loginSchema } from "@/lib/validations/auth";
 
-export default function AdminLoginPage() {
+function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
@@ -167,5 +167,19 @@ export default function AdminLoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500 text-sm">
+          Loading login portal...
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

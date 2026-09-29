@@ -1,7 +1,7 @@
 import { getAuthSession } from "@/lib/auth-utils";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { LogoutButton } from "@/components/admin/logout-button";
-import { Shield, KeyRound, LayoutDashboard, UserCheck, MessageSquareQuote, Mail, Briefcase, FileText, Users } from "lucide-react";
+import { Shield, KeyRound, LayoutDashboard, UserCheck, MessageSquareQuote, Mail, Briefcase, FileText, Users, BarChart3 } from "lucide-react";
 import Link from "next/link";
 export default async function AdminLayout({
   children,
@@ -41,6 +41,13 @@ export default async function AdminLayout({
                 >
                   <LayoutDashboard className="w-4 h-4 text-indigo-400" />
                   <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/admin/analytics"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                >
+                  <BarChart3 className="w-4 h-4 text-sky-400" />
+                  <span>Analytics</span>
                 </Link>
                 <Link
                   href="/admin/leads"

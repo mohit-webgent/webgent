@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { CheckCircle2, ShieldCheck, Database, FileCode2, Layers, Cpu } from "lucide-react";
+import { CtaLink } from "@/components/ui/cta-link";
 
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -120,6 +121,34 @@ export default function HomePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Conversion CTA Banner */}
+      <div className="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
+        <div className="space-y-3">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Ready to Build Your Next Digital Product?
+          </h2>
+          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+            From modern web applications to enterprise software architecture, we deliver scalable engineering solutions.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <CtaLink
+            href="/contact"
+            label="Home Bottom Start Project"
+            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
+          >
+            Start Your Project
+          </CtaLink>
+          <CtaLink
+            href="/work"
+            label="Home Bottom Browse Work"
+            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-semibold text-sm rounded-xl transition-all"
+          >
+            Browse Case Studies
+          </CtaLink>
+        </div>
+      </div>
 
       {/* Interactive Foundation Modal */}
       <Modal

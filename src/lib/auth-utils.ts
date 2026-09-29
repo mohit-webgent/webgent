@@ -7,7 +7,11 @@ import { ApiResponse } from "@/lib/api/response";
  * Retrieves current server-side NextAuth session.
  */
 export async function getAuthSession() {
-  return await auth();
+  try {
+    return await auth();
+  } catch {
+    return null;
+  }
 }
 
 /**

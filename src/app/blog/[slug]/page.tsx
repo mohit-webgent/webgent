@@ -12,6 +12,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import type { Metadata } from "next";
+import { BlogReadTracker } from "@/components/blog/blog-read-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,7 @@ export default async function PublicBlogDetailPage({
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+      <BlogReadTracker slug={post.slug} title={post.title} readTime={post.readTime} />
       {/* Ambient Lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 

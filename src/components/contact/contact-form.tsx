@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Send,
   CheckCircle2,
@@ -15,6 +15,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { contactFormSchema } from "@/lib/validations/contact";
+import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 
 export function ContactForm() {
   const [name, setName] = useState("");
@@ -28,6 +29,14 @@ export function ContactForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const hasStartedRef = useRef(false);
+
+  const handleFieldFocus = () => {
+    if (!hasStartedRef.current) {
+      hasStartedRef.current = true;
+      trackFormStart("contact");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +86,7 @@ export function ContactForm() {
       }
 
       setSuccess(true);
+      trackFormSubmit("contact", { service: service || undefined, budget: budget || undefined });
       setName("");
       setEmail("");
       setPhone("");
@@ -158,6 +168,7 @@ export function ContactForm() {
                 type="text"
                 required
                 value={name}
+                onFocus={handleFieldFocus}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
@@ -182,6 +193,7 @@ export function ContactForm() {
                 type="email"
                 required
                 value={email}
+                onFocus={handleFieldFocus}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john@company.com"
                 className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"

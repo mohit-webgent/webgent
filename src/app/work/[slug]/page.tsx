@@ -2,8 +2,9 @@ import { prisma } from "@/lib/db";
 import { Project } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Github, Tag, Building, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Github, Tag, Building, Sparkles, CheckCircle2 } from "lucide-react";
 import type { Metadata } from "next";
+import { DemoLink } from "@/components/work/demo-link";
 
 export const dynamic = "force-dynamic";
 
@@ -119,15 +120,7 @@ export default async function PublicProjectDetailPage({
 
             <div className="flex items-center gap-4">
               {project.demoUrl && (
-                <a
-                  href={project.demoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Launch Live Demo</span>
-                </a>
+                <DemoLink projectSlug={project.slug} demoUrl={project.demoUrl} />
               )}
               {project.githubUrl && (
                 <a
