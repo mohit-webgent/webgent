@@ -12,7 +12,6 @@ import {
   Clock,
   Image as ImageIcon,
   Sparkles,
-  Search,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { blogPostSchema } from "@/lib/validations/blog";

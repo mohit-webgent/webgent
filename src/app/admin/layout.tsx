@@ -1,7 +1,7 @@
 import { getAuthSession } from "@/lib/auth-utils";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { LogoutButton } from "@/components/admin/logout-button";
-import { Shield, KeyRound, LayoutDashboard, UserCheck } from "lucide-react";
+import { Shield, KeyRound, LayoutDashboard, UserCheck, MessageSquareQuote, Mail, Briefcase, FileText, Users } from "lucide-react";
 import Link from "next/link";
 export default async function AdminLayout({
   children,
@@ -34,17 +34,52 @@ export default async function AdminLayout({
               </Link>
 
               {/* Navigation Links */}
-              <nav className="hidden md:flex items-center gap-1">
+              <nav className="hidden lg:flex items-center gap-1">
                 <Link
                   href="/admin"
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
                 >
                   <LayoutDashboard className="w-4 h-4 text-indigo-400" />
                   <span>Dashboard</span>
                 </Link>
                 <Link
+                  href="/admin/leads"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                >
+                  <Users className="w-4 h-4 text-blue-400" />
+                  <span>Leads</span>
+                </Link>
+                <Link
+                  href="/admin/projects"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                >
+                  <Briefcase className="w-4 h-4 text-emerald-400" />
+                  <span>Projects</span>
+                </Link>
+                <Link
+                  href="/admin/blog"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                >
+                  <FileText className="w-4 h-4 text-amber-400" />
+                  <span>Blog</span>
+                </Link>
+                <Link
+                  href="/admin/testimonials"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                >
+                  <MessageSquareQuote className="w-4 h-4 text-pink-400" />
+                  <span>Testimonials</span>
+                </Link>
+                <Link
+                  href="/admin/newsletter"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                >
+                  <Mail className="w-4 h-4 text-violet-400" />
+                  <span>Newsletter</span>
+                </Link>
+                <Link
                   href="/admin/change-password"
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
                 >
                   <KeyRound className="w-4 h-4 text-cyan-400" />
                   <span>Security</span>

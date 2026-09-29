@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { BlogPost, User } from "@prisma/client";
+import { BlogPost, User, Prisma } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -7,9 +7,7 @@ import {
   Clock,
   Eye,
   Calendar,
-  Tag,
   User as UserIcon,
-  Sparkles,
   ArrowRight,
   BookOpen,
 } from "lucide-react";
@@ -82,7 +80,7 @@ export default async function PublicBlogDetailPage({
         ? post.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
         : [];
 
-      const OR_conditions: any[] = [];
+      const OR_conditions: Prisma.BlogPostWhereInput[] = [];
       if (post.category) {
         OR_conditions.push({ category: { equals: post.category, mode: "insensitive" } });
       }

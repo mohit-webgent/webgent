@@ -53,6 +53,18 @@ enum ChatStatus {
   ARCHIVED
 }
 
+enum TestimonialStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubscriberStatus {
+  PENDING
+  ACTIVE
+  UNSUBSCRIBED
+}
+
 // --------------------------------------------------------
 // Models
 // --------------------------------------------------------
@@ -180,38 +192,50 @@ model BlogPost {
 
 /// Testimonial model for client reviews and social proof
 model Testimonial {
-  id          String   @id @default(uuid())
+  id          String            @id @default(uuid())
   clientName  String
   clientTitle String?
   company     String?
   avatarUrl   String?
   content     String
-  rating      Int      @default(5)
-  featured    Boolean  @default(false)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  rating      Int               @default(5)
+  featured    Boolean           @default(false)
+  status      TestimonialStatus @default(APPROVED)
+  order       Int               @default(0)
+  deletedAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
+  @@index([status])
   @@index([featured])
   @@index([order])
+  @@index([deletedAt])
   @@index([createdAt])
   @@map("testimonials")
 }
 
 /// Subscriber model for newsletter subscriptions
 model Subscriber {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  name           String?
-  isActive       Boolean   @default(true)
-  subscribedAt   DateTime  @default(now())
-  unsubscribedAt DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                String           @id @default(uuid())
+  email             String           @unique
+  name              String?
+  status            SubscriberStatus @default(PENDING)
+  isActive          Boolean          @default(false)
+  confirmationToken String?          @unique
+  tokenExpiresAt    DateTime?
+  unsubscribeToken  String?          @unique
+  subscribedAt      DateTime?
+  unsubscribedAt    DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   @@index([email])
+  @@index([status])
   @@index([isActive])
+  @@index([confirmationToken])
+  @@index([unsubscribeToken])
   @@index([subscribedAt])
+  @@index([createdAt])
   @@map("subscribers")
 }
 

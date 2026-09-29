@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, LeadStatus } from "@prisma/client";
+import { PrismaClient, UserRole, UserStatus, LeadStatus, TestimonialStatus, SubscriberStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -224,7 +224,7 @@ Database latency is often the primary bottleneck in web application throughput. 
   }
   console.log("✅ Seeded sample blog posts.");
 
-  // 4. Default Public Site Settings Seed
+  // 5. Default Public Site Settings Seed
   const defaultSettings = [
     { key: "site_name", value: "Webgent", description: "Official Site Name", isPublic: true },
     { key: "site_tagline", value: "Next-Gen Web Solutions & Enterprise Software", description: "Hero Tagline", isPublic: true },
@@ -240,6 +240,73 @@ Database latency is often the primary bottleneck in web application throughput. 
     });
   }
   console.log("✅ Seeded site configuration settings.");
+
+  // 6. Sample Testimonials Seed
+  const sampleTestimonials = [
+    {
+      clientName: "Alex Vance",
+      clientTitle: "Chief Technology Officer",
+      company: "Synthetix Cloud Labs",
+      content: "Webgent transformed our entire enterprise infrastructure. Their architectural execution with Next.js and PostgreSQL cut our latency by 65% and allowed us to scale seamlessly across international regions.",
+      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      rating: 5,
+      featured: true,
+      status: TestimonialStatus.APPROVED,
+      order: 1,
+    },
+    {
+      clientName: "Marcus Sterling",
+      clientTitle: "Head of Digital Experience",
+      company: "Apex Global FinTech",
+      content: "The level of engineering rigor and design polish delivered by the Webgent team exceeded our highest expectations. They built a mission-critical platform on time and under budget.",
+      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+      rating: 5,
+      featured: true,
+      status: TestimonialStatus.APPROVED,
+      order: 2,
+    },
+    {
+      clientName: "Elena Rostova",
+      clientTitle: "VP of Product Engineering",
+      company: "BioHealth Diagnostics",
+      content: "Working with Webgent was an absolute game changer. Their deep understanding of modern web architectures and real-time state synchronization gave us an immense competitive edge.",
+      avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+      rating: 5,
+      featured: false,
+      status: TestimonialStatus.APPROVED,
+      order: 3,
+    },
+  ];
+
+  for (const testimonial of sampleTestimonials) {
+    const existing = await prisma.testimonial.findFirst({
+      where: { clientName: testimonial.clientName, company: testimonial.company },
+    });
+    if (!existing) {
+      await prisma.testimonial.create({ data: testimonial });
+    }
+  }
+  console.log("✅ Seeded sample client testimonials.");
+
+  // 7. Sample Verified Subscriber Seed
+  const sampleSubscribers = [
+    {
+      email: "subscriber@example.com",
+      name: "Jordan Lee",
+      status: SubscriberStatus.ACTIVE,
+      isActive: true,
+      subscribedAt: new Date(),
+    },
+  ];
+
+  for (const sub of sampleSubscribers) {
+    await prisma.subscriber.upsert({
+      where: { email: sub.email },
+      update: {},
+      create: sub,
+    });
+  }
+  console.log("✅ Seeded sample newsletter subscribers.");
 
   console.log("\n🎉 Database seed complete! All models populated.");
 }

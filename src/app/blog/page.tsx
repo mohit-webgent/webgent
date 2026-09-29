@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { BlogPost, User } from "@prisma/client";
+import { BlogPost, User, Prisma } from "@prisma/client";
 import Link from "next/link";
 import {
   BookOpen,
@@ -8,7 +8,6 @@ import {
   Tag,
   ArrowRight,
   Sparkles,
-  Search,
   Calendar,
 } from "lucide-react";
 
@@ -43,7 +42,7 @@ export default async function PublicBlogPage({
   let allTags: { name: string; count: number }[] = [];
 
   try {
-    const whereCondition: any = {
+    const whereCondition: Prisma.BlogPostWhereInput = {
       status: "PUBLISHED",
       deletedAt: null,
       publishedAt: { lte: new Date() },

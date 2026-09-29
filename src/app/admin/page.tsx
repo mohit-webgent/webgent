@@ -112,6 +112,78 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Quick Access Modules */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold text-white tracking-tight">Content & Audience Modules</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Link
+            href="/admin/testimonials"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-pink-500/40 rounded-2xl p-5 transition-all space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 font-bold">
+                ⭐
+              </span>
+              <span className="text-xs text-pink-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                Manage &rarr;
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-pink-300 transition-colors">
+                Testimonials & Reviews
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Approve client reviews, manage ratings, and reorder social proof.
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/newsletter"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-violet-500/40 rounded-2xl p-5 transition-all space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2.5 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 font-bold">
+                ✉️
+              </span>
+              <span className="text-xs text-violet-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                Manage &rarr;
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-violet-300 transition-colors">
+                Newsletter Subscribers
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                View double opt-in subscribers, verify tokens, and export CSVs.
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/projects"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 transition-all space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                💼
+              </span>
+              <span className="text-xs text-emerald-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                Manage &rarr;
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                Portfolio Projects
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Curate case studies, screenshots, tech stacks, and live demo links.
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
