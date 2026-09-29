@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/api/response";
+import { emailService } from "@/lib/services/email";
 import { SubscriberStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
@@ -81,6 +82,9 @@ export async function GET(req: NextRequest) {
       subscriberId: updated.id,
       email: updated.email,
     });
+
+    // Asynchronously dispatch farewell email (safely caught)
+    emailService.sendNewsletterUnsubscribed({ email: updated.email }).catch(() => {});
 
     if (isHtmlRequest) {
       return renderUnsubscribeHtml({

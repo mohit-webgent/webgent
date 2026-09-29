@@ -1,149 +1,310 @@
+import { Resend } from "resend";
+import { render } from "@react-email/components";
+import * as React from "react";
 import { logger } from "@/lib/logger";
 
+// Import React Email Templates
+import {
+  ContactConfirmationEmail,
+  ContactConfirmationEmailProps,
+} from "@/components/emails/contact-confirmation";
+import {
+  AdminLeadNotificationEmail,
+  AdminLeadNotificationEmailProps,
+} from "@/components/emails/admin-lead-notification";
+import {
+  NewsletterConfirmationEmail,
+} from "@/components/emails/newsletter-confirmation";
+import {
+  NewsletterUnsubscribedEmail,
+  NewsletterUnsubscribedEmailProps,
+} from "@/components/emails/newsletter-unsubscribed";
+import {
+  NewsletterDigestEmail,
+  NewsletterDigestEmailProps,
+} from "@/components/emails/newsletter-digest";
+
 export interface SendEmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
-  html: string;
+  html?: string;
   text?: string;
+  react?: React.ReactElement;
   from?: string;
+  replyTo?: string;
 }
 
-/**
- * Service abstraction for sending transactional and newsletter emails.
- * Ready to be connected to providers like Resend, SendGrid, Amazon SES, or Nodemailer.
- */
 export interface EmailService {
   sendEmail(options: SendEmailOptions): Promise<boolean>;
+  sendContactConfirmation(props: ContactConfirmationEmailProps & { email: string }): Promise<boolean>;
+  sendAdminNewLeadNotification(props: AdminLeadNotificationEmailProps): Promise<boolean>;
   sendNewsletterConfirmation(email: string, token: string, name?: string | null): Promise<boolean>;
   sendNewsletterWelcome(email: string, name?: string | null, unsubscribeToken?: string | null): Promise<boolean>;
+  sendNewsletterUnsubscribed(props: NewsletterUnsubscribedEmailProps): Promise<boolean>;
+  sendNewsletterDigest(to: string, props: NewsletterDigestEmailProps): Promise<boolean>;
 }
 
-class MockEmailService implements EmailService {
-  private defaultFrom = process.env.EMAIL_FROM || "Webgent Newsletter <newsletter@webgent.com>";
-  private appUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+class ResendEmailService implements EmailService {
+  private resend: Resend | null = null;
+  private isConfigured = false;
+
+  constructor() {
+    const apiKey = process.env.RESEND_API_KEY?.trim();
+    // Validate that API key exists and is not a default placeholder
+    if (apiKey && apiKey.startsWith("re_") && !apiKey.includes("placeholder") && apiKey !== "re_123456789_abcdefg") {
+      this.resend = new Resend(apiKey);
+      this.isConfigured = true;
+    }
+  }
+
+  private getFromAddress(override?: string): string {
+    if (override) return override;
+    return process.env.EMAIL_FROM || "Webgent <onboarding@resend.dev>";
+  }
+
+  private getAdminEmail(): string {
+    return process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SEED_ADMIN_EMAIL || "admin@webgent.com";
+  }
 
   /**
-   * Generic send email method.
-   * Logs email payload to console in development and test environments.
+   * Safe email masking helper for privacy-conscious logging.
+   */
+  private maskEmail(email: string): string {
+    const parts = email.split("@");
+    if (parts.length !== 2) return "***";
+    const [local, domain] = parts;
+    const maskedLocal = local.length > 2 ? `${local[0]}***${local[local.length - 1]}` : `${local[0]}*`;
+    return `${maskedLocal}@${domain}`;
+  }
+
+  /**
+   * Server-side email sender method.
+   * Uses Resend SDK when configured, or safely falls back to local logging in development/test.
+   * Never throws uncaught errors to prevent disrupting database operations.
    */
   async sendEmail(options: SendEmailOptions): Promise<boolean> {
-    const from = options.from || this.defaultFrom;
-    
-    logger.info(`[Email Service] Sending email to "${options.to}" with subject: "${options.subject}"`, {
-      from,
-      to: options.to,
-      subject: options.subject,
-      previewText: options.text?.substring(0, 100),
-    });
+    try {
+      const from = this.getFromAddress(options.from);
+      const recipients = Array.isArray(options.to) ? options.to : [options.to];
 
-    return true;
+      let html = options.html;
+      if (!html && options.react) {
+        html = await render(options.react);
+      }
+
+      if (!html && !options.text) {
+        logger.error("[Email Service] Neither html, react, nor text was provided for email dispatch");
+        return false;
+      }
+
+      // 1. Resend Production Mode
+      if (this.isConfigured && this.resend) {
+        const payload = html
+          ? {
+              from,
+              to: recipients,
+              subject: options.subject,
+              html,
+              text: options.text,
+              replyTo: options.replyTo,
+            }
+          : {
+              from,
+              to: recipients,
+              subject: options.subject,
+              text: options.text || "",
+              replyTo: options.replyTo,
+            };
+
+        const response = await this.resend.emails.send(payload);
+
+        if (response.error) {
+          logger.error("[Email Service] Resend provider returned an error", {
+            error: response.error.message,
+            name: response.error.name,
+            recipients: recipients.map((r) => this.maskEmail(r)),
+          });
+          return false;
+        }
+
+        logger.info("[Email Service] Email sent successfully via Resend", {
+          id: response.data?.id,
+          subject: options.subject,
+          recipients: recipients.map((r) => this.maskEmail(r)),
+        });
+
+        return true;
+      }
+
+      // 2. Development / Test Safe Simulation Mode
+      logger.info(`[Email Service Simulation] Mock email dispatched for subject: "${options.subject}"`, {
+        from,
+        recipients: recipients.map((r) => this.maskEmail(r)),
+        subject: options.subject,
+        htmlLength: html?.length || 0,
+        textPreview: options.text?.substring(0, 100),
+        mode: "development/test_mock",
+      });
+
+      return true;
+    } catch (error) {
+      // Safe error logging: never expose secret keys or stack traces in public responses
+      logger.error("[Email Service] Unexpected error in email sending pipeline", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return false;
+    }
   }
 
   /**
-   * Sends the double opt-in confirmation email containing the secure confirmation token link.
+   * 1. Contact Confirmation Email to Client
    */
-  async sendNewsletterConfirmation(email: string, token: string, name?: string | null): Promise<boolean> {
-    const confirmUrl = `${this.appUrl}/api/newsletter/confirm?token=${encodeURIComponent(token)}`;
-    const greeting = name ? `Hello ${name}` : "Hello";
+  async sendContactConfirmation(
+    props: ContactConfirmationEmailProps & { email: string }
+  ): Promise<boolean> {
+    const reactElement = React.createElement(ContactConfirmationEmail, {
+      name: props.name,
+      service: props.service,
+      budget: props.budget,
+      message: props.message,
+    });
 
-    const subject = "Please confirm your subscription to Webgent Newsletter";
-    const text = `${greeting},\n\nThank you for subscribing to Webgent! Please confirm your email address by clicking the link below:\n\n${confirmUrl}\n\nThis confirmation link is valid for 24 hours. If you did not request this subscription, please ignore this email.\n\nBest regards,\nThe Webgent Team`;
+    const plainText = `Hi ${props.name},\n\nThank you for reaching out to Webgent! We have received your project inquiry and a technical specialist will get in touch with you within 24 business hours.\n\nBest regards,\nThe Webgent Team`;
+
+    return this.sendEmail({
+      to: props.email,
+      subject: "We've received your inquiry — Webgent",
+      react: reactElement,
+      text: plainText,
+    });
+  }
+
+  /**
+   * 2. New Lead Notification Email to Admin
+   */
+  async sendAdminNewLeadNotification(
+    props: AdminLeadNotificationEmailProps
+  ): Promise<boolean> {
+    const adminTo = this.getAdminEmail();
+
+    const reactElement = React.createElement(AdminLeadNotificationEmail, props);
+
+    const plainText = `[NEW LEAD INBOUND]\nClient: ${props.name}\nEmail: ${props.email}\nPhone: ${props.phone || "N/A"}\nCompany: ${props.company || "N/A"}\nService: ${props.service || "N/A"}\nBudget: ${props.budget || "N/A"}\nScore: ${props.score}/100\nMessage: ${props.message}`;
+
+    return this.sendEmail({
+      to: adminTo,
+      subject: `⚡ New Lead: ${props.name} (${props.company || "Individual"}) — Score ${props.score}/100`,
+      react: reactElement,
+      text: plainText,
+      replyTo: props.email,
+    });
+  }
+
+  /**
+   * 3. Newsletter Double Opt-In Confirmation
+   */
+  async sendNewsletterConfirmation(
+    email: string,
+    token: string,
+    name?: string | null
+  ): Promise<boolean> {
+    const reactElement = React.createElement(NewsletterConfirmationEmail, {
+      email,
+      token,
+      name,
+    });
+
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
+    const confirmUrl = `${appUrl}/api/newsletter/confirm?token=${encodeURIComponent(token)}`;
+
+    const plainText = `Hello${name ? ` ${name}` : ""},\n\nPlease confirm your subscription to the Webgent Newsletter by visiting:\n${confirmUrl}\n\nThis verification link is valid for 24 hours.\n\nBest regards,\nThe Webgent Team`;
+
+    return this.sendEmail({
+      to: email,
+      subject: "Please confirm your subscription to Webgent Newsletter",
+      react: reactElement,
+      text: plainText,
+    });
+  }
+
+  /**
+   * Newsletter Welcome Confirmation
+   */
+  async sendNewsletterWelcome(
+    email: string,
+    name?: string | null,
+    unsubscribeToken?: string | null
+  ): Promise<boolean> {
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
+    const unsubUrl = unsubscribeToken
+      ? `${appUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+      : `${appUrl}/api/newsletter/unsubscribe`;
+
+    const greeting = name ? `Hello ${name}` : "Hello";
+    const plainText = `${greeting},\n\nYour subscription to the Webgent Newsletter is now active! You will receive our latest engineering showcases and tech insights.\n\nTo unsubscribe at any time: ${unsubUrl}\n\nBest regards,\nThe Webgent Team`;
 
     const html = `
       <!DOCTYPE html>
       <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${subject}</title>
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #f8fafc; padding: 40px 20px; margin: 0;">
-          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; background-color: #111827; border: 1px solid #1f2937; border-radius: 16px; overflow: hidden;">
-            <tr>
-              <td style="padding: 36px 32px 20px 32px; text-align: center; border-bottom: 1px solid #1f2937;">
-                <h1 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">WEBGENT</h1>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 32px;">
-                <h2 style="color: #ffffff; margin-top: 0; font-size: 20px; font-weight: 700;">Confirm your subscription</h2>
-                <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">${greeting},</p>
-                <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">
-                  Thank you for subscribing to our newsletter! To finish setting up your subscription and ensure you want to receive our updates, please confirm your email address below.
-                </p>
-                <div style="text-align: center; margin: 32px 0;">
-                  <a href="${confirmUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 600; font-size: 15px; text-decoration: none; padding: 14px 32px; border-radius: 10px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);">
-                    Confirm Subscription
-                  </a>
-                </div>
-                <p style="color: #64748b; font-size: 13px; line-height: 1.5;">
-                  Or copy and paste this link in your browser:<br />
-                  <a href="${confirmUrl}" style="color: #818cf8; word-break: break-all;">${confirmUrl}</a>
-                </p>
-                <p style="color: #64748b; font-size: 12px; margin-top: 24px; border-top: 1px solid #1f2937; padding-top: 20px;">
-                  Note: This confirmation link will expire in 24 hours. If you didn't request this email, you can safely ignore it.
-                </p>
-              </td>
-            </tr>
-          </table>
+        <body style="font-family: sans-serif; background-color: #070a12; color: #f8fafc; padding: 40px 20px;">
+          <div style="max-width: 560px; margin: 0 auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 32px;">
+            <h1 style="color: #6366f1; margin-top: 0;">Welcome to Webgent Newsletter! 🎉</h1>
+            <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">${greeting},</p>
+            <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">
+              Your subscription is now confirmed. You are officially on the list to receive our latest engineering articles, architecture breakdowns, and tech updates.
+            </p>
+            <p style="color: #64748b; font-size: 12px; margin-top: 32px; border-top: 1px solid #1e293b; padding-top: 16px;">
+              You can <a href="${unsubUrl}" style="color: #818cf8;">unsubscribe here</a> at any time.
+            </p>
+          </div>
         </body>
       </html>
     `;
 
     return this.sendEmail({
       to: email,
-      subject,
-      text,
+      subject: "Welcome to Webgent Newsletter!",
       html,
+      text: plainText,
     });
   }
 
   /**
-   * Sends welcome email once subscription is confirmed.
+   * 4. Newsletter Unsubscribed Communication
    */
-  async sendNewsletterWelcome(email: string, name?: string | null, unsubscribeToken?: string | null): Promise<boolean> {
-    const unsubscribeUrl = unsubscribeToken
-      ? `${this.appUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
-      : `${this.appUrl}/newsletter/unsubscribe`;
-    const greeting = name ? `Hello ${name}` : "Hello";
+  async sendNewsletterUnsubscribed(
+    props: NewsletterUnsubscribedEmailProps
+  ): Promise<boolean> {
+    const reactElement = React.createElement(NewsletterUnsubscribedEmail, props);
 
-    const subject = "Welcome to Webgent Newsletter!";
-    const text = `${greeting},\n\nYour subscription is now active! You'll receive our latest updates, industry insights, and engineering showcases.\n\nTo unsubscribe at any time, visit: ${unsubscribeUrl}\n\nBest regards,\nThe Webgent Team`;
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #f8fafc; padding: 40px 20px; margin: 0;">
-          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; background-color: #111827; border: 1px solid #1f2937; border-radius: 16px; overflow: hidden;">
-            <tr>
-              <td style="padding: 36px 32px 20px 32px; text-align: center; border-bottom: 1px solid #1f2937;">
-                <h1 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 800;">WEBGENT</h1>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 32px;">
-                <h2 style="color: #ffffff; margin-top: 0; font-size: 20px; font-weight: 700;">You're on the list! 🎉</h2>
-                <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">${greeting},</p>
-                <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">
-                  Your subscription to the Webgent Newsletter has been successfully verified. You're all set to receive our exclusive articles, engineering updates, and product launches.
-                </p>
-                <p style="color: #64748b; font-size: 12px; margin-top: 32px; border-top: 1px solid #1f2937; padding-top: 20px;">
-                  If you ever want to unsubscribe, you can <a href="${unsubscribeUrl}" style="color: #818cf8;">click here</a>.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </body>
-      </html>
-    `;
+    const plainText = `Your email address (${props.email}) has been successfully unsubscribed from the Webgent Newsletter.\n\nBest regards,\nThe Webgent Team`;
 
     return this.sendEmail({
-      to: email,
-      subject,
-      text,
-      html,
+      to: props.email,
+      subject: "You have been unsubscribed — Webgent",
+      react: reactElement,
+      text: plainText,
+    });
+  }
+
+  /**
+   * 5. Blog / Newsletter Digest
+   */
+  async sendNewsletterDigest(
+    to: string,
+    props: NewsletterDigestEmailProps
+  ): Promise<boolean> {
+    const reactElement = React.createElement(NewsletterDigestEmail, props);
+
+    const plainText = `${props.editionTitle}\n\nFeatured: ${props.featuredArticle.title}\n${props.featuredArticle.excerpt}\n\nRead more at Webgent Blog.`;
+
+    return this.sendEmail({
+      to,
+      subject: `${props.editionTitle} — Webgent`,
+      react: reactElement,
+      text: plainText,
     });
   }
 }
 
-export const emailService: EmailService = new MockEmailService();
+export const emailService: EmailService = new ResendEmailService();
