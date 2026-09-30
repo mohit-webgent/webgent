@@ -15,6 +15,8 @@ import {
   Calendar,
   X,
   ChevronLeft,
+  Sparkles,
+  Mail,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
@@ -75,7 +77,7 @@ export function ChatSessionsManager() {
       if (statusFilter !== "ALL") params.set("status", statusFilter);
       if (search.trim()) params.set("search", search.trim());
 
-      const res = await fetch(`/api/admin/chat?${params.toString()}`);
+      const res = await fetch(`/api/admin/chat/sessions?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
         setSessions(json.data || []);
@@ -102,7 +104,7 @@ export function ChatSessionsManager() {
     async (id: string) => {
       setLoadingDetail(true);
       try {
-        const res = await fetch(`/api/admin/chat/${id}`);
+        const res = await fetch(`/api/admin/chat/sessions/${id}`);
         if (res.ok) {
           const json = await res.json();
           setActiveSession(json.data);
@@ -178,7 +180,7 @@ export function ChatSessionsManager() {
   const handleStatusChange = async (newStatus: "ACTIVE" | "CLOSED" | "ARCHIVED") => {
     if (!selectedSessionId) return;
     try {
-      const res = await fetch(`/api/admin/chat/${selectedSessionId}`, {
+      const res = await fetch(`/api/admin/chat/sessions/${selectedSessionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -205,7 +207,7 @@ export function ChatSessionsManager() {
     if (!selectedSessionId) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/chat/${selectedSessionId}`, {
+      const res = await fetch(`/api/admin/chat/sessions/${selectedSessionId}`, {
         method: "DELETE",
       });
 
@@ -338,6 +340,13 @@ export function ChatSessionsManager() {
             ) : (
               sessions.map((item) => {
                 const isSelected = item.id === selectedSessionId;
+                const metaName = item.metadata && typeof item.metadata === "object" && "name" in item.metadata && item.metadata.name
+                  ? String(item.metadata.name)
+                  : null;
+                const metaEmail = item.metadata && typeof item.metadata === "object" && "email" in item.metadata && item.metadata.email
+                  ? String(item.metadata.email)
+                  : null;
+
                 const formattedDate = new Date(item.updatedAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",
@@ -357,11 +366,18 @@ export function ChatSessionsManager() {
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-xs text-white truncate max-w-[150px]">
-                        Visitor: {item.visitorId.slice(0, 12)}...
-                      </span>
+                      <div className="truncate max-w-[170px]">
+                        <span className="font-semibold text-xs text-white">
+                          {metaName || `Visitor: ${item.visitorId.slice(0, 10)}...`}
+                        </span>
+                        {metaEmail && (
+                          <span className="block text-[10px] text-teal-400/80 truncate">
+                            {metaEmail}
+                          </span>
+                        )}
+                      </div>
                       <span
-                        className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${getStatusBadge(
+                        className={`px-2 py-0.5 rounded-full border text-[10px] font-bold shrink-0 ${getStatusBadge(
                           item.status
                         )}`}
                       >
@@ -446,7 +462,9 @@ export function ChatSessionsManager() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-bold text-white">
-                        {activeSession.visitorId}
+                        {activeSession.metadata?.name
+                          ? String(activeSession.metadata.name)
+                          : activeSession.visitorId}
                       </h2>
                       <span
                         className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${getStatusBadge(
@@ -467,6 +485,10 @@ export function ChatSessionsManager() {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
+                      </span>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400 font-mono text-[10px]">
+                        ID: {activeSession.id.slice(0, 8)}
                       </span>
                     </p>
                   </div>
@@ -516,6 +538,28 @@ export function ChatSessionsManager() {
                 </div>
               </div>
 
+              {/* Visitor Contact Info Banner (If Provided) */}
+              {activeSession.metadata &&
+                (Boolean(activeSession.metadata.name) || Boolean(activeSession.metadata.email)) && (
+                  <div className="px-4 py-2.5 bg-teal-950/20 border-b border-teal-500/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 text-teal-300 font-medium">
+                      <User className="w-3.5 h-3.5 text-teal-400" />
+                      <span>{String(activeSession.metadata.name || "Anonymous Visitor")}</span>
+                      {Boolean(activeSession.metadata.email) && (
+                        <span className="inline-flex items-center gap-1 text-slate-300 bg-slate-900/80 px-2 py-0.5 rounded-lg border border-slate-800 text-[11px]">
+                          <Mail className="w-3 h-3 text-teal-400" />
+                          {String(activeSession.metadata.email)}
+                        </span>
+                      )}
+                    </div>
+                    {Boolean(activeSession.metadata.ipAddress) && (
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        IP: {String(activeSession.metadata.ipAddress)}
+                      </span>
+                    )}
+                  </div>
+                )}
+
               {/* Message Transcript Thread */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-h-[460px]">
                 {activeSession.messages.length === 0 ? (
@@ -524,7 +568,8 @@ export function ChatSessionsManager() {
                   </div>
                 ) : (
                   activeSession.messages.map((msg) => {
-                    const isAdmin = msg.sender === "admin" || msg.sender === "agent";
+                    const isAdmin = msg.sender === "admin";
+                    const isAssistant = msg.sender === "assistant" || msg.sender === "bot" || msg.sender === "agent";
                     const formattedTime = new Date(msg.createdAt).toLocaleTimeString(undefined, {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -540,20 +585,41 @@ export function ChatSessionsManager() {
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
                             isAdmin
-                              ? "bg-indigo-600 text-white"
-                              : "bg-slate-800 text-teal-400 border border-teal-500/30"
+                              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                              : isAssistant
+                              ? "bg-teal-600/20 text-teal-400 border border-teal-500/30"
+                              : "bg-slate-800 text-slate-300 border border-slate-700"
                           }`}
                         >
-                          {isAdmin ? <Bot className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+                          {isAdmin ? (
+                            <Bot className="w-3.5 h-3.5" />
+                          ) : isAssistant ? (
+                            <Sparkles className="w-3.5 h-3.5" />
+                          ) : (
+                            <User className="w-3.5 h-3.5" />
+                          )}
                         </div>
 
                         <div
                           className={`max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
                             isAdmin
                               ? "bg-indigo-600 text-white rounded-br-none shadow-md shadow-indigo-600/20"
-                              : "bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-none"
+                              : isAssistant
+                              ? "bg-slate-900 border border-teal-500/20 text-slate-100 rounded-bl-none"
+                              : "bg-slate-800/80 border border-slate-700/60 text-slate-100 rounded-bl-none"
                           }`}
                         >
+                          <div className="flex items-center gap-1.5 mb-1 opacity-75 text-[10px] font-semibold">
+                            <span>
+                              {isAdmin
+                                ? "Admin (You)"
+                                : isAssistant
+                                ? "Webgent AI Concierge"
+                                : activeSession.metadata?.name
+                                ? String(activeSession.metadata.name)
+                                : "Visitor"}
+                            </span>
+                          </div>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                           <p
                             className={`text-[9px] mt-1 text-right ${

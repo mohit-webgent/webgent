@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { Footer } from "./footer";
 import { AnalyticsTracker } from "@/components/analytics/analytics-tracker";
+import { ChatWidget } from "@/components/chat/chat-widget";
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -33,6 +34,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       <Suspense fallback={null}>
         <AnalyticsTracker />
       </Suspense>
+      <ChatWidget />
     </div>
   );
 }

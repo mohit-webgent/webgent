@@ -38,6 +38,8 @@ const envSchema = z.object({
   WHATSAPP_API_TOKEN: z.string().optional(),
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   SLACK_WEBHOOK_URL: z.string().optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_MODEL: z.string().default("claude-3-5-sonnet-20241022"),
 });
 
 function parseEnv() {
@@ -62,6 +64,8 @@ function parseEnv() {
     WHATSAPP_API_TOKEN: process.env.WHATSAPP_API_TOKEN,
     WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
     SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
   });
 
   if (!parsed.success) {

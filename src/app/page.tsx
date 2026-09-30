@@ -15,6 +15,8 @@ import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 import { CtaLink } from "@/components/ui/cta-link";
 import type { Metadata } from "next";
 
+import { logger } from "@/lib/logger";
+
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -31,32 +33,43 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   // Parallel fetch real database content for the public showcase
-  const [featuredProjects, testimonials, latestPosts] = await Promise.all([
-    prisma.project.findMany({
-      where: { published: true, featured: true },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      take: 3,
-    }),
-    prisma.testimonial.findMany({
-      where: { status: "APPROVED", deletedAt: null },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      take: 3,
-    }),
-    prisma.blogPost.findMany({
-      where: { status: "PUBLISHED", deletedAt: null },
-      orderBy: { publishedAt: "desc" },
-      take: 3,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        excerpt: true,
-        category: true,
-        readTime: true,
-        publishedAt: true,
-      },
-    }),
-  ]);
+  let featuredProjects: any[] = [];
+  let testimonials: any[] = [];
+  let latestPosts: any[] = [];
+
+  try {
+    const results = await Promise.all([
+      prisma.project.findMany({
+        where: { published: true, featured: true },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+        take: 3,
+      }),
+      prisma.testimonial.findMany({
+        where: { status: "APPROVED", deletedAt: null },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+        take: 3,
+      }),
+      prisma.blogPost.findMany({
+        where: { status: "PUBLISHED", deletedAt: null },
+        orderBy: { publishedAt: "desc" },
+        take: 3,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          category: true,
+          readTime: true,
+          publishedAt: true,
+        },
+      }),
+    ]);
+    featuredProjects = results[0];
+    testimonials = results[1];
+    latestPosts = results[2];
+  } catch (error) {
+    logger.warn("Could not fetch dynamic database content for HomePage, using empty state fallback", { error });
+  }
 
   const capabilities = [
     {
