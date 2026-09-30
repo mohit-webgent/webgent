@@ -3,16 +3,40 @@ import { Star, MessageSquareQuote, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+import { siteConfig } from "@/config/site";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Client Testimonials & Reviews — Webgent",
+  title: "Client Testimonials & Reviews | Webgent",
   description:
     "Read verified reviews and feedback from enterprise leaders, founders, and CTOs who partnered with Webgent for high-performance software engineering.",
+  alternates: {
+    canonical: "/testimonials",
+  },
   openGraph: {
-    title: "Client Testimonials & Reviews — Webgent",
+    title: "Client Testimonials & Reviews | Webgent",
     description:
       "Verified reviews and feedback from founders and engineering leaders who build with Webgent.",
+    url: `${siteConfig.url}/testimonials`,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: "/api/og?title=Client+Testimonials+%26+Reviews&badge=Verified+Partners",
+        width: 1200,
+        height: 630,
+        alt: "Webgent Testimonials",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Client Testimonials & Reviews | Webgent",
+    description:
+      "Read verified reviews and feedback from enterprise leaders, founders, and CTOs who partnered with Webgent.",
+    images: ["/api/og?title=Client+Testimonials+%26+Reviews&badge=Verified+Partners"],
+    creator: "@webgent",
   },
 };
 
@@ -75,7 +99,7 @@ export default async function PublicTestimonialsPage() {
         {testimonials.length === 0 ? (
           <div className="max-w-md mx-auto py-16 text-center space-y-3 p-8 rounded-3xl bg-slate-900/60 border border-slate-800">
             <MessageSquareQuote className="w-10 h-10 text-slate-600 mx-auto" />
-            <h3 className="text-base font-bold text-white">Client Reviews Coming Soon</h3>
+            <h2 className="text-base font-bold text-white">Client Reviews Coming Soon</h2>
             <p className="text-xs text-slate-400">
               We are compiling our latest verified case studies and testimonials. Check back shortly!
             </p>
@@ -116,6 +140,8 @@ export default async function PublicTestimonialsPage() {
                       <img
                         src={t.avatarUrl}
                         alt={t.clientName}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -123,9 +149,9 @@ export default async function PublicTestimonialsPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-sm text-white truncate">
+                    <h3 className="font-bold text-sm text-white truncate">
                       {t.clientName}
-                    </p>
+                    </h3>
                     <p className="text-xs text-slate-400 truncate">
                       {t.clientTitle || "Partner"}
                       {t.company ? ` • ${t.company}` : ""}

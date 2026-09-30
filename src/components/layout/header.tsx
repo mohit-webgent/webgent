@@ -26,7 +26,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 text-sm font-semibold">
+          <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1 text-sm font-semibold">
             {siteConfig.mainNav.map((item) => {
               const isActive =
                 item.href === "/"
@@ -76,7 +76,7 @@ export function Header() {
       {/* Mobile Menu Dropdown Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-800 bg-slate-900/95 backdrop-blur-2xl px-4 py-4 space-y-3 animate-in slide-in-from-top-2 duration-200">
-          <nav className="flex flex-col space-y-1">
+          <nav aria-label="Mobile Navigation" className="flex flex-col space-y-1">
             {siteConfig.mainNav.map((item) => {
               const isActive =
                 item.href === "/"

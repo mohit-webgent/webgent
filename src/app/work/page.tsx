@@ -4,16 +4,40 @@ import Link from "next/link";
 import { ArrowRight, Star, ExternalLink, Github, Sparkles, Search, Layers, X } from "lucide-react";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+import { siteConfig } from "@/config/site";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Portfolio & Case Studies — Webgent",
+  title: "Portfolio & Case Studies | Webgent",
   description:
     "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and custom software systems.",
+  alternates: {
+    canonical: "/work",
+  },
   openGraph: {
-    title: "Portfolio & Case Studies — Webgent",
+    title: "Portfolio & Case Studies | Webgent",
     description:
       "A curated showcase of custom software platforms, cloud applications, and high-conversion web experiences.",
+    url: `${siteConfig.url}/work`,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: "/api/og?title=Case+Studies+%26+Portfolio&badge=Selected+Works",
+        width: 1200,
+        height: 630,
+        alt: "Webgent Portfolio",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Portfolio & Case Studies | Webgent",
+    description:
+      "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and custom software systems.",
+    images: ["/api/og?title=Case+Studies+%26+Portfolio&badge=Selected+Works"],
+    creator: "@webgent",
   },
 };
 
@@ -94,10 +118,10 @@ export default async function PublicProjectsPage({
         {/* Featured Projects Section (shown when no filter is active) */}
         {!selectedCategory && !searchQuery && featuredProjects.length > 0 && (
           <div className="space-y-6">
-            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+            <h2 className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
               <Star className="w-4 h-4 fill-current" />
               <span>Spotlight Featured Projects</span>
-            </div>
+            </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {featuredProjects.map((project) => (
@@ -115,9 +139,9 @@ export default async function PublicProjectsPage({
                       </span>
                     </div>
 
-                    <h2 className="text-2xl font-extrabold text-white group-hover:text-indigo-400 transition-colors">
+                    <h3 className="text-2xl font-extrabold text-white group-hover:text-indigo-400 transition-colors">
                       {project.title}
-                    </h2>
+                    </h3>
 
                     <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed">
                       {project.description}
@@ -217,6 +241,7 @@ export default async function PublicProjectsPage({
                 type="text"
                 name="search"
                 defaultValue={searchQuery}
+                aria-label="Filter case studies by keyword"
                 placeholder="Filter by keyword..."
                 className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
               />

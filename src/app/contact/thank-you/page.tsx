@@ -3,8 +3,15 @@ import { CheckCircle2, ArrowRight, Home } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Inquiry Received — Webgent",
+  title: "Inquiry Received | Webgent",
   description: "Thank you for reaching out to Webgent. Our engineering team is reviewing your project details.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: "/contact/thank-you",
+  },
 };
 
 export default function ContactThankYouPage() {

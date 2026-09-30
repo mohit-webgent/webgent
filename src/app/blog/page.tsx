@@ -12,12 +12,42 @@ import {
 } from "lucide-react";
 import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 
-export const dynamic = "force-dynamic";
+import { siteConfig } from "@/config/site";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const revalidate = 60;
+
+export const metadata: Metadata = {
   title: "Blog & Technical Insights | Webgent",
   description:
-    "Explore engineering insights, web architecture case studies, and cloud software development tutorials.",
+    "Explore engineering insights, web architecture case studies, and cloud software development tutorials from the Webgent engineering team.",
+  alternates: {
+    canonical: "/blog",
+  },
+  openGraph: {
+    title: "Blog & Technical Insights | Webgent",
+    description:
+      "Explore engineering insights, web architecture case studies, and cloud software development tutorials.",
+    url: `${siteConfig.url}/blog`,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: "/api/og?title=Technical+Insights+%26+Engineering+Blog&badge=Webgent+Articles",
+        width: 1200,
+        height: 630,
+        alt: "Webgent Blog",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog & Technical Insights | Webgent",
+    description:
+      "Explore engineering insights, web architecture case studies, and cloud software development tutorials.",
+    images: ["/api/og?title=Technical+Insights+%26+Engineering+Blog&badge=Webgent+Articles"],
+    creator: "@webgent",
+  },
 };
 
 type PostWithAuthor = BlogPost & {
@@ -179,21 +209,21 @@ export default async function PublicBlogPage({
         {/* Featured Spotlight Article */}
         {featuredPost && !selectedTag && !searchQuery && (
           <div className="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-500/30 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-6 relative overflow-hidden group">
-            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+            <h2 className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
               <Sparkles className="w-4 h-4 fill-current" />
               <span>Spotlight Featured Article</span>
-            </div>
+            </h2>
 
             <div className="space-y-4 max-w-3xl">
               <span className="px-3.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-xs font-bold rounded-full uppercase tracking-wider inline-block">
                 {featuredPost.category || "Featured"}
               </span>
 
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-3xl sm:text-4xl font-extrabold text-white group-hover:text-indigo-400 transition-colors">
                 <Link href={`/blog/${featuredPost.slug}`}>
                   {featuredPost.title}
                 </Link>
-              </h2>
+              </h3>
 
               <p className="text-base text-slate-300 line-clamp-3 leading-relaxed">
                 {featuredPost.excerpt || featuredPost.content.substring(0, 200)}

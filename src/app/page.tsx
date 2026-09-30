@@ -17,17 +17,41 @@ import type { Metadata } from "next";
 
 import { logger } from "@/lib/logger";
 
-export const dynamic = "force-dynamic";
+import { siteConfig } from "@/config/site";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Webgent — Elite Web Solutions & Engineering Architecture",
   description:
-    "Webgent designs and engineers high-performance web applications, cloud backends, and digital platforms for ambitious modern brands.",
+    "Webgent designs and engineers high-performance web applications, scalable cloud backends, and digital platforms for ambitious modern brands.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
     description:
       "High-performance web applications, scalable cloud backends, and digital systems.",
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: "/api/og?title=Webgent&badge=Elite+Web+Engineering",
+        width: 1200,
+        height: 630,
+        alt: "Webgent — Next-Gen Web Solutions",
+      },
+    ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Webgent — Elite Web Solutions & Engineering Architecture",
+    description:
+      "High-performance web applications, scalable cloud backends, and digital systems.",
+    images: ["/api/og?title=Webgent&badge=Elite+Web+Engineering"],
+    creator: "@webgent",
+    site: "@webgent",
   },
 };
 
@@ -142,12 +166,12 @@ export default async function HomePage() {
       {/* 2. CORE CAPABILITIES */}
       <section className="space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">
+          <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 block">
             Engineered For Scale
-          </h2>
-          <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
             End-to-End Architectural Capabilities
-          </p>
+          </h2>
           <p className="text-sm text-slate-400">
             From initial system architecture to resilient cloud production deployments.
           </p>
@@ -179,12 +203,12 @@ export default async function HomePage() {
       <section className="space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block">
               Selected Work
-            </h2>
-            <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               Featured Case Studies
-            </p>
+            </h2>
           </div>
           <Link
             href="/work"
@@ -261,12 +285,12 @@ export default async function HomePage() {
       <section className="space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-pink-400">
+            <span className="text-xs font-bold uppercase tracking-widest text-pink-400 block">
               Verified Feedback
-            </h2>
-            <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               What Founders & Clients Say
-            </p>
+            </h2>
           </div>
           <Link
             href="/testimonials"
@@ -326,12 +350,12 @@ export default async function HomePage() {
         <section className="space-y-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-amber-400">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-400 block">
                 Technical Insights
-              </h2>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                 From the Engineering Blog
-              </p>
+              </h2>
             </div>
             <Link
               href="/blog"

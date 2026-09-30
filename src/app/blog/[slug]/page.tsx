@@ -15,7 +15,9 @@ import type { Metadata } from "next";
 import { BlogReadTracker } from "@/components/blog/blog-read-tracker";
 import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 
-export const dynamic = "force-dynamic";
+import { siteConfig } from "@/config/site";
+
+export const revalidate = 60;
 
 type PostWithAuthor = BlogPost & {
   author: Pick<User, "id" | "name" | "avatarUrl">;
@@ -29,19 +31,57 @@ export async function generateMetadata({
   try {
     const post = await prisma.blogPost.findFirst({
       where: { slug: params.slug, status: "PUBLISHED", deletedAt: null },
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true } },
+      },
     });
 
     if (!post) {
-      return { title: "Article Not Found | Webgent" };
+      return {
+        title: "Article Not Found | Webgent",
+        robots: { index: false, follow: false },
+      };
     }
 
+    const title = post.seoTitle || `${post.title} | Webgent Blog`;
+    const description = post.seoDescription || post.excerpt || post.content.substring(0, 160);
+    const ogImage =
+      post.ogImage ||
+      post.coverImage ||
+      `${siteConfig.url}/api/og?title=${encodeURIComponent(post.title)}&badge=${encodeURIComponent(post.category || "Technical Article")}&desc=${encodeURIComponent((post.excerpt || post.content).slice(0, 140))}&author=${encodeURIComponent(post.author?.name || "Webgent Team")}`;
+
+    const tagsList = post.tags ? post.tags.split(",").map((t) => t.trim()) : [];
+
     return {
-      title: post.seoTitle || `${post.title} | Webgent Blog`,
-      description: post.seoDescription || post.excerpt || post.content.substring(0, 160),
+      title,
+      description,
+      alternates: {
+        canonical: `/blog/${post.slug}`,
+      },
       openGraph: {
         title: post.seoTitle || post.title,
-        description: post.seoDescription || post.excerpt || undefined,
-        images: post.ogImage || post.coverImage ? [post.ogImage || post.coverImage!] : [],
+        description,
+        url: `${siteConfig.url}/blog/${post.slug}`,
+        siteName: siteConfig.name,
+        type: "article",
+        publishedTime: post.publishedAt?.toISOString(),
+        authors: [post.author?.name || "Webgent Engineering"],
+        tags: tagsList,
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: post.seoTitle || post.title,
+        description,
+        images: [ogImage],
+        creator: "@webgent",
       },
     };
   } catch {
@@ -179,6 +219,8 @@ export default async function PublicBlogDetailPage({
                 <img
                   src={post.author.avatarUrl}
                   alt={post.author.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
@@ -199,6 +241,9 @@ export default async function PublicBlogDetailPage({
             <img
               src={post.coverImage}
               alt={post.title}
+              // @ts-expect-error fetchpriority attribute
+              fetchpriority="high"
+              decoding="async"
               className="w-full h-auto max-h-[500px] object-cover"
             />
           </div>

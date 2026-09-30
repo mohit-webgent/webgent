@@ -6,7 +6,9 @@ import { ArrowLeft, Github, Tag, Building, Sparkles, CheckCircle2 } from "lucide
 import type { Metadata } from "next";
 import { DemoLink } from "@/components/work/demo-link";
 
-export const dynamic = "force-dynamic";
+import { siteConfig } from "@/config/site";
+
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -21,17 +23,43 @@ export async function generateMetadata({
     if (!project || !project.published) {
       return {
         title: "Project Not Found | Webgent",
+        robots: { index: false, follow: false },
       };
     }
 
+    const title = project.seoTitle || `${project.title} — Case Study | Webgent`;
+    const description = project.seoDescription || project.description;
+    const ogImage =
+      project.imageUrl ||
+      `${siteConfig.url}/api/og?title=${encodeURIComponent(project.title)}&badge=${encodeURIComponent(project.category || "Case Study")}&desc=${encodeURIComponent(project.description.slice(0, 140))}`;
+
     return {
-      title: project.seoTitle || `${project.title} — Case Study | Webgent`,
-      description: project.seoDescription || project.description,
+      title,
+      description,
+      alternates: {
+        canonical: `/work/${project.slug}`,
+      },
       openGraph: {
         title: project.seoTitle || `${project.title} — Webgent Case Study`,
-        description: project.seoDescription || project.description,
-        images: project.imageUrl ? [project.imageUrl] : [],
+        description,
+        url: `${siteConfig.url}/work/${project.slug}`,
+        siteName: siteConfig.name,
         type: "article",
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: project.title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: project.seoTitle || `${project.title} — Case Study | Webgent`,
+        description,
+        images: [ogImage],
+        creator: "@webgent",
       },
     };
   } catch {
@@ -173,6 +201,8 @@ export default async function PublicProjectDetailPage({
                   <img
                     src={url}
                     alt={`${project.title} screenshot ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-auto object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
