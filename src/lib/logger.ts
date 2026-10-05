@@ -54,11 +54,7 @@ class Logger {
         ? { name: error.name, message: error.message, stack: error.stack }
         : { raw: error };
 
-    console.error(
-      JSON.stringify(
-        this.formatEntry("error", message, { ...meta, error: errObj }),
-      ),
-    );
+    console.error(JSON.stringify(this.formatEntry("error", message, { ...meta, error: errObj })));
   }
 }
 

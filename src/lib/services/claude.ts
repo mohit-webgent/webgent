@@ -10,14 +10,6 @@ export interface VisitorInfo {
   email?: string;
 }
 
-/**
- * Approved Webgent Agency Knowledge Base & System Prompt.
- * Strictly enforces:
- *  - Only approved agency information
- *  - No fabrication of pricing, services, guarantees, or client names
- *  - Clear, courteous handling of off-topic questions
- *  - Prompt injection and jailbreak resistance
- */
 export const WEBGENT_SYSTEM_PROMPT = `You are the AI Concierge for Webgent (webgent.com), an elite next-generation web solutions and digital engineering agency.
 
 ### AGENCY IDENTITY & EXPERTISE
@@ -52,13 +44,12 @@ export const WEBGENT_SYSTEM_PROMPT = `You are the AI Concierge for Webgent (webg
    - Mention that our full contact page is available at /contact.
 `;
 
-/**
- * Checks if a user message exhibits obvious prompt abuse or jailbreak attempts.
- */
-export function detectPromptAbuse(text: string): { isAbusive: boolean; reason?: string } {
+export function detectPromptAbuse(text: string): {
+  isAbusive: boolean;
+  reason?: string;
+} {
   const lower = text.toLowerCase();
 
-  // Pattern detection for prompt injection & jailbreak attempts
   const suspiciousPatterns = [
     "ignore all previous instructions",
     "ignore previous instructions",
@@ -81,7 +72,6 @@ export function detectPromptAbuse(text: string): { isAbusive: boolean; reason?: 
     }
   }
 
-  // Token repetition attack check (e.g. same word repeated 30+ times)
   const words = lower.trim().split(/\s+/);
   if (words.length > 25) {
     const wordCounts = new Map<string, number>();
@@ -97,26 +87,38 @@ export function detectPromptAbuse(text: string): { isAbusive: boolean; reason?: 
   return { isAbusive: false };
 }
 
-/**
- * Fallback response generator when Claude API is not configured or fails.
- * Guarantees zero crash, professional voice, no fabricated data, and lead direction.
- */
-export function getGracefulFallbackResponse(
-  userQuery: string,
-  visitorInfo?: VisitorInfo
-): string {
+export function getGracefulFallbackResponse(userQuery: string, visitorInfo?: VisitorInfo): string {
   const lower = userQuery.toLowerCase();
-  const greeting = visitorInfo?.name ? `Thanks for reaching out, ${visitorInfo.name}!` : "Hello! Welcome to Webgent.";
+  const greeting = visitorInfo?.name
+    ? `Thanks for reaching out, ${visitorInfo.name}!`
+    : "Hello! Welcome to Webgent.";
 
-  if (lower.includes("price") || lower.includes("cost") || lower.includes("quote") || lower.includes("rate") || lower.includes("budget")) {
+  if (
+    lower.includes("price") ||
+    lower.includes("cost") ||
+    lower.includes("quote") ||
+    lower.includes("rate") ||
+    lower.includes("budget")
+  ) {
     return `${greeting} At Webgent, each project is custom-scoped based on your technical requirements, architecture, and timeline—so we don't have one-size-fits-all rates. Please share your project details and email with us here, or submit our consultation form at /contact, and our engineering leads will prepare a tailored proposal for you!`;
   }
 
-  if (lower.includes("service") || lower.includes("what do you do") || lower.includes("stack") || lower.includes("technology")) {
+  if (
+    lower.includes("service") ||
+    lower.includes("what do you do") ||
+    lower.includes("stack") ||
+    lower.includes("technology")
+  ) {
     return `${greeting} Webgent specializes in high-performance web development, scalable cloud architecture (PostgreSQL, Prisma, AWS/Cloudflare), custom SaaS platforms, and conversion-focused UI/UX design. Would you like to discuss a project or have our team review your requirements?`;
   }
 
-  if (lower.includes("contact") || lower.includes("email") || lower.includes("talk") || lower.includes("hire") || lower.includes("call")) {
+  if (
+    lower.includes("contact") ||
+    lower.includes("email") ||
+    lower.includes("talk") ||
+    lower.includes("hire") ||
+    lower.includes("call")
+  ) {
     return `${greeting} We would love to discuss your project! You can leave your contact information right here in this chat, or visit our dedicated contact page at /contact to schedule a technical discovery call with our team.`;
   }
 
@@ -129,37 +131,23 @@ interface CallClaudeParams {
   temperature?: number;
 }
 
-/**
- * Executes a call to the Claude API (Anthropic Messages API) using server-side fetch.
- *
- * Requirements satisfied:
- * - Direct integration with Claude API
- * - Controlled system prompt containing only approved agency info
- * - API key never exposed to client
- * - Graceful failure handling
- * - No fabrication of pricing, guarantees, or company information
- */
 export async function callClaudeChat({
   messages,
   visitorInfo,
   temperature = 0.5,
 }: CallClaudeParams): Promise<string> {
-  const apiKey =
-    process.env.ANTHROPIC_API_KEY?.trim() ||
-    process.env.CLAUDE_API_KEY?.trim();
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim() || process.env.CLAUDE_API_KEY?.trim();
 
-  // If no API key configured, operate in graceful fallback mode
   if (!apiKey || apiKey.startsWith("sk-ant-xxx") || apiKey === "your_anthropic_api_key") {
-    logger.info("[ClaudeChat] Operating in graceful offline fallback mode (no Anthropic API key configured)");
+    logger.info(
+      "[ClaudeChat] Operating in graceful offline fallback mode (no Anthropic API key configured)",
+    );
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content || "";
     return getGracefulFallbackResponse(lastUserMessage, visitorInfo);
   }
 
-  // Model selection (claude-3-5-sonnet-20241022 or fallback to claude-3-haiku)
   const model = process.env.ANTHROPIC_MODEL?.trim() || "claude-3-5-sonnet-20241022";
 
-  // Sanitize and format messages for Anthropic Messages API
-  // Anthropic requires strictly alternating user/assistant messages and must start with 'user'
   const formattedMessages: { role: "user" | "assistant"; content: string }[] = [];
 
   for (const msg of messages) {
@@ -169,14 +157,12 @@ export async function callClaudeChat({
     const last = formattedMessages[formattedMessages.length - 1];
 
     if (last && last.role === role) {
-      // Merge consecutive same-role messages
       last.content += `\n\n${msg.content.trim()}`;
     } else {
       formattedMessages.push({ role, content: msg.content.trim() });
     }
   }
 
-  // Ensure first message is user
   if (formattedMessages.length === 0 || formattedMessages[0].role !== "user") {
     formattedMessages.unshift({ role: "user", content: "Hello" });
   }
@@ -191,7 +177,7 @@ export async function callClaudeChat({
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -213,7 +199,6 @@ export async function callClaudeChat({
         error: errorText.slice(0, 300),
       });
 
-      // Gracefully fall back to internal agency knowledge base response
       const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content || "";
       return getGracefulFallbackResponse(lastUserMessage, visitorInfo);
     }
@@ -229,7 +214,9 @@ export async function callClaudeChat({
     return reply;
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    logger.error("[ClaudeChat] Exception calling Anthropic API", { error: errorMsg });
+    logger.error("[ClaudeChat] Exception calling Anthropic API", {
+      error: errorMsg,
+    });
 
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content || "";
     return getGracefulFallbackResponse(lastUserMessage, visitorInfo);

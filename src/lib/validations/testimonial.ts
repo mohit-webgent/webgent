@@ -21,10 +21,7 @@ export const testimonialSchema = z
       .max(5, "Rating cannot exceed 5")
       .default(5),
     featured: z.boolean().default(false),
-    status: z
-      .nativeEnum(TestimonialStatus)
-      .optional()
-      .default(TestimonialStatus.APPROVED),
+    status: z.nativeEnum(TestimonialStatus).optional().default(TestimonialStatus.APPROVED),
     isApproved: z.boolean().optional(),
     order: z.number().int().default(0),
   })
@@ -36,15 +33,13 @@ export const testimonialSchema = z
     {
       message: "Quote or content must be at least 5 characters long",
       path: ["content"],
-    }
+    },
   )
   .transform((data) => {
-    // Normalize aliases: designation -> clientTitle, quote -> content, photoUrl -> avatarUrl
     const clientTitle = data.designation?.trim() || data.clientTitle?.trim() || null;
     const content = (data.content?.trim() || data.quote?.trim()) as string;
     const avatarUrl = data.photoUrl?.trim() || data.avatarUrl?.trim() || null;
-    
-    // Status can also be derived from isApproved boolean if provided
+
     let status = data.status;
     if (typeof data.isApproved === "boolean") {
       status = data.isApproved ? TestimonialStatus.APPROVED : TestimonialStatus.REJECTED;
@@ -127,7 +122,7 @@ export const testimonialReorderSchema = z.object({
       z.object({
         id: z.string().min(1, "Testimonial ID is required"),
         order: z.number().int("Order must be an integer"),
-      })
+      }),
     )
     .min(1, "At least one item must be provided for reordering"),
 });

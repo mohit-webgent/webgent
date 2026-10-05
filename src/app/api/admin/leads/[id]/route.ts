@@ -7,10 +7,7 @@ import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { leadUpdateSchema } from "@/lib/validations/contact";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -34,10 +31,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -46,7 +40,6 @@ export async function PATCH(
 
     const { id } = params;
 
-    // Check if lead exists
     const existingLead = await prisma.lead.findUnique({
       where: { id },
     });
@@ -61,7 +54,7 @@ export async function PATCH(
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid lead update parameters.",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
@@ -84,7 +77,10 @@ export async function PATCH(
       data: updateData,
     });
 
-    logger.info("Updated lead record", { leadId: id, status: updatedLead.status });
+    logger.info("Updated lead record", {
+      leadId: id,
+      status: updatedLead.status,
+    });
 
     return ApiResponse.success(updatedLead);
   } catch (error) {
@@ -93,10 +89,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -125,4 +118,3 @@ export async function DELETE(
     return ApiResponse.internalError("Failed to delete lead.");
   }
 }
-

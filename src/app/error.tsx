@@ -32,7 +32,8 @@ export default function ErrorBoundary({
             Something Went Wrong
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-            An unexpected error interrupted this view. Our monitoring system has logged the diagnostic payload.
+            An unexpected error interrupted this view. Our monitoring system has logged the
+            diagnostic payload.
           </p>
           {error.digest && (
             <p className="text-[11px] font-mono text-slate-500 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800/80 inline-block">

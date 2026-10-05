@@ -67,19 +67,13 @@ export async function generateMetadata({
   }
 }
 
-export default async function PublicProjectDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function PublicProjectDetailPage({ params }: { params: { slug: string } }) {
   let project: Project | null = null;
   try {
     project = await prisma.project.findUnique({
       where: { slug: params.slug },
     });
-  } catch {
-    // Database connection offline fallback for build/preview
-  }
+  } catch {}
 
   if (!project || !project.published) {
     notFound();
@@ -101,11 +95,9 @@ export default async function PublicProjectDetailPage({
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      {/* Ambient Lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-5xl mx-auto space-y-12 relative z-10">
-        {/* Back Link */}
         <Link
           href="/work"
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
@@ -114,7 +106,6 @@ export default async function PublicProjectDetailPage({
           <span>Back to All Work</span>
         </Link>
 
-        {/* Header Title Banner */}
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className="px-3.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-xs font-bold rounded-full uppercase tracking-wider">
@@ -136,7 +127,6 @@ export default async function PublicProjectDetailPage({
             {project.description}
           </p>
 
-          {/* Action Links & Tech Stack */}
           <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-slate-800">
             {project.technologies && (
               <div className="flex flex-wrap items-center gap-2">
@@ -153,9 +143,7 @@ export default async function PublicProjectDetailPage({
             )}
 
             <div className="flex items-center gap-4">
-              {project.demoUrl && (
-                <DemoLink projectSlug={project.slug} demoUrl={project.demoUrl} />
-              )}
+              {project.demoUrl && <DemoLink projectSlug={project.slug} demoUrl={project.demoUrl} />}
               {project.githubUrl && (
                 <a
                   href={project.githubUrl}
@@ -171,7 +159,6 @@ export default async function PublicProjectDetailPage({
           </div>
         </div>
 
-        {/* Case Study Full Content */}
         {project.content && (
           <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 sm:p-12 space-y-6 shadow-2xl">
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -184,7 +171,6 @@ export default async function PublicProjectDetailPage({
           </div>
         )}
 
-        {/* Screenshots Showcase */}
         {screenshotList.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -197,7 +183,6 @@ export default async function PublicProjectDetailPage({
                   key={idx}
                   className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={`${project.title} screenshot ${idx + 1}`}
@@ -211,14 +196,14 @@ export default async function PublicProjectDetailPage({
           </div>
         )}
 
-        {/* Bottom Conversion CTA */}
         <div className="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 sm:p-12 text-center space-y-6">
           <div className="space-y-2 max-w-xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Ready to Build a Similar Solution?
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Let&apos;s evaluate your technical requirements and build an enterprise platform engineered for scale.
+              Let&apos;s evaluate your technical requirements and build an enterprise platform
+              engineered for scale.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4">

@@ -23,30 +23,30 @@ export function AdminNotifications() {
   const fetchRecent = async () => {
     setLoading(true);
     try {
-      // Query recent leads to populate real notifications
       const res = await fetch("/api/admin/leads?limit=5&sortBy=createdAt&sortOrder=desc");
       if (res.ok) {
         const json = await res.json();
         const leads = json.data || [];
-        const items: NotificationItem[] = leads.map((l: { id: string; name: string; service?: string; createdAt: string }) => ({
-          id: l.id,
-          title: "New Lead Inbound",
-          message: `${l.name} submitted an inquiry for ${l.service || "services"}`,
-          time: new Date(l.createdAt).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
+        const items: NotificationItem[] = leads.map(
+          (l: { id: string; name: string; service?: string; createdAt: string }) => ({
+            id: l.id,
+            title: "New Lead Inbound",
+            message: `${l.name} submitted an inquiry for ${l.service || "services"}`,
+            time: new Date(l.createdAt).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            href: `/admin/leads/${l.id}`,
+            read: false,
+            type: "lead",
           }),
-          href: `/admin/leads/${l.id}`,
-          read: false,
-          type: "lead",
-        }));
+        );
 
         setNotifications(items);
       }
     } catch {
-      // Fallback
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,6 @@ export function AdminNotifications() {
     fetchRecent();
   }, []);
 
-  // Close dropdown on outside click or Esc
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -152,9 +151,7 @@ export function AdminNotifications() {
                     </div>
                     <span className="text-[10px] text-slate-400">{item.time}</span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                    {item.message}
-                  </p>
+                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">{item.message}</p>
                   <div className="mt-2 flex justify-end">
                     <Link
                       href={item.href}

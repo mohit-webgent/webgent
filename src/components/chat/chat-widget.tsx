@@ -49,15 +49,16 @@ export function ChatWidget() {
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Visitor details capture state
   const [showDetailsForm, setShowDetailsForm] = useState(false);
-  const [visitorDetails, setVisitorDetails] = useState<VisitorDetails>({ name: "", email: "" });
+  const [visitorDetails, setVisitorDetails] = useState<VisitorDetails>({
+    name: "",
+    email: "",
+  });
   const [savedDetails, setSavedDetails] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom
   const scrollToBottom = useCallback((smooth = true) => {
     messagesEndRef.current?.scrollIntoView({
       behavior: smooth ? "smooth" : "auto",
@@ -75,7 +76,6 @@ export function ChatWidget() {
     scrollToBottom(true);
   }, [messages, loading, scrollToBottom]);
 
-  // Load stored state on mount
   useEffect(() => {
     try {
       const storedSession = localStorage.getItem(STORAGE_SESSION_KEY);
@@ -89,12 +89,9 @@ export function ChatWidget() {
         setVisitorDetails(parsed);
         if (parsed.email) setSavedDetails(true);
       }
-    } catch {
-      // Ignore local storage errors
-    }
+    } catch {}
   }, []);
 
-  // Initialize session
   const initSession = useCallback(
     async (initialMsg?: string) => {
       setInitializing(true);
@@ -122,9 +119,7 @@ export function ChatWidget() {
         try {
           localStorage.setItem(STORAGE_SESSION_KEY, data.sessionId);
           localStorage.setItem(STORAGE_VISITOR_KEY, data.visitorId);
-        } catch {
-          // ignore
-        }
+        } catch {}
 
         return data.sessionId as string;
       } catch (err: unknown) {
@@ -135,10 +130,9 @@ export function ChatWidget() {
         setInitializing(false);
       }
     },
-    [visitorId, visitorDetails]
+    [visitorId, visitorDetails],
   );
 
-  // Handle opening chat
   const handleToggleOpen = async () => {
     const nextOpen = !isOpen;
     setIsOpen(nextOpen);
@@ -147,34 +141,27 @@ export function ChatWidget() {
     }
   };
 
-  // Reset conversation
   const handleResetSession = async () => {
     try {
       localStorage.removeItem(STORAGE_SESSION_KEY);
-    } catch {
-      // ignore
-    }
+    } catch {}
     setSessionId(null);
     setMessages([]);
     setError(null);
     await initSession();
   };
 
-  // Save visitor details
   const handleSaveDetails = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!visitorDetails.name && !visitorDetails.email) return;
 
     try {
       localStorage.setItem(STORAGE_DETAILS_KEY, JSON.stringify(visitorDetails));
-    } catch {
-      // ignore
-    }
+    } catch {}
     setSavedDetails(true);
     setShowDetailsForm(false);
   };
 
-  // Send message
   const handleSendMessage = async (textToSend?: string) => {
     const content = (textToSend || inputText).trim();
     if (!content || loading) return;
@@ -182,7 +169,6 @@ export function ChatWidget() {
     setError(null);
     setInputText("");
 
-    // Optimistic visitor message
     const tempVisitorMsg: Message = {
       id: `temp_${Date.now()}`,
       sender: "visitor",
@@ -251,7 +237,6 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Floating Toggle Button */}
       <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
         {!isOpen && (
           <button
@@ -290,13 +275,11 @@ export function ChatWidget() {
         </button>
       </div>
 
-      {/* Floating Chat Window */}
       {isOpen && (
         <div
           id="webgent-chat-window"
           className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[420px] h-[580px] max-h-[calc(100vh-8rem)] rounded-3xl bg-slate-950/95 border border-slate-800/80 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200"
         >
-          {/* Header */}
           <div className="p-4 bg-slate-900/90 border-b border-slate-800/80 flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -316,7 +299,6 @@ export function ChatWidget() {
               </div>
             </div>
 
-            {/* Header Actions */}
             <div className="flex items-center gap-1">
               <button
                 type="button"
@@ -351,7 +333,6 @@ export function ChatWidget() {
             </div>
           </div>
 
-          {/* Visitor Details Capture Banner */}
           {showDetailsForm && (
             <div className="p-3.5 bg-slate-900 border-b border-slate-800 text-xs animate-in slide-in-from-top-2 duration-150 shrink-0">
               <form onSubmit={handleSaveDetails} className="space-y-2.5">
@@ -376,7 +357,10 @@ export function ChatWidget() {
                     type="text"
                     value={visitorDetails.name}
                     onChange={(e) =>
-                      setVisitorDetails((prev) => ({ ...prev, name: e.target.value }))
+                      setVisitorDetails((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
                     }
                     placeholder="Your name"
                     className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 text-xs"
@@ -385,7 +369,10 @@ export function ChatWidget() {
                     type="email"
                     value={visitorDetails.email}
                     onChange={(e) =>
-                      setVisitorDetails((prev) => ({ ...prev, email: e.target.value }))
+                      setVisitorDetails((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
                     }
                     placeholder="Your email"
                     className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 text-xs"
@@ -403,9 +390,7 @@ export function ChatWidget() {
             </div>
           )}
 
-          {/* Messages Container */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Default Welcome Message */}
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-full bg-teal-600/20 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0 mt-0.5">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -415,7 +400,8 @@ export function ChatWidget() {
                   👋 Hi! I&apos;m the <strong>Webgent AI Concierge</strong>.
                 </p>
                 <p>
-                  We engineer high-performance web applications, scalable cloud infrastructure, and modern digital platforms.
+                  We engineer high-performance web applications, scalable cloud infrastructure, and
+                  modern digital platforms.
                 </p>
                 <p className="text-[11px] text-slate-400">
                   How can I help you today? You can choose a topic below or type your question.
@@ -423,7 +409,6 @@ export function ChatWidget() {
               </div>
             </div>
 
-            {/* Quick Starters (if conversation just started) */}
             {messages.length === 0 && (
               <div className="pt-2 pl-9 space-y-1.5">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
@@ -444,7 +429,6 @@ export function ChatWidget() {
               </div>
             )}
 
-            {/* Message Thread */}
             {messages.map((msg) => {
               const isUser = msg.sender === "visitor";
               const timeString = new Date(msg.createdAt).toLocaleTimeString([], {
@@ -455,9 +439,7 @@ export function ChatWidget() {
               return (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-2.5 ${
-                    isUser ? "flex-row-reverse" : "flex-row"
-                  }`}
+                  className={`flex items-end gap-2.5 ${isUser ? "flex-row-reverse" : "flex-row"}`}
                 >
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs ${
@@ -466,7 +448,11 @@ export function ChatWidget() {
                         : "bg-teal-600/20 text-teal-400 border border-teal-500/30"
                     }`}
                   >
-                    {isUser ? <User className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+                    {isUser ? (
+                      <User className="w-3.5 h-3.5" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5" />
+                    )}
                   </div>
 
                   <div
@@ -489,7 +475,6 @@ export function ChatWidget() {
               );
             })}
 
-            {/* Typing / Loading Indicator */}
             {loading && (
               <div className="flex items-start gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-teal-600/20 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0">
@@ -506,7 +491,6 @@ export function ChatWidget() {
               </div>
             )}
 
-            {/* Error Message */}
             {error && (
               <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -526,7 +510,6 @@ export function ChatWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Footer Input Composer */}
           <div className="p-3 bg-slate-900/90 border-t border-slate-800/80 shrink-0">
             <form
               onSubmit={(e) => {

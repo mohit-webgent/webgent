@@ -8,10 +8,6 @@ import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { testimonialReorderSchema } from "@/lib/validations/testimonial";
 import { logger } from "@/lib/logger";
 
-/**
- * Admin Testimonials Reorder Endpoint
- * PATCH /api/admin/testimonials/reorder
- */
 export async function PATCH(req: NextRequest) {
   try {
     const authGuard = await verifyAdminApiAccess();
@@ -25,25 +21,26 @@ export async function PATCH(req: NextRequest) {
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid reorder payload format",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
     const { items } = validation.data;
 
-    // Run atomic transaction to update orders
     await prisma.$transaction(
       items.map((item) =>
         prisma.testimonial.update({
           where: { id: item.id },
           data: { order: item.order },
-        })
-      )
+        }),
+      ),
     );
 
     logger.info("Testimonials successfully reordered", { count: items.length });
 
-    return ApiResponse.success({ message: "Testimonials reordered successfully." });
+    return ApiResponse.success({
+      message: "Testimonials reordered successfully.",
+    });
   } catch (error) {
     logger.error("Error reordering testimonials", { error: String(error) });
     return ApiResponse.internalError("Failed to reorder testimonials.");

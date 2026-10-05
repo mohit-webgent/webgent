@@ -1,6 +1,13 @@
 import { prisma } from "../src/lib/db";
-import { testimonialSchema, testimonialUpdateSchema, testimonialReorderSchema } from "../src/lib/validations/testimonial";
-import { newsletterSubscribeSchema, subscriberQuerySchema } from "../src/lib/validations/newsletter";
+import {
+  testimonialSchema,
+  testimonialUpdateSchema,
+  testimonialReorderSchema,
+} from "../src/lib/validations/testimonial";
+import {
+  newsletterSubscribeSchema,
+  subscriberQuerySchema,
+} from "../src/lib/validations/newsletter";
 import { emailService } from "../src/lib/services/email";
 import { TestimonialStatus, SubscriberStatus } from "@prisma/client";
 import crypto from "crypto";
@@ -26,7 +33,7 @@ async function runTests() {
   // 1. Testimonial Validation Tests
   // -------------------------------------------------------------
   console.log("▶ [1/5] Testing Testimonials Validation Schemas...");
-  
+
   const validTestimonialData = {
     clientName: "Jane Doe",
     designation: "VP of Engineering",
@@ -40,7 +47,10 @@ async function runTests() {
   const parsedValid = testimonialSchema.safeParse(validTestimonialData);
   assert(parsedValid.success, "Valid testimonial input is parsed and transformed successfully");
   if (parsedValid.success) {
-    assert(parsedValid.data.clientTitle === "VP of Engineering", "designation alias maps to clientTitle");
+    assert(
+      parsedValid.data.clientTitle === "VP of Engineering",
+      "designation alias maps to clientTitle",
+    );
     assert(parsedValid.data.content.startsWith("Antigravity"), "quote alias maps to content");
     assert(parsedValid.data.status === TestimonialStatus.APPROVED, "default status is APPROVED");
   }
@@ -124,16 +134,28 @@ async function runTests() {
   });
 
   const publicIds = publicQueryResults.map((t) => t.id);
-  assert(publicIds.includes(approvedItem.id), "Public query includes approved, non-deleted testimonials");
-  assert(!publicIds.includes(pendingItem.id), "Public query STRICTLY EXCLUDES pending testimonials");
-  assert(!publicIds.includes(softDeletedItem.id), "Public query STRICTLY EXCLUDES soft-deleted testimonials");
+  assert(
+    publicIds.includes(approvedItem.id),
+    "Public query includes approved, non-deleted testimonials",
+  );
+  assert(
+    !publicIds.includes(pendingItem.id),
+    "Public query STRICTLY EXCLUDES pending testimonials",
+  );
+  assert(
+    !publicIds.includes(softDeletedItem.id),
+    "Public query STRICTLY EXCLUDES soft-deleted testimonials",
+  );
 
   // Test Admin status update (Approval workflow)
   const approvedPending = await prisma.testimonial.update({
     where: { id: pendingItem.id },
     data: { status: TestimonialStatus.APPROVED },
   });
-  assert(approvedPending.status === TestimonialStatus.APPROVED, "Admin can approve pending testimonials");
+  assert(
+    approvedPending.status === TestimonialStatus.APPROVED,
+    "Admin can approve pending testimonials",
+  );
 
   // Test Reorder transaction
   await prisma.$transaction([
@@ -162,7 +184,10 @@ async function runTests() {
   });
   assert(validSubscribe.success, "Newsletter subscribe schema accepts valid email");
   if (validSubscribe.success) {
-    assert(validSubscribe.data.email === "user@example.com", "Email is automatically trimmed and lowercased");
+    assert(
+      validSubscribe.data.email === "user@example.com",
+      "Email is automatically trimmed and lowercased",
+    );
   }
 
   const invalidSubscribe = newsletterSubscribeSchema.safeParse({
@@ -192,7 +217,10 @@ async function runTests() {
 
   assert(subscriber.status === SubscriberStatus.PENDING, "Initial subscriber state is PENDING");
   assert(subscriber.isActive === false, "Initial subscriber isActive is false");
-  assert(subscriber.confirmationToken?.length === 64, "Confirmation token is a secure 64-character hex string");
+  assert(
+    subscriber.confirmationToken?.length === 64,
+    "Confirmation token is a secure 64-character hex string",
+  );
   assert(subscriber.tokenExpiresAt !== null, "Token expiration date is properly populated");
 
   // Step B: Duplicate subscribe while PENDING regenerates token
@@ -205,7 +233,10 @@ async function runTests() {
       tokenExpiresAt: refreshedExpires,
     },
   });
-  assert(updatedPending.confirmationToken === refreshedToken, "Duplicate subscribe while PENDING refreshes confirmation token");
+  assert(
+    updatedPending.confirmationToken === refreshedToken,
+    "Duplicate subscribe while PENDING refreshes confirmation token",
+  );
 
   // Step C: Confirmation verifies token and activates subscriber
   const confirmed = await prisma.subscriber.update({
@@ -219,9 +250,15 @@ async function runTests() {
     },
   });
 
-  assert(confirmed.status === SubscriberStatus.ACTIVE, "Confirmed subscriber transitions to ACTIVE");
+  assert(
+    confirmed.status === SubscriberStatus.ACTIVE,
+    "Confirmed subscriber transitions to ACTIVE",
+  );
   assert(confirmed.isActive === true, "Confirmed subscriber isActive is true");
-  assert(confirmed.confirmationToken === null, "Confirmation token is cleared after verification (safe token handling)");
+  assert(
+    confirmed.confirmationToken === null,
+    "Confirmation token is cleared after verification (safe token handling)",
+  );
   assert(confirmed.subscribedAt !== null, "subscribedAt timestamp is set on confirmation");
 
   // Step D: Unsubscribe transitions to UNSUBSCRIBED
@@ -234,7 +271,10 @@ async function runTests() {
     },
   });
 
-  assert(unsubscribed.status === SubscriberStatus.UNSUBSCRIBED, "Subscriber transitions to UNSUBSCRIBED");
+  assert(
+    unsubscribed.status === SubscriberStatus.UNSUBSCRIBED,
+    "Subscriber transitions to UNSUBSCRIBED",
+  );
   assert(unsubscribed.isActive === false, "Unsubscribed subscriber isActive is false");
   assert(unsubscribed.unsubscribedAt !== null, "unsubscribedAt timestamp is set");
 
@@ -250,8 +290,14 @@ async function runTests() {
     },
   });
 
-  assert(reactivated.status === SubscriberStatus.PENDING, "Re-subscribing from UNSUBSCRIBED triggers new PENDING state");
-  assert(reactivated.confirmationToken !== null, "New confirmation token generated for re-activation");
+  assert(
+    reactivated.status === SubscriberStatus.PENDING,
+    "Re-subscribing from UNSUBSCRIBED triggers new PENDING state",
+  );
+  assert(
+    reactivated.confirmationToken !== null,
+    "New confirmation token generated for re-activation",
+  );
 
   // Clean up test subscriber
   await prisma.subscriber.delete({ where: { id: subscriber.id } });
@@ -265,14 +311,14 @@ async function runTests() {
   const confirmationResult = await emailService.sendNewsletterConfirmation(
     "test@example.com",
     "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-    "Alex"
+    "Alex",
   );
   assert(confirmationResult === true, "sendNewsletterConfirmation completes without error");
 
   const welcomeResult = await emailService.sendNewsletterWelcome(
     "test@example.com",
     "Alex",
-    "unsub-token-xyz"
+    "unsub-token-xyz",
   );
   assert(welcomeResult === true, "sendNewsletterWelcome completes without error");
 
@@ -286,7 +332,10 @@ async function runTests() {
     const isFormula = /^[=+\-@\t\r]/.test(input);
     assert(isFormula, `Detected dangerous spreadsheet prefix in "${input}"`);
     const escaped = `'${input}`;
-    assert(escaped.startsWith("'"), "Malicious formula prefix neutralized with single quote prefix");
+    assert(
+      escaped.startsWith("'"),
+      "Malicious formula prefix neutralized with single quote prefix",
+    );
   }
 
   console.log(`\n======================================================`);

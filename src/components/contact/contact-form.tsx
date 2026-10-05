@@ -53,9 +53,7 @@ export function ContactForm() {
     });
 
     if (!validation.success) {
-      const firstError = Object.values(
-        validation.error.flatten().fieldErrors
-      )[0]?.[0];
+      const firstError = Object.values(validation.error.flatten().fieldErrors)[0]?.[0];
       setError(firstError || "Please check the form inputs.");
       return;
     }
@@ -86,7 +84,10 @@ export function ContactForm() {
       }
 
       setSuccess(true);
-      trackFormSubmit("contact", { service: service || undefined, budget: budget || undefined });
+      trackFormSubmit("contact", {
+        service: service || undefined,
+        budget: budget || undefined,
+      });
       setName("");
       setEmail("");
       setPhone("");
@@ -111,11 +112,10 @@ export function ContactForm() {
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-extrabold text-white">
-            Inquiry Submitted Successfully!
-          </h3>
+          <h3 className="text-2xl font-extrabold text-white">Inquiry Submitted Successfully!</h3>
           <p className="text-sm text-slate-300 max-w-md mx-auto">
-            Thank you for reaching out to Webgent. Our team has received your message and will review your project details shortly.
+            Thank you for reaching out to Webgent. Our team has received your message and will
+            review your project details shortly.
           </p>
         </div>
         <button
@@ -151,7 +151,6 @@ export function ContactForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Full Name */}
           <div>
             <label
               htmlFor="contact-name"
@@ -176,7 +175,6 @@ export function ContactForm() {
             </div>
           </div>
 
-          {/* Email Address */}
           <div>
             <label
               htmlFor="contact-email"
@@ -203,7 +201,6 @@ export function ContactForm() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Phone Number */}
           <div>
             <label
               htmlFor="contact-phone"
@@ -226,7 +223,6 @@ export function ContactForm() {
             </div>
           </div>
 
-          {/* Company Name */}
           <div>
             <label
               htmlFor="contact-company"
@@ -251,7 +247,6 @@ export function ContactForm() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Service Needed */}
           <div>
             <label
               htmlFor="contact-service"
@@ -279,7 +274,6 @@ export function ContactForm() {
             </div>
           </div>
 
-          {/* Project Budget */}
           <div>
             <label
               htmlFor="contact-budget"
@@ -307,7 +301,6 @@ export function ContactForm() {
           </div>
         </div>
 
-        {/* Message / Project Description */}
         <div>
           <label
             htmlFor="contact-message"
@@ -329,12 +322,9 @@ export function ContactForm() {
               className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">
-            {message.length}/20 characters minimum
-          </p>
+          <p className="text-[11px] text-slate-500 mt-1">{message.length}/20 characters minimum</p>
         </div>
 
-        {/* Submit Button */}
         <button
           id="contact-submit-button"
           type="submit"

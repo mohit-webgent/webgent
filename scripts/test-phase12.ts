@@ -67,14 +67,23 @@ async function runTests() {
   assert(sidebarCode.includes("/admin/chat"), "Sidebar includes Chat Sessions link");
   assert(sidebarCode.includes("/admin/settings"), "Sidebar includes Settings link");
   assert(sidebarCode.includes("/admin/profile"), "Sidebar includes Profile & Security link");
-  assert(sidebarCode.includes("lg:translate-x-0"), "Sidebar supports responsive mobile drawer toggle");
+  assert(
+    sidebarCode.includes("lg:translate-x-0"),
+    "Sidebar supports responsive mobile drawer toggle",
+  );
 
   const breadcrumbsCode = fs.readFileSync("src/components/admin/admin-breadcrumbs.tsx", "utf8");
   assert(breadcrumbsCode.includes("usePathname"), "Breadcrumbs inspects pathname dynamically");
-  assert(breadcrumbsCode.includes("ROUTE_LABELS"), "Breadcrumbs maps route segments to human-readable titles");
+  assert(
+    breadcrumbsCode.includes("ROUTE_LABELS"),
+    "Breadcrumbs maps route segments to human-readable titles",
+  );
 
   const notificationsCode = fs.readFileSync("src/components/admin/admin-notifications.tsx", "utf8");
-  assert(notificationsCode.includes("unreadCount"), "Notifications dropdown tracks unread counts with indicator badge");
+  assert(
+    notificationsCode.includes("unreadCount"),
+    "Notifications dropdown tracks unread counts with indicator badge",
+  );
   assert(notificationsCode.includes("markAllAsRead"), "Supports marking all notifications as read");
 
   const userMenuCode = fs.readFileSync("src/components/admin/admin-user-menu.tsx", "utf8");
@@ -123,9 +132,7 @@ async function runTests() {
     },
   ];
 
-  const createdLeads = await Promise.all(
-    testLeads.map((l) => prisma.lead.create({ data: l }))
-  );
+  const createdLeads = await Promise.all(testLeads.map((l) => prisma.lead.create({ data: l })));
 
   // Query database real aggregates
   const allDbLeads = await prisma.lead.findMany({ select: { status: true, score: true } });
@@ -140,13 +147,25 @@ async function runTests() {
   assert(wonCount >= 1, `Won leads correctly tracked: ${wonCount}`);
   assert(newCount >= 1, `New uncontacted leads correctly tracked: ${newCount}`);
   assert(contactedCount >= 1, `Contacted leads correctly tracked: ${contactedCount}`);
-  assert(expectedConvRate >= 0 && expectedConvRate <= 100, `Conversion rate computed accurately: ${expectedConvRate}%`);
-  assert(expectedAvgScore >= 0 && expectedAvgScore <= 100, `Average score computed accurately: ${expectedAvgScore}/100`);
+  assert(
+    expectedConvRate >= 0 && expectedConvRate <= 100,
+    `Conversion rate computed accurately: ${expectedConvRate}%`,
+  );
+  assert(
+    expectedAvgScore >= 0 && expectedAvgScore <= 100,
+    `Average score computed accurately: ${expectedAvgScore}/100`,
+  );
 
   // Verify dashboard stats route code ensures no fake data
   const dashboardStatsCode = fs.readFileSync("src/app/api/admin/dashboard/stats/route.ts", "utf8");
-  assert(dashboardStatsCode.includes("prisma.lead.findMany"), "Dashboard computes stats directly from PostgreSQL Lead model");
-  assert(dashboardStatsCode.includes("conversionRate"), "Calculates commercial conversion rate percentage");
+  assert(
+    dashboardStatsCode.includes("prisma.lead.findMany"),
+    "Dashboard computes stats directly from PostgreSQL Lead model",
+  );
+  assert(
+    dashboardStatsCode.includes("conversionRate"),
+    "Calculates commercial conversion rate percentage",
+  );
   assert(dashboardStatsCode.includes("averageScore"), "Calculates average lead quality score");
   assert(dashboardStatsCode.includes("pageViewsLast7Days"), "Calculates 7-day traffic telemetry");
   assert(dashboardStatsCode.includes("pageViewsLast30Days"), "Calculates 30-day traffic telemetry");
@@ -163,9 +182,7 @@ async function runTests() {
       status: "ACTIVE",
       metadata: JSON.stringify({ ip: "127.0.0.1", country: "US", browser: "Chrome" }),
       messages: {
-        create: [
-          { sender: "visitor", content: "Hello, I am interested in building a web app." },
-        ],
+        create: [{ sender: "visitor", content: "Hello, I am interested in building a web app." }],
       },
     },
     include: { messages: true },
@@ -236,28 +253,52 @@ async function runTests() {
   assert(checkSetting === null, "Test setting cleanly purged");
 
   const settingsApiCode = fs.readFileSync("src/app/api/admin/settings/route.ts", "utf8");
-  assert(settingsApiCode.includes("DEFAULT_SETTINGS"), "Settings API maintains comprehensive default configurations");
-  assert(settingsApiCode.includes("prisma.$transaction"), "Settings API applies updates atomically in a database transaction");
+  assert(
+    settingsApiCode.includes("DEFAULT_SETTINGS"),
+    "Settings API maintains comprehensive default configurations",
+  );
+  assert(
+    settingsApiCode.includes("prisma.$transaction"),
+    "Settings API applies updates atomically in a database transaction",
+  );
 
   // ----------------------------------------------------
   // 6. Admin Profile API & Security
   // ----------------------------------------------------
   console.log("\n--- 6. Profile & Security Management ---");
   const profileApiCode = fs.readFileSync("src/app/api/admin/profile/route.ts", "utf8");
-  assert(profileApiCode.includes("verifyAdminApiAccess") || profileApiCode.includes("role !== \"ADMIN\""), "Profile API strictly requires ADMIN role");
-  assert(profileApiCode.includes("prisma.user.update"), "Profile API supports updating admin name and avatarUrl");
+  assert(
+    profileApiCode.includes("verifyAdminApiAccess") || profileApiCode.includes('role !== "ADMIN"'),
+    "Profile API strictly requires ADMIN role",
+  );
+  assert(
+    profileApiCode.includes("prisma.user.update"),
+    "Profile API supports updating admin name and avatarUrl",
+  );
 
   const passwordFormCode = fs.readFileSync("src/components/admin/change-password-form.tsx", "utf8");
-  assert(passwordFormCode.includes("changePasswordSchema"), "Password change form enforces schema validation");
-  assert(passwordFormCode.includes("/api/admin/change-password"), "Calls backend BCrypt password change handler");
+  assert(
+    passwordFormCode.includes("changePasswordSchema"),
+    "Password change form enforces schema validation",
+  );
+  assert(
+    passwordFormCode.includes("/api/admin/change-password"),
+    "Calls backend BCrypt password change handler",
+  );
 
   // ----------------------------------------------------
   // 7. Destructive Deletion & Lead Cleanup
   // ----------------------------------------------------
   console.log("\n--- 7. Destructive Action Handlers & Lead Deletion ---");
   const leadRouteCode = fs.readFileSync("src/app/api/admin/leads/[id]/route.ts", "utf8");
-  assert(leadRouteCode.includes("export async function DELETE"), "Leads detail API provides DELETE endpoint");
-  assert(leadRouteCode.includes("prisma.lead.delete"), "Lead deletion executes real database delete");
+  assert(
+    leadRouteCode.includes("export async function DELETE"),
+    "Leads detail API provides DELETE endpoint",
+  );
+  assert(
+    leadRouteCode.includes("prisma.lead.delete"),
+    "Lead deletion executes real database delete",
+  );
 
   // Delete test leads created in section 3
   for (const l of createdLeads) {

@@ -14,7 +14,6 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand Logo */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 font-bold text-lg text-white group">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-transform font-extrabold text-sm">
@@ -25,13 +24,13 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1 text-sm font-semibold">
+          <nav
+            aria-label="Main Navigation"
+            className="hidden md:flex items-center gap-1 text-sm font-semibold"
+          >
             {siteConfig.mainNav.map((item) => {
               const isActive =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname?.startsWith(item.href);
+                item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
 
               return (
                 <Link
@@ -50,7 +49,6 @@ export function Header() {
           </nav>
         </div>
 
-        {/* Desktop CTA & Mobile Toggle */}
         <div className="flex items-center gap-3">
           <CtaLink
             href="/contact"
@@ -61,7 +59,6 @@ export function Header() {
             <ArrowRight className="w-3.5 h-3.5" />
           </CtaLink>
 
-          {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -73,15 +70,12 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-800 bg-slate-900/95 backdrop-blur-2xl px-4 py-4 space-y-3 animate-in slide-in-from-top-2 duration-200">
           <nav aria-label="Mobile Navigation" className="flex flex-col space-y-1">
             {siteConfig.mainNav.map((item) => {
               const isActive =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname?.startsWith(item.href);
+                item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
 
               return (
                 <Link

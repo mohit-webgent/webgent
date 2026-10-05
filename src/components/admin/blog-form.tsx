@@ -46,7 +46,7 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
   const [category, setCategory] = useState(initialData?.category || "Engineering");
   const [tags, setTags] = useState(initialData?.tags || "");
   const [status, setStatus] = useState<"DRAFT" | "PUBLISHED" | "ARCHIVED">(
-    initialData?.status || "DRAFT"
+    initialData?.status || "DRAFT",
   );
   const [featured, setFeatured] = useState(initialData?.featured || false);
   const [seoTitle, setSeoTitle] = useState(initialData?.seoTitle || "");
@@ -58,7 +58,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Live calculation of read time (~200 words per minute)
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
   const liveReadTime = Math.max(1, Math.ceil(wordCount / 200));
 
@@ -83,9 +82,7 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
     });
 
     if (!validation.success) {
-      const firstError = Object.values(
-        validation.error.flatten().fieldErrors
-      )[0]?.[0];
+      const firstError = Object.values(validation.error.flatten().fieldErrors)[0]?.[0];
       setError(firstError || "Please inspect form errors.");
       return;
     }
@@ -93,9 +90,7 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
     setLoading(true);
 
     try {
-      const url = isEditing
-        ? `/api/admin/blog/${initialData.id}`
-        : "/api/admin/blog";
+      const url = isEditing ? `/api/admin/blog/${initialData.id}` : "/api/admin/blog";
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -152,7 +147,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         </div>
       )}
 
-      {/* Main Details Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -171,12 +165,13 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
 
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-indigo-400">
             <Clock className="w-3.5 h-3.5" />
-            <span>Estimated {liveReadTime} min read ({wordCount} words)</span>
+            <span>
+              Estimated {liveReadTime} min read ({wordCount} words)
+            </span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Article Title */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               Article Title <span className="text-red-400">*</span>
@@ -191,7 +186,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
             />
           </div>
 
-          {/* Custom Slug */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               Custom URL Slug (Auto-generated if empty)
@@ -206,7 +200,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
           </div>
         </div>
 
-        {/* Short Excerpt */}
         <div>
           <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
             Article Excerpt / Abstract
@@ -221,7 +214,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Category */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               Category
@@ -235,7 +227,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
             />
           </div>
 
-          {/* Tags */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               Tags (Comma separated)
@@ -254,7 +245,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         </div>
       </div>
 
-      {/* Content Editor & Preview Tabs */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -304,12 +294,10 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         )}
       </div>
 
-      {/* Media & OG Images Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <h3 className="text-lg font-bold text-white">Media & Social Sharing Images</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Cover Image */}
           <div>
             <ImageUpload
               label="Cover Image"
@@ -321,7 +309,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
             />
           </div>
 
-          {/* OG Image */}
           <div>
             <ImageUpload
               label="Open Graph (OG) Social Image"
@@ -335,12 +322,10 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         </div>
       </div>
 
-      {/* Publishing & SEO Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <h3 className="text-lg font-bold text-white">Publishing & SEO Optimization</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Status Selection */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               Publication Status
@@ -356,7 +341,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
             </select>
           </div>
 
-          {/* Featured Toggle */}
           <div className="flex items-center">
             <label className="flex items-center gap-3 cursor-pointer pt-6">
               <input
@@ -374,7 +358,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* SEO Title */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               SEO Meta Title
@@ -388,7 +371,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
             />
           </div>
 
-          {/* SEO Description */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
               SEO Meta Description
@@ -404,7 +386,6 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
         </div>
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}

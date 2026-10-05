@@ -47,35 +47,35 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
       return id;
     },
-    [dismissToast]
+    [dismissToast],
   );
 
   const success = useCallback(
     (title: string, description?: string) => {
       showToast({ type: "success", title, description });
     },
-    [showToast]
+    [showToast],
   );
 
   const error = useCallback(
     (title: string, description?: string) => {
       showToast({ type: "error", title, description, duration: 6000 });
     },
-    [showToast]
+    [showToast],
   );
 
   const info = useCallback(
     (title: string, description?: string) => {
       showToast({ type: "info", title, description });
     },
-    [showToast]
+    [showToast],
   );
 
   const warning = useCallback(
     (title: string, description?: string) => {
       showToast({ type: "warning", title, description, duration: 5500 });
     },
-    [showToast]
+    [showToast],
   );
 
   return (
@@ -168,9 +168,7 @@ function ToastItemCard({
     >
       {getIcon()}
       <div className="flex-1 min-w-0 pr-1">
-        <p className="text-xs sm:text-sm font-semibold text-white leading-tight">
-          {toast.title}
-        </p>
+        <p className="text-xs sm:text-sm font-semibold text-white leading-tight">{toast.title}</p>
         {toast.description && (
           <p className="text-xs text-slate-300 mt-1 leading-relaxed break-words">
             {toast.description}

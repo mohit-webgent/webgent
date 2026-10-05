@@ -57,7 +57,6 @@ export function BlogList() {
         setPosts(json.data?.posts || []);
       }
     } catch {
-      // Ignore network errors on unmount
     } finally {
       setLoading(false);
     }
@@ -78,13 +77,9 @@ export function BlogList() {
       });
 
       if (res.ok) {
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === post.id ? { ...p, status: nextStatus } : p
-          )
-        );
+        setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, status: nextStatus } : p)));
         setFeedback(
-          `Post "${post.title}" ${nextStatus === "PUBLISHED" ? "published" : "set to draft"}.`
+          `Post "${post.title}" ${nextStatus === "PUBLISHED" ? "published" : "set to draft"}.`,
         );
       }
     } catch {
@@ -98,9 +93,7 @@ export function BlogList() {
     setError(null);
 
     try {
-      const url = `/api/admin/blog/${deleteTarget.id}${
-        isPermanentDelete ? "?permanent=true" : ""
-      }`;
+      const url = `/api/admin/blog/${deleteTarget.id}${isPermanentDelete ? "?permanent=true" : ""}`;
 
       const res = await fetch(url, {
         method: "DELETE",
@@ -111,15 +104,13 @@ export function BlogList() {
           setPosts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
         } else {
           setPosts((prev) =>
-            prev.map((p) =>
-              p.id === deleteTarget.id ? { ...p, status: "ARCHIVED" } : p
-            )
+            prev.map((p) => (p.id === deleteTarget.id ? { ...p, status: "ARCHIVED" } : p)),
           );
         }
         setFeedback(
           `Post "${deleteTarget.title}" ${
             isPermanentDelete ? "permanently deleted" : "archived (soft-deleted)"
-          }.`
+          }.`,
         );
         setDeleteTarget(null);
       } else {
@@ -140,20 +131,16 @@ export function BlogList() {
           (p.category && p.category.toLowerCase().includes(search.toLowerCase())) ||
           (p.tags && p.tags.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus =
-      statusFilter === "ALL" ? true : p.status === statusFilter;
+    const matchesStatus = statusFilter === "ALL" ? true : p.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
   return (
     <div className="space-y-8">
-      {/* Header Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            Blog & Article CMS
-          </h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Blog & Article CMS</h1>
           <p className="text-sm text-slate-400">
             Publish insights, tech articles, SEO content, and track reader engagement
           </p>
@@ -189,16 +176,12 @@ export function BlogList() {
             <AlertTriangle className="w-4 h-4 text-red-400" />
             <span>{error}</span>
           </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-xs text-red-400 hover:underline"
-          >
+          <button onClick={() => setError(null)} className="text-xs text-red-400 hover:underline">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Filter / Search Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
@@ -228,7 +211,6 @@ export function BlogList() {
         </div>
       </div>
 
-      {/* Blog List Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
@@ -265,15 +247,9 @@ export function BlogList() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {filteredPosts.map((post) => (
-                  <tr
-                    key={post.id}
-                    className="hover:bg-slate-800/40 transition-colors"
-                  >
-                    {/* Title & Slug */}
+                  <tr key={post.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-4 px-4">
-                      <div className="font-bold text-white text-sm">
-                        {post.title}
-                      </div>
+                      <div className="font-bold text-white text-sm">{post.title}</div>
                       <p className="text-slate-400 text-[11px] line-clamp-1 max-w-md mt-0.5">
                         {post.excerpt || "No excerpt provided"}
                       </p>
@@ -283,7 +259,6 @@ export function BlogList() {
                       </div>
                     </td>
 
-                    {/* Category & Tags */}
                     <td className="py-4 px-4">
                       <div className="space-y-1">
                         <span className="px-2 py-0.5 bg-slate-950 text-indigo-400 border border-indigo-500/20 rounded-md font-semibold text-[10px]">
@@ -300,7 +275,6 @@ export function BlogList() {
                       </div>
                     </td>
 
-                    {/* Read Time */}
                     <td className="py-4 px-4 text-slate-300 font-mono">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-slate-500" />
@@ -308,7 +282,6 @@ export function BlogList() {
                       </div>
                     </td>
 
-                    {/* Views Count */}
                     <td className="py-4 px-4 text-slate-300 font-mono">
                       <div className="flex items-center gap-1">
                         <Eye className="w-3 h-3 text-indigo-400" />
@@ -316,7 +289,6 @@ export function BlogList() {
                       </div>
                     </td>
 
-                    {/* Status Toggle */}
                     <td className="py-4 px-4">
                       <button
                         onClick={() => handleTogglePublish(post)}
@@ -324,8 +296,8 @@ export function BlogList() {
                           post.status === "PUBLISHED"
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                             : post.status === "ARCHIVED"
-                            ? "bg-red-500/10 text-red-400 border-red-500/30"
-                            : "bg-slate-950 text-slate-400 border-slate-800"
+                              ? "bg-red-500/10 text-red-400 border-red-500/30"
+                              : "bg-slate-950 text-slate-400 border-slate-800"
                         }`}
                       >
                         {post.status === "PUBLISHED" ? (
@@ -344,7 +316,6 @@ export function BlogList() {
                       </button>
                     </td>
 
-                    {/* Actions */}
                     <td className="py-4 px-4 text-right space-x-2">
                       <Link
                         href={`/admin/blog/${post.id}/edit`}
@@ -371,7 +342,6 @@ export function BlogList() {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl">
@@ -386,7 +356,8 @@ export function BlogList() {
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed">
-              Are you sure you want to delete <strong className="text-white">&quot;{deleteTarget.title}&quot;</strong>?
+              Are you sure you want to delete{" "}
+              <strong className="text-white">&quot;{deleteTarget.title}&quot;</strong>?
             </p>
 
             <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
@@ -399,8 +370,12 @@ export function BlogList() {
                   className="w-4 h-4 accent-indigo-600"
                 />
                 <div>
-                  <span className="text-xs font-bold text-white block">Soft Delete (Recommended)</span>
-                  <span className="text-[11px] text-slate-400">Archives the article while preserving historical database references.</span>
+                  <span className="text-xs font-bold text-white block">
+                    Soft Delete (Recommended)
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    Archives the article while preserving historical database references.
+                  </span>
                 </div>
               </label>
 
@@ -414,7 +389,9 @@ export function BlogList() {
                 />
                 <div>
                   <span className="text-xs font-bold text-red-400 block">Permanent Delete</span>
-                  <span className="text-[11px] text-slate-400">Completely removes record and associated media assets from database & R2.</span>
+                  <span className="text-[11px] text-slate-400">
+                    Completely removes record and associated media assets from database & R2.
+                  </span>
                 </div>
               </label>
             </div>

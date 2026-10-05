@@ -21,19 +21,22 @@ export function NewsletterUnsubscribedEmail({
       subheading="We're sorry to see you go. Your subscription preferences have been updated."
     >
       <Text style={paragraphStyle}>
-        Per your request, we have removed <strong>{email}</strong> from all active newsletter and marketing distributions. You will no longer receive periodic updates from us.
+        Per your request, we have removed <strong>{email}</strong> from all active newsletter and
+        marketing distributions. You will no longer receive periodic updates from us.
       </Text>
 
       <Section style={cardBoxStyle}>
         <Text style={cardTitleStyle}>UNSUBSCRIBE DETAILS</Text>
         <Text style={cardTextStyle}>
-          Status: <span style={{ color: "#f87171", fontWeight: 600 }}>Unsubscribed</span><br />
+          Status: <span style={{ color: "#f87171", fontWeight: 600 }}>Unsubscribed</span>
+          <br />
           Timestamp: <span style={{ color: "#e2e8f0" }}>{new Date().toUTCString()}</span>
         </Text>
       </Section>
 
       <Text style={paragraphStyle}>
-        Did you click this link by mistake or changed your mind? You can reactivate your subscription at any time with one click:
+        Did you click this link by mistake or changed your mind? You can reactivate your
+        subscription at any time with one click:
       </Text>
 
       <Section style={{ textAlign: "center", margin: "28px 0 16px 0" }}>
@@ -45,7 +48,8 @@ export function NewsletterUnsubscribedEmail({
       <Hr style={hrStyle} />
 
       <Text style={footerHelpStyle}>
-        If you have feedback on how we can improve our newsletters or engineering articles, feel free to reply directly to this email.
+        If you have feedback on how we can improve our newsletters or engineering articles, feel
+        free to reply directly to this email.
       </Text>
     </EmailBaseLayout>
   );

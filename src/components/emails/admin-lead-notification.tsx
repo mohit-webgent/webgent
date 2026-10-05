@@ -29,7 +29,8 @@ export function AdminLeadNotificationEmail({
   const leadAdminUrl = `${appUrl}/admin/leads/${leadId}`;
 
   const scoreColor = score >= 70 ? "#10b981" : score >= 40 ? "#f59e0b" : "#94a3b8";
-  const scoreCategory = score >= 70 ? "High Intent" : score >= 40 ? "Medium Intent" : "General Inquiry";
+  const scoreCategory =
+    score >= 70 ? "High Intent" : score >= 40 ? "Medium Intent" : "General Inquiry";
 
   return (
     <EmailBaseLayout
@@ -37,7 +38,6 @@ export function AdminLeadNotificationEmail({
       heading="⚡ New Inbound Client Lead"
       subheading="A prospective client has submitted an inquiry through the Webgent contact portal."
     >
-      {/* Score Header Pill */}
       <Section style={{ textAlign: "center", marginBottom: "20px" }}>
         <span
           style={{
@@ -56,14 +56,15 @@ export function AdminLeadNotificationEmail({
         </span>
       </Section>
 
-      {/* Client Detail Table Card */}
       <Section style={cardSectionStyle}>
         <Text style={sectionTitleStyle}>CONTACT DETAILS</Text>
-        
+
         <table width="100%" border={0} cellPadding={0} cellSpacing={0} style={{ fontSize: "13px" }}>
           <tr>
             <td style={tableLabelStyle}>Client Name:</td>
-            <td style={tableValueStyle}><strong>{name}</strong></td>
+            <td style={tableValueStyle}>
+              <strong>{name}</strong>
+            </td>
           </tr>
           <tr>
             <td style={tableLabelStyle}>Email Address:</td>
@@ -92,10 +93,9 @@ export function AdminLeadNotificationEmail({
         </table>
       </Section>
 
-      {/* Project Scope Card */}
       <Section style={cardSectionStyle}>
         <Text style={sectionTitleStyle}>PROJECT SCOPE</Text>
-        
+
         <table width="100%" border={0} cellPadding={0} cellSpacing={0} style={{ fontSize: "13px" }}>
           <tr>
             <td style={tableLabelStyle}>Requested Service:</td>
@@ -104,9 +104,7 @@ export function AdminLeadNotificationEmail({
           <tr>
             <td style={tableLabelStyle}>Budget Range:</td>
             <td style={tableValueStyle}>
-              <span style={{ color: "#34d399", fontWeight: 600 }}>
-                {budget || "Not Specified"}
-              </span>
+              <span style={{ color: "#34d399", fontWeight: 600 }}>{budget || "Not Specified"}</span>
             </td>
           </tr>
         </table>
@@ -117,7 +115,6 @@ export function AdminLeadNotificationEmail({
         </div>
       </Section>
 
-      {/* Action Button */}
       <Section style={{ textAlign: "center", margin: "28px 0 16px 0" }}>
         <Button href={leadAdminUrl} style={buttonStyle}>
           View & Manage Lead in Admin CRM
@@ -127,7 +124,8 @@ export function AdminLeadNotificationEmail({
       <Hr style={hrStyle} />
 
       <Text style={footerNoticeStyle}>
-        Lead ID: <span style={{ fontFamily: "monospace" }}>{leadId}</span>. Notification dispatched automatically via Webgent Lead Routing Engine.
+        Lead ID: <span style={{ fontFamily: "monospace" }}>{leadId}</span>. Notification dispatched
+        automatically via Webgent Lead Routing Engine.
       </Text>
     </EmailBaseLayout>
   );

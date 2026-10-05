@@ -30,8 +30,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
-    description:
-      "High-performance web applications, scalable cloud backends, and digital systems.",
+    description: "High-performance web applications, scalable cloud backends, and digital systems.",
     url: siteConfig.url,
     siteName: siteConfig.name,
     images: [
@@ -47,19 +46,27 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
-    description:
-      "High-performance web applications, scalable cloud backends, and digital systems.",
+    description: "High-performance web applications, scalable cloud backends, and digital systems.",
     images: ["/api/og?title=Webgent&badge=Elite+Web+Engineering"],
     creator: "@webgent",
     site: "@webgent",
   },
 };
 
+type HomePost = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  category: string | null;
+  readTime: number | null;
+  publishedAt: Date | null;
+};
+
 export default async function HomePage() {
-  // Parallel fetch real database content for the public showcase
-  let featuredProjects: any[] = [];
-  let testimonials: any[] = [];
-  let latestPosts: any[] = [];
+  let featuredProjects: Awaited<ReturnType<typeof prisma.project.findMany>> = [];
+  let testimonials: Awaited<ReturnType<typeof prisma.testimonial.findMany>> = [];
+  let latestPosts: HomePost[] = [];
 
   try {
     const results = await Promise.all([
@@ -92,7 +99,10 @@ export default async function HomePage() {
     testimonials = results[1];
     latestPosts = results[2];
   } catch (error) {
-    logger.warn("Could not fetch dynamic database content for HomePage, using empty state fallback", { error });
+    logger.warn(
+      "Could not fetch dynamic database content for HomePage, using empty state fallback",
+      { error },
+    );
   }
 
   const capabilities = [
@@ -124,7 +134,6 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-24 py-8 max-w-7xl mx-auto font-sans">
-      {/* 1. HERO SECTION */}
       <section className="relative overflow-hidden pt-8 pb-12 sm:pt-16 sm:pb-20 text-center space-y-8">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-tr from-indigo-600/15 via-purple-600/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -139,7 +148,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            We architect and build bespoke digital software platforms, cloud infrastructure, and conversion-engineered web experiences for ambitious modern brands.
+            We architect and build bespoke digital software platforms, cloud infrastructure, and
+            conversion-engineered web experiences for ambitious modern brands.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -163,7 +173,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 2. CORE CAPABILITIES */}
       <section className="space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 block">
@@ -190,16 +199,13 @@ export default async function HomePage() {
                 <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {item.description}
-                </p>
+                <p className="text-xs text-slate-400 leading-relaxed">{item.description}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 3. FEATURED WORK / PROJECTS */}
       <section className="space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-2">
@@ -281,7 +287,6 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 4. CLIENT TESTIMONIALS */}
       <section className="space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-2">
@@ -330,9 +335,7 @@ export default async function HomePage() {
                     {t.clientName.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-xs text-white truncate">
-                      {t.clientName}
-                    </p>
+                    <p className="font-bold text-xs text-white truncate">{t.clientName}</p>
                     <p className="text-[10px] text-slate-400 truncate">
                       {t.clientTitle || "Client"}
                       {t.company ? ` • ${t.company}` : ""}
@@ -345,7 +348,6 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 5. LATEST BLOG POSTS */}
       {latestPosts.length > 0 && (
         <section className="space-y-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -406,7 +408,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 6. NEWSLETTER SUBSCRIPTION */}
       <section>
         <NewsletterForm
           variant="card"
@@ -415,14 +416,14 @@ export default async function HomePage() {
         />
       </section>
 
-      {/* 7. HIGH-CONVERSION BOTTOM CTA */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/20 p-8 sm:p-14 text-center space-y-6">
         <div className="space-y-3 max-w-2xl mx-auto">
           <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
             Ready to Build Your Next Digital Product?
           </h2>
           <p className="text-sm sm:text-base text-slate-300">
-            Let&apos;s turn your vision into high-scale software. Speak directly with a principal architect today.
+            Let&apos;s turn your vision into high-scale software. Speak directly with a principal
+            architect today.
           </p>
         </div>
 

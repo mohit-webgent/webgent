@@ -15,7 +15,7 @@ function LoginFormContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(
-    urlError ? "Access denied. Please login with valid admin credentials." : null
+    urlError ? "Access denied. Please login with valid admin credentials." : null,
   );
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +23,6 @@ function LoginFormContent() {
     e.preventDefault();
     setError(null);
 
-    // Client side Zod validation
     const validation = loginSchema.safeParse({ email, password });
     if (!validation.success) {
       const firstError = Object.values(validation.error.flatten().fieldErrors)[0]?.[0];
@@ -60,12 +59,10 @@ function LoginFormContent() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md space-y-8 relative z-10">
-        {/* Header Branding */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 mb-2 shadow-lg shadow-indigo-500/10">
             <Shield className="w-7 h-7" />
@@ -78,7 +75,6 @@ function LoginFormContent() {
           </p>
         </div>
 
-        {/* Form Container */}
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
           {error && (
             <div
@@ -91,7 +87,6 @@ function LoginFormContent() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
             <div>
               <label
                 htmlFor="admin-email"
@@ -115,7 +110,6 @@ function LoginFormContent() {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <label
                 htmlFor="admin-password"
@@ -139,7 +133,6 @@ function LoginFormContent() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               id="admin-login-submit"
               type="submit"
@@ -161,7 +154,6 @@ function LoginFormContent() {
           </form>
         </div>
 
-        {/* Footer info */}
         <p className="text-center text-xs text-slate-500">
           Protected by Webgent Security Infrastructure & NextAuth v5
         </p>

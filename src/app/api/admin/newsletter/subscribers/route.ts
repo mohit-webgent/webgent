@@ -8,16 +8,6 @@ import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { SubscriberStatus, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
-/**
- * Admin Newsletter Subscribers API
- * GET /api/admin/newsletter/subscribers
- * 
- * Supports:
- * - Status filter: ALL, PENDING, ACTIVE, UNSUBSCRIBED
- * - Search: email or name
- * - Pagination: page, limit
- * - CSV Export: format=csv or export=csv
- */
 export async function GET(req: NextRequest) {
   try {
     const authGuard = await verifyAdminApiAccess();
@@ -28,19 +18,23 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search")?.trim() || "";
     const statusParam = searchParams.get("status")?.toUpperCase();
-    const format = searchParams.get("format")?.toLowerCase() || (searchParams.get("export") === "csv" ? "csv" : "json");
+    const format =
+      searchParams.get("format")?.toLowerCase() ||
+      (searchParams.get("export") === "csv" ? "csv" : "json");
     const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
     const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "20", 10), 1), 200);
     const skip = (page - 1) * limit;
 
     const where: Prisma.SubscriberWhereInput = {};
 
-    // Filter by status if specified
-    if (statusParam && statusParam !== "ALL" && Object.values(SubscriberStatus).includes(statusParam as SubscriberStatus)) {
+    if (
+      statusParam &&
+      statusParam !== "ALL" &&
+      Object.values(SubscriberStatus).includes(statusParam as SubscriberStatus)
+    ) {
       where.status = statusParam as SubscriberStatus;
     }
 
-    // Search query on email or name
     if (search) {
       where.OR = [
         { email: { contains: search, mode: "insensitive" } },
@@ -48,12 +42,11 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Handle CSV Export
     if (format === "csv") {
       const subscribers = await prisma.subscriber.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        take: 10000, // Export up to 10k subscribers per export batch
+        take: 10000,
       });
 
       const csvContent = generateSafeCsv(subscribers);
@@ -69,7 +62,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Default JSON Paginated Response
     const [total, subscribers] = await Promise.all([
       prisma.subscriber.count({ where }),
       prisma.subscriber.findMany({
@@ -80,7 +72,6 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
-    // Omit sensitive raw token strings from JSON API response for safety
     const sanitized = subscribers.map((sub) => ({
       id: sub.id,
       email: sub.email,
@@ -104,14 +95,13 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error("Error fetching newsletter subscribers", { error: String(error) });
+    logger.error("Error fetching newsletter subscribers", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to fetch newsletter subscribers.");
   }
 }
 
-/**
- * Generates an RFC 4180 compliant CSV string with CSV injection defense.
- */
 function generateSafeCsv(
   subscribers: Array<{
     id: string;
@@ -122,7 +112,7 @@ function generateSafeCsv(
     subscribedAt: Date | null;
     unsubscribedAt: Date | null;
     createdAt: Date;
-  }>
+  }>,
 ): string {
   const headers = [
     "Subscriber ID",
@@ -139,12 +129,10 @@ function generateSafeCsv(
     if (val === null || val === undefined) return '""';
     let str = String(val).trim();
 
-    // Prevent formula injection in spreadsheet applications (Excel, LibreOffice, Google Sheets)
     if (/^[=+\-@\t\r]/.test(str)) {
       str = `'${str}`;
     }
 
-    // Escape internal double quotes by doubling them
     const escaped = str.replace(/"/g, '""');
     return `"${escaped}"`;
   };

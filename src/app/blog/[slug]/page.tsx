@@ -89,11 +89,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function PublicBlogDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function PublicBlogDetailPage({ params }: { params: { slug: string } }) {
   let post: PostWithAuthor | null = null;
   let relatedPosts: PostWithAuthor[] = [];
 
@@ -106,7 +102,6 @@ export default async function PublicBlogDetailPage({
     });
 
     if (fetchedPost) {
-      // Increment views count
       const updated = await prisma.blogPost.update({
         where: { id: fetchedPost.id },
         data: { views: { increment: 1 } },
@@ -117,14 +112,18 @@ export default async function PublicBlogDetailPage({
 
       post = updated as PostWithAuthor;
 
-      // Find related posts by matching tags or category
       const currentTags = post.tags
-        ? post.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
+        ? post.tags
+            .split(",")
+            .map((t) => t.trim().toLowerCase())
+            .filter(Boolean)
         : [];
 
       const OR_conditions: Prisma.BlogPostWhereInput[] = [];
       if (post.category) {
-        OR_conditions.push({ category: { equals: post.category, mode: "insensitive" } });
+        OR_conditions.push({
+          category: { equals: post.category, mode: "insensitive" },
+        });
       }
       currentTags.forEach((t) => {
         OR_conditions.push({ tags: { contains: t, mode: "insensitive" } });
@@ -146,26 +145,26 @@ export default async function PublicBlogDetailPage({
 
       relatedPosts = relatedRes as PostWithAuthor[];
     }
-  } catch {
-    // Fallback on database disconnect
-  }
+  } catch {}
 
   if (!post) {
     notFound();
   }
 
   const tagsList = post.tags
-    ? post.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
+    ? post.tags
+        .split(",")
+        .map((t) => t.trim().toLowerCase())
+        .filter(Boolean)
     : [];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
       <BlogReadTracker slug={post.slug} title={post.title} readTime={post.readTime} />
-      {/* Ambient Lighting */}
+
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-4xl mx-auto space-y-12 relative z-10">
-        {/* Back Link */}
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
@@ -174,7 +173,6 @@ export default async function PublicBlogDetailPage({
           <span>Back to Articles</span>
         </Link>
 
-        {/* Article Header */}
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className="px-3.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-xs font-bold rounded-full uppercase tracking-wider">
@@ -211,11 +209,9 @@ export default async function PublicBlogDetailPage({
             {post.title}
           </h1>
 
-          {/* Author Card */}
           <div className="flex items-center gap-3 pt-2">
             <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-indigo-400 font-bold">
               {post.author.avatarUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={post.author.avatarUrl}
                   alt={post.author.name}
@@ -234,28 +230,24 @@ export default async function PublicBlogDetailPage({
           </div>
         </div>
 
-        {/* Cover Image */}
         {post.coverImage && (
           <div className="rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.coverImage}
               alt={post.title}
-              // @ts-expect-error fetchpriority attribute
-              fetchpriority="high"
+
+              fetchPriority="high"
               decoding="async"
               className="w-full h-auto max-h-[500px] object-cover"
             />
           </div>
         )}
 
-        {/* MDX / Markdown Article Body */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 sm:p-12 space-y-6 shadow-2xl">
           <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed text-base sm:text-lg whitespace-pre-wrap">
             {post.content}
           </div>
 
-          {/* Tags Pills */}
           {tagsList.length > 0 && (
             <div className="pt-8 border-t border-slate-800/80 flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">
@@ -274,7 +266,6 @@ export default async function PublicBlogDetailPage({
           )}
         </div>
 
-        {/* Related Articles Section */}
         {relatedPosts.length > 0 && (
           <div className="space-y-6 pt-8 border-t border-slate-800">
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -317,7 +308,6 @@ export default async function PublicBlogDetailPage({
           </div>
         )}
 
-        {/* Newsletter Subscription Box */}
         <div className="pt-6">
           <NewsletterForm
             variant="card"

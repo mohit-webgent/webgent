@@ -37,15 +37,14 @@ export async function GET(req: NextRequest) {
 
     const projects = await prisma.project.findMany({
       where,
-      orderBy: [
-        { order: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
     });
 
     return ApiResponse.success(projects);
   } catch (error) {
-    logger.error("Error fetching admin projects list", { error: String(error) });
+    logger.error("Error fetching admin projects list", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to fetch projects.");
   }
 }
@@ -63,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid project input data",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
@@ -86,7 +85,6 @@ export async function POST(req: NextRequest) {
       seoDescription,
     } = validation.data;
 
-    // Enforce Max 3 Featured Projects Limit
     if (featured) {
       const featuredCount = await prisma.project.count({
         where: { featured: true },
@@ -94,15 +92,13 @@ export async function POST(req: NextRequest) {
       if (featuredCount >= 3) {
         return ApiResponse.badRequest(
           "Maximum limit of 3 featured projects reached. Unfeature an existing project first.",
-          "FEATURED_LIMIT_EXCEEDED"
+          "FEATURED_LIMIT_EXCEEDED",
         );
       }
     }
 
-    // Ensure Unique Slug
     const slug = await ensureUniqueSlug(proposedSlug || title);
 
-    // Normalize tech stack & screenshots arrays to string format if passed as arrays
     const formattedTech = Array.isArray(technologies)
       ? technologies.join(",")
       : technologies || null;
@@ -133,7 +129,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    logger.info("Created new project", { projectId: project.id, slug: project.slug });
+    logger.info("Created new project", {
+      projectId: project.id,
+      slug: project.slug,
+    });
 
     return ApiResponse.success(project, 201);
   } catch (error) {

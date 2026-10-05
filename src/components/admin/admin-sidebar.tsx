@@ -108,7 +108,6 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div
           role="presentation"
@@ -117,19 +116,13 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
-          <Link
-            href="/admin"
-            onClick={onClose}
-            className="flex items-center gap-3 group"
-          >
+          <Link href="/admin" onClick={onClose} className="flex items-center gap-3 group">
             <div className="p-2 bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white rounded-xl shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-transform">
               <Shield className="w-5 h-5" />
             </div>
@@ -143,7 +136,6 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             </div>
           </Link>
 
-          {/* Close button on mobile */}
           <button
             type="button"
             onClick={onClose}
@@ -154,7 +146,6 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </button>
         </div>
 
-        {/* Navigation Links List */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <div className="px-3 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             Management & Content
@@ -178,9 +169,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 <div className="flex items-center gap-3">
                   <div
                     className={`p-1.5 rounded-lg transition-colors ${
-                      active
-                        ? "bg-indigo-600 text-white"
-                        : "bg-slate-800/80 " + item.colorClass
+                      active ? "bg-indigo-600 text-white" : "bg-slate-800/80 " + item.colorClass
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -198,7 +187,6 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           })}
         </div>
 
-        {/* Footer Area with Site Preview Link */}
         <div className="p-3 border-t border-slate-800 shrink-0">
           <Link
             href="/"

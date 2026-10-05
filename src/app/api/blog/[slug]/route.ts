@@ -6,10 +6,7 @@ import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/api/response";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const { slug } = params;
 
@@ -34,7 +31,6 @@ export async function GET(
       return ApiResponse.notFound("Blog post not found.");
     }
 
-    // Atomically increment views count
     const updatedPost = await prisma.blogPost.update({
       where: { id: post.id },
       data: { views: { increment: 1 } },

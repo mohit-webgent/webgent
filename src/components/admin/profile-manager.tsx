@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  User,
-  KeyRound,
-  Shield,
-  Save,
-  Loader2,
-  Calendar,
-  Clock,
-  CheckCircle2,
-} from "lucide-react";
+import { User, KeyRound, Shield, Save, Loader2, Calendar, Clock, CheckCircle2 } from "lucide-react";
 import { ChangePasswordForm } from "./change-password-form";
 import { ImageUpload } from "./image-upload";
 import { useToast } from "@/components/ui/toast";
@@ -73,7 +64,10 @@ export function ProfileManager({
       const res = await fetch("/api/admin/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), avatarUrl: avatarUrl.trim() || undefined }),
+        body: JSON.stringify({
+          name: name.trim(),
+          avatarUrl: avatarUrl.trim() || undefined,
+        }),
       });
 
       if (res.ok) {
@@ -93,7 +87,6 @@ export function ProfileManager({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
           <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
@@ -106,7 +99,6 @@ export function ProfileManager({
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
         <button
           type="button"
@@ -142,17 +134,11 @@ export function ProfileManager({
         </div>
       ) : activeTab === "profile" ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Profile Card */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-6">
             <div className="text-center space-y-3">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white text-2xl font-bold mx-auto shadow-xl shadow-indigo-600/20 overflow-hidden">
                 {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={avatarUrl}
-                    alt={name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
                 ) : (
                   (name || "Admin").slice(0, 2).toUpperCase()
                 )}
@@ -211,7 +197,6 @@ export function ProfileManager({
             </div>
           </div>
 
-          {/* Right Column: Edit Profile Form */}
           <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
             <div>
               <h2 className="text-base font-bold text-white">Edit Profile Details</h2>
@@ -222,9 +207,7 @@ export function ProfileManager({
 
             <form onSubmit={handleSaveProfile} className="space-y-5">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Full Name
-                </label>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
                 <input
                   type="text"
                   value={name}

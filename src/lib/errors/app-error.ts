@@ -37,10 +37,7 @@ export class ForbiddenError extends AppError {
 }
 
 export class ValidationError extends AppError {
-  constructor(
-    message = "Validation failed",
-    details?: Record<string, unknown> | Array<unknown>,
-  ) {
+  constructor(message = "Validation failed", details?: Record<string, unknown> | Array<unknown>) {
     super(message, 400, "VALIDATION_ERROR", details);
   }
 }
@@ -52,10 +49,7 @@ export class ConflictError extends AppError {
 }
 
 export class InternalServerError extends AppError {
-  constructor(
-    message = "An unexpected error occurred",
-    details?: Record<string, unknown>,
-  ) {
+  constructor(message = "An unexpected error occurred", details?: Record<string, unknown>) {
     super(message, 500, "INTERNAL_SERVER_ERROR", details);
   }
 }

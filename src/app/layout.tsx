@@ -94,11 +94,7 @@ export default function RootLayout({
         name: siteConfig.name,
         url: siteConfig.url,
         logo: `${siteConfig.url}/api/og?title=Webgent`,
-        sameAs: [
-          siteConfig.links.github,
-          siteConfig.links.twitter,
-          siteConfig.links.linkedin,
-        ],
+        sameAs: [siteConfig.links.github, siteConfig.links.twitter, siteConfig.links.linkedin],
         description: siteConfig.description,
       },
       {

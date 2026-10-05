@@ -2,10 +2,6 @@ import { Lead } from "@prisma/client";
 import { emailService } from "@/lib/services/email";
 import { logger } from "@/lib/logger";
 
-/**
- * Concise sanitized payload for lead notifications.
- * Never includes passwords, internal tokens, or unnecessary personal identifiers.
- */
 export interface LeadNotificationPayload {
   id?: string;
   name: string;
@@ -39,9 +35,6 @@ export interface NotificationProvider {
   send(payload: LeadNotificationPayload): Promise<ProviderResult>;
 }
 
-/**
- * Derives a score priority tag from numeric lead score
- */
 function getScorePriority(score?: number | null): string {
   const val = score ?? 0;
   if (val >= 70) return "🔥 High Priority";
@@ -49,13 +42,11 @@ function getScorePriority(score?: number | null): string {
   return "📋 Standard";
 }
 
-/**
- * Formats a concise, privacy-safe text message for chat/messaging alerts
- */
 export function formatLeadMessage(payload: LeadNotificationPayload): string {
   const service = payload.service || "General Inquiry";
   const budget = payload.budget || "Not Specified";
-  const score = payload.score !== undefined && payload.score !== null ? `${payload.score}/100` : "N/A";
+  const score =
+    payload.score !== undefined && payload.score !== null ? `${payload.score}/100` : "N/A";
   const timeline = payload.timeline || "Flexible / Standard";
   const priority = getScorePriority(payload.score);
 
@@ -69,9 +60,6 @@ export function formatLeadMessage(payload: LeadNotificationPayload): string {
   ].join("\n");
 }
 
-// ----------------------------------------------------------------------
-// 1. Primary: Twilio WhatsApp Notification Provider
-// ----------------------------------------------------------------------
 export class TwilioWhatsAppProvider implements NotificationProvider {
   readonly name = "twilio_whatsapp";
 
@@ -91,7 +79,6 @@ export class TwilioWhatsAppProvider implements NotificationProvider {
 
     const text = formatLeadMessage(payload);
 
-    // Development / Test / Unconfigured Mode Simulation
     if (
       !accountSid ||
       !authToken ||
@@ -114,7 +101,9 @@ export class TwilioWhatsAppProvider implements NotificationProvider {
 
     try {
       const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-      const formattedFrom = fromNumber.startsWith("whatsapp:") ? fromNumber : `whatsapp:${fromNumber}`;
+      const formattedFrom = fromNumber.startsWith("whatsapp:")
+        ? fromNumber
+        : `whatsapp:${fromNumber}`;
       const formattedTo = toNumber.startsWith("whatsapp:") ? toNumber : `whatsapp:${toNumber}`;
 
       const formData = new URLSearchParams();
@@ -136,7 +125,8 @@ export class TwilioWhatsAppProvider implements NotificationProvider {
       const responseData = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const errorMsg = responseData.message || responseData.error_message || `HTTP ${response.status}`;
+        const errorMsg =
+          responseData.message || responseData.error_message || `HTTP ${response.status}`;
         logger.error("[Notification:TwilioWhatsApp] Twilio API call failed", {
           leadId: payload.id,
           status: response.status,
@@ -174,9 +164,6 @@ export class TwilioWhatsAppProvider implements NotificationProvider {
   }
 }
 
-// ----------------------------------------------------------------------
-// 2. Alternative: WhatsApp Business Cloud API (Meta Graph API)
-// ----------------------------------------------------------------------
 export class WhatsAppCloudProvider implements NotificationProvider {
   readonly name = "whatsapp_cloud";
 
@@ -254,9 +241,6 @@ export class WhatsAppCloudProvider implements NotificationProvider {
   }
 }
 
-// ----------------------------------------------------------------------
-// 3. Optional: Slack Incoming Webhook Provider
-// ----------------------------------------------------------------------
 export class SlackWebhookProvider implements NotificationProvider {
   readonly name = "slack_webhook";
 
@@ -279,7 +263,8 @@ export class SlackWebhookProvider implements NotificationProvider {
     try {
       const service = payload.service || "General Inquiry";
       const budget = payload.budget || "Not Specified";
-      const score = payload.score !== undefined && payload.score !== null ? `${payload.score}/100` : "N/A";
+      const score =
+        payload.score !== undefined && payload.score !== null ? `${payload.score}/100` : "N/A";
       const timeline = payload.timeline || "Flexible / Standard";
 
       const body = {
@@ -299,7 +284,10 @@ export class SlackWebhookProvider implements NotificationProvider {
               { type: "mrkdwn", text: `*Name:*\n${payload.name}` },
               { type: "mrkdwn", text: `*Service:*\n${service}` },
               { type: "mrkdwn", text: `*Budget:*\n${budget}` },
-              { type: "mrkdwn", text: `*Lead Score:*\n${score} (${getScorePriority(payload.score)})` },
+              {
+                type: "mrkdwn",
+                text: `*Lead Score:*\n${score} (${getScorePriority(payload.score)})`,
+              },
               { type: "mrkdwn", text: `*Timeline:*\n${timeline}` },
             ],
           },
@@ -326,7 +314,9 @@ export class SlackWebhookProvider implements NotificationProvider {
         };
       }
 
-      logger.info("[Notification:Slack] Sent notification to Slack channel", { leadId: payload.id });
+      logger.info("[Notification:Slack] Sent notification to Slack channel", {
+        leadId: payload.id,
+      });
       return {
         provider: this.name,
         success: true,
@@ -346,19 +336,15 @@ export class SlackWebhookProvider implements NotificationProvider {
   }
 }
 
-// ----------------------------------------------------------------------
-// 4. Admin & Client Email Notification Provider (Resend)
-// ----------------------------------------------------------------------
 export class EmailNotificationProvider implements NotificationProvider {
   readonly name = "email";
 
   isEnabled(): boolean {
-    return true; // Always enabled; fallback/simulated mode handled in emailService
+    return true;
   }
 
   async send(payload: LeadNotificationPayload): Promise<ProviderResult> {
     try {
-      // 1. Inbound alert to admin
       const adminPromise = emailService.sendAdminNewLeadNotification({
         leadId: payload.id || "new-lead",
         name: payload.name,
@@ -371,7 +357,6 @@ export class EmailNotificationProvider implements NotificationProvider {
         score: payload.score ?? 0,
       });
 
-      // 2. Confirmation copy to prospective client
       const clientPromise = emailService.sendContactConfirmation({
         name: payload.name,
         email: payload.email,
@@ -406,54 +391,29 @@ export class EmailNotificationProvider implements NotificationProvider {
   }
 }
 
-// ----------------------------------------------------------------------
-// NotificationService: Central Abstraction
-// ----------------------------------------------------------------------
 export class NotificationService {
   private providers: Map<string, NotificationProvider> = new Map();
 
   constructor() {
-    // Register default providers
     this.registerProvider(new TwilioWhatsAppProvider());
     this.registerProvider(new WhatsAppCloudProvider());
     this.registerProvider(new SlackWebhookProvider());
     this.registerProvider(new EmailNotificationProvider());
   }
 
-  /**
-   * Register a new notification provider.
-   * Enables seamless addition of future providers without altering core logic.
-   */
   registerProvider(provider: NotificationProvider): void {
     this.providers.set(provider.name, provider);
   }
 
-  /**
-   * Unregister an existing provider
-   */
   unregisterProvider(name: string): boolean {
     return this.providers.delete(name);
   }
 
-  /**
-   * Get all registered providers
-   */
   getProviders(): NotificationProvider[] {
     return Array.from(this.providers.values());
   }
 
-  /**
-   * Dispatches new lead notification across all registered and enabled channels.
-   *
-   * Guarantees:
-   * 1. Concise lead information (name, service, budget, lead score, timeline)
-   * 2. No unnecessary sensitive data exposure
-   * 3. Failures are caught and logged safely
-   * 4. Failure will never corrupt or roll back the primary database record
-   */
-  async sendNewLeadNotification(
-    lead: Lead | LeadNotificationPayload
-  ): Promise<NotificationResult> {
+  async sendNewLeadNotification(lead: Lead | LeadNotificationPayload): Promise<NotificationResult> {
     const payload: LeadNotificationPayload = {
       id: lead.id,
       name: lead.name,
@@ -502,7 +462,6 @@ export class NotificationService {
       };
     });
 
-    // Check if at least one provider succeeded
     const anySuccess = results.some((r) => r.success);
 
     return {
@@ -512,7 +471,6 @@ export class NotificationService {
     };
   }
 
-  // Backwards compatibility methods
   async sendLeadEmailNotification(lead: Lead): Promise<boolean> {
     const res = await this.sendNewLeadNotification(lead);
     return res.success;
@@ -526,9 +484,6 @@ export class NotificationService {
   }
 }
 
-/**
- * Extracts or infers project timeline from notes, message, or budget
- */
 function extractTimeline(lead: Lead | LeadNotificationPayload): string {
   const text = `${"notes" in lead ? lead.notes || "" : ""} ${lead.message || ""}`.toLowerCase();
 

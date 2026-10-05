@@ -25,40 +25,35 @@ export async function POST(req: NextRequest) {
     const ipAddress = getClientIp(req);
     const userAgent = req.headers.get("user-agent") || undefined;
 
-    // 1. Enforce Rate Limiting (3 submissions per IP per 1 hour)
     const rateLimit = await checkRateLimit(`contact:${ipAddress}`, 3, 60 * 60 * 1000);
     if (!rateLimit.success) {
       logger.warn("Contact form rate limit exceeded", { ipAddress });
       return ApiResponse.tooManyRequests(
-        "Submission limit reached. You can submit a maximum of 3 inquiries per hour."
+        "Submission limit reached. You can submit a maximum of 3 inquiries per hour.",
       );
     }
 
-    // 2. Parse JSON body
     const body = await req.json().catch(() => ({}));
 
-    // 3. Server-side Zod validation
     const validation = contactFormSchema.safeParse(body);
     if (!validation.success) {
       return ApiResponse.validationError(
         "Validation failed for contact submission",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
     const { name, email, phone, company, service, budget, message, turnstileToken } =
       validation.data;
 
-    // 4. Cloudflare Turnstile token verification
     const turnstileResult = await verifyTurnstileToken(turnstileToken, ipAddress);
     if (!turnstileResult.success) {
       return ApiResponse.badRequest(
         turnstileResult.error || "Turnstile security check failed.",
-        "TURNSTILE_FAILED"
+        "TURNSTILE_FAILED",
       );
     }
 
-    // 5. Calculate lead score
     const score = calculateLeadScore({
       name,
       email,
@@ -69,7 +64,6 @@ export async function POST(req: NextRequest) {
       message,
     });
 
-    // 6. Save Lead record in PostgreSQL database
     const lead = await prisma.lead.create({
       data: {
         name,
@@ -88,7 +82,6 @@ export async function POST(req: NextRequest) {
 
     logger.info("New lead created successfully", { leadId: lead.id, score });
 
-    // 7. Invoke notification service: WhatsApp / Slack / Email asynchronously
     notificationService.sendNewLeadNotification(lead).catch((err) => {
       logger.error("Failed to dispatch new lead notification", {
         leadId: lead.id,
@@ -96,13 +89,13 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    // 8. Return success response
     return ApiResponse.success(
       {
-        message: "Thank you for contacting us! We have received your message and will respond promptly.",
+        message:
+          "Thank you for contacting us! We have received your message and will respond promptly.",
         leadId: lead.id,
       },
-      201
+      201,
     );
   } catch (error) {
     logger.error("Error creating contact lead", { error: String(error) });

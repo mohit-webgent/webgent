@@ -10,7 +10,10 @@ if (fs.existsSync(envPath)) {
     if (trimmed && !trimmed.startsWith("#")) {
       const [k, ...v] = trimmed.split("=");
       if (k && v.length > 0 && !process.env[k.trim()]) {
-        process.env[k.trim()] = v.join("=").replace(/^["']|["']$/g, "").trim();
+        process.env[k.trim()] = v
+          .join("=")
+          .replace(/^["']|["']$/g, "")
+          .trim();
       }
     }
   });
@@ -55,15 +58,24 @@ async function runTests() {
       service: "Enterprise Next.js Platform",
       budget: "$50k - $100k",
       message: "We need high performance web architecture for our medical analytics engine.",
-    })
+    }),
   );
 
   assert(contactHtml.includes("WEBGENT"), "Contact confirmation contains brand header");
   assert(contactHtml.includes("Sarah"), "Contact confirmation addresses client by name");
-  assert(contactHtml.includes("Enterprise Next.js Platform"), "Contact confirmation includes requested service");
+  assert(
+    contactHtml.includes("Enterprise Next.js Platform"),
+    "Contact confirmation includes requested service",
+  );
   assert(contactHtml.includes("$50k - $100k"), "Contact confirmation includes budget");
-  assert(contactHtml.includes("medical analytics engine"), "Contact confirmation includes client message quote");
-  assert(contactHtml.includes("24 business hours"), "Contact confirmation sets SLA response expectation");
+  assert(
+    contactHtml.includes("medical analytics engine"),
+    "Contact confirmation includes client message quote",
+  );
+  assert(
+    contactHtml.includes("24 business hours"),
+    "Contact confirmation sets SLA response expectation",
+  );
 
   // 1b. Admin Lead Notification Template
   const adminLeadHtml = await render(
@@ -77,15 +89,27 @@ async function runTests() {
       budget: "$100k+",
       message: "Looking for low latency WebSocket engineering experts.",
       score: 92,
-    })
+    }),
   );
 
-  assert(adminLeadHtml.includes("New Inbound Client Lead"), "Admin notification has clear alert header");
-  assert(adminLeadHtml.includes("Lead Score") && adminLeadHtml.includes("92"), "Admin notification renders calculated lead score");
+  assert(
+    adminLeadHtml.includes("New Inbound Client Lead"),
+    "Admin notification has clear alert header",
+  );
+  assert(
+    adminLeadHtml.includes("Lead Score") && adminLeadHtml.includes("92"),
+    "Admin notification renders calculated lead score",
+  );
   assert(adminLeadHtml.includes("High Intent"), "Admin notification categorizes score intent");
-  assert(adminLeadHtml.includes("marcus@apexfintech.io"), "Admin notification includes client email");
+  assert(
+    adminLeadHtml.includes("marcus@apexfintech.io"),
+    "Admin notification includes client email",
+  );
   assert(adminLeadHtml.includes("Apex Global FinTech"), "Admin notification includes company");
-  assert(adminLeadHtml.includes("lead-uuid-12345"), "Admin notification includes direct admin CRM link");
+  assert(
+    adminLeadHtml.includes("lead-uuid-12345"),
+    "Admin notification includes direct admin CRM link",
+  );
 
   // 1c. Newsletter Double Opt-In Confirmation Template
   const tokenSample = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
@@ -94,24 +118,46 @@ async function runTests() {
       email: "subscriber@example.com",
       token: tokenSample,
       name: "Alex",
-    })
+    }),
   );
 
-  assert(newsletterOptInHtml.includes("Confirm Your Subscription"), "Newsletter template includes confirmation heading");
-  assert(newsletterOptInHtml.includes(tokenSample), "Newsletter template includes secure confirmation token URL");
-  assert(newsletterOptInHtml.includes("24 hours"), "Newsletter template specifies 24-hour expiration");
-  assert(newsletterOptInHtml.includes("DOUBLE OPT-IN"), "Newsletter template explains double opt-in privacy");
+  assert(
+    newsletterOptInHtml.includes("Confirm Your Subscription"),
+    "Newsletter template includes confirmation heading",
+  );
+  assert(
+    newsletterOptInHtml.includes(tokenSample),
+    "Newsletter template includes secure confirmation token URL",
+  );
+  assert(
+    newsletterOptInHtml.includes("24 hours"),
+    "Newsletter template specifies 24-hour expiration",
+  );
+  assert(
+    newsletterOptInHtml.includes("DOUBLE OPT-IN"),
+    "Newsletter template explains double opt-in privacy",
+  );
 
   // 1d. Newsletter Unsubscribed Template
   const unsubscribedHtml = await render(
     React.createElement(NewsletterUnsubscribedEmail, {
       email: "leaving@example.com",
-    })
+    }),
   );
 
-  assert(unsubscribedHtml.includes("You&#x27;ve Been Unsubscribed") || unsubscribedHtml.includes("You've Been Unsubscribed"), "Unsubscribed template has clear confirmation title");
-  assert(unsubscribedHtml.includes("leaving@example.com"), "Unsubscribed template confirms target email address");
-  assert(unsubscribedHtml.includes("Re-Subscribe"), "Unsubscribed template includes re-subscribe action");
+  assert(
+    unsubscribedHtml.includes("You&#x27;ve Been Unsubscribed") ||
+      unsubscribedHtml.includes("You've Been Unsubscribed"),
+    "Unsubscribed template has clear confirmation title",
+  );
+  assert(
+    unsubscribedHtml.includes("leaving@example.com"),
+    "Unsubscribed template confirms target email address",
+  );
+  assert(
+    unsubscribedHtml.includes("Re-Subscribe"),
+    "Unsubscribed template includes re-subscribe action",
+  );
 
   // 1e. Blog / Newsletter Digest Template
   const digestHtml = await render(
@@ -119,7 +165,8 @@ async function runTests() {
       editionTitle: "Webgent Monthly Insights #12",
       featuredArticle: {
         title: "Building Multi-Tenant SaaS with Next.js 14 and Prisma",
-        excerpt: "A deep dive into tenant isolation, connection pooling, and sub-100ms response times.",
+        excerpt:
+          "A deep dive into tenant isolation, connection pooling, and sub-100ms response times.",
         slug: "building-multitenant-saas-nextjs",
         readTime: 5,
         coverImageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
@@ -133,13 +180,25 @@ async function runTests() {
         },
       ],
       unsubscribeUrl: "https://webgent.com/api/newsletter/unsubscribe?token=sample",
-    })
+    }),
   );
 
-  assert(digestHtml.includes("Webgent Monthly Insights #12"), "Digest template includes edition title");
-  assert(digestHtml.includes("Building Multi-Tenant SaaS"), "Digest template includes featured article");
-  assert(digestHtml.includes("PostgreSQL B-Tree Index Optimization"), "Digest template includes recent articles list");
-  assert(digestHtml.includes("Unsubscribe"), "Digest template includes RFC compliant unsubscribe footer link");
+  assert(
+    digestHtml.includes("Webgent Monthly Insights #12"),
+    "Digest template includes edition title",
+  );
+  assert(
+    digestHtml.includes("Building Multi-Tenant SaaS"),
+    "Digest template includes featured article",
+  );
+  assert(
+    digestHtml.includes("PostgreSQL B-Tree Index Optimization"),
+    "Digest template includes recent articles list",
+  );
+  assert(
+    digestHtml.includes("Unsubscribe"),
+    "Digest template includes RFC compliant unsubscribe footer link",
+  );
 
   // -------------------------------------------------------------
   // 2. Email Service Methods & Dispatch Abstraction
@@ -167,14 +226,14 @@ async function runTests() {
   const resOptIn = await emailService.sendNewsletterConfirmation(
     "mohitvermag75@gmail.com",
     tokenSample,
-    "Test User"
+    "Test User",
   );
   assert(resOptIn === true, "sendNewsletterConfirmation returns true");
 
   const resWelcome = await emailService.sendNewsletterWelcome(
     "mohitvermag75@gmail.com",
     "Test User",
-    "unsub-123"
+    "unsub-123",
   );
   assert(resWelcome === true, "sendNewsletterWelcome returns true");
 
@@ -205,7 +264,10 @@ async function runTests() {
     subject: "",
   };
   const safeFailResult = await emailService.sendEmail(invalidOptions);
-  assert(safeFailResult === false, "Email service safely returns false on invalid payload without throwing uncaught exceptions");
+  assert(
+    safeFailResult === false,
+    "Email service safely returns false on invalid payload without throwing uncaught exceptions",
+  );
 
   // Test Notification Service integration
   const mockLead = {
@@ -228,7 +290,10 @@ async function runTests() {
   };
 
   const notificationResult = await notificationService.sendLeadEmailNotification(mockLead);
-  assert(notificationResult === true, "notificationService.sendLeadEmailNotification executes gracefully");
+  assert(
+    notificationResult === true,
+    "notificationService.sendLeadEmailNotification executes gracefully",
+  );
 
   // -------------------------------------------------------------
   // 4. Security & Environment Configuration Tests

@@ -2,12 +2,11 @@ import { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { siteConfig } from "@/config/site";
 
-export const revalidate = 3600; // Cache sitemap for 1 hour
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url.replace(/\/+$/, "");
 
-  // 1. Core static marketing and landing routes
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/`,

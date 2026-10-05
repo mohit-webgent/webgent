@@ -9,11 +9,6 @@ import { testimonialSchema } from "@/lib/validations/testimonial";
 import { TestimonialStatus, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
-/**
- * Admin Testimonials Endpoint
- * GET /api/admin/testimonials
- * POST /api/admin/testimonials
- */
 export async function GET(req: NextRequest) {
   try {
     const authGuard = await verifyAdminApiAccess();
@@ -32,24 +27,24 @@ export async function GET(req: NextRequest) {
 
     const where: Prisma.TestimonialWhereInput = {};
 
-    // Soft deletion filter
     if (!includeDeleted) {
       where.deletedAt = null;
     }
 
-    // Status filter
-    if (statusParam && statusParam !== "ALL" && Object.values(TestimonialStatus).includes(statusParam as TestimonialStatus)) {
+    if (
+      statusParam &&
+      statusParam !== "ALL" &&
+      Object.values(TestimonialStatus).includes(statusParam as TestimonialStatus)
+    ) {
       where.status = statusParam as TestimonialStatus;
     }
 
-    // Featured filter
     if (featuredParam === "true") {
       where.featured = true;
     } else if (featuredParam === "false") {
       where.featured = false;
     }
 
-    // Search query
     if (search) {
       where.OR = [
         { clientName: { contains: search, mode: "insensitive" } },
@@ -63,10 +58,7 @@ export async function GET(req: NextRequest) {
       prisma.testimonial.count({ where }),
       prisma.testimonial.findMany({
         where,
-        orderBy: [
-          { order: "asc" },
-          { createdAt: "desc" },
-        ],
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
         skip,
         take: limit,
       }),
@@ -106,13 +98,12 @@ export async function POST(req: NextRequest) {
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid testimonial parameters",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
     const data = validation.data;
 
-    // Determine default order if not explicitly set
     let orderToSet = data.order;
     if (orderToSet === 0) {
       const maxOrder = await prisma.testimonial.findFirst({
@@ -136,7 +127,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    logger.info("Admin created testimonial record", { testimonialId: testimonial.id, clientName: testimonial.clientName });
+    logger.info("Admin created testimonial record", {
+      testimonialId: testimonial.id,
+      clientName: testimonial.clientName,
+    });
 
     return ApiResponse.success(
       {
@@ -145,7 +139,7 @@ export async function POST(req: NextRequest) {
         quote: testimonial.content,
         photoUrl: testimonial.avatarUrl,
       },
-      201
+      201,
     );
   } catch (error) {
     logger.error("Error creating testimonial", { error: String(error) });

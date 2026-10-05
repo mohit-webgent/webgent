@@ -11,7 +11,10 @@ if (fs.existsSync(envPath)) {
     if (trimmed && !trimmed.startsWith("#")) {
       const [k, ...v] = trimmed.split("=");
       if (k && v.length > 0 && !process.env[k.trim()]) {
-        process.env[k.trim()] = v.join("=").replace(/^["']|["']$/g, "").trim();
+        process.env[k.trim()] = v
+          .join("=")
+          .replace(/^["']|["']$/g, "")
+          .trim();
       }
     }
   });

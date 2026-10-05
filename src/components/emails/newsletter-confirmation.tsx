@@ -24,10 +24,10 @@ export function NewsletterConfirmationEmail({
       subheading={`${greeting}, thank you for your interest in Webgent!`}
     >
       <Text style={paragraphStyle}>
-        Please confirm that you want to receive our weekly engineering showcases, technical insights, and product design breakdowns.
+        Please confirm that you want to receive our weekly engineering showcases, technical
+        insights, and product design breakdowns.
       </Text>
 
-      {/* Confirmation Action Button */}
       <Section style={{ textAlign: "center", margin: "32px 0" }}>
         <Button href={confirmUrl} style={buttonStyle}>
           Confirm My Subscription
@@ -37,7 +37,9 @@ export function NewsletterConfirmationEmail({
       <Section style={infoBoxStyle}>
         <Text style={infoTitleStyle}>WHY DOUBLE OPT-IN?</Text>
         <Text style={infoTextStyle}>
-          We value privacy and zero spam. By confirming your email address (<strong style={{ color: "#e2e8f0" }}>{email}</strong>), you ensure you only receive content you genuinely requested.
+          We value privacy and zero spam. By confirming your email address (
+          <strong style={{ color: "#e2e8f0" }}>{email}</strong>), you ensure you only receive
+          content you genuinely requested.
         </Text>
       </Section>
 
@@ -53,7 +55,8 @@ export function NewsletterConfirmationEmail({
       </Text>
 
       <Text style={expiryNoticeStyle}>
-        ⏳ This verification link will automatically expire in <strong>24 hours</strong>. If you did not subscribe to this newsletter, please disregard this email and no messages will be sent.
+        ⏳ This verification link will automatically expire in <strong>24 hours</strong>. If you did
+        not subscribe to this newsletter, please disregard this email and no messages will be sent.
       </Text>
     </EmailBaseLayout>
   );

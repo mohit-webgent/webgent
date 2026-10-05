@@ -24,17 +24,10 @@ export function AdminShell({ children, user }: AdminShellProps) {
   return (
     <ToastProvider>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
-        {/* Responsive Sidebar (Fixed on Desktop, Drawer on Mobile) */}
-        <AdminSidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
+        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
-          {/* Header */}
           <header className="sticky top-0 z-30 h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between gap-4">
-            {/* Left Header: Mobile Toggle & Breadcrumbs */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -48,7 +41,6 @@ export function AdminShell({ children, user }: AdminShellProps) {
               <AdminBreadcrumbs />
             </div>
 
-            {/* Right Header: Notifications & User Menu */}
             <div className="flex items-center gap-2.5 sm:gap-4">
               <AdminNotifications />
               <div className="h-5 w-px bg-slate-800" />
@@ -56,10 +48,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
             </div>
           </header>
 
-          {/* Viewport Content */}
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8">
-            {children}
-          </main>
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8">{children}</main>
         </div>
       </div>
     </ToastProvider>

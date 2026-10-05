@@ -63,7 +63,10 @@ async function runTests() {
 
   const formattedMsg = formatLeadMessage(sampleLead);
   assert(formattedMsg.includes("Alex Morgan"), "Message contains lead name");
-  assert(formattedMsg.includes("Custom Software Architecture"), "Message contains requested service");
+  assert(
+    formattedMsg.includes("Custom Software Architecture"),
+    "Message contains requested service",
+  );
   assert(formattedMsg.includes("$25,000 - $50,000"), "Message contains budget");
   assert(formattedMsg.includes("85/100"), "Message contains numeric lead score");
   assert(formattedMsg.includes("High Priority"), "Message contains lead score priority category");
@@ -81,12 +84,18 @@ async function runTests() {
   // ----------------------------------------------------
   console.log("\n--- 2. Twilio WhatsApp Provider ---");
   const twilioProvider = new TwilioWhatsAppProvider();
-  assert(twilioProvider.name === "twilio_whatsapp", "Twilio provider registered as 'twilio_whatsapp'");
+  assert(
+    twilioProvider.name === "twilio_whatsapp",
+    "Twilio provider registered as 'twilio_whatsapp'",
+  );
 
   // Test simulation / dev mode (safe execution when unconfigured)
   const twilioResult = await twilioProvider.send(sampleLead);
   assert(twilioResult.provider === "twilio_whatsapp", "Returns twilio_whatsapp provider result");
-  assert(twilioResult.success === true, "Twilio provider succeeds (simulated mode when unconfigured)");
+  assert(
+    twilioResult.success === true,
+    "Twilio provider succeeds (simulated mode when unconfigured)",
+  );
   assert(typeof twilioResult.messageId === "string", "Generates message tracking ID");
 
   // ----------------------------------------------------
@@ -94,11 +103,17 @@ async function runTests() {
   // ----------------------------------------------------
   console.log("\n--- 3. WhatsApp Business Cloud API Provider ---");
   const waCloudProvider = new WhatsAppCloudProvider();
-  assert(waCloudProvider.name === "whatsapp_cloud", "Cloud API provider registered as 'whatsapp_cloud'");
+  assert(
+    waCloudProvider.name === "whatsapp_cloud",
+    "Cloud API provider registered as 'whatsapp_cloud'",
+  );
 
   const waCloudResult = await waCloudProvider.send(sampleLead);
   assert(waCloudResult.provider === "whatsapp_cloud", "Returns whatsapp_cloud provider result");
-  assert(waCloudResult.success === true, "WhatsApp Cloud API gracefully handles unconfigured state");
+  assert(
+    waCloudResult.success === true,
+    "WhatsApp Cloud API gracefully handles unconfigured state",
+  );
 
   // ----------------------------------------------------
   // TEST GROUP 4: Optional: Slack Webhook Provider
@@ -131,10 +146,16 @@ async function runTests() {
 
   // Test dispatch across all providers
   const dispatchResult = await notificationService.sendNewLeadNotification(sampleLead);
-  assert(dispatchResult.success === true, "sendNewLeadNotification() reports overall success = true");
+  assert(
+    dispatchResult.success === true,
+    "sendNewLeadNotification() reports overall success = true",
+  );
   assert(dispatchResult.leadId === sampleLead.id, "Returns matching leadId");
   assert(Array.isArray(dispatchResult.results), "Returns array of provider results");
-  assert(dispatchResult.results.length >= 4, "Dispatched across all 4 built-in channels (Twilio, WA Cloud, Slack, Email)");
+  assert(
+    dispatchResult.results.length >= 4,
+    "Dispatched across all 4 built-in channels (Twilio, WA Cloud, Slack, Email)",
+  );
 
   // ----------------------------------------------------
   // TEST GROUP 7: Extensibility & Future Providers
@@ -157,13 +178,21 @@ async function runTests() {
 
   notificationService.registerProvider(customWebhookProvider);
   const customDispatch = await notificationService.sendNewLeadNotification(sampleLead);
-  assert(Boolean(customProviderCalled), "Successfully invokes newly registered future provider (e.g. Discord)");
+  assert(
+    Boolean(customProviderCalled),
+    "Successfully invokes newly registered future provider (e.g. Discord)",
+  );
   const discordResult = customDispatch.results.find((r) => r.provider === "discord_webhook");
-  assert(discordResult !== undefined && discordResult.success === true, "Custom provider result included in dispatch summary");
+  assert(
+    discordResult !== undefined && discordResult.success === true,
+    "Custom provider result included in dispatch summary",
+  );
 
   // Cleanup custom provider
   notificationService.unregisterProvider("discord_webhook");
-  const unregisterCheck = notificationService.getProviders().some((p) => p.name === "discord_webhook");
+  const unregisterCheck = notificationService
+    .getProviders()
+    .some((p) => p.name === "discord_webhook");
   assert(!unregisterCheck, "Successfully unregisters provider");
 
   // ----------------------------------------------------
@@ -205,8 +234,14 @@ async function runTests() {
   try {
     const res = await notificationService.sendNewLeadNotification(dbLead);
     const failEntry = res.results.find((r) => r.provider === "failing_mock_provider");
-    assert(failEntry !== undefined && failEntry.success === false, "Failing provider failure safely captured without throwing");
-    assert(Boolean(failEntry?.error?.includes("Simulated downstream")), "Captures provider error message");
+    assert(
+      failEntry !== undefined && failEntry.success === false,
+      "Failing provider failure safely captured without throwing",
+    );
+    assert(
+      Boolean(failEntry?.error?.includes("Simulated downstream")),
+      "Captures provider error message",
+    );
   } catch {
     threwError = true;
   }
@@ -234,7 +269,10 @@ async function runTests() {
 
   assert(envExample.includes("TWILIO_ACCOUNT_SID="), ".env.example includes TWILIO_ACCOUNT_SID");
   assert(envExample.includes("TWILIO_AUTH_TOKEN="), ".env.example includes TWILIO_AUTH_TOKEN");
-  assert(envExample.includes("TWILIO_WHATSAPP_FROM="), ".env.example includes TWILIO_WHATSAPP_FROM");
+  assert(
+    envExample.includes("TWILIO_WHATSAPP_FROM="),
+    ".env.example includes TWILIO_WHATSAPP_FROM",
+  );
   assert(envExample.includes("ADMIN_WHATSAPP_TO="), ".env.example includes ADMIN_WHATSAPP_TO");
   assert(envExample.includes("SLACK_WEBHOOK_URL="), ".env.example includes SLACK_WEBHOOK_URL");
 

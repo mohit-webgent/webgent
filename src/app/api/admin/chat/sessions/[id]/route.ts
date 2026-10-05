@@ -9,16 +9,10 @@ const updateSessionSchema = z.object({
   status: z.enum(["ACTIVE", "CLOSED", "ARCHIVED"]),
 });
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -34,7 +28,7 @@ export async function GET(
     if (!chatSession) {
       return NextResponse.json(
         { success: false, error: "Chat session not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -49,21 +43,15 @@ export async function GET(
     logger.error("Failed to fetch chat session details", { error, id: params.id });
     return NextResponse.json(
       { success: false, error: "Failed to retrieve chat session" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -72,7 +60,7 @@ export async function PATCH(
     if (!validated.success) {
       return NextResponse.json(
         { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -93,21 +81,15 @@ export async function PATCH(
     logger.error("Failed to update chat session", { error, id: params.id });
     return NextResponse.json(
       { success: false, error: "Failed to update chat session status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -123,7 +105,7 @@ export async function DELETE(
     logger.error("Failed to delete chat session", { error, id: params.id });
     return NextResponse.json(
       { success: false, error: "Failed to delete chat session" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

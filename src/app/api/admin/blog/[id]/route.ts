@@ -10,10 +10,7 @@ import { ensureUniqueBlogSlug, calculateReadTime, formatTags } from "@/lib/blog/
 import { storageService } from "@/lib/services/storage";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -42,15 +39,14 @@ export async function GET(
 
     return ApiResponse.success(post);
   } catch (error) {
-    logger.error("Error fetching admin blog post details", { error: String(error) });
+    logger.error("Error fetching admin blog post details", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to fetch blog post.");
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -73,7 +69,7 @@ export async function PUT(
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid blog post update parameters",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
@@ -92,17 +88,15 @@ export async function PUT(
       seoDescription,
     } = validation.data;
 
-    // Handle slug update & uniqueness
     const slug = proposedSlug
       ? await ensureUniqueBlogSlug(proposedSlug, id)
       : existingPost.title !== title
-      ? await ensureUniqueBlogSlug(title, id)
-      : existingPost.slug;
+        ? await ensureUniqueBlogSlug(title, id)
+        : existingPost.slug;
 
     const readTime = calculateReadTime(content);
     const formattedTagString = formatTags(tags);
 
-    // Handle publishedAt timestamp
     let publishedAt = existingPost.publishedAt;
     if (status === "PUBLISHED" && !publishedAt) {
       publishedAt = new Date();
@@ -137,7 +131,10 @@ export async function PUT(
       },
     });
 
-    logger.info("Updated blog post record", { postId: id, slug: updatedPost.slug });
+    logger.info("Updated blog post record", {
+      postId: id,
+      slug: updatedPost.slug,
+    });
 
     return ApiResponse.success(updatedPost);
   } catch (error) {
@@ -146,10 +143,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -169,7 +163,6 @@ export async function DELETE(
     }
 
     if (isPermanent) {
-      // Prepared Cloudflare R2 storage deletion integration
       if (post.coverImage) {
         await storageService.deleteFile(post.coverImage);
       }
@@ -185,7 +178,6 @@ export async function DELETE(
       return ApiResponse.success({ message: "Blog post permanently deleted." });
     }
 
-    // Default Soft Delete
     const archivedPost = await prisma.blogPost.update({
       where: { id },
       data: {

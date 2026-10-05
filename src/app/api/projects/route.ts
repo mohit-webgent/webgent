@@ -39,10 +39,7 @@ export async function GET(req: NextRequest) {
     const projects = await prisma.project.findMany({
       where,
       take,
-      orderBy: [
-        { order: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
     });
 
     await cacheSet(cacheKey, projects, 60);

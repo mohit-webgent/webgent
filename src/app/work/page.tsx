@@ -87,21 +87,15 @@ export default async function PublicProjectsPage({
 
     featuredProjects = featuredRes;
     allProjects = allRes;
-    categories = distinctCategories
-      .map((c) => c.category)
-      .filter((c): c is string => Boolean(c));
-  } catch {
-    // Database connection offline fallback for build/preview
-  }
+    categories = distinctCategories.map((c) => c.category).filter((c): c is string => Boolean(c));
+  } catch {}
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-16 relative z-10">
-        {/* Page Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
@@ -111,11 +105,11 @@ export default async function PublicProjectsPage({
             Engineering Excellence in Action
           </h1>
           <p className="text-base sm:text-lg text-slate-400">
-            A curated showcase of custom software platforms, cloud applications, and high-conversion web experiences.
+            A curated showcase of custom software platforms, cloud applications, and high-conversion
+            web experiences.
           </p>
         </div>
 
-        {/* Featured Projects Section (shown when no filter is active) */}
         {!selectedCategory && !searchQuery && featuredProjects.length > 0 && (
           <div className="space-y-6">
             <h2 className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
@@ -149,14 +143,17 @@ export default async function PublicProjectsPage({
 
                     {project.technologies && (
                       <div className="flex flex-wrap gap-1.5 pt-2">
-                        {project.technologies.split(",").slice(0, 4).map((tech, i) => (
-                          <span
-                            key={i}
-                            className="px-2.5 py-1 bg-slate-950 border border-slate-800 text-slate-400 text-[10px] font-semibold rounded-lg"
-                          >
-                            {tech.trim()}
-                          </span>
-                        ))}
+                        {project.technologies
+                          .split(",")
+                          .slice(0, 4)
+                          .map((tech, i) => (
+                            <span
+                              key={i}
+                              className="px-2.5 py-1 bg-slate-950 border border-slate-800 text-slate-400 text-[10px] font-semibold rounded-lg"
+                            >
+                              {tech.trim()}
+                            </span>
+                          ))}
                       </div>
                     )}
                   </div>
@@ -201,10 +198,8 @@ export default async function PublicProjectsPage({
           </div>
         )}
 
-        {/* Filter Bar & Search */}
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
-            {/* Category Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
               <Link
                 href="/work"
@@ -234,7 +229,6 @@ export default async function PublicProjectsPage({
               })}
             </div>
 
-            {/* Quick Keyword Search Form */}
             <form method="GET" action="/work" className="relative sm:w-72">
               <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
               <input
@@ -245,13 +239,10 @@ export default async function PublicProjectsPage({
                 placeholder="Filter by keyword..."
                 className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
               />
-              {selectedCategory && (
-                <input type="hidden" name="category" value={selectedCategory} />
-              )}
+              {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
             </form>
           </div>
 
-          {/* All Projects Grid */}
           {allProjects.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-900/40 border border-slate-800 rounded-3xl p-8">
               <Layers className="w-8 h-8 text-slate-600 mx-auto" />

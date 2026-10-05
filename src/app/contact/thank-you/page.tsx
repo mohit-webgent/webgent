@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Inquiry Received | Webgent",
-  description: "Thank you for reaching out to Webgent. Our engineering team is reviewing your project details.",
+  description:
+    "Thank you for reaching out to Webgent. Our engineering team is reviewing your project details.",
   robots: {
     index: false,
     follow: false,
@@ -32,11 +33,11 @@ export default function ContactThankYouPage() {
             We&apos;ve Received Your Message!
           </h1>
           <p className="text-sm text-slate-400 leading-relaxed">
-            Thank you for reaching out to Webgent. An automated confirmation has been sent to your email, and a principal architect will review your project requirements within 24 hours.
+            Thank you for reaching out to Webgent. An automated confirmation has been sent to your
+            email, and a principal architect will review your project requirements within 24 hours.
           </p>
         </div>
 
-        {/* What to expect card */}
         <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-5 text-left text-xs space-y-3">
           <p className="font-bold text-white uppercase tracking-wider text-[10px]">
             What Happens Next?
@@ -58,12 +59,13 @@ export default function ContactThankYouPage() {
               <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center shrink-0 text-[10px]">
                 3
               </span>
-              <span>You receive a transparent project proposal, timeline, and architectural roadmap.</span>
+              <span>
+                You receive a transparent project proposal, timeline, and architectural roadmap.
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/"

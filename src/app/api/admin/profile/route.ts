@@ -12,10 +12,7 @@ const updateProfileSchema = z.object({
 export async function GET() {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -35,10 +32,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, data: user });
@@ -46,7 +40,7 @@ export async function GET() {
     logger.error("Failed to fetch admin profile", { error });
     return NextResponse.json(
       { success: false, error: "Failed to retrieve profile" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -54,10 +48,7 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -66,7 +57,7 @@ export async function PATCH(req: NextRequest) {
     if (!validated.success) {
       return NextResponse.json(
         { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -98,7 +89,7 @@ export async function PATCH(req: NextRequest) {
     logger.error("Failed to update admin profile", { error });
     return NextResponse.json(
       { success: false, error: "Failed to save profile changes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

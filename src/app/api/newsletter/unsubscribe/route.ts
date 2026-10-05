@@ -8,12 +8,6 @@ import { emailService } from "@/lib/services/email";
 import { SubscriberStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
-/**
- * Public Newsletter Unsubscribe Endpoint
- * GET /api/newsletter/unsubscribe?token=xxx
- * 
- * Safely unsubscribes the user using a secure token.
- */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -25,20 +19,17 @@ export async function GET(req: NextRequest) {
       if (isHtmlRequest) {
         return renderUnsubscribeHtml({
           title: "Missing Token",
-          message: "Unsubscribe token is missing. Please use the link provided in your newsletter email.",
+          message:
+            "Unsubscribe token is missing. Please use the link provided in your newsletter email.",
           isSuccess: false,
         });
       }
       return ApiResponse.badRequest("Unsubscribe token is required.", "MISSING_TOKEN");
     }
 
-    // Locate subscriber by unsubscribe token or confirmation token
     const subscriber = await prisma.subscriber.findFirst({
       where: {
-        OR: [
-          { unsubscribeToken: token },
-          { confirmationToken: token },
-        ],
+        OR: [{ unsubscribeToken: token }, { confirmationToken: token }],
       },
     });
 
@@ -46,19 +37,20 @@ export async function GET(req: NextRequest) {
       if (isHtmlRequest) {
         return renderUnsubscribeHtml({
           title: "Invalid Token",
-          message: "We could not find an active subscription associated with this unsubscribe link.",
+          message:
+            "We could not find an active subscription associated with this unsubscribe link.",
           isSuccess: false,
         });
       }
       return ApiResponse.notFound("Invalid or expired unsubscribe token.");
     }
 
-    // If already unsubscribed
     if (subscriber.status === SubscriberStatus.UNSUBSCRIBED) {
       if (isHtmlRequest) {
         return renderUnsubscribeHtml({
           title: "Already Unsubscribed",
-          message: "You have already been unsubscribed from our newsletter. No further emails will be sent.",
+          message:
+            "You have already been unsubscribed from our newsletter. No further emails will be sent.",
           isSuccess: true,
         });
       }
@@ -68,7 +60,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Mark as unsubscribed
     const updated = await prisma.subscriber.update({
       where: { id: subscriber.id },
       data: {
@@ -83,7 +74,6 @@ export async function GET(req: NextRequest) {
       email: updated.email,
     });
 
-    // Asynchronously dispatch farewell email (safely caught)
     emailService.sendNewsletterUnsubscribed({ email: updated.email }).catch(() => {});
 
     if (isHtmlRequest) {
@@ -100,7 +90,9 @@ export async function GET(req: NextRequest) {
       email: updated.email,
     });
   } catch (error) {
-    logger.error("Error during newsletter unsubscription", { error: String(error) });
+    logger.error("Error during newsletter unsubscription", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to process unsubscribe request.");
   }
 }

@@ -5,16 +5,12 @@ export interface TurnstileVerificationResult {
   error?: string;
 }
 
-/**
- * Verifies a Cloudflare Turnstile captcha token against Cloudflare's siteverify API.
- */
 export async function verifyTurnstileToken(
   token: string | undefined | null,
-  remoteIp?: string
+  remoteIp?: string,
 ): Promise<TurnstileVerificationResult> {
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
-  // If Turnstile secret key is not set (e.g. local dev / testing), bypass verification safely
   if (!secretKey) {
     logger.warn("TURNSTILE_SECRET_KEY is not set. Bypassing Turnstile verification in dev mode.");
     return { success: true };
@@ -35,18 +31,17 @@ export async function verifyTurnstileToken(
       formData.append("remoteip", remoteIp);
     }
 
-    const response = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: formData,
+    });
 
     const data = await response.json();
 
     if (!data.success) {
-      logger.warn("Cloudflare Turnstile verification failed", { errorCodes: data["error-codes"] });
+      logger.warn("Cloudflare Turnstile verification failed", {
+        errorCodes: data["error-codes"],
+      });
       return {
         success: false,
         error: "Security check failed. Please complete the captcha verification.",
@@ -55,7 +50,9 @@ export async function verifyTurnstileToken(
 
     return { success: true };
   } catch (err) {
-    logger.error("Error communicating with Cloudflare Turnstile API", { error: String(err) });
+    logger.error("Error communicating with Cloudflare Turnstile API", {
+      error: String(err),
+    });
     return { success: true };
   }
 }

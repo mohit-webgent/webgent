@@ -14,10 +14,7 @@ const createSessionSchema = z.object({
 export async function GET(req: NextRequest) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -48,28 +45,27 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const [total, sessions, totalActive, totalClosed, totalArchived] =
-      await Promise.all([
-        prisma.chatSession.count({ where }),
-        prisma.chatSession.findMany({
-          where,
-          skip: (page - 1) * limit,
-          take: limit,
-          orderBy: { updatedAt: "desc" },
-          include: {
-            messages: {
-              orderBy: { createdAt: "desc" },
-              take: 1,
-            },
-            _count: {
-              select: { messages: true },
-            },
+    const [total, sessions, totalActive, totalClosed, totalArchived] = await Promise.all([
+      prisma.chatSession.count({ where }),
+      prisma.chatSession.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { updatedAt: "desc" },
+        include: {
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
           },
-        }),
-        prisma.chatSession.count({ where: { status: "ACTIVE" } }),
-        prisma.chatSession.count({ where: { status: "CLOSED" } }),
-        prisma.chatSession.count({ where: { status: "ARCHIVED" } }),
-      ]);
+          _count: {
+            select: { messages: true },
+          },
+        },
+      }),
+      prisma.chatSession.count({ where: { status: "ACTIVE" } }),
+      prisma.chatSession.count({ where: { status: "CLOSED" } }),
+      prisma.chatSession.count({ where: { status: "ARCHIVED" } }),
+    ]);
 
     const formattedSessions = sessions.map((s) => ({
       id: s.id,
@@ -111,7 +107,7 @@ export async function GET(req: NextRequest) {
     logger.error("Failed to query admin chat sessions", { error });
     return NextResponse.json(
       { success: false, error: "Failed to load chat sessions" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -119,10 +115,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -131,7 +124,7 @@ export async function POST(req: NextRequest) {
     if (!validated.success) {
       return NextResponse.json(
         { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -161,7 +154,7 @@ export async function POST(req: NextRequest) {
     logger.error("Failed to create chat session", { error });
     return NextResponse.json(
       { success: false, error: "Failed to create chat session" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

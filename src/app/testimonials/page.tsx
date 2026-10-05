@@ -70,18 +70,14 @@ export default async function PublicTestimonialsPage() {
         featured: true,
       },
     });
-  } catch {
-    // Database connection offline fallback
-  }
+  } catch {}
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      {/* Background ambient gradient glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-16 relative z-10">
-        {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
@@ -91,17 +87,18 @@ export default async function PublicTestimonialsPage() {
             Trusted by Builders & Visionaries
           </h1>
           <p className="text-base sm:text-lg text-slate-400">
-            Hear directly from the founders, executives, and engineering leads who have scaled their businesses with Webgent.
+            Hear directly from the founders, executives, and engineering leads who have scaled their
+            businesses with Webgent.
           </p>
         </div>
 
-        {/* Testimonials Grid */}
         {testimonials.length === 0 ? (
           <div className="max-w-md mx-auto py-16 text-center space-y-3 p-8 rounded-3xl bg-slate-900/60 border border-slate-800">
             <MessageSquareQuote className="w-10 h-10 text-slate-600 mx-auto" />
             <h2 className="text-base font-bold text-white">Client Reviews Coming Soon</h2>
             <p className="text-xs text-slate-400">
-              We are compiling our latest verified case studies and testimonials. Check back shortly!
+              We are compiling our latest verified case studies and testimonials. Check back
+              shortly!
             </p>
           </div>
         ) : (
@@ -112,7 +109,6 @@ export default async function PublicTestimonialsPage() {
                 className="bg-slate-900/80 border border-slate-800 hover:border-pink-500/30 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 shadow-xl group hover:-translate-y-1"
               >
                 <div className="space-y-4">
-                  {/* Star Rating & Verified Pill */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-amber-400">
                       {Array.from({ length: t.rating || 5 }).map((_, idx) => (
@@ -126,17 +122,14 @@ export default async function PublicTestimonialsPage() {
                     )}
                   </div>
 
-                  {/* Quote Content */}
                   <p className="text-sm text-slate-300 leading-relaxed italic">
                     &ldquo;{t.content}&rdquo;
                   </p>
                 </div>
 
-                {/* Author Info */}
                 <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0 shadow-md">
                     {t.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={t.avatarUrl}
                         alt={t.clientName}
@@ -149,9 +142,7 @@ export default async function PublicTestimonialsPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-bold text-sm text-white truncate">
-                      {t.clientName}
-                    </h3>
+                    <h3 className="font-bold text-sm text-white truncate">{t.clientName}</h3>
                     <p className="text-xs text-slate-400 truncate">
                       {t.clientTitle || "Partner"}
                       {t.company ? ` • ${t.company}` : ""}
@@ -163,14 +154,14 @@ export default async function PublicTestimonialsPage() {
           </div>
         )}
 
-        {/* Conversion CTA Banner */}
         <div className="bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-slate-900 border border-pink-500/20 rounded-3xl p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
           <div className="space-y-3 max-w-xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Ready to Achieve Extraordinary Results?
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Partner with an engineering team dedicated to high performance, reliability, and precision craft.
+              Partner with an engineering team dedicated to high performance, reliability, and
+              precision craft.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4">

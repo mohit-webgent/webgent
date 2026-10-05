@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-/**
- * Standard known event names defined in the Webgent specification.
- * Custom events matching [A-Z0-9_]{2,64} are also accepted.
- */
 export const KNOWN_EVENTS = [
   "PAGE_VIEW",
   "FORM_START",
@@ -21,16 +17,12 @@ export type KnownEventType = (typeof KNOWN_EVENTS)[number];
 export const VALID_PERIODS = ["7d", "30d", "90d"] as const;
 export type ValidPeriod = (typeof VALID_PERIODS)[number];
 
-/**
- * Zod schema for tracking page views: POST /api/analytics/pageview
- */
 export const pageViewSchema = z.object({
   path: z
     .string()
     .min(1, "Path is required")
     .max(500, "Path too long")
     .transform((val) => {
-      // Strip query parameters to avoid collecting sensitive data in URLs
       const cleaned = val.split("?")[0].trim();
       return cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
     }),
@@ -42,7 +34,6 @@ export const pageViewSchema = z.object({
     .transform((val) => {
       if (!val) return null;
       try {
-        // Strip sensitive search parameters like token, key, secret, password, email
         const parsed = new URL(val, "http://localhost");
         const sensitiveKeys = ["token", "key", "secret", "password", "email", "auth"];
         sensitiveKeys.forEach((k) => parsed.searchParams.delete(k));
@@ -63,9 +54,6 @@ export const pageViewSchema = z.object({
 
 export type PageViewInput = z.infer<typeof pageViewSchema>;
 
-/**
- * Zod schema for tracking custom events: POST /api/analytics/event
- */
 export const eventSchema = z.object({
   name: z
     .string()
@@ -73,7 +61,7 @@ export const eventSchema = z.object({
     .max(64, "Event name must not exceed 64 characters")
     .regex(
       /^[A-Z0-9_]+$/,
-      "Event name must be uppercase alphanumeric with underscores (e.g., CTA_CLICK, FORM_START)"
+      "Event name must be uppercase alphanumeric with underscores (e.g., CTA_CLICK, FORM_START)",
     ),
   category: z
     .string()
@@ -119,9 +107,6 @@ export const eventSchema = z.object({
 
 export type EventInput = z.infer<typeof eventSchema>;
 
-/**
- * Zod schema for querying admin analytics: GET /api/admin/analytics
- */
 export const adminAnalyticsQuerySchema = z.object({
   period: z
     .string()
@@ -156,9 +141,6 @@ export const adminAnalyticsQuerySchema = z.object({
     }),
 });
 
-/**
- * Remove PII keys (email, password, phone, credit card, tokens) from metadata
- */
 function sanitizeMetadata(obj: Record<string, unknown>): Record<string, unknown> {
   const sensitiveKeys = new Set([
     "email",

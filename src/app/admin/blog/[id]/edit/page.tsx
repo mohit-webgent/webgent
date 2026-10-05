@@ -5,11 +5,7 @@ import { BlogForm } from "@/components/admin/blog-form";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default async function AdminEditBlogPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function AdminEditBlogPage({ params }: { params: { id: string } }) {
   await requireAdmin();
 
   const post = await prisma.blogPost.findUnique({

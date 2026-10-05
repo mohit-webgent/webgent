@@ -46,23 +46,25 @@ interface ChatSessionDetail extends ChatSessionItem {
 export function ChatSessionsManager() {
   const toast = useToast();
   const [sessions, setSessions] = useState<ChatSessionItem[]>([]);
-  const [counts, setCounts] = useState({ all: 0, active: 0, closed: 0, archived: 0 });
+  const [counts, setCounts] = useState({
+    all: 0,
+    active: 0,
+    closed: 0,
+    archived: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<ChatSessionDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // Filters & Search
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Composer
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
 
-  // Destructive Confirm Dialog
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -88,7 +90,6 @@ export function ChatSessionsManager() {
           setCounts(json.meta.counts);
         }
 
-        // If no session selected yet, select first if exists
         if (!selectedSessionId && json.data && json.data.length > 0) {
           setSelectedSessionId(json.data[0].id);
         }
@@ -115,7 +116,7 @@ export function ChatSessionsManager() {
         setLoadingDetail(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   useEffect(() => {
@@ -157,7 +158,7 @@ export function ChatSessionsManager() {
           });
         }
         toast.success("Reply dispatched to visitor");
-        // refresh list to update lastMessage snippet
+
         fetchSessions();
       } else {
         const err = await res.json();
@@ -192,7 +193,7 @@ export function ChatSessionsManager() {
           setActiveSession({ ...activeSession, status: newStatus });
         }
         setSessions((prev) =>
-          prev.map((s) => (s.id === selectedSessionId ? { ...s, status: newStatus } : s))
+          prev.map((s) => (s.id === selectedSessionId ? { ...s, status: newStatus } : s)),
         );
         fetchSessions();
       } else {
@@ -240,7 +241,6 @@ export function ChatSessionsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
@@ -267,15 +267,12 @@ export function ChatSessionsManager() {
         </button>
       </div>
 
-      {/* Two-Pane Master-Detail Layout */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
-        {/* Left Master List (4 Cols) */}
         <div
           className={`lg:col-span-5 xl:col-span-4 border-r border-slate-800 flex flex-col ${
             selectedSessionId && "hidden lg:flex"
           }`}
         >
-          {/* Search & Filter Controls */}
           <div className="p-4 border-b border-slate-800 space-y-3 bg-slate-900/60">
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -300,7 +297,6 @@ export function ChatSessionsManager() {
               )}
             </div>
 
-            {/* Filter Tabs */}
             <div className="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800/80 text-[11px] font-semibold">
               {(["ALL", "ACTIVE", "CLOSED", "ARCHIVED"] as const).map((tab) => (
                 <button
@@ -316,13 +312,14 @@ export function ChatSessionsManager() {
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  {tab === "ALL" ? `All (${counts.all})` : tab.charAt(0) + tab.slice(1).toLowerCase()}
+                  {tab === "ALL"
+                    ? `All (${counts.all})`
+                    : tab.charAt(0) + tab.slice(1).toLowerCase()}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Sessions List */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 max-h-[520px]">
             {loading ? (
               <div className="py-16 text-center space-y-3">
@@ -334,18 +331,28 @@ export function ChatSessionsManager() {
                 <MessageCircle className="w-8 h-8 text-slate-600 mx-auto" />
                 <p className="text-sm font-semibold text-slate-300">No chat sessions found</p>
                 <p className="text-xs text-slate-400">
-                  {search ? "Try clearing your search query" : "Active chat sessions will appear here"}
+                  {search
+                    ? "Try clearing your search query"
+                    : "Active chat sessions will appear here"}
                 </p>
               </div>
             ) : (
               sessions.map((item) => {
                 const isSelected = item.id === selectedSessionId;
-                const metaName = item.metadata && typeof item.metadata === "object" && "name" in item.metadata && item.metadata.name
-                  ? String(item.metadata.name)
-                  : null;
-                const metaEmail = item.metadata && typeof item.metadata === "object" && "email" in item.metadata && item.metadata.email
-                  ? String(item.metadata.email)
-                  : null;
+                const metaName =
+                  item.metadata &&
+                  typeof item.metadata === "object" &&
+                  "name" in item.metadata &&
+                  item.metadata.name
+                    ? String(item.metadata.name)
+                    : null;
+                const metaEmail =
+                  item.metadata &&
+                  typeof item.metadata === "object" &&
+                  "email" in item.metadata &&
+                  item.metadata.email
+                    ? String(item.metadata.email)
+                    : null;
 
                 const formattedDate = new Date(item.updatedAt).toLocaleDateString(undefined, {
                   month: "short",
@@ -378,7 +385,7 @@ export function ChatSessionsManager() {
                       </div>
                       <span
                         className={`px-2 py-0.5 rounded-full border text-[10px] font-bold shrink-0 ${getStatusBadge(
-                          item.status
+                          item.status,
                         )}`}
                       >
                         {item.status}
@@ -401,7 +408,6 @@ export function ChatSessionsManager() {
             )}
           </div>
 
-          {/* Master List Pagination */}
           {totalPages > 1 && (
             <div className="p-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 bg-slate-900/60 shrink-0">
               <button
@@ -427,7 +433,6 @@ export function ChatSessionsManager() {
           )}
         </div>
 
-        {/* Right Detail Pane (7-8 Cols) */}
         <div
           className={`lg:col-span-7 xl:col-span-8 flex flex-col bg-slate-950/30 ${
             !selectedSessionId && "hidden lg:flex"
@@ -444,12 +449,12 @@ export function ChatSessionsManager() {
               </div>
               <h3 className="text-base font-bold text-white">Select a Chat Session</h3>
               <p className="text-xs text-slate-400 max-w-sm">
-                Choose a conversation from the left to view the complete transcript, update status, or respond to the visitor.
+                Choose a conversation from the left to view the complete transcript, update status,
+                or respond to the visitor.
               </p>
             </div>
           ) : (
             <>
-              {/* Detail Header */}
               <div className="p-4 border-b border-slate-800 flex items-center justify-between gap-4 bg-slate-900/60">
                 <div className="flex items-center gap-3">
                   <button
@@ -468,7 +473,7 @@ export function ChatSessionsManager() {
                       </h2>
                       <span
                         className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${getStatusBadge(
-                          activeSession.status
+                          activeSession.status,
                         )}`}
                       >
                         {activeSession.status}
@@ -494,7 +499,6 @@ export function ChatSessionsManager() {
                   </div>
                 </div>
 
-                {/* Session Actions */}
                 <div className="flex items-center gap-2">
                   {activeSession.status === "ACTIVE" ? (
                     <button
@@ -538,7 +542,6 @@ export function ChatSessionsManager() {
                 </div>
               </div>
 
-              {/* Visitor Contact Info Banner (If Provided) */}
               {activeSession.metadata &&
                 (Boolean(activeSession.metadata.name) || Boolean(activeSession.metadata.email)) && (
                   <div className="px-4 py-2.5 bg-teal-950/20 border-b border-teal-500/20 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -560,7 +563,6 @@ export function ChatSessionsManager() {
                   </div>
                 )}
 
-              {/* Message Transcript Thread */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-h-[460px]">
                 {activeSession.messages.length === 0 ? (
                   <div className="py-12 text-center text-xs text-slate-400">
@@ -569,7 +571,8 @@ export function ChatSessionsManager() {
                 ) : (
                   activeSession.messages.map((msg) => {
                     const isAdmin = msg.sender === "admin";
-                    const isAssistant = msg.sender === "assistant" || msg.sender === "bot" || msg.sender === "agent";
+                    const isAssistant =
+                      msg.sender === "assistant" || msg.sender === "bot" || msg.sender === "agent";
                     const formattedTime = new Date(msg.createdAt).toLocaleTimeString(undefined, {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -587,8 +590,8 @@ export function ChatSessionsManager() {
                             isAdmin
                               ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
                               : isAssistant
-                              ? "bg-teal-600/20 text-teal-400 border border-teal-500/30"
-                              : "bg-slate-800 text-slate-300 border border-slate-700"
+                                ? "bg-teal-600/20 text-teal-400 border border-teal-500/30"
+                                : "bg-slate-800 text-slate-300 border border-slate-700"
                           }`}
                         >
                           {isAdmin ? (
@@ -605,8 +608,8 @@ export function ChatSessionsManager() {
                             isAdmin
                               ? "bg-indigo-600 text-white rounded-br-none shadow-md shadow-indigo-600/20"
                               : isAssistant
-                              ? "bg-slate-900 border border-teal-500/20 text-slate-100 rounded-bl-none"
-                              : "bg-slate-800/80 border border-slate-700/60 text-slate-100 rounded-bl-none"
+                                ? "bg-slate-900 border border-teal-500/20 text-slate-100 rounded-bl-none"
+                                : "bg-slate-800/80 border border-slate-700/60 text-slate-100 rounded-bl-none"
                           }`}
                         >
                           <div className="flex items-center gap-1.5 mb-1 opacity-75 text-[10px] font-semibold">
@@ -614,10 +617,10 @@ export function ChatSessionsManager() {
                               {isAdmin
                                 ? "Admin (You)"
                                 : isAssistant
-                                ? "Webgent AI Concierge"
-                                : activeSession.metadata?.name
-                                ? String(activeSession.metadata.name)
-                                : "Visitor"}
+                                  ? "Webgent AI Concierge"
+                                  : activeSession.metadata?.name
+                                    ? String(activeSession.metadata.name)
+                                    : "Visitor"}
                             </span>
                           </div>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
@@ -636,7 +639,6 @@ export function ChatSessionsManager() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Reply Composer */}
               <div className="p-4 border-t border-slate-800 bg-slate-900/60">
                 <form onSubmit={handleSendReply} className="space-y-2">
                   <div className="relative">
@@ -660,9 +662,7 @@ export function ChatSessionsManager() {
                     <button
                       type="submit"
                       disabled={
-                        !replyText.trim() ||
-                        sendingReply ||
-                        activeSession.status === "ARCHIVED"
+                        !replyText.trim() || sendingReply || activeSession.status === "ARCHIVED"
                       }
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs transition-all disabled:opacity-50 shadow-md shadow-teal-600/20"
                     >
@@ -686,7 +686,6 @@ export function ChatSessionsManager() {
         </div>
       </div>
 
-      {/* Confirmation Dialog for Deleting Chat Session */}
       <ConfirmDialog
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

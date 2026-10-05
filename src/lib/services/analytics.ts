@@ -13,15 +13,11 @@ export interface AnalyticsContext {
 
 const HASH_SALT = process.env.AUTH_SECRET || "webgent-analytics-anonymous-salt";
 
-/**
- * Derives anonymous session, location, and device details from an incoming NextRequest
- */
 export function extractAnalyticsContext(
   req: NextRequest,
   clientSessionId?: string | null,
-  clientDevice?: string | null
+  clientDevice?: string | null,
 ): AnalyticsContext {
-  // 1. Session ID: prefer valid clientSessionId, fallback to cookie, then generate new
   const cookieSessionId = req.cookies.get("webgent_sid")?.value;
   let sessionId = clientSessionId || cookieSessionId;
   let isNewSession = false;
@@ -31,7 +27,6 @@ export function extractAnalyticsContext(
     isNewSession = true;
   }
 
-  // 2. Country detection from standard cloud deployment headers
   const countryHeader =
     req.headers.get("cf-ipcountry") ||
     req.headers.get("x-vercel-ip-country") ||
@@ -44,13 +39,16 @@ export function extractAnalyticsContext(
     country = countryHeader.trim().toUpperCase();
   }
 
-  // 3. Device detection
   let device: "desktop" | "mobile" | "tablet" | "other" = "desktop";
   if (clientDevice && ["desktop", "mobile", "tablet", "other"].includes(clientDevice)) {
     device = clientDevice as "desktop" | "mobile" | "tablet" | "other";
   } else {
     const userAgent = req.headers.get("user-agent") || "";
-    if (/(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk)/i.test(userAgent)) {
+    if (
+      /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk)/i.test(
+        userAgent,
+      )
+    ) {
       device = "tablet";
     } else if (/(mobi|ipod|phone|iphone|blackberry|opera mini)/i.test(userAgent)) {
       device = "mobile";
@@ -59,7 +57,6 @@ export function extractAnalyticsContext(
     }
   }
 
-  // 4. IP Hashing for privacy (do not store raw IP addresses)
   const forwarded = req.headers.get("x-forwarded-for");
   const rawIp = forwarded ? forwarded.split(",")[0].trim() : "127.0.0.1";
   const ipHash = crypto
@@ -78,9 +75,6 @@ export function extractAnalyticsContext(
 }
 
 export class AnalyticsService {
-  /**
-   * Records a page view
-   */
   async recordPageView(req: NextRequest, input: PageViewInput) {
     const context = extractAnalyticsContext(req, input.sessionId, input.device);
     const userAgent = req.headers.get("user-agent")?.substring(0, 255) || null;
@@ -100,9 +94,6 @@ export class AnalyticsService {
     return { pageView, context };
   }
 
-  /**
-   * Records a custom event
-   */
   async recordEvent(req: NextRequest, input: EventInput) {
     const context = extractAnalyticsContext(req, input.sessionId, input.device);
 
@@ -121,16 +112,12 @@ export class AnalyticsService {
     return { event, context };
   }
 
-  /**
-   * Computes admin analytics metrics for a given timeframe (7d, 30d, 90d)
-   */
   async getAdminAnalytics(period: ValidPeriod = "30d") {
     const days = period === "7d" ? 7 : period === "90d" ? 90 : 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
 
-    // Fetch pageviews and events concurrently
     const [pageViews, events] = await Promise.all([
       prisma.pageView.findMany({
         where: { createdAt: { gte: startDate } },
@@ -157,7 +144,6 @@ export class AnalyticsService {
       }),
     ]);
 
-    // 1. Total Page Views & Unique Visitors
     const totalPageViews = pageViews.length;
     const uniqueSessions = new Set<string>();
     pageViews.forEach((pv) => {
@@ -166,7 +152,6 @@ export class AnalyticsService {
     });
     const uniqueVisitors = uniqueSessions.size;
 
-    // 2. Top Pages
     const pageCounts: Record<string, { views: number; sessions: Set<string> }> = {};
     pageViews.forEach((pv) => {
       if (!pageCounts[pv.path]) {
@@ -181,12 +166,12 @@ export class AnalyticsService {
         path,
         views: data.views,
         uniqueVisitors: data.sessions.size,
-        percentage: totalPageViews > 0 ? Number(((data.views / totalPageViews) * 100).toFixed(1)) : 0,
+        percentage:
+          totalPageViews > 0 ? Number(((data.views / totalPageViews) * 100).toFixed(1)) : 0,
       }))
       .sort((a, b) => b.views - a.views)
       .slice(0, 10);
 
-    // 3. Event Counts
     const eventCounts: Record<string, number> = {};
     KNOWN_EVENTS.forEach((e) => {
       if (e !== "PAGE_VIEW") eventCounts[e] = 0;
@@ -196,11 +181,6 @@ export class AnalyticsService {
       eventCounts[ev.name] = (eventCounts[ev.name] || 0) + 1;
     });
 
-    // 4. Conversion Funnel
-    // Step 1: Total Visitors (or unique sessions)
-    // Step 2: CTA Click / Interactive Engagement (CTA_CLICK, DEMO_CLICK, BLOG_READ)
-    // Step 3: Form Started (FORM_START)
-    // Step 4: Form Submitted (FORM_SUBMIT)
     const funnelCtaClicks = (eventCounts["CTA_CLICK"] || 0) + (eventCounts["DEMO_CLICK"] || 0);
     const funnelFormStarts = eventCounts["FORM_START"] || 0;
     const funnelFormSubmits = eventCounts["FORM_SUBMIT"] || 0;
@@ -215,37 +195,40 @@ export class AnalyticsService {
       {
         step: "Engagement (CTA/Demo)",
         count: funnelCtaClicks,
-        rate: uniqueVisitors > 0 ? Number(((funnelCtaClicks / uniqueVisitors) * 100).toFixed(1)) : 0,
+        rate:
+          uniqueVisitors > 0 ? Number(((funnelCtaClicks / uniqueVisitors) * 100).toFixed(1)) : 0,
         dropOff:
           uniqueVisitors > 0
-            ? Number((Math.max(0, 100 - (funnelCtaClicks / uniqueVisitors) * 100)).toFixed(1))
+            ? Number(Math.max(0, 100 - (funnelCtaClicks / uniqueVisitors) * 100).toFixed(1))
             : 0,
       },
       {
         step: "Form Started",
         count: funnelFormStarts,
-        rate: funnelCtaClicks > 0 ? Number(((funnelFormStarts / funnelCtaClicks) * 100).toFixed(1)) : 0,
+        rate:
+          funnelCtaClicks > 0 ? Number(((funnelFormStarts / funnelCtaClicks) * 100).toFixed(1)) : 0,
         dropOff:
           funnelCtaClicks > 0
-            ? Number((Math.max(0, 100 - (funnelFormStarts / funnelCtaClicks) * 100)).toFixed(1))
+            ? Number(Math.max(0, 100 - (funnelFormStarts / funnelCtaClicks) * 100).toFixed(1))
             : 0,
       },
       {
         step: "Form Submitted",
         count: funnelFormSubmits,
-        rate: funnelFormStarts > 0 ? Number(((funnelFormSubmits / funnelFormStarts) * 100).toFixed(1)) : 0,
+        rate:
+          funnelFormStarts > 0
+            ? Number(((funnelFormSubmits / funnelFormStarts) * 100).toFixed(1))
+            : 0,
         dropOff:
           funnelFormStarts > 0
-            ? Number((Math.max(0, 100 - (funnelFormSubmits / funnelFormStarts) * 100)).toFixed(1))
+            ? Number(Math.max(0, 100 - (funnelFormSubmits / funnelFormStarts) * 100).toFixed(1))
             : 0,
       },
     ];
 
-    // Overall conversion rate (Visitors -> Form Submitted)
     const overallConversionRate =
       uniqueVisitors > 0 ? Number(((funnelFormSubmits / uniqueVisitors) * 100).toFixed(2)) : 0;
 
-    // 5. Device Split
     const deviceCounts: Record<string, number> = {
       desktop: 0,
       mobile: 0,
@@ -264,7 +247,6 @@ export class AnalyticsService {
       percentage: totalPageViews > 0 ? Number(((count / totalPageViews) * 100).toFixed(1)) : 0,
     }));
 
-    // 6. Country Distribution
     const countryCounts: Record<string, number> = {};
     pageViews.forEach((pv) => {
       const c = pv.country || "Unknown";
@@ -280,7 +262,6 @@ export class AnalyticsService {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // 7. Timeline data (Daily breakdown)
     const dayMap: Record<string, { views: number; events: number; sessions: Set<string> }> = {};
 
     for (let i = 0; i < days; i++) {

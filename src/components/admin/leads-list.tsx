@@ -47,7 +47,6 @@ export function LeadsList() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Filters & Pagination State
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState("createdAt");
@@ -63,9 +62,7 @@ export function LeadsList() {
         const json = await res.json();
         setStats(json.data);
       }
-    } catch {
-      // Ignore non-fatal stats load error
-    }
+    } catch {}
   };
 
   const fetchLeads = useCallback(async () => {
@@ -89,7 +86,6 @@ export function LeadsList() {
         }
       }
     } catch {
-      // Handle error
     } finally {
       setLoading(false);
     }
@@ -134,12 +130,9 @@ export function LeadsList() {
 
   return (
     <div className="space-y-8">
-      {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            Lead Management
-          </h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Lead Management</h1>
           <p className="text-sm text-slate-400">
             Track inquiries, update statuses, and qualify prospective clients
           </p>
@@ -155,7 +148,6 @@ export function LeadsList() {
         </button>
       </div>
 
-      {/* Statistics Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
@@ -165,16 +157,12 @@ export function LeadsList() {
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <p className="text-xs text-slate-400 font-medium">New Uncontacted</p>
-            <p className="text-2xl font-extrabold text-blue-400 mt-1">
-              {stats.byStatus.NEW || 0}
-            </p>
+            <p className="text-2xl font-extrabold text-blue-400 mt-1">{stats.byStatus.NEW || 0}</p>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <p className="text-xs text-slate-400 font-medium">Conversion Rate</p>
-            <p className="text-2xl font-extrabold text-emerald-400 mt-1">
-              {stats.conversionRate}%
-            </p>
+            <p className="text-2xl font-extrabold text-emerald-400 mt-1">{stats.conversionRate}%</p>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
@@ -186,10 +174,8 @@ export function LeadsList() {
         </div>
       )}
 
-      {/* Filter & Search Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          {/* Search Box */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
             <input
@@ -204,7 +190,6 @@ export function LeadsList() {
             />
           </div>
 
-          {/* Sort Selector */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-xs text-slate-400 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
               <ArrowUpDown className="w-3.5 h-3.5" />
@@ -214,9 +199,15 @@ export function LeadsList() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-transparent text-white font-medium focus:outline-none cursor-pointer"
               >
-                <option value="createdAt" className="bg-slate-900">Date Received</option>
-                <option value="score" className="bg-slate-900">Lead Score</option>
-                <option value="name" className="bg-slate-900">Client Name</option>
+                <option value="createdAt" className="bg-slate-900">
+                  Date Received
+                </option>
+                <option value="score" className="bg-slate-900">
+                  Lead Score
+                </option>
+                <option value="name" className="bg-slate-900">
+                  Client Name
+                </option>
               </select>
               <button
                 onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
@@ -228,31 +219,27 @@ export function LeadsList() {
           </div>
         </div>
 
-        {/* Status Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
           <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0 mr-1" />
-          {["ALL", "NEW", "CONTACTED", "PROPOSAL_SENT", "WON", "LOST", "ON_HOLD"].map(
-            (st) => (
-              <button
-                key={st}
-                onClick={() => {
-                  setStatusFilter(st);
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all shrink-0 ${
-                  statusFilter === st
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                    : "bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800"
-                }`}
-              >
-                {st.replace("_", " ")}
-              </button>
-            )
-          )}
+          {["ALL", "NEW", "CONTACTED", "PROPOSAL_SENT", "WON", "LOST", "ON_HOLD"].map((st) => (
+            <button
+              key={st}
+              onClick={() => {
+                setStatusFilter(st);
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-all shrink-0 ${
+                statusFilter === st
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                  : "bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800"
+              }`}
+            >
+              {st.replace("_", " ")}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Leads Data Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
@@ -281,15 +268,9 @@ export function LeadsList() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {leads.map((lead) => (
-                  <tr
-                    key={lead.id}
-                    className="hover:bg-slate-800/40 transition-colors"
-                  >
-                    {/* Contact Info */}
+                  <tr key={lead.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-4 px-4">
-                      <div className="font-semibold text-white text-sm">
-                        {lead.name}
-                      </div>
+                      <div className="font-semibold text-white text-sm">{lead.name}</div>
                       <div className="flex items-center gap-3 text-slate-400 text-[11px] mt-0.5">
                         <span className="flex items-center gap-1">
                           <Mail className="w-3 h-3 text-slate-500" />
@@ -304,7 +285,6 @@ export function LeadsList() {
                       </div>
                     </td>
 
-                    {/* Company / Service */}
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-1 text-slate-200">
                         <Building className="w-3.5 h-3.5 text-slate-500" />
@@ -314,18 +294,15 @@ export function LeadsList() {
                         <Tag className="w-3 h-3 text-slate-500" />
                         <span>{lead.service || "General Inquiry"}</span>
                         {lead.budget && (
-                          <span className="text-emerald-400 font-medium">
-                            ({lead.budget})
-                          </span>
+                          <span className="text-emerald-400 font-medium">({lead.budget})</span>
                         )}
                       </div>
                     </td>
 
-                    {/* Lead Score */}
                     <td className="py-4 px-4">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${getScoreBadge(
-                          lead.score
+                          lead.score,
                         )}`}
                       >
                         <Star className="w-3 h-3" />
@@ -333,18 +310,16 @@ export function LeadsList() {
                       </span>
                     </td>
 
-                    {/* Status Badge */}
                     <td className="py-4 px-4">
                       <span
                         className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold border uppercase tracking-wider ${getStatusBadge(
-                          lead.status
+                          lead.status,
                         )}`}
                       >
                         {lead.status.replace("_", " ")}
                       </span>
                     </td>
 
-                    {/* Submitted Date */}
                     <td className="py-4 px-4 text-slate-400">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -358,7 +333,6 @@ export function LeadsList() {
                       </div>
                     </td>
 
-                    {/* Actions */}
                     <td className="py-4 px-4 text-right">
                       <Link
                         href={`/admin/leads/${lead.id}`}
@@ -375,7 +349,6 @@ export function LeadsList() {
           </div>
         )}
 
-        {/* Pagination Footer */}
         <div className="bg-slate-950/60 px-4 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <div>
             Showing total <span className="font-semibold text-white">{totalLeads}</span> leads

@@ -2,10 +2,7 @@ import { NextRequest } from "next/server";
 import { z, ZodSchema } from "zod";
 import { ValidationError } from "@/lib/errors/app-error";
 
-export async function validateBody<T>(
-  req: NextRequest,
-  schema: ZodSchema<T>,
-): Promise<T> {
+export async function validateBody<T>(req: NextRequest, schema: ZodSchema<T>): Promise<T> {
   try {
     const body = await req.json();
     return schema.parse(body);
@@ -17,10 +14,7 @@ export async function validateBody<T>(
   }
 }
 
-export function validateQuery<T>(
-  req: NextRequest,
-  schema: ZodSchema<T>,
-): T {
+export function validateQuery<T>(req: NextRequest, schema: ZodSchema<T>): T {
   try {
     const { searchParams } = new URL(req.url);
     const queryObj: Record<string, string> = {};

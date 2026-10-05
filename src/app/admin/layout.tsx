@@ -7,23 +7,16 @@ export const metadata = {
   description: "Secure production administrative management dashboard for Webgent.",
 };
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getAuthSession();
 
-  // If unauthenticated or accessing login page, render child component directly
   if (!session?.user) {
     return <AuthProvider>{children}</AuthProvider>;
   }
 
   return (
     <AuthProvider>
-      <AdminShell user={session.user}>
-        {children}
-      </AdminShell>
+      <AdminShell user={session.user}>{children}</AdminShell>
     </AuthProvider>
   );
 }

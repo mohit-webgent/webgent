@@ -7,20 +7,13 @@ import { ApiResponse } from "@/lib/api/response";
 import { TestimonialStatus, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
-/**
- * Public Testimonials API
- * GET /api/testimonials
- * 
- * Rules:
- * - Only APPROVED testimonials are returned.
- * - Soft-deleted records (deletedAt != null) are excluded.
- * - Ordered by `order` ascending, then `createdAt` descending.
- */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const featuredOnly = searchParams.get("featured") === "true";
-    const minRating = searchParams.get("rating") ? parseInt(searchParams.get("rating")!, 10) : undefined;
+    const minRating = searchParams.get("rating")
+      ? parseInt(searchParams.get("rating")!, 10)
+      : undefined;
     const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "50", 10), 1), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
     const skip = (page - 1) * limit;
@@ -42,16 +35,12 @@ export async function GET(req: NextRequest) {
       prisma.testimonial.count({ where }),
       prisma.testimonial.findMany({
         where,
-        orderBy: [
-          { order: "asc" },
-          { createdAt: "desc" },
-        ],
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
         skip,
         take: limit,
       }),
     ]);
 
-    // Format fields with friendly aliases (designation, quote, photoUrl) for API consumers
     const formatted = testimonials.map((t) => ({
       id: t.id,
       clientName: t.clientName,
@@ -77,7 +66,9 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error("Error retrieving public testimonials", { error: String(error) });
+    logger.error("Error retrieving public testimonials", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to fetch testimonials.");
   }
 }

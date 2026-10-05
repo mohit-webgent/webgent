@@ -25,12 +25,10 @@ export async function GET(req: NextRequest) {
 
     const where: Prisma.LeadWhereInput = {};
 
-    // Validate and apply status filter
     if (statusParam && Object.values(LeadStatus).includes(statusParam as LeadStatus)) {
       where.status = statusParam as LeadStatus;
     }
 
-    // Apply search filter across name, email, company, and message
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
@@ -40,7 +38,6 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Determine orderBy field
     const validSortFields = ["createdAt", "score", "name", "status", "updatedAt"];
     const orderByField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
 

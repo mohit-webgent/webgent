@@ -39,8 +39,7 @@ export function AdminBreadcrumbs() {
     accumulatedPath += `/${seg}`;
     const isLast = idx === segments.length - 1;
     const label =
-      ROUTE_LABELS[seg] ||
-      (seg.length > 18 ? `${seg.slice(0, 8)}...` : seg.replace(/-/g, " "));
+      ROUTE_LABELS[seg] || (seg.length > 18 ? `${seg.slice(0, 8)}...` : seg.replace(/-/g, " "));
 
     return {
       path: accumulatedPath,
@@ -50,7 +49,10 @@ export function AdminBreadcrumbs() {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs font-medium">
+    <nav
+      aria-label="Breadcrumb"
+      className="hidden sm:flex items-center gap-1.5 text-xs font-medium"
+    >
       <Link
         href="/admin"
         className="flex items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors"
@@ -59,7 +61,6 @@ export function AdminBreadcrumbs() {
       </Link>
 
       {breadcrumbs.map((crumb, idx) => {
-        // Skip first "admin" since Home icon links to /admin
         if (crumb.label === "Dashboard" && idx === 0) return null;
 
         return (

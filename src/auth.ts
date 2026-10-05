@@ -36,28 +36,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Reject inactive or suspended users
         if (user.status !== UserStatus.ACTIVE) {
           throw new Error("ACCOUNT_INACTIVE");
         }
 
-        // Validate password match
         const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
         if (!isPasswordValid) {
           return null;
         }
 
-        // Update last login timestamp
         try {
           await prisma.user.update({
             where: { id: user.id },
             data: { lastLoginAt: new Date() },
           });
-        } catch {
-          // Ignore timestamp update failure during auth
-        }
+        } catch {}
 
-        // Return sanitized user payload
         return {
           id: user.id,
           email: user.email,

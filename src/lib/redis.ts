@@ -13,7 +13,9 @@ function initRedis(): Redis | null {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
 
   if (!url || !token || url.includes("placeholder") || token.includes("placeholder")) {
-    logger.debug("[Redis] Upstash Redis credentials not configured. Distributed caching/rate-limiting disabled.");
+    logger.debug(
+      "[Redis] Upstash Redis credentials not configured. Distributed caching/rate-limiting disabled.",
+    );
     return null;
   }
 
@@ -26,7 +28,9 @@ function initRedis(): Redis | null {
     logger.info("[Redis] Upstash Redis client initialized successfully.");
     return redisInstance;
   } catch (error) {
-    logger.error("[Redis] Failed to initialize Upstash Redis client", { error: String(error) });
+    logger.error("[Redis] Failed to initialize Upstash Redis client", {
+      error: String(error),
+    });
     return null;
   }
 }
@@ -41,9 +45,6 @@ export function getRedisClient(): Redis | null {
   return initRedis();
 }
 
-/**
- * Retrieve a cached JSON value from Redis with automatic parsing and error handling.
- */
 export async function cacheGet<T>(key: string): Promise<T | null> {
   const client = getRedisClient();
   if (!client) return null;
@@ -52,19 +53,15 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
     const data = await client.get<T>(key);
     return data;
   } catch (error) {
-    logger.warn("[Redis] cacheGet failed, continuing without cache", { key, error: String(error) });
+    logger.warn("[Redis] cacheGet failed, continuing without cache", {
+      key,
+      error: String(error),
+    });
     return null;
   }
 }
 
-/**
- * Store a JSON-serializable value in Redis with optional TTL (time to live in seconds).
- */
-export async function cacheSet<T>(
-  key: string,
-  value: T,
-  ttlSeconds?: number
-): Promise<boolean> {
+export async function cacheSet<T>(key: string, value: T, ttlSeconds?: number): Promise<boolean> {
   const client = getRedisClient();
   if (!client) return false;
 
@@ -81,9 +78,6 @@ export async function cacheSet<T>(
   }
 }
 
-/**
- * Invalidate a key or array of keys from Redis cache.
- */
 export async function cacheDel(key: string | string[]): Promise<boolean> {
   const client = getRedisClient();
   if (!client) return false;
@@ -99,9 +93,6 @@ export async function cacheDel(key: string | string[]): Promise<boolean> {
   }
 }
 
-/**
- * Ping Upstash Redis to verify active connectivity.
- */
 export async function pingRedis(): Promise<boolean> {
   const client = getRedisClient();
   if (!client) return false;

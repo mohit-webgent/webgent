@@ -8,12 +8,6 @@ import { emailService } from "@/lib/services/email";
 import { SubscriberStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
 
-/**
- * Public Newsletter Confirmation Endpoint
- * GET /api/newsletter/confirm?token=xxx
- * 
- * Verifies double opt-in confirmation token, activates subscriber, and sends welcome email.
- */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -25,14 +19,14 @@ export async function GET(req: NextRequest) {
       if (isHtmlRequest) {
         return renderHtmlStatusPage({
           title: "Missing Token",
-          message: "Confirmation token is missing. Please check the link from your confirmation email.",
+          message:
+            "Confirmation token is missing. Please check the link from your confirmation email.",
           isSuccess: false,
         });
       }
       return ApiResponse.badRequest("Confirmation token is required.", "MISSING_TOKEN");
     }
 
-    // Locate subscriber by secure confirmation token
     const subscriber = await prisma.subscriber.findUnique({
       where: { confirmationToken: token },
     });
@@ -41,32 +35,29 @@ export async function GET(req: NextRequest) {
       if (isHtmlRequest) {
         return renderHtmlStatusPage({
           title: "Invalid Token",
-          message: "This confirmation link is invalid or has already been used. If you're not subscribed, please try subscribing again.",
+          message:
+            "This confirmation link is invalid or has already been used. If you're not subscribed, please try subscribing again.",
           isSuccess: false,
         });
       }
-      return ApiResponse.badRequest(
-        "Invalid or already used confirmation token.",
-        "INVALID_TOKEN"
-      );
+      return ApiResponse.badRequest("Invalid or already used confirmation token.", "INVALID_TOKEN");
     }
 
-    // Expiration strategy check
     if (subscriber.tokenExpiresAt && subscriber.tokenExpiresAt < new Date()) {
       if (isHtmlRequest) {
         return renderHtmlStatusPage({
           title: "Token Expired",
-          message: "Your confirmation link has expired (links are valid for 24 hours). Please subscribe again to receive a new link.",
+          message:
+            "Your confirmation link has expired (links are valid for 24 hours). Please subscribe again to receive a new link.",
           isSuccess: false,
         });
       }
       return ApiResponse.badRequest(
         "Confirmation token has expired. Please subscribe again.",
-        "TOKEN_EXPIRED"
+        "TOKEN_EXPIRED",
       );
     }
 
-    // Activate subscriber and invalidate confirmation token
     const updatedSubscriber = await prisma.subscriber.update({
       where: { id: subscriber.id },
       data: {
@@ -78,11 +69,10 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Send welcome email with unsubscribe option
     await emailService.sendNewsletterWelcome(
       updatedSubscriber.email,
       updatedSubscriber.name,
-      updatedSubscriber.unsubscribeToken
+      updatedSubscriber.unsubscribeToken,
     );
 
     logger.info("Subscriber confirmed successfully", {
@@ -110,14 +100,13 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error("Error during newsletter confirmation", { error: String(error) });
+    logger.error("Error during newsletter confirmation", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to confirm subscription.");
   }
 }
 
-/**
- * Clean responsive HTML landing page for browser clicks
- */
 function renderHtmlStatusPage({
   title,
   message,

@@ -7,10 +7,7 @@ import { ApiResponse } from "@/lib/api/response";
 import { parseTags } from "@/lib/blog/utils";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const { slug } = params;
 
@@ -25,11 +22,15 @@ export async function GET(
 
     const currentTags = parseTags(currentPost.tags);
 
-    // Find related posts by matching category or matching tags
-    const OR_conditions: Array<{ category?: { equals: string; mode: "insensitive" }; tags?: { contains: string; mode: "insensitive" } }> = [];
+    const OR_conditions: Array<{
+      category?: { equals: string; mode: "insensitive" };
+      tags?: { contains: string; mode: "insensitive" };
+    }> = [];
 
     if (currentPost.category) {
-      OR_conditions.push({ category: { equals: currentPost.category, mode: "insensitive" } });
+      OR_conditions.push({
+        category: { equals: currentPost.category, mode: "insensitive" },
+      });
     }
 
     currentTags.forEach((t) => {

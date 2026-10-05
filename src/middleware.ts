@@ -5,7 +5,6 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Exempt public auth endpoints and login page
   if (pathname === "/admin/login" || pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
@@ -26,7 +25,6 @@ export async function middleware(req: NextRequest) {
   const isActive = token?.status === "ACTIVE";
   const isAdminOrEditor = token?.role === "ADMIN" || token?.role === "EDITOR";
 
-  // Enforce API security for /api/admin/*
   if (isAdminApiRoute) {
     if (!isAuthenticated) {
       return NextResponse.json(
@@ -37,7 +35,7 @@ export async function middleware(req: NextRequest) {
             message: "Authentication required to access admin resources.",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -50,14 +48,13 @@ export async function middleware(req: NextRequest) {
             message: "Access denied. Inactive account or insufficient permissions.",
           },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     return NextResponse.next();
   }
 
-  // Enforce page security for /admin/*
   if (isAdminRoute) {
     if (!isAuthenticated || !isActive || !isAdminOrEditor) {
       const loginUrl = new URL("/admin/login", req.url);

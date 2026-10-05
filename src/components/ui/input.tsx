@@ -1,8 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -34,9 +33,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && <p className="text-xs text-rose-400 font-medium">{error}</p>}
-        {!error && helperText && (
-          <p className="text-xs text-slate-400">{helperText}</p>
-        )}
+        {!error && helperText && <p className="text-xs text-slate-400">{helperText}</p>}
       </div>
     );
   },

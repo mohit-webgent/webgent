@@ -12,16 +12,6 @@ import { logger } from "@/lib/logger";
 
 const TOKEN_EXPIRY_HOURS = 24;
 
-/**
- * Public Newsletter Subscription Endpoint
- * POST /api/newsletter/subscribe
- * 
- * Implements:
- * - Double opt-in workflow
- * - Initial PENDING state
- * - Secure crypto tokens with 24-hour expiration
- * - Comprehensive duplicate email handling
- */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -30,13 +20,12 @@ export async function POST(req: NextRequest) {
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid subscription input",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
     const { email, name } = validation.data;
 
-    // Check for existing subscriber record
     const existing = await prisma.subscriber.findUnique({
       where: { email },
     });
@@ -47,7 +36,6 @@ export async function POST(req: NextRequest) {
     const unsubscribeToken = crypto.randomBytes(32).toString("hex");
 
     if (existing) {
-      // 1. Already verified and active
       if (existing.status === SubscriberStatus.ACTIVE) {
         return ApiResponse.success({
           status: "ALREADY_SUBSCRIBED",
@@ -55,7 +43,6 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // 2. Pending confirmation - refresh token & re-send double opt-in email
       if (existing.status === SubscriberStatus.PENDING) {
         await prisma.subscriber.update({
           where: { id: existing.id },
@@ -66,7 +53,11 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        await emailService.sendNewsletterConfirmation(email, confirmationToken, name || existing.name);
+        await emailService.sendNewsletterConfirmation(
+          email,
+          confirmationToken,
+          name || existing.name,
+        );
 
         logger.info("Re-sent newsletter confirmation email for pending subscriber", {
           subscriberId: existing.id,
@@ -75,11 +66,11 @@ export async function POST(req: NextRequest) {
 
         return ApiResponse.success({
           status: "CONFIRMATION_RESENT",
-          message: "A fresh confirmation link has been sent to your email. Please check your inbox.",
+          message:
+            "A fresh confirmation link has been sent to your email. Please check your inbox.",
         });
       }
 
-      // 3. Previously unsubscribed - reactivate back to pending with new opt-in
       if (existing.status === SubscriberStatus.UNSUBSCRIBED) {
         await prisma.subscriber.update({
           where: { id: existing.id },
@@ -93,7 +84,11 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        await emailService.sendNewsletterConfirmation(email, confirmationToken, name || existing.name);
+        await emailService.sendNewsletterConfirmation(
+          email,
+          confirmationToken,
+          name || existing.name,
+        );
 
         logger.info("Sent re-activation confirmation email to previously unsubscribed user", {
           subscriberId: existing.id,
@@ -102,12 +97,12 @@ export async function POST(req: NextRequest) {
 
         return ApiResponse.success({
           status: "CONFIRMATION_SENT",
-          message: "Welcome back! A confirmation email has been sent. Please confirm your subscription.",
+          message:
+            "Welcome back! A confirmation email has been sent. Please confirm your subscription.",
         });
       }
     }
 
-    // New subscriber creation in PENDING state
     const subscriber = await prisma.subscriber.create({
       data: {
         email,
@@ -120,7 +115,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send double opt-in confirmation email
     await emailService.sendNewsletterConfirmation(email, confirmationToken, name);
 
     logger.info("New subscriber registered in PENDING state", {
@@ -133,10 +127,12 @@ export async function POST(req: NextRequest) {
         status: "PENDING_CONFIRMATION",
         message: "Thank you for subscribing! Please check your email to confirm your subscription.",
       },
-      201
+      201,
     );
   } catch (error) {
-    logger.error("Error processing newsletter subscription", { error: String(error) });
+    logger.error("Error processing newsletter subscription", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to process subscription. Please try again later.");
   }
 }

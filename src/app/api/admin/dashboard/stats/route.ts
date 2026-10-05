@@ -6,10 +6,7 @@ import { logger } from "@/lib/logger";
 export async function GET() {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -17,7 +14,6 @@ export async function GET() {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Parallel fetch real database aggregates
     const [
       allLeads,
       recentLeads,
@@ -81,7 +77,6 @@ export async function GET() {
       }),
     ]);
 
-    // Calculate lead status breakdown
     const totalLeads = allLeads.length;
     let newLeads = 0;
     let contactedLeads = 0;
@@ -115,10 +110,8 @@ export async function GET() {
       }
     }
 
-    const conversionRate =
-      totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
-    const averageScore =
-      totalLeads > 0 ? Math.round(scoreSum / totalLeads) : 0;
+    const conversionRate = totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
+    const averageScore = totalLeads > 0 ? Math.round(scoreSum / totalLeads) : 0;
 
     const topPages = topPageViewsGrouped.map((item) => ({
       path: item.path,
@@ -163,7 +156,7 @@ export async function GET() {
     logger.error("Failed to calculate admin dashboard stats", { error });
     return NextResponse.json(
       { success: false, error: "Failed to load dashboard metrics" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

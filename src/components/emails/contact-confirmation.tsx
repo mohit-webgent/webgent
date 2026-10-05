@@ -25,13 +25,14 @@ export function ContactConfirmationEmail({
       subheading={`Hi ${firstName}, thank you for contacting Webgent. Our engineering team is currently reviewing your project details.`}
     >
       <Text style={paragraphStyle}>
-        We take every inquiry seriously. A senior engineering director will analyze your technical requirements and respond within <strong>24 business hours</strong> with initial recommendations and scheduling options.
+        We take every inquiry seriously. A senior engineering director will analyze your technical
+        requirements and respond within <strong>24 business hours</strong> with initial
+        recommendations and scheduling options.
       </Text>
 
-      {/* Inquiry Summary Card */}
       <Section style={summaryBoxStyle}>
         <Text style={summaryHeadingStyle}>YOUR SUBMISSION SUMMARY</Text>
-        
+
         {service && (
           <Text style={summaryItemStyle}>
             <span style={labelStyle}>Requested Service:</span>{" "}
@@ -55,7 +56,8 @@ export function ContactConfirmationEmail({
       </Section>
 
       <Text style={paragraphStyle}>
-        In the meantime, feel free to explore our recent enterprise case studies and open-source contributions.
+        In the meantime, feel free to explore our recent enterprise case studies and open-source
+        contributions.
       </Text>
 
       <Section style={{ textAlign: "center", margin: "28px 0 16px 0" }}>

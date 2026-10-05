@@ -8,21 +8,13 @@ export const newsletterSubscribeSchema = z.object({
     .min(1, "Email address is required")
     .email("Please provide a valid email address")
     .toLowerCase(),
-  name: z
-    .string()
-    .trim()
-    .max(100, "Name cannot exceed 100 characters")
-    .optional()
-    .nullable(),
+  name: z.string().trim().max(100, "Name cannot exceed 100 characters").optional().nullable(),
 });
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;
 
 export const newsletterTokenSchema = z.object({
-  token: z
-    .string()
-    .trim()
-    .min(1, "Token is required"),
+  token: z.string().trim().min(1, "Token is required"),
 });
 
 export const subscriberQuerySchema = z.object({

@@ -16,7 +16,9 @@ import { useToast } from "@/components/ui/toast";
 
 export function SettingsManager() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<"general" | "contact" | "social" | "features" | "seo">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "contact" | "social" | "features" | "seo">(
+    "general",
+  );
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [originalSettings, setOriginalSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,6 @@ export function SettingsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
@@ -139,9 +140,7 @@ export function SettingsManager() {
         </div>
       </div>
 
-      {/* Main Container */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-        {/* Navigation Tabs (Sidebar style) */}
         <div className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-slate-800 p-4 space-y-1 bg-slate-900/40">
           <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             Configuration Tabs
@@ -167,7 +166,6 @@ export function SettingsManager() {
           })}
         </div>
 
-        {/* Tab Body */}
         <div className="lg:col-span-9 p-6 sm:p-8">
           {loading ? (
             <div className="py-20 text-center space-y-3">
@@ -176,7 +174,6 @@ export function SettingsManager() {
             </div>
           ) : (
             <form onSubmit={handleSave} className="space-y-6">
-              {/* TAB 1: GENERAL */}
               {activeTab === "general" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
@@ -227,7 +224,6 @@ export function SettingsManager() {
                 </div>
               )}
 
-              {/* TAB 2: CONTACT */}
               {activeTab === "contact" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
@@ -289,7 +285,6 @@ export function SettingsManager() {
                 </div>
               )}
 
-              {/* TAB 3: SOCIAL */}
               {activeTab === "social" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
@@ -351,7 +346,6 @@ export function SettingsManager() {
                 </div>
               )}
 
-              {/* TAB 4: FEATURES */}
               {activeTab === "features" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
@@ -362,7 +356,6 @@ export function SettingsManager() {
                   </div>
 
                   <div className="space-y-4">
-                    {/* Toggle 1: Live Chat */}
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
                         <p className="text-xs font-bold text-white">Live AI Chat Widget</p>
@@ -385,7 +378,6 @@ export function SettingsManager() {
                       </button>
                     </div>
 
-                    {/* Toggle 2: Double Opt-in */}
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
                         <p className="text-xs font-bold text-white">Newsletter Double Opt-In</p>
@@ -412,7 +404,6 @@ export function SettingsManager() {
                       </button>
                     </div>
 
-                    {/* Toggle 3: Telemetry */}
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
                         <p className="text-xs font-bold text-white">Custom Analytics Tracking</p>
@@ -424,9 +415,7 @@ export function SettingsManager() {
                         type="button"
                         onClick={() => handleToggle("analytics_tracking")}
                         className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
-                          settings.analytics_tracking === "true"
-                            ? "bg-indigo-600"
-                            : "bg-slate-800"
+                          settings.analytics_tracking === "true" ? "bg-indigo-600" : "bg-slate-800"
                         }`}
                       >
                         <span
@@ -439,7 +428,6 @@ export function SettingsManager() {
                       </button>
                     </div>
 
-                    {/* Toggle 4: Maintenance Mode */}
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
                         <p className="text-xs font-bold text-white">Public Maintenance Mode</p>
@@ -451,16 +439,12 @@ export function SettingsManager() {
                         type="button"
                         onClick={() => handleToggle("maintenance_mode")}
                         className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
-                          settings.maintenance_mode === "true"
-                            ? "bg-amber-600"
-                            : "bg-slate-800"
+                          settings.maintenance_mode === "true" ? "bg-amber-600" : "bg-slate-800"
                         }`}
                       >
                         <span
                           className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                            settings.maintenance_mode === "true"
-                              ? "translate-x-6"
-                              : "translate-x-0"
+                            settings.maintenance_mode === "true" ? "translate-x-6" : "translate-x-0"
                           }`}
                         />
                       </button>
@@ -469,7 +453,6 @@ export function SettingsManager() {
                 </div>
               )}
 
-              {/* TAB 5: SEO */}
               {activeTab === "seo" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
@@ -499,9 +482,7 @@ export function SettingsManager() {
                       <textarea
                         rows={3}
                         value={settings.default_meta_description || ""}
-                        onChange={(e) =>
-                          handleChange("default_meta_description", e.target.value)
-                        }
+                        onChange={(e) => handleChange("default_meta_description", e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors resize-none"
                       />
                     </div>

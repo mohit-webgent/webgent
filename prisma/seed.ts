@@ -1,4 +1,11 @@
-import { PrismaClient, UserRole, UserStatus, LeadStatus, TestimonialStatus, SubscriberStatus } from "@prisma/client";
+import {
+  PrismaClient,
+  UserRole,
+  UserStatus,
+  LeadStatus,
+  TestimonialStatus,
+  SubscriberStatus,
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -9,7 +16,6 @@ async function main() {
   const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@webgent.com";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || "ChangeMeInProduction123!";
 
-  // 1. Admin User Seed
   let adminUser = await prisma.user.findUnique({
     where: { email: adminEmail },
   });
@@ -30,19 +36,21 @@ async function main() {
     console.log(`ℹ️ Admin user (${adminEmail}) already exists.`);
   }
 
-  // 2. Sample Projects / Portfolio Seed
   const sampleProjects = [
     {
       title: "NextGen Enterprise SaaS Platform",
       slug: "nextgen-enterprise-saas-platform",
-      description: "An AI-powered multi-tenant cloud analytics platform designed for high-scale enterprise operations.",
-      content: "### Architectural Highlights\n\n- Multi-tenant architecture with row-level tenant isolation\n- Real-time data processing pipeline handling 10k events/sec\n- Micro-frontend architecture with Next.js App Router and TailwindCSS\n- Automated CI/CD integration with automated smoke testing",
+      description:
+        "An AI-powered multi-tenant cloud analytics platform designed for high-scale enterprise operations.",
+      content:
+        "### Architectural Highlights\n\n- Multi-tenant architecture with row-level tenant isolation\n- Real-time data processing pipeline handling 10k events/sec\n- Micro-frontend architecture with Next.js App Router and TailwindCSS\n- Automated CI/CD integration with automated smoke testing",
       clientName: "Enterprise Cloud Systems",
       category: "AI & Cloud Infrastructure",
-      imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
       screenshots: JSON.stringify([
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
       ]),
       demoUrl: "https://demo.webgent.com/nextgen",
       githubUrl: "https://github.com/webgent/nextgen-saas",
@@ -57,13 +65,16 @@ async function main() {
     {
       title: "Fintech Real-Time Trading Portal",
       slug: "fintech-realtime-trading-portal",
-      description: "Ultra-low latency web interface for institutional crypto and stock algorithmic trading.",
-      content: "### Platform Overview\n\nBuilt with WebSockets, Web Workers, and custom charting engines to render high-frequency ticker updates without frame drops.",
+      description:
+        "Ultra-low latency web interface for institutional crypto and stock algorithmic trading.",
+      content:
+        "### Platform Overview\n\nBuilt with WebSockets, Web Workers, and custom charting engines to render high-frequency ticker updates without frame drops.",
       clientName: "Apex Financial",
       category: "Fintech & Web3",
-      imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
       screenshots: JSON.stringify([
-        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80",
       ]),
       demoUrl: "https://demo.webgent.com/fintech",
       githubUrl: "https://github.com/webgent/fintech-portal",
@@ -78,13 +89,16 @@ async function main() {
     {
       title: "Healthcare Digital Patient Portal",
       slug: "healthcare-digital-patient-portal",
-      description: "HIPAA-compliant telemedicine and appointment scheduling portal for modern healthcare providers.",
-      content: "### Security & Compliance\n\nEnd-to-end encrypted medical record storage, WebRTC encrypted video consultations, and automated patient notifications.",
+      description:
+        "HIPAA-compliant telemedicine and appointment scheduling portal for modern healthcare providers.",
+      content:
+        "### Security & Compliance\n\nEnd-to-end encrypted medical record storage, WebRTC encrypted video consultations, and automated patient notifications.",
       clientName: "CarePlus Medical Group",
       category: "Healthcare Technology",
-      imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
       screenshots: JSON.stringify([
-        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
       ]),
       demoUrl: "https://demo.webgent.com/healthcare",
       githubUrl: undefined,
@@ -95,7 +109,7 @@ async function main() {
       seoTitle: "Healthcare Telemedicine Portal Case Study",
       seoDescription: "HIPAA compliant patient booking and telehealth platform.",
       authorId: adminUser.id,
-    }
+    },
   ];
 
   for (const proj of sampleProjects) {
@@ -107,7 +121,6 @@ async function main() {
   }
   console.log("✅ Seeded sample portfolio projects.");
 
-  // 3. Sample Leads Seed
   const sampleLeads = [
     {
       name: "Sarah Jenkins",
@@ -116,7 +129,8 @@ async function main() {
       phone: "+1 (555) 234-5678",
       service: "Enterprise Web App",
       budget: "$25k - $50k",
-      message: "Looking to rebuild our core B2B customer portal using Next.js, Prisma, and TailwindCSS.",
+      message:
+        "Looking to rebuild our core B2B customer portal using Next.js, Prisma, and TailwindCSS.",
       status: LeadStatus.NEW,
       score: 85,
       ipAddress: "127.0.0.1",
@@ -129,28 +143,31 @@ async function main() {
       phone: "+1 (555) 987-6543",
       service: "AI Integration",
       budget: "$50k+",
-      message: "Need specialized AI engineering support to integrate autonomous agents into our SaaS app.",
+      message:
+        "Need specialized AI engineering support to integrate autonomous agents into our SaaS app.",
       status: LeadStatus.CONTACTED,
       score: 95,
       ipAddress: "127.0.0.1",
       userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-    }
+    },
   ];
 
   for (const lead of sampleLeads) {
-    const existing = await prisma.lead.findFirst({ where: { email: lead.email } });
+    const existing = await prisma.lead.findFirst({
+      where: { email: lead.email },
+    });
     if (!existing) {
       await prisma.lead.create({ data: lead });
     }
   }
   console.log("✅ Seeded sample CRM leads.");
 
-  // 4. Sample Blog Posts Seed
   const samplePosts = [
     {
       title: "Building High-Scale Multi-Tenant Applications with Next.js 14 and Prisma",
       slug: "building-multitenant-apps-nextjs14-prisma",
-      excerpt: "Explore architectural strategies for tenant isolation, database connection pool tuning, and global state management in modern Next.js 14 applications.",
+      excerpt:
+        "Explore architectural strategies for tenant isolation, database connection pool tuning, and global state management in modern Next.js 14 applications.",
       content: `# Building High-Scale Multi-Tenant Applications
 
 Multi-tenancy is a fundamental requirement for modern SaaS platforms. In this deep dive, we explore how to design tenant-isolated architectures using Next.js 14 App Router and Prisma ORM.
@@ -174,8 +191,10 @@ export async function getTenantData(tenantId: string) {
 \`\`\`
 
 Conclusion: By structuring database queries with tenant scope, applications stay secure and performant.`,
-      coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80",
-      ogImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80",
+      coverImage:
+        "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80",
+      ogImage:
+        "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80",
       category: "Architecture",
       tags: "nextjs,prisma,typescript,architecture",
       readTime: 3,
@@ -190,7 +209,8 @@ Conclusion: By structuring database queries with tenant scope, applications stay
     {
       title: "Optimizing PostgreSQL Query Performance and Indexing Strategies",
       slug: "optimizing-postgresql-query-performance-indexing",
-      excerpt: "A practical guide to database indexing, query execution plan analysis, and B-tree optimization for high-throughput Next.js backends.",
+      excerpt:
+        "A practical guide to database indexing, query execution plan analysis, and B-tree optimization for high-throughput Next.js backends.",
       content: `# Optimizing PostgreSQL Performance
 
 Database latency is often the primary bottleneck in web application throughput. Understanding PostgreSQL indexing strategies can dramatically cut response times.
@@ -200,8 +220,10 @@ Database latency is often the primary bottleneck in web application throughput. 
 - **B-Tree Indexes**: Ideal for equality and range queries on IDs, timestamps, and numbers.
 - **GIN Indexes**: Recommended for array columns and JSONB search payloads.
 - **Composite Indexes**: Use multi-column indexes for queries filtering on combined predicates like \`where: { status: "PUBLISHED", publishedAt: { lte: now } }\`.`,
-      coverImage: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80",
-      ogImage: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80",
+      coverImage:
+        "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80",
+      ogImage:
+        "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80",
       category: "Database",
       tags: "postgresql,prisma,performance,database",
       readTime: 4,
@@ -212,7 +234,7 @@ Database latency is often the primary bottleneck in web application throughput. 
       seoTitle: "PostgreSQL Query Performance & Indexing Guide",
       seoDescription: "Optimize PostgreSQL queries and index strategies for Next.js applications.",
       authorId: adminUser.id,
-    }
+    },
   ];
 
   for (const post of samplePosts) {
@@ -224,12 +246,31 @@ Database latency is often the primary bottleneck in web application throughput. 
   }
   console.log("✅ Seeded sample blog posts.");
 
-  // 5. Default Public Site Settings Seed
   const defaultSettings = [
-    { key: "site_name", value: "Webgent", description: "Official Site Name", isPublic: true },
-    { key: "site_tagline", value: "Next-Gen Web Solutions & Enterprise Software", description: "Hero Tagline", isPublic: true },
-    { key: "contact_email", value: "hello@webgent.com", description: "Primary Contact Email", isPublic: true },
-    { key: "contact_phone", value: "+1 (800) 555-WEBGENT", description: "Support Phone Number", isPublic: true },
+    {
+      key: "site_name",
+      value: "Webgent",
+      description: "Official Site Name",
+      isPublic: true,
+    },
+    {
+      key: "site_tagline",
+      value: "Next-Gen Web Solutions & Enterprise Software",
+      description: "Hero Tagline",
+      isPublic: true,
+    },
+    {
+      key: "contact_email",
+      value: "hello@webgent.com",
+      description: "Primary Contact Email",
+      isPublic: true,
+    },
+    {
+      key: "contact_phone",
+      value: "+1 (800) 555-WEBGENT",
+      description: "Support Phone Number",
+      isPublic: true,
+    },
   ];
 
   for (const setting of defaultSettings) {
@@ -241,14 +282,15 @@ Database latency is often the primary bottleneck in web application throughput. 
   }
   console.log("✅ Seeded site configuration settings.");
 
-  // 6. Sample Testimonials Seed
   const sampleTestimonials = [
     {
       clientName: "Alex Vance",
       clientTitle: "Chief Technology Officer",
       company: "Synthetix Cloud Labs",
-      content: "Webgent transformed our entire enterprise infrastructure. Their architectural execution with Next.js and PostgreSQL cut our latency by 65% and allowed us to scale seamlessly across international regions.",
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      content:
+        "Webgent transformed our entire enterprise infrastructure. Their architectural execution with Next.js and PostgreSQL cut our latency by 65% and allowed us to scale seamlessly across international regions.",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
       rating: 5,
       featured: true,
       status: TestimonialStatus.APPROVED,
@@ -258,8 +300,10 @@ Database latency is often the primary bottleneck in web application throughput. 
       clientName: "Marcus Sterling",
       clientTitle: "Head of Digital Experience",
       company: "Apex Global FinTech",
-      content: "The level of engineering rigor and design polish delivered by the Webgent team exceeded our highest expectations. They built a mission-critical platform on time and under budget.",
-      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+      content:
+        "The level of engineering rigor and design polish delivered by the Webgent team exceeded our highest expectations. They built a mission-critical platform on time and under budget.",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
       rating: 5,
       featured: true,
       status: TestimonialStatus.APPROVED,
@@ -269,8 +313,10 @@ Database latency is often the primary bottleneck in web application throughput. 
       clientName: "Elena Rostova",
       clientTitle: "VP of Product Engineering",
       company: "BioHealth Diagnostics",
-      content: "Working with Webgent was an absolute game changer. Their deep understanding of modern web architectures and real-time state synchronization gave us an immense competitive edge.",
-      avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+      content:
+        "Working with Webgent was an absolute game changer. Their deep understanding of modern web architectures and real-time state synchronization gave us an immense competitive edge.",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
       rating: 5,
       featured: false,
       status: TestimonialStatus.APPROVED,
@@ -280,7 +326,10 @@ Database latency is often the primary bottleneck in web application throughput. 
 
   for (const testimonial of sampleTestimonials) {
     const existing = await prisma.testimonial.findFirst({
-      where: { clientName: testimonial.clientName, company: testimonial.company },
+      where: {
+        clientName: testimonial.clientName,
+        company: testimonial.company,
+      },
     });
     if (!existing) {
       await prisma.testimonial.create({ data: testimonial });
@@ -288,7 +337,6 @@ Database latency is often the primary bottleneck in web application throughput. 
   }
   console.log("✅ Seeded sample client testimonials.");
 
-  // 7. Sample Verified Subscriber Seed
   const sampleSubscribers = [
     {
       email: "subscriber@example.com",

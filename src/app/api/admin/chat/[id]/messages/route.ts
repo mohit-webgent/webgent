@@ -9,16 +9,10 @@ const sendMessageSchema = z.object({
   sender: z.string().default("admin"),
 });
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized access" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
@@ -27,13 +21,12 @@ export async function POST(
     if (!validated.success) {
       return NextResponse.json(
         { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const { content, sender } = validated.data;
 
-    // Verify session exists
     const chatSession = await prisma.chatSession.findUnique({
       where: { id: params.id },
     });
@@ -41,11 +34,10 @@ export async function POST(
     if (!chatSession) {
       return NextResponse.json(
         { success: false, error: "Chat session not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    // Create message and touch session updatedAt
     const [message] = await prisma.$transaction([
       prisma.chatMessage.create({
         data: {
@@ -64,10 +56,10 @@ export async function POST(
 
     return NextResponse.json({ success: true, data: message }, { status: 201 });
   } catch (error) {
-    logger.error("Failed to post message to chat session", { error, id: params.id });
-    return NextResponse.json(
-      { success: false, error: "Failed to send message" },
-      { status: 500 }
-    );
+    logger.error("Failed to post message to chat session", {
+      error,
+      id: params.id,
+    });
+    return NextResponse.json({ success: false, error: "Failed to send message" }, { status: 500 });
   }
 }

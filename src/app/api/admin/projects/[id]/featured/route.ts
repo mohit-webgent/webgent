@@ -7,10 +7,7 @@ import { ApiResponse } from "@/lib/api/response";
 import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { logger } from "@/lib/logger";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -28,10 +25,8 @@ export async function PATCH(
     }
 
     const body = await req.json().catch(() => ({}));
-    const nextFeatured =
-      typeof body.featured === "boolean" ? body.featured : !project.featured;
+    const nextFeatured = typeof body.featured === "boolean" ? body.featured : !project.featured;
 
-    // Enforce Max 3 Featured Projects Limit
     if (nextFeatured && !project.featured) {
       const featuredCount = await prisma.project.count({
         where: { featured: true, NOT: { id } },
@@ -39,7 +34,7 @@ export async function PATCH(
       if (featuredCount >= 3) {
         return ApiResponse.badRequest(
           "Maximum limit of 3 featured projects reached. Unfeature another project first.",
-          "FEATURED_LIMIT_EXCEEDED"
+          "FEATURED_LIMIT_EXCEEDED",
         );
       }
     }
@@ -56,7 +51,9 @@ export async function PATCH(
 
     return ApiResponse.success(updatedProject);
   } catch (error) {
-    logger.error("Error toggling project featured status", { error: String(error) });
+    logger.error("Error toggling project featured status", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to update featured status.");
   }
 }

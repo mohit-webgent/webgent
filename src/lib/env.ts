@@ -1,31 +1,14 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
-  NEXT_PUBLIC_APP_URL: z
-    .string()
-    .url()
-    .default("http://localhost:3000"),
-  DATABASE_URL: z
-    .string()
-    .min(1, "DATABASE_URL is required"),
-  AUTH_SECRET: z
-    .string()
-    .default("a_very_secret_32_character_long_auth_secret_key_webgent"),
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error"])
-    .default("info"),
-  RESEND_API_KEY: z
-    .string()
-    .optional(),
-  EMAIL_FROM: z
-    .string()
-    .default("Webgent <onboarding@resend.dev>"),
-  ADMIN_NOTIFICATION_EMAIL: z
-    .string()
-    .default("admin@webgent.com"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  AUTH_SECRET: z.string().default("a_very_secret_32_character_long_auth_secret_key_webgent"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default("Webgent <onboarding@resend.dev>"),
+  ADMIN_NOTIFICATION_EMAIL: z.string().default("admin@webgent.com"),
   R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
@@ -73,10 +56,7 @@ function parseEnv() {
   });
 
   if (!parsed.success) {
-    console.error(
-      "❌ Invalid environment variables:",
-      parsed.error.flatten().fieldErrors,
-    );
+    console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
     throw new Error("Invalid environment variables");
   }
 

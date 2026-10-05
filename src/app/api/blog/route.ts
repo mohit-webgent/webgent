@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     if (!queryResult.success) {
       return ApiResponse.validationError(
         "Invalid query parameters",
-        queryResult.error.flatten().fieldErrors
+        queryResult.error.flatten().fieldErrors,
       );
     }
 

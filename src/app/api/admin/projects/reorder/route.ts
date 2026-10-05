@@ -21,23 +21,24 @@ export async function PATCH(req: NextRequest) {
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid reorder payload format",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
     const { items } = validation.data;
 
-    // Execute atomic transaction for reordering
     await prisma.$transaction(
       items.map((item) =>
         prisma.project.update({
           where: { id: item.id },
           data: { order: item.order },
-        })
-      )
+        }),
+      ),
     );
 
-    logger.info("Successfully reordered projects batch", { count: items.length });
+    logger.info("Successfully reordered projects batch", {
+      count: items.length,
+    });
 
     return ApiResponse.success({ message: "Projects reordered successfully." });
   } catch (error) {

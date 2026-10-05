@@ -62,10 +62,7 @@ interface DashboardData {
   };
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bg: string; text: string; border: string }
-> = {
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
   NEW: {
     label: "New",
     bg: "bg-blue-500/10",
@@ -125,7 +122,6 @@ export function AdminDashboardView({
         }
       }
     } catch {
-      // Fallback to current state
     } finally {
       setLoading(false);
     }
@@ -143,7 +139,6 @@ export function AdminDashboardView({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950/60 via-slate-900 to-slate-900 border border-indigo-500/20 p-6 sm:p-8">
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -156,7 +151,9 @@ export function AdminDashboardView({
               Dashboard Overview
             </h1>
             <p className="text-xs sm:text-sm text-slate-400">
-              Welcome back, <span className="text-slate-200 font-semibold">{userName || "Admin"}</span>. Real-time overview of business leads, conversion telemetry, and operations.
+              Welcome back,{" "}
+              <span className="text-slate-200 font-semibold">{userName || "Admin"}</span>. Real-time
+              overview of business leads, conversion telemetry, and operations.
             </p>
           </div>
 
@@ -181,9 +178,7 @@ export function AdminDashboardView({
         </div>
       </div>
 
-      {/* Primary KPI Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {/* Metric 1: Total Leads */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative overflow-hidden group hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-400">Total Leads</span>
@@ -192,9 +187,7 @@ export function AdminDashboardView({
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-3xl font-extrabold text-white tracking-tight">
-              {data.leads.total}
-            </p>
+            <p className="text-3xl font-extrabold text-white tracking-tight">{data.leads.total}</p>
             <p className="text-xs text-slate-400 flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
               <span className="font-semibold text-blue-300">{data.leads.new} new</span>
@@ -204,7 +197,6 @@ export function AdminDashboardView({
           </div>
         </div>
 
-        {/* Metric 2: Won Leads & Conversion Rate */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative overflow-hidden group hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-400">Conversion Rate</span>
@@ -217,16 +209,13 @@ export function AdminDashboardView({
               {data.leads.conversionRate}%
             </p>
             <p className="text-xs text-slate-400 flex items-center gap-1.5">
-              <span className="font-semibold text-emerald-400">
-                {data.leads.won} won
-              </span>
+              <span className="font-semibold text-emerald-400">{data.leads.won} won</span>
               <span>of</span>
               <span>{data.leads.total} total inquiries</span>
             </p>
           </div>
         </div>
 
-        {/* Metric 3: Average Lead Score */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative overflow-hidden group hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-400">Avg Lead Score</span>
@@ -247,7 +236,6 @@ export function AdminDashboardView({
           </div>
         </div>
 
-        {/* Metric 4: 30-Day Traffic */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative overflow-hidden group hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-400">Page Views (30d)</span>
@@ -269,7 +257,6 @@ export function AdminDashboardView({
         </div>
       </div>
 
-      {/* Lead Pipeline Funnel Overview */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
@@ -295,15 +282,11 @@ export function AdminDashboardView({
             <p className="text-[11px] font-medium text-slate-400 mt-0.5">New</p>
           </div>
           <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-            <p className="text-lg font-bold text-purple-400">
-              {data.leads.contacted}
-            </p>
+            <p className="text-lg font-bold text-purple-400">{data.leads.contacted}</p>
             <p className="text-[11px] font-medium text-slate-400 mt-0.5">Contacted</p>
           </div>
           <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-            <p className="text-lg font-bold text-amber-400">
-              {data.leads.proposalSent}
-            </p>
+            <p className="text-lg font-bold text-amber-400">{data.leads.proposalSent}</p>
             <p className="text-[11px] font-medium text-slate-400 mt-0.5">Proposal</p>
           </div>
           <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
@@ -321,15 +304,11 @@ export function AdminDashboardView({
         </div>
       </div>
 
-      {/* Main Two-Column Layout: Recent Leads + Content/Analytics Highlights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 Cols): Recent Leads Table */}
         <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">
-                Recent Leads
-              </h2>
+              <h2 className="text-base font-bold text-white tracking-tight">Recent Leads</h2>
               <p className="text-xs text-slate-400 mt-0.5">
                 Latest client inquiries submitted through the contact funnel
               </p>
@@ -367,10 +346,7 @@ export function AdminDashboardView({
                   {data.leads.recent.map((lead) => {
                     const statusCfg = STATUS_CONFIG[lead.status] || STATUS_CONFIG.NEW;
                     return (
-                      <tr
-                        key={lead.id}
-                        className="hover:bg-slate-800/40 transition-colors group"
-                      >
+                      <tr key={lead.id} className="hover:bg-slate-800/40 transition-colors group">
                         <td className="py-3.5 pr-4">
                           <p className="font-semibold text-white group-hover:text-indigo-300 transition-colors">
                             {lead.name}
@@ -390,7 +366,7 @@ export function AdminDashboardView({
                         <td className="py-3.5 px-4">
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${getScoreBadge(
-                              lead.score
+                              lead.score,
                             )}`}
                           >
                             {lead.score}/100
@@ -421,9 +397,7 @@ export function AdminDashboardView({
           )}
         </div>
 
-        {/* Right Column (1 Col): Top Pages & Quick Actions */}
         <div className="space-y-6">
-          {/* Quick Actions Card */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Quick Actions
@@ -460,7 +434,6 @@ export function AdminDashboardView({
             </div>
           </div>
 
-          {/* Top Visited Pages Card */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -484,12 +457,8 @@ export function AdminDashboardView({
                     className="flex items-center justify-between p-2 rounded-xl bg-slate-950/40 border border-slate-800/80 text-xs"
                   >
                     <div className="flex items-center gap-2 min-w-0 pr-2">
-                      <span className="font-mono text-slate-400 text-[10px] w-4">
-                        #{idx + 1}
-                      </span>
-                      <span className="font-mono text-slate-200 truncate">
-                        {page.path}
-                      </span>
+                      <span className="font-mono text-slate-400 text-[10px] w-4">#{idx + 1}</span>
+                      <span className="font-mono text-slate-200 truncate">{page.path}</span>
                     </div>
                     <span className="font-semibold text-sky-400 shrink-0">
                       {page.views.toLocaleString()}
@@ -500,7 +469,6 @@ export function AdminDashboardView({
             )}
           </div>
 
-          {/* Content Snapshot Card */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 text-xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Content & Audience
@@ -530,8 +498,7 @@ export function AdminDashboardView({
                   <span>Testimonials</span>
                 </span>
                 <span className="font-semibold text-white">
-                  {data.content.testimonials.approved} /{" "}
-                  {data.content.testimonials.total}
+                  {data.content.testimonials.approved} / {data.content.testimonials.total}
                 </span>
               </div>
               <div className="flex justify-between py-2 text-slate-300">
@@ -540,8 +507,7 @@ export function AdminDashboardView({
                   <span>Subscribers</span>
                 </span>
                 <span className="font-semibold text-white">
-                  {data.content.subscribers.active} /{" "}
-                  {data.content.subscribers.total}
+                  {data.content.subscribers.active} / {data.content.subscribers.total}
                 </span>
               </div>
               <div className="flex justify-between py-2 text-slate-300">

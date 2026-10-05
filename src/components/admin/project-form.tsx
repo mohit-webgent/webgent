@@ -96,9 +96,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
     });
 
     if (!validation.success) {
-      const firstError = Object.values(
-        validation.error.flatten().fieldErrors
-      )[0]?.[0];
+      const firstError = Object.values(validation.error.flatten().fieldErrors)[0]?.[0];
       setError(firstError || "Please check form inputs.");
       return;
     }
@@ -106,9 +104,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
     setLoading(true);
 
     try {
-      const url = isEditing
-        ? `/api/admin/projects/${initialData.id}`
-        : "/api/admin/projects";
+      const url = isEditing ? `/api/admin/projects/${initialData.id}` : "/api/admin/projects";
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -122,7 +118,12 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
           clientName: clientName.trim() || undefined,
           category: category.trim() || undefined,
           imageUrl: imageUrl.trim() || undefined,
-          screenshots: screenshots ? screenshots.split("\n").map((s) => s.trim()).filter(Boolean) : undefined,
+          screenshots: screenshots
+            ? screenshots
+                .split("\n")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : undefined,
           demoUrl: demoUrl.trim() || undefined,
           githubUrl: githubUrl.trim() || undefined,
           technologies: technologies.trim() || undefined,
@@ -175,7 +176,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
       )}
 
-      {/* Main Details Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
           <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
@@ -192,7 +192,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Project Title */}
           <div>
             <label
               htmlFor="project-title"
@@ -211,7 +210,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             />
           </div>
 
-          {/* Custom Slug (Optional) */}
           <div>
             <label
               htmlFor="project-slug"
@@ -230,7 +228,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
           </div>
         </div>
 
-        {/* Short Description */}
         <div>
           <label
             htmlFor="project-description"
@@ -250,7 +247,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {/* Category */}
           <div>
             <label
               htmlFor="project-category"
@@ -268,7 +264,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             />
           </div>
 
-          {/* Client Name */}
           <div>
             <label
               htmlFor="project-client"
@@ -286,7 +281,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             />
           </div>
 
-          {/* Display Order */}
           <div>
             <label
               htmlFor="project-order"
@@ -304,7 +298,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
           </div>
         </div>
 
-        {/* Tech Stack */}
         <div>
           <label
             htmlFor="project-tech"
@@ -326,12 +319,10 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
       </div>
 
-      {/* Media & External Links Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <h3 className="text-lg font-bold text-white">Media & External Links</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Cover Image */}
           <div>
             <ImageUpload
               label="Cover Image"
@@ -343,7 +334,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             />
           </div>
 
-          {/* Demo Live URL */}
           <div>
             <label
               htmlFor="project-demo"
@@ -365,7 +355,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
           </div>
         </div>
 
-        {/* GitHub Repository URL */}
         <div>
           <label
             htmlFor="project-github"
@@ -386,7 +375,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
           </div>
         </div>
 
-        {/* Screenshots URLs */}
         <div>
           <label
             htmlFor="project-screenshots"
@@ -405,7 +393,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
       </div>
 
-      {/* Case Study Content Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <FileText className="w-5 h-5 text-indigo-400" />
@@ -421,7 +408,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         />
       </div>
 
-      {/* Visibility, Featured & SEO Card */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
         <h3 className="text-lg font-bold text-white">Publishing & SEO Settings</h3>
 
@@ -454,7 +440,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* SEO Title */}
           <div>
             <label
               htmlFor="project-seo-title"
@@ -472,7 +457,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             />
           </div>
 
-          {/* SEO Description */}
           <div>
             <label
               htmlFor="project-seo-desc"
@@ -492,7 +476,6 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         </div>
       </div>
 
-      {/* Submit Button */}
       <button
         id="save-project-button"
         type="submit"

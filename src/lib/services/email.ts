@@ -3,7 +3,6 @@ import { render } from "@react-email/components";
 import * as React from "react";
 import { logger } from "@/lib/logger";
 
-// Import React Email Templates
 import {
   ContactConfirmationEmail,
   ContactConfirmationEmailProps,
@@ -12,9 +11,7 @@ import {
   AdminLeadNotificationEmail,
   AdminLeadNotificationEmailProps,
 } from "@/components/emails/admin-lead-notification";
-import {
-  NewsletterConfirmationEmail,
-} from "@/components/emails/newsletter-confirmation";
+import { NewsletterConfirmationEmail } from "@/components/emails/newsletter-confirmation";
 import {
   NewsletterUnsubscribedEmail,
   NewsletterUnsubscribedEmailProps,
@@ -36,10 +33,16 @@ export interface SendEmailOptions {
 
 export interface EmailService {
   sendEmail(options: SendEmailOptions): Promise<boolean>;
-  sendContactConfirmation(props: ContactConfirmationEmailProps & { email: string }): Promise<boolean>;
+  sendContactConfirmation(
+    props: ContactConfirmationEmailProps & { email: string },
+  ): Promise<boolean>;
   sendAdminNewLeadNotification(props: AdminLeadNotificationEmailProps): Promise<boolean>;
   sendNewsletterConfirmation(email: string, token: string, name?: string | null): Promise<boolean>;
-  sendNewsletterWelcome(email: string, name?: string | null, unsubscribeToken?: string | null): Promise<boolean>;
+  sendNewsletterWelcome(
+    email: string,
+    name?: string | null,
+    unsubscribeToken?: string | null,
+  ): Promise<boolean>;
   sendNewsletterUnsubscribed(props: NewsletterUnsubscribedEmailProps): Promise<boolean>;
   sendNewsletterDigest(to: string, props: NewsletterDigestEmailProps): Promise<boolean>;
 }
@@ -50,8 +53,13 @@ class ResendEmailService implements EmailService {
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY?.trim();
-    // Validate that API key exists and is not a default placeholder
-    if (apiKey && apiKey.startsWith("re_") && !apiKey.includes("placeholder") && apiKey !== "re_123456789_abcdefg") {
+
+    if (
+      apiKey &&
+      apiKey.startsWith("re_") &&
+      !apiKey.includes("placeholder") &&
+      apiKey !== "re_123456789_abcdefg"
+    ) {
       this.resend = new Resend(apiKey);
       this.isConfigured = true;
     }
@@ -63,25 +71,20 @@ class ResendEmailService implements EmailService {
   }
 
   private getAdminEmail(): string {
-    return process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SEED_ADMIN_EMAIL || "admin@webgent.com";
+    return (
+      process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SEED_ADMIN_EMAIL || "admin@webgent.com"
+    );
   }
 
-  /**
-   * Safe email masking helper for privacy-conscious logging.
-   */
   private maskEmail(email: string): string {
     const parts = email.split("@");
     if (parts.length !== 2) return "***";
     const [local, domain] = parts;
-    const maskedLocal = local.length > 2 ? `${local[0]}***${local[local.length - 1]}` : `${local[0]}*`;
+    const maskedLocal =
+      local.length > 2 ? `${local[0]}***${local[local.length - 1]}` : `${local[0]}*`;
     return `${maskedLocal}@${domain}`;
   }
 
-  /**
-   * Server-side email sender method.
-   * Uses Resend SDK when configured, or safely falls back to local logging in development/test.
-   * Never throws uncaught errors to prevent disrupting database operations.
-   */
   async sendEmail(options: SendEmailOptions): Promise<boolean> {
     try {
       const from = this.getFromAddress(options.from);
@@ -93,11 +96,12 @@ class ResendEmailService implements EmailService {
       }
 
       if (!html && !options.text) {
-        logger.error("[Email Service] Neither html, react, nor text was provided for email dispatch");
+        logger.error(
+          "[Email Service] Neither html, react, nor text was provided for email dispatch",
+        );
         return false;
       }
 
-      // 1. Resend Production Mode
       if (this.isConfigured && this.resend) {
         const payload = html
           ? {
@@ -136,19 +140,20 @@ class ResendEmailService implements EmailService {
         return true;
       }
 
-      // 2. Development / Test Safe Simulation Mode
-      logger.info(`[Email Service Simulation] Mock email dispatched for subject: "${options.subject}"`, {
-        from,
-        recipients: recipients.map((r) => this.maskEmail(r)),
-        subject: options.subject,
-        htmlLength: html?.length || 0,
-        textPreview: options.text?.substring(0, 100),
-        mode: "development/test_mock",
-      });
+      logger.info(
+        `[Email Service Simulation] Mock email dispatched for subject: "${options.subject}"`,
+        {
+          from,
+          recipients: recipients.map((r) => this.maskEmail(r)),
+          subject: options.subject,
+          htmlLength: html?.length || 0,
+          textPreview: options.text?.substring(0, 100),
+          mode: "development/test_mock",
+        },
+      );
 
       return true;
     } catch (error) {
-      // Safe error logging: never expose secret keys or stack traces in public responses
       logger.error("[Email Service] Unexpected error in email sending pipeline", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -156,11 +161,8 @@ class ResendEmailService implements EmailService {
     }
   }
 
-  /**
-   * 1. Contact Confirmation Email to Client
-   */
   async sendContactConfirmation(
-    props: ContactConfirmationEmailProps & { email: string }
+    props: ContactConfirmationEmailProps & { email: string },
   ): Promise<boolean> {
     const reactElement = React.createElement(ContactConfirmationEmail, {
       name: props.name,
@@ -179,12 +181,7 @@ class ResendEmailService implements EmailService {
     });
   }
 
-  /**
-   * 2. New Lead Notification Email to Admin
-   */
-  async sendAdminNewLeadNotification(
-    props: AdminLeadNotificationEmailProps
-  ): Promise<boolean> {
+  async sendAdminNewLeadNotification(props: AdminLeadNotificationEmailProps): Promise<boolean> {
     const adminTo = this.getAdminEmail();
 
     const reactElement = React.createElement(AdminLeadNotificationEmail, props);
@@ -200,13 +197,10 @@ class ResendEmailService implements EmailService {
     });
   }
 
-  /**
-   * 3. Newsletter Double Opt-In Confirmation
-   */
   async sendNewsletterConfirmation(
     email: string,
     token: string,
-    name?: string | null
+    name?: string | null,
   ): Promise<boolean> {
     const reactElement = React.createElement(NewsletterConfirmationEmail, {
       email,
@@ -227,13 +221,10 @@ class ResendEmailService implements EmailService {
     });
   }
 
-  /**
-   * Newsletter Welcome Confirmation
-   */
   async sendNewsletterWelcome(
     email: string,
     name?: string | null,
-    unsubscribeToken?: string | null
+    unsubscribeToken?: string | null,
   ): Promise<boolean> {
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
     const unsubUrl = unsubscribeToken
@@ -269,12 +260,7 @@ class ResendEmailService implements EmailService {
     });
   }
 
-  /**
-   * 4. Newsletter Unsubscribed Communication
-   */
-  async sendNewsletterUnsubscribed(
-    props: NewsletterUnsubscribedEmailProps
-  ): Promise<boolean> {
+  async sendNewsletterUnsubscribed(props: NewsletterUnsubscribedEmailProps): Promise<boolean> {
     const reactElement = React.createElement(NewsletterUnsubscribedEmail, props);
 
     const plainText = `Your email address (${props.email}) has been successfully unsubscribed from the Webgent Newsletter.\n\nBest regards,\nThe Webgent Team`;
@@ -287,13 +273,7 @@ class ResendEmailService implements EmailService {
     });
   }
 
-  /**
-   * 5. Blog / Newsletter Digest
-   */
-  async sendNewsletterDigest(
-    to: string,
-    props: NewsletterDigestEmailProps
-  ): Promise<boolean> {
+  async sendNewsletterDigest(to: string, props: NewsletterDigestEmailProps): Promise<boolean> {
     const reactElement = React.createElement(NewsletterDigestEmail, props);
 
     const plainText = `${props.editionTitle}\n\nFeatured: ${props.featuredArticle.title}\n${props.featuredArticle.excerpt}\n\nRead more at Webgent Blog.`;

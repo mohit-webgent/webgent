@@ -9,18 +9,7 @@ import { testimonialSchema, testimonialUpdateSchema } from "@/lib/validations/te
 import { storageService } from "@/lib/services/storage";
 import { logger } from "@/lib/logger";
 
-/**
- * Admin Single Testimonial API
- * GET /api/admin/testimonials/:id
- * PUT /api/admin/testimonials/:id
- * PATCH /api/admin/testimonials/:id
- * DELETE /api/admin/testimonials/:id
- */
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -49,10 +38,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -75,7 +61,7 @@ export async function PUT(
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid testimonial update data",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
@@ -105,15 +91,14 @@ export async function PUT(
       photoUrl: updated.avatarUrl,
     });
   } catch (error) {
-    logger.error("Error updating testimonial via PUT", { error: String(error) });
+    logger.error("Error updating testimonial via PUT", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to update testimonial.");
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -136,7 +121,7 @@ export async function PATCH(
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid testimonial patch data",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
@@ -147,7 +132,10 @@ export async function PATCH(
       data,
     });
 
-    logger.info("Patched testimonial record", { testimonialId: id, changes: Object.keys(data) });
+    logger.info("Patched testimonial record", {
+      testimonialId: id,
+      changes: Object.keys(data),
+    });
 
     return ApiResponse.success({
       ...updated,
@@ -161,10 +149,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -184,7 +169,6 @@ export async function DELETE(
     }
 
     if (isPermanent) {
-      // Safe cleanup of any stored photo in R2/S3
       if (testimonial.avatarUrl) {
         await storageService.deleteFile(testimonial.avatarUrl);
       }
@@ -194,10 +178,11 @@ export async function DELETE(
       });
 
       logger.info("Permanently deleted testimonial", { testimonialId: id });
-      return ApiResponse.success({ message: "Testimonial permanently deleted." });
+      return ApiResponse.success({
+        message: "Testimonial permanently deleted.",
+      });
     }
 
-    // Default Safe Deletion: Soft delete
     const softDeleted = await prisma.testimonial.update({
       where: { id },
       data: {

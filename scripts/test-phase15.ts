@@ -25,7 +25,10 @@ async function runPhase15Tests() {
   assert(layoutCode.includes("openGraph:"), "Root layout configures OpenGraph default metadata");
   assert(layoutCode.includes("twitter:"), "Root layout configures Twitter default metadata");
   assert(layoutCode.includes("robots:"), "Root layout configures robots meta tags");
-  assert(layoutCode.includes("application/ld+json"), "Root layout includes Schema.org JSON-LD structured data");
+  assert(
+    layoutCode.includes("application/ld+json"),
+    "Root layout includes Schema.org JSON-LD structured data",
+  );
   pass("Root layout configures complete default metadata, openGraph, twitter, and JSON-LD");
 
   // ----------------------------------------------------
@@ -33,35 +36,41 @@ async function runPhase15Tests() {
   // ----------------------------------------------------
   console.log("\n--- 2. Public Pages Metadata & Canonical URLs ---");
   const homeCode = fs.readFileSync("src/app/page.tsx", "utf8");
-  assert(homeCode.includes("canonical: \"/\""), "Home page defines canonical URL");
+  assert(homeCode.includes('canonical: "/"'), "Home page defines canonical URL");
   assert(homeCode.includes("openGraph:"), "Home page defines OpenGraph tags");
   assert(homeCode.includes("twitter:"), "Home page defines Twitter card");
   assert(homeCode.includes("revalidate = 60"), "Home page defines ISR revalidation cache");
   pass("Home page specifies canonical URL, OG metadata, Twitter card, and revalidation");
 
   const workCode = fs.readFileSync("src/app/work/page.tsx", "utf8");
-  assert(workCode.includes("canonical: \"/work\""), "Work page defines canonical URL");
+  assert(workCode.includes('canonical: "/work"'), "Work page defines canonical URL");
   assert(workCode.includes("openGraph:"), "Work page defines OpenGraph tags");
   assert(workCode.includes("twitter:"), "Work page defines Twitter card");
   assert(workCode.includes("revalidate = 60"), "Work page defines ISR revalidation cache");
   pass("Work page specifies canonical URL, OG metadata, Twitter card, and revalidation");
 
   const blogCode = fs.readFileSync("src/app/blog/page.tsx", "utf8");
-  assert(blogCode.includes("canonical: \"/blog\""), "Blog page defines canonical URL");
+  assert(blogCode.includes('canonical: "/blog"'), "Blog page defines canonical URL");
   assert(blogCode.includes("openGraph:"), "Blog page defines OpenGraph tags");
   assert(blogCode.includes("twitter:"), "Blog page defines Twitter card");
   assert(blogCode.includes("revalidate = 60"), "Blog page defines ISR revalidation cache");
   pass("Blog page specifies canonical URL, OG metadata, Twitter card, and revalidation");
 
   const testimonialsCode = fs.readFileSync("src/app/testimonials/page.tsx", "utf8");
-  assert(testimonialsCode.includes("canonical: \"/testimonials\""), "Testimonials page defines canonical URL");
+  assert(
+    testimonialsCode.includes('canonical: "/testimonials"'),
+    "Testimonials page defines canonical URL",
+  );
   assert(testimonialsCode.includes("openGraph:"), "Testimonials page defines OpenGraph tags");
   assert(testimonialsCode.includes("twitter:"), "Testimonials page defines Twitter card");
-  assert(testimonialsCode.includes("revalidate = 60"), "Testimonials page defines ISR revalidation cache");
+  assert(
+    testimonialsCode.includes("revalidate = 60"),
+    "Testimonials page defines ISR revalidation cache",
+  );
   pass("Testimonials page specifies canonical URL, OG metadata, Twitter card, and revalidation");
 
   const contactCode = fs.readFileSync("src/app/contact/page.tsx", "utf8");
-  assert(contactCode.includes("canonical: \"/contact\""), "Contact page defines canonical URL");
+  assert(contactCode.includes('canonical: "/contact"'), "Contact page defines canonical URL");
   assert(contactCode.includes("openGraph:"), "Contact page defines OpenGraph tags");
   assert(contactCode.includes("twitter:"), "Contact page defines Twitter card");
   assert(contactCode.includes("revalidate = 3600"), "Contact page defines revalidation cache");
@@ -69,7 +78,10 @@ async function runPhase15Tests() {
 
   const thankYouCode = fs.readFileSync("src/app/contact/thank-you/page.tsx", "utf8");
   assert(thankYouCode.includes("index: false"), "Thank you page excludes indexing with noindex");
-  assert(thankYouCode.includes("canonical: \"/contact/thank-you\""), "Thank you page defines canonical URL");
+  assert(
+    thankYouCode.includes('canonical: "/contact/thank-you"'),
+    "Thank you page defines canonical URL",
+  );
   pass("Contact thank you page sets noindex and canonical URL");
 
   // ----------------------------------------------------
@@ -78,15 +90,27 @@ async function runPhase15Tests() {
   console.log("\n--- 3. Dynamic Metadata for Projects & Blog Posts ---");
   const projectDetailCode = fs.readFileSync("src/app/work/[slug]/page.tsx", "utf8");
   assert(projectDetailCode.includes("generateMetadata"), "Project detail exports generateMetadata");
-  assert(projectDetailCode.includes("canonical: `/work/${project.slug}`"), "Project detail sets dynamic canonical URL");
-  assert(projectDetailCode.includes("openGraph:"), "Project detail configures dynamic OpenGraph tags");
+  assert(
+    projectDetailCode.includes("canonical: `/work/${project.slug}`"),
+    "Project detail sets dynamic canonical URL",
+  );
+  assert(
+    projectDetailCode.includes("openGraph:"),
+    "Project detail configures dynamic OpenGraph tags",
+  );
   assert(projectDetailCode.includes("twitter:"), "Project detail configures dynamic Twitter cards");
-  assert(projectDetailCode.includes("revalidate = 60"), "Project detail defines ISR revalidation cache");
+  assert(
+    projectDetailCode.includes("revalidate = 60"),
+    "Project detail defines ISR revalidation cache",
+  );
   pass("Project detail implements dynamic generateMetadata with canonical, OG, Twitter, and ISR");
 
   const blogDetailCode = fs.readFileSync("src/app/blog/[slug]/page.tsx", "utf8");
   assert(blogDetailCode.includes("generateMetadata"), "Blog detail exports generateMetadata");
-  assert(blogDetailCode.includes("canonical: `/blog/${post.slug}`"), "Blog detail sets dynamic canonical URL");
+  assert(
+    blogDetailCode.includes("canonical: `/blog/${post.slug}`"),
+    "Blog detail sets dynamic canonical URL",
+  );
   assert(blogDetailCode.includes("openGraph:"), "Blog detail configures dynamic OpenGraph tags");
   assert(blogDetailCode.includes("twitter:"), "Blog detail configures dynamic Twitter cards");
   assert(blogDetailCode.includes("revalidate = 60"), "Blog detail defines ISR revalidation cache");
@@ -98,12 +122,29 @@ async function runPhase15Tests() {
   console.log("\n--- 4. Sitemap & Robots Generation ---");
   const sitemapItems = await sitemapFn();
   assert(Array.isArray(sitemapItems), "sitemap function returns an array of route entries");
-  assert(sitemapItems.some((item) => item.url.endsWith("/")), "Sitemap contains home route");
-  assert(sitemapItems.some((item) => item.url.endsWith("/work")), "Sitemap contains work route");
-  assert(sitemapItems.some((item) => item.url.endsWith("/blog")), "Sitemap contains blog route");
-  assert(sitemapItems.some((item) => item.url.endsWith("/testimonials")), "Sitemap contains testimonials route");
-  assert(sitemapItems.some((item) => item.url.endsWith("/contact")), "Sitemap contains contact route");
-  pass(`Sitemap generated successfully with ${sitemapItems.length} routes including static and dynamic items`);
+  assert(
+    sitemapItems.some((item) => item.url.endsWith("/")),
+    "Sitemap contains home route",
+  );
+  assert(
+    sitemapItems.some((item) => item.url.endsWith("/work")),
+    "Sitemap contains work route",
+  );
+  assert(
+    sitemapItems.some((item) => item.url.endsWith("/blog")),
+    "Sitemap contains blog route",
+  );
+  assert(
+    sitemapItems.some((item) => item.url.endsWith("/testimonials")),
+    "Sitemap contains testimonials route",
+  );
+  assert(
+    sitemapItems.some((item) => item.url.endsWith("/contact")),
+    "Sitemap contains contact route",
+  );
+  pass(
+    `Sitemap generated successfully with ${sitemapItems.length} routes including static and dynamic items`,
+  );
 
   const robotsData = robotsFn();
   assert(Array.isArray(robotsData.rules), "robots returns rules array");
@@ -111,9 +152,12 @@ async function runPhase15Tests() {
   assert(Array.isArray(robotsData.rules[0].disallow), "robots defines disallow array");
   assert(
     (robotsData.rules[0].disallow as string[]).some((p) => p.includes("/admin")),
-    "robots disallows admin paths"
+    "robots disallows admin paths",
   );
-  assert(typeof robotsData.sitemap === "string" && robotsData.sitemap.includes("sitemap.xml"), "robots specifies sitemap URL");
+  assert(
+    typeof robotsData.sitemap === "string" && robotsData.sitemap.includes("sitemap.xml"),
+    "robots specifies sitemap URL",
+  );
   pass("Robots.txt configures allowed public crawling, admin protection, and sitemap reference");
 
   // ----------------------------------------------------
@@ -124,8 +168,14 @@ async function runPhase15Tests() {
   assert(fs.existsSync("src/app/opengraph-image.tsx"), "Default app opengraph-image exists");
   const ogRouteCode = fs.readFileSync("src/app/api/og/route.tsx", "utf8");
   assert(ogRouteCode.includes("ImageResponse"), "Dynamic OG route utilizes Next.js ImageResponse");
-  assert(ogRouteCode.includes("searchParams.get(\"title\")"), "Dynamic OG route accepts parametric titles");
-  assert(ogRouteCode.includes("searchParams.get(\"badge\")"), "Dynamic OG route accepts parametric badges");
+  assert(
+    ogRouteCode.includes('searchParams.get("title")'),
+    "Dynamic OG route accepts parametric titles",
+  );
+  assert(
+    ogRouteCode.includes('searchParams.get("badge")'),
+    "Dynamic OG route accepts parametric badges",
+  );
   pass("Dynamic Open Graph image engine implemented via Next.js native ImageResponse");
 
   // ----------------------------------------------------
@@ -146,11 +196,20 @@ async function runPhase15Tests() {
 
   // Check semantic layout landmarks
   const mainLayoutCode = fs.readFileSync("src/components/layout/main-layout.tsx", "utf8");
-  assert(mainLayoutCode.includes("Skip to main content"), "MainLayout provides skip-to-content accessible link");
-  assert(mainLayoutCode.includes("id=\"main-content\""), "Main element has id for keyboard accessibility");
+  assert(
+    mainLayoutCode.includes("Skip to main content"),
+    "MainLayout provides skip-to-content accessible link",
+  );
+  assert(
+    mainLayoutCode.includes('id="main-content"'),
+    "Main element has id for keyboard accessibility",
+  );
   const headerCode = fs.readFileSync("src/components/layout/header.tsx", "utf8");
-  assert(headerCode.includes("aria-label=\"Main Navigation\""), "Header has accessible nav landmark");
-  assert(headerCode.includes("aria-label=\"Mobile Navigation\""), "Mobile menu has accessible nav landmark");
+  assert(headerCode.includes('aria-label="Main Navigation"'), "Header has accessible nav landmark");
+  assert(
+    headerCode.includes('aria-label="Mobile Navigation"'),
+    "Mobile menu has accessible nav landmark",
+  );
   pass("Semantic HTML landmarks and accessibility standards verified");
 
   // ----------------------------------------------------
@@ -158,15 +217,36 @@ async function runPhase15Tests() {
   // ----------------------------------------------------
   console.log("\n--- 7. Image Optimization & Lazy Loading ---");
   const nextConfigCode = fs.readFileSync("next.config.mjs", "utf8");
-  assert(nextConfigCode.includes("remotePatterns:"), "Next.js config enables remotePatterns for images");
-  assert(nextConfigCode.includes("formats:"), "Next.js config specifies modern AVIF/WebP image formats");
-  assert(nextConfigCode.includes("compress: true"), "Next.js enables Gzip/Brotli response compression");
+  assert(
+    nextConfigCode.includes("remotePatterns:"),
+    "Next.js config enables remotePatterns for images",
+  );
+  assert(
+    nextConfigCode.includes("formats:"),
+    "Next.js config specifies modern AVIF/WebP image formats",
+  );
+  assert(
+    nextConfigCode.includes("compress: true"),
+    "Next.js enables Gzip/Brotli response compression",
+  );
 
-  assert(projectDetailCode.includes("loading=\"lazy\""), "Project detail screenshots use lazy loading");
-  assert(projectDetailCode.includes("decoding=\"async\""), "Project detail screenshots use asynchronous decoding");
-  assert(testimonialsCode.includes("loading=\"lazy\""), "Testimonial avatars use lazy loading");
-  assert(testimonialsCode.includes("decoding=\"async\""), "Testimonial avatars use asynchronous decoding");
-  assert(blogDetailCode.includes("fetchpriority=\"high\""), "Blog detail above-the-fold hero image prioritizes LCP");
+  assert(
+    projectDetailCode.includes('loading="lazy"'),
+    "Project detail screenshots use lazy loading",
+  );
+  assert(
+    projectDetailCode.includes('decoding="async"'),
+    "Project detail screenshots use asynchronous decoding",
+  );
+  assert(testimonialsCode.includes('loading="lazy"'), "Testimonial avatars use lazy loading");
+  assert(
+    testimonialsCode.includes('decoding="async"'),
+    "Testimonial avatars use asynchronous decoding",
+  );
+  assert(
+    blogDetailCode.includes('fetchpriority="high"'),
+    "Blog detail above-the-fold hero image prioritizes LCP",
+  );
   pass("Image optimization, lazy loading, decoding, and Next.js modern formats configured");
 
   // ----------------------------------------------------

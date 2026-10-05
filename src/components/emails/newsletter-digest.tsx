@@ -32,7 +32,6 @@ export function NewsletterDigestEmail({
       subheading="Curated technical deep-dives, modern cloud architectures, and digital systems insights."
       unsubscribeUrl={unsubscribeUrl}
     >
-      {/* Featured Article Card */}
       <Section style={featuredCardStyle}>
         <Text style={featuredBadgeStyle}>FEATURED INSIGHT</Text>
 
@@ -60,18 +59,14 @@ export function NewsletterDigestEmail({
         </Section>
       </Section>
 
-      {/* Recent Articles Section */}
       {recentArticles.length > 0 && (
         <>
           <Text style={sectionHeaderStyle}>MORE ARTICLES IN THIS EDITION</Text>
-          
+
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {recentArticles.map((article, idx) => (
               <Section key={idx} style={recentCardStyle}>
-                <Link
-                  href={`${appUrl}/blog/${article.slug}`}
-                  style={{ textDecoration: "none" }}
-                >
+                <Link href={`${appUrl}/blog/${article.slug}`} style={{ textDecoration: "none" }}>
                   <Text style={recentTitleStyle}>{article.title}</Text>
                 </Link>
                 <Text style={recentExcerptStyle}>{article.excerpt}</Text>

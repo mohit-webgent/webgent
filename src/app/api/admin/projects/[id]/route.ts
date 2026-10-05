@@ -10,10 +10,7 @@ import { ensureUniqueSlug } from "@/lib/projects/slug";
 import { storageService } from "@/lib/services/storage";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -32,15 +29,14 @@ export async function GET(
 
     return ApiResponse.success(project);
   } catch (error) {
-    logger.error("Error fetching single admin project", { error: String(error) });
+    logger.error("Error fetching single admin project", {
+      error: String(error),
+    });
     return ApiResponse.internalError("Failed to fetch project.");
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -63,7 +59,7 @@ export async function PUT(
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid project update parameters",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 
@@ -86,7 +82,6 @@ export async function PUT(
       seoDescription,
     } = validation.data;
 
-    // Enforce Max 3 Featured Projects Limit (excluding current project)
     if (featured && !existingProject.featured) {
       const featuredCount = await prisma.project.count({
         where: { featured: true, NOT: { id } },
@@ -94,17 +89,16 @@ export async function PUT(
       if (featuredCount >= 3) {
         return ApiResponse.badRequest(
           "Maximum limit of 3 featured projects reached. Unfeature another project first.",
-          "FEATURED_LIMIT_EXCEEDED"
+          "FEATURED_LIMIT_EXCEEDED",
         );
       }
     }
 
-    // Slug management
     const slug = proposedSlug
       ? await ensureUniqueSlug(proposedSlug, id)
       : existingProject.title !== title
-      ? await ensureUniqueSlug(title, id)
-      : existingProject.slug;
+        ? await ensureUniqueSlug(title, id)
+        : existingProject.slug;
 
     const formattedTech = Array.isArray(technologies)
       ? technologies.join(",")
@@ -136,7 +130,10 @@ export async function PUT(
       },
     });
 
-    logger.info("Updated project record", { projectId: id, slug: updatedProject.slug });
+    logger.info("Updated project record", {
+      projectId: id,
+      slug: updatedProject.slug,
+    });
 
     return ApiResponse.success(updatedProject);
   } catch (error) {
@@ -145,10 +142,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -165,7 +159,6 @@ export async function DELETE(
       return ApiResponse.notFound("Project not found.");
     }
 
-    // Safely invoke storage service to delete attached cover image and screenshots from R2
     if (project.imageUrl) {
       await storageService.deleteFile(project.imageUrl);
     }
@@ -180,7 +173,6 @@ export async function DELETE(
       }
     }
 
-    // Delete record from database
     await prisma.project.delete({
       where: { id },
     });

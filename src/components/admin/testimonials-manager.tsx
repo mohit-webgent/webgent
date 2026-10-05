@@ -46,7 +46,6 @@ export function TestimonialsManager() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Form Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Testimonial | null>(null);
   const [formData, setFormData] = useState({
@@ -172,9 +171,7 @@ export function TestimonialsManager() {
       });
       const json = await res.json();
       if (json.success) {
-        setTestimonials((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t))
-        );
+        setTestimonials((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
       }
     } catch (err) {
       console.error("Status update error:", err);
@@ -191,7 +188,9 @@ export function TestimonialsManager() {
     if (!deleteTargetId) return;
     try {
       setDeleting(true);
-      const res = await fetch(`/api/admin/testimonials/${deleteTargetId}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/testimonials/${deleteTargetId}`, {
+        method: "DELETE",
+      });
       const json = await res.json();
       if (json.success) {
         setTestimonials((prev) => prev.filter((t) => t.id !== deleteTargetId));
@@ -213,7 +212,6 @@ export function TestimonialsManager() {
     copy[index] = copy[targetIndex];
     copy[targetIndex] = temp;
 
-    // Recalculate order index
     const reordered = copy.map((item, idx) => ({ id: item.id, order: idx }));
     setTestimonials(copy);
 
@@ -238,7 +236,6 @@ export function TestimonialsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Title and Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
@@ -259,14 +256,15 @@ export function TestimonialsManager() {
         </button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
           <p className="text-2xl font-extrabold text-white mt-1">{counts.total}</p>
         </div>
         <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Approved</p>
+          <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+            Approved
+          </p>
           <p className="text-2xl font-extrabold text-emerald-300 mt-1">{counts.approved}</p>
         </div>
         <div className="bg-amber-950/20 border border-amber-800/40 rounded-2xl p-4">
@@ -279,7 +277,6 @@ export function TestimonialsManager() {
         </div>
       </div>
 
-      {/* Controls: Search and Status Filters */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -309,7 +306,6 @@ export function TestimonialsManager() {
         </div>
       </div>
 
-      {/* Testimonials List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-pink-500 mb-2" />
@@ -340,7 +336,6 @@ export function TestimonialsManager() {
               key={item.id}
               className="group bg-slate-900/80 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-5 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
             >
-              {/* Order Controls & Client Info */}
               <div className="flex items-start gap-4 flex-1">
                 <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
                   <button
@@ -351,7 +346,9 @@ export function TestimonialsManager() {
                   >
                     <ArrowUp className="w-4 h-4" />
                   </button>
-                  <span className="text-[11px] font-mono font-bold text-slate-500">#{item.order}</span>
+                  <span className="text-[11px] font-mono font-bold text-slate-500">
+                    #{item.order}
+                  </span>
                   <button
                     disabled={index === testimonials.length - 1}
                     onClick={() => handleMoveOrder(index, "down")}
@@ -362,10 +359,8 @@ export function TestimonialsManager() {
                   </button>
                 </div>
 
-                {/* Avatar / Icon */}
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-800 border border-slate-700/60 shrink-0 flex items-center justify-center">
                   {item.avatarUrl || item.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={item.avatarUrl || item.photoUrl || ""}
                       alt={item.clientName}
@@ -376,7 +371,6 @@ export function TestimonialsManager() {
                   )}
                 </div>
 
-                {/* Content Details */}
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-bold text-white text-base leading-tight">
@@ -384,11 +378,12 @@ export function TestimonialsManager() {
                     </h3>
                     {(item.designation || item.clientTitle || item.company) && (
                       <span className="text-xs text-slate-400">
-                        {[item.designation || item.clientTitle, item.company].filter(Boolean).join(" • ")}
+                        {[item.designation || item.clientTitle, item.company]
+                          .filter(Boolean)
+                          .join(" • ")}
                       </span>
                     )}
 
-                    {/* Featured Badge */}
                     {item.featured && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-[10px] font-semibold">
                         <Sparkles className="w-3 h-3" />
@@ -396,14 +391,13 @@ export function TestimonialsManager() {
                       </span>
                     )}
 
-                    {/* Status Badge */}
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                         item.status === "APPROVED"
                           ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
                           : item.status === "PENDING"
-                          ? "bg-amber-500/10 border border-amber-500/30 text-amber-400"
-                          : "bg-rose-500/10 border border-rose-500/30 text-rose-400"
+                            ? "bg-amber-500/10 border border-amber-500/30 text-amber-400"
+                            : "bg-rose-500/10 border border-rose-500/30 text-rose-400"
                       }`}
                     >
                       {item.status === "APPROVED" && <CheckCircle2 className="w-3 h-3" />}
@@ -413,7 +407,6 @@ export function TestimonialsManager() {
                     </span>
                   </div>
 
-                  {/* Rating Stars */}
                   <div className="flex items-center gap-0.5 text-amber-400">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -425,16 +418,13 @@ export function TestimonialsManager() {
                     ))}
                   </div>
 
-                  {/* Quote Text */}
                   <p className="text-xs text-slate-300 leading-relaxed italic line-clamp-2">
                     &ldquo;{item.quote || item.content}&rdquo;
                   </p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                {/* Quick Status Toggles */}
                 {item.status !== "APPROVED" && (
                   <button
                     disabled={actionLoading === item.id}
@@ -459,7 +449,6 @@ export function TestimonialsManager() {
                   </button>
                 )}
 
-                {/* Edit Button */}
                 <button
                   onClick={() => handleOpenEditModal(item)}
                   className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
@@ -468,7 +457,6 @@ export function TestimonialsManager() {
                   <Edit2 className="w-4 h-4" />
                 </button>
 
-                {/* Delete Button */}
                 <button
                   disabled={actionLoading === item.id}
                   onClick={() => handleDelete(item.id)}
@@ -483,7 +471,6 @@ export function TestimonialsManager() {
         </div>
       )}
 
-      {/* Modal for Create / Edit */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
@@ -574,7 +561,6 @@ export function TestimonialsManager() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                {/* Rating selection */}
                 <div className="space-y-1.5">
                   <label className="text-slate-300 font-semibold">Rating (1 to 5 Stars)</label>
                   <div className="flex items-center gap-1">
@@ -587,7 +573,9 @@ export function TestimonialsManager() {
                       >
                         <Star
                           className={`w-5 h-5 ${
-                            star <= formData.rating ? "fill-amber-400 text-amber-400" : "text-slate-700"
+                            star <= formData.rating
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-slate-700"
                           }`}
                         />
                       </button>
@@ -595,7 +583,6 @@ export function TestimonialsManager() {
                   </div>
                 </div>
 
-                {/* Status Selection */}
                 <div className="space-y-1.5">
                   <label className="text-slate-300 font-semibold">Approval Status</label>
                   <select
@@ -614,7 +601,6 @@ export function TestimonialsManager() {
                   </select>
                 </div>
 
-                {/* Featured checkbox */}
                 <div className="flex items-center gap-2 pt-6">
                   <input
                     type="checkbox"
@@ -623,13 +609,15 @@ export function TestimonialsManager() {
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                     className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-pink-600 focus:ring-0"
                   />
-                  <label htmlFor="featuredCheckbox" className="text-slate-300 font-semibold cursor-pointer">
+                  <label
+                    htmlFor="featuredCheckbox"
+                    className="text-slate-300 font-semibold cursor-pointer"
+                  >
                     Highlight as Featured
                   </label>
                 </div>
               </div>
 
-              {/* Submit Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
@@ -652,7 +640,6 @@ export function TestimonialsManager() {
         </div>
       )}
 
-      {/* Destructive Deletion Confirmation Dialog */}
       <ConfirmDialog
         isOpen={!!deleteTargetId}
         onClose={() => setDeleteTargetId(null)}

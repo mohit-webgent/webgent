@@ -34,7 +34,6 @@ export function EmailBaseLayout({
       <Preview>{previewText}</Preview>
       <Body style={mainStyle}>
         <Container style={containerStyle}>
-          {/* Header Branding */}
           <Section style={headerStyle}>
             <Link href={appUrl} style={{ textDecoration: "none" }}>
               <table align="center" border={0} cellPadding={0} cellSpacing={0}>
@@ -48,20 +47,19 @@ export function EmailBaseLayout({
             </Link>
           </Section>
 
-          {/* Main Card Body */}
           <Section style={cardStyle}>
             {heading && <Heading style={headingStyle}>{heading}</Heading>}
             {subheading && <Text style={subheadingStyle}>{subheading}</Text>}
             {children}
           </Section>
 
-          {/* Footer Information */}
           <Section style={footerStyle}>
             <Text style={footerTextStyle}>
               &copy; {new Date().getFullYear()} Webgent Technologies Inc. All rights reserved.
             </Text>
             <Text style={footerSubTextStyle}>
-              High-performance web architecture, enterprise SaaS engineering, and AI digital systems.
+              High-performance web architecture, enterprise SaaS engineering, and AI digital
+              systems.
             </Text>
             <Text style={footerLinksStyle}>
               <Link href={`${appUrl}`} style={footerLink}>
@@ -95,14 +93,10 @@ export function EmailBaseLayout({
   );
 }
 
-// -------------------------------------------------------------
-// Sleek Dark Mode Email Client Inline Styles
-// -------------------------------------------------------------
 const mainStyle: React.CSSProperties = {
   backgroundColor: "#070a12",
   color: "#f8fafc",
-  fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
   margin: 0,
   padding: "40px 16px",
 };

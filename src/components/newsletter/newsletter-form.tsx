@@ -63,7 +63,7 @@ export function NewsletterForm({
       trackFormSubmit("newsletter");
       setSuccess(
         data.data?.message ||
-          "Almost there! Please check your email to confirm your subscription (double opt-in)."
+          "Almost there! Please check your email to confirm your subscription (double opt-in).",
       );
       setEmail("");
       setName("");
@@ -77,9 +77,7 @@ export function NewsletterForm({
   if (variant === "footer") {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-bold text-white uppercase tracking-wider">
-          Stay in the Loop
-        </p>
+        <p className="text-xs font-bold text-white uppercase tracking-wider">Stay in the Loop</p>
         <p className="text-xs text-slate-400">
           Subscribe for software architecture insights and industry updates.
         </p>
@@ -106,7 +104,11 @@ export function NewsletterForm({
                 disabled={loading || !email}
                 className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all disabled:opacity-50 shrink-0"
               >
-                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                {loading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ArrowRight className="w-3.5 h-3.5" />
+                )}
               </button>
             </div>
             {error && (
@@ -131,12 +133,8 @@ export function NewsletterForm({
             <Mail className="w-3.5 h-3.5" />
             <span>Bi-weekly Engineering Digest</span>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            {title}
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-            {description}
-          </p>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{title}</h3>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{description}</p>
         </div>
 
         <div className="w-full lg:w-auto lg:min-w-[380px]">

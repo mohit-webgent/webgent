@@ -1,6 +1,6 @@
 /**
  * Phase 10 Verification Script: Custom Analytics and Tracking
- * 
+ *
  * Verifies:
  * 1. POST /api/analytics/pageview (session cookie, path, referrer, device, country, PII sanitization)
  * 2. POST /api/analytics/event (FORM_START, FORM_SUBMIT, DEMO_CLICK, WHATSAPP_CLICK, CTA_CLICK, BLOG_READ, metadata sanitization)
@@ -55,8 +55,14 @@ async function runTests() {
   const contextCf = extractAnalyticsContext(reqCf);
   assert(contextCf.country === "US", "Detects country from cf-ipcountry header");
   assert(contextCf.device === "mobile", "Detects mobile device category from iPhone User-Agent");
-  assert(typeof contextCf.sessionId === "string" && contextCf.sessionId.startsWith("sid_"), "Generates anonymous session ID if none provided");
-  assert(contextCf.ipHash.length === 16, "Generates 16-character HMAC SHA-256 IP hash without storing raw IP");
+  assert(
+    typeof contextCf.sessionId === "string" && contextCf.sessionId.startsWith("sid_"),
+    "Generates anonymous session ID if none provided",
+  );
+  assert(
+    contextCf.ipHash.length === 16,
+    "Generates 16-character HMAC SHA-256 IP hash without storing raw IP",
+  );
 
   // 1.2 Vercel Header & Tablet UA
   const reqVercel = new NextRequest("http://localhost:3000/api/analytics/pageview", {
@@ -73,12 +79,16 @@ async function runTests() {
   const reqDesktop = new NextRequest("http://localhost:3000/api/analytics/pageview", {
     headers: {
       "cloudfront-viewer-country": "GB",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     },
   });
   const contextDesktop = extractAnalyticsContext(reqDesktop);
   assert(contextDesktop.country === "GB", "Detects country from cloudfront-viewer-country header");
-  assert(contextDesktop.device === "desktop", "Detects desktop device category from Chrome User-Agent");
+  assert(
+    contextDesktop.device === "desktop",
+    "Detects desktop device category from Chrome User-Agent",
+  );
 
   // 1.4 Preserves valid client-provided session ID
   const contextCustomSid = extractAnalyticsContext(reqDesktop, testSessionId);
@@ -111,18 +121,27 @@ async function runTests() {
   assert(res1.status === 201, "Pageview recording returns 201 Created");
   assert(data1.success === true, "Response reports success = true");
   assert(typeof data1.data.id === "string", "Returns created pageview record ID");
-  assert(data1.data.path === "/work/fintech-dashboard", "Strips query parameters (e.g. token) from tracked path");
+  assert(
+    data1.data.path === "/work/fintech-dashboard",
+    "Strips query parameters (e.g. token) from tracked path",
+  );
 
   const setCookie = res1.headers.get("set-cookie") || "";
   assert(setCookie.includes("webgent_sid="), "Sets webgent_sid cookie in HTTP response");
-  assert(setCookie.includes("HttpOnly") || setCookie.toLowerCase().includes("httponly"), "Sets HttpOnly flag on session cookie");
+  assert(
+    setCookie.includes("HttpOnly") || setCookie.toLowerCase().includes("httponly"),
+    "Sets HttpOnly flag on session cookie",
+  );
 
   // Verify in database
   const dbPv = await prisma.pageView.findUnique({ where: { id: data1.data.id } });
   assert(dbPv !== null, "Pageview record successfully persisted to PostgreSQL database");
   assert(dbPv?.country === "DE", "Persisted detected country 'DE'");
   assert(dbPv?.device === "desktop", "Persisted detected device 'desktop'");
-  assert(dbPv?.referrer !== null && !dbPv?.referrer.includes("auth="), "Referrer sanitized to strip sensitive tokens");
+  assert(
+    dbPv?.referrer !== null && !dbPv?.referrer.includes("auth="),
+    "Referrer sanitized to strip sensitive tokens",
+  );
 
   // 2.2 Reuses client session ID
   const pageViewReq2 = new NextRequest("http://localhost:3000/api/analytics/pageview", {
@@ -168,10 +187,26 @@ async function runTests() {
   const testEvents = [
     { name: "FORM_START", category: "form", metadata: { form: "contact", step: 1 } },
     { name: "FORM_SUBMIT", category: "form", metadata: { form: "contact", service: "web_dev" } },
-    { name: "DEMO_CLICK", category: "conversion", metadata: { project: "cloud-saas", url: "https://demo.example.com" } },
-    { name: "WHATSAPP_CLICK", category: "conversion", metadata: { source: "floating_action_button" } },
-    { name: "CTA_CLICK", category: "conversion", metadata: { label: "Header Start Project", destination: "/contact" } },
-    { name: "BLOG_READ", category: "content", metadata: { slug: "nextjs-14-architecture", title: "Next.js 14 Guide", readTime: 5 } },
+    {
+      name: "DEMO_CLICK",
+      category: "conversion",
+      metadata: { project: "cloud-saas", url: "https://demo.example.com" },
+    },
+    {
+      name: "WHATSAPP_CLICK",
+      category: "conversion",
+      metadata: { source: "floating_action_button" },
+    },
+    {
+      name: "CTA_CLICK",
+      category: "conversion",
+      metadata: { label: "Header Start Project", destination: "/contact" },
+    },
+    {
+      name: "BLOG_READ",
+      category: "content",
+      metadata: { slug: "nextjs-14-architecture", title: "Next.js 14 Guide", readTime: 5 },
+    },
   ];
 
   for (const item of testEvents) {
@@ -220,7 +255,10 @@ async function runTests() {
   const dbPiiEv = await prisma.event.findUnique({ where: { id: dataPii.data.id } });
   const parsedMeta = JSON.parse(dbPiiEv?.metadata || "{}");
   assert(parsedMeta.email === "[REDACTED]", "Redacts sensitive 'email' key in event metadata");
-  assert(parsedMeta.password === "[REDACTED]", "Redacts sensitive 'password' key in event metadata");
+  assert(
+    parsedMeta.password === "[REDACTED]",
+    "Redacts sensitive 'password' key in event metadata",
+  );
   assert(parsedMeta.phone === "[REDACTED]", "Redacts sensitive 'phone' key in event metadata");
   assert(parsedMeta.buttonId === "quote-now", "Preserves safe metadata properties");
 
@@ -231,7 +269,10 @@ async function runTests() {
     body: JSON.stringify({ name: "lowercase_invalid_event" }),
   });
   const resInvalidName = await handleEvent(invalidNameReq);
-  assert(resInvalidName.status === 400, "Rejects lowercase event names (requires UPPERCASE_ALPHANUMERIC)");
+  assert(
+    resInvalidName.status === 400,
+    "Rejects lowercase event names (requires UPPERCASE_ALPHANUMERIC)",
+  );
 
   // ----------------------------------------------------
   // TEST GROUP 4: Rate Limiting & Abuse Protection
@@ -286,51 +327,113 @@ async function runTests() {
   for (const p of ["7d", "30d", "90d"] as const) {
     const metrics = await analyticsService.getAdminAnalytics(p);
     assert(metrics.period === p, `AnalyticsService computes period ${p}`);
-    assert(metrics.days === (p === "7d" ? 7 : p === "90d" ? 90 : 30), `Correct days range for ${p}`);
+    assert(
+      metrics.days === (p === "7d" ? 7 : p === "90d" ? 90 : 30),
+      `Correct days range for ${p}`,
+    );
   }
 
   // 5.4 Metric Data Structures (No Fake Analytics Data)
   const d = await analyticsService.getAdminAnalytics("30d");
 
   // Total Page Views & Unique Visitors
-  assert(typeof d.summary.totalPageViews === "number" && d.summary.totalPageViews > 0, "Provides total page views from real DB records");
-  assert(typeof d.summary.uniqueVisitors === "number" && d.summary.uniqueVisitors > 0, "Provides unique visitors from distinct sessions");
-  assert(typeof d.summary.totalEvents === "number" && d.summary.totalEvents > 0, "Provides total events count");
-  assert(typeof d.summary.overallConversionRate === "number", "Provides calculated overall conversion rate percentage");
+  assert(
+    typeof d.summary.totalPageViews === "number" && d.summary.totalPageViews > 0,
+    "Provides total page views from real DB records",
+  );
+  assert(
+    typeof d.summary.uniqueVisitors === "number" && d.summary.uniqueVisitors > 0,
+    "Provides unique visitors from distinct sessions",
+  );
+  assert(
+    typeof d.summary.totalEvents === "number" && d.summary.totalEvents > 0,
+    "Provides total events count",
+  );
+  assert(
+    typeof d.summary.overallConversionRate === "number",
+    "Provides calculated overall conversion rate percentage",
+  );
 
   // Top Pages
   assert(Array.isArray(d.topPages) && d.topPages.length > 0, "Provides top pages array");
   const topPage = d.topPages[0];
-  assert(typeof topPage.path === "string" && typeof topPage.views === "number" && typeof topPage.percentage === "number", "Top page entry contains path, views, uniqueVisitors, and percentage");
+  assert(
+    typeof topPage.path === "string" &&
+      typeof topPage.views === "number" &&
+      typeof topPage.percentage === "number",
+    "Top page entry contains path, views, uniqueVisitors, and percentage",
+  );
 
   // Event Counts
-  assert(typeof d.eventCounts === "object" && d.eventCounts !== null, "Provides event counts dictionary");
-  assert(typeof d.eventCounts["FORM_START"] === "number" && d.eventCounts["FORM_START"] >= 1, "Tracks count for FORM_START");
-  assert(typeof d.eventCounts["FORM_SUBMIT"] === "number" && d.eventCounts["FORM_SUBMIT"] >= 1, "Tracks count for FORM_SUBMIT");
-  assert(typeof d.eventCounts["DEMO_CLICK"] === "number" && d.eventCounts["DEMO_CLICK"] >= 1, "Tracks count for DEMO_CLICK");
-  assert(typeof d.eventCounts["WHATSAPP_CLICK"] === "number" && d.eventCounts["WHATSAPP_CLICK"] >= 1, "Tracks count for WHATSAPP_CLICK");
-  assert(typeof d.eventCounts["CTA_CLICK"] === "number" && d.eventCounts["CTA_CLICK"] >= 1, "Tracks count for CTA_CLICK");
-  assert(typeof d.eventCounts["BLOG_READ"] === "number" && d.eventCounts["BLOG_READ"] >= 1, "Tracks count for BLOG_READ");
+  assert(
+    typeof d.eventCounts === "object" && d.eventCounts !== null,
+    "Provides event counts dictionary",
+  );
+  assert(
+    typeof d.eventCounts["FORM_START"] === "number" && d.eventCounts["FORM_START"] >= 1,
+    "Tracks count for FORM_START",
+  );
+  assert(
+    typeof d.eventCounts["FORM_SUBMIT"] === "number" && d.eventCounts["FORM_SUBMIT"] >= 1,
+    "Tracks count for FORM_SUBMIT",
+  );
+  assert(
+    typeof d.eventCounts["DEMO_CLICK"] === "number" && d.eventCounts["DEMO_CLICK"] >= 1,
+    "Tracks count for DEMO_CLICK",
+  );
+  assert(
+    typeof d.eventCounts["WHATSAPP_CLICK"] === "number" && d.eventCounts["WHATSAPP_CLICK"] >= 1,
+    "Tracks count for WHATSAPP_CLICK",
+  );
+  assert(
+    typeof d.eventCounts["CTA_CLICK"] === "number" && d.eventCounts["CTA_CLICK"] >= 1,
+    "Tracks count for CTA_CLICK",
+  );
+  assert(
+    typeof d.eventCounts["BLOG_READ"] === "number" && d.eventCounts["BLOG_READ"] >= 1,
+    "Tracks count for BLOG_READ",
+  );
 
   // Conversion Funnel
-  assert(Array.isArray(d.conversionFunnel) && d.conversionFunnel.length === 4, "Provides 4-step conversion funnel");
+  assert(
+    Array.isArray(d.conversionFunnel) && d.conversionFunnel.length === 4,
+    "Provides 4-step conversion funnel",
+  );
   assert(d.conversionFunnel[0].step === "Visitors", "Funnel Step 1: Visitors");
-  assert(d.conversionFunnel[1].step === "Engagement (CTA/Demo)", "Funnel Step 2: Engagement (CTA/Demo)");
+  assert(
+    d.conversionFunnel[1].step === "Engagement (CTA/Demo)",
+    "Funnel Step 2: Engagement (CTA/Demo)",
+  );
   assert(d.conversionFunnel[2].step === "Form Started", "Funnel Step 3: Form Started");
   assert(d.conversionFunnel[3].step === "Form Submitted", "Funnel Step 4: Form Submitted");
 
   // Device Split
-  assert(Array.isArray(d.deviceSplit) && d.deviceSplit.length >= 3, "Provides device category split (desktop, mobile, tablet)");
+  assert(
+    Array.isArray(d.deviceSplit) && d.deviceSplit.length >= 3,
+    "Provides device category split (desktop, mobile, tablet)",
+  );
   const desktopStat = d.deviceSplit.find((s: any) => s.device === "desktop");
-  assert(desktopStat !== undefined && desktopStat.count > 0, "Device split counts desktop pageviews");
+  assert(
+    desktopStat !== undefined && desktopStat.count > 0,
+    "Device split counts desktop pageviews",
+  );
 
   // Country Distribution
-  assert(Array.isArray(d.countryDistribution) && d.countryDistribution.length > 0, "Provides country distribution array");
+  assert(
+    Array.isArray(d.countryDistribution) && d.countryDistribution.length > 0,
+    "Provides country distribution array",
+  );
   const topCountry = d.countryDistribution[0];
-  assert(typeof topCountry.country === "string" && typeof topCountry.count === "number", "Country distribution entries contain country code and count");
+  assert(
+    typeof topCountry.country === "string" && typeof topCountry.count === "number",
+    "Country distribution entries contain country code and count",
+  );
 
   // Daily Timeline
-  assert(Array.isArray(d.timeline) && d.timeline.length === 30, "Provides 30-day timeline series for 30d period");
+  assert(
+    Array.isArray(d.timeline) && d.timeline.length === 30,
+    "Provides 30-day timeline series for 30d period",
+  );
 
   // ----------------------------------------------------
   // TEST GROUP 6: Reusable Client Utility Integrity
@@ -346,7 +449,10 @@ async function runTests() {
   assert(typeof clientModule.trackCtaClick === "function", "Exports trackCtaClick()");
   assert(typeof clientModule.trackBlogRead === "function", "Exports trackBlogRead()");
   assert(typeof clientModule.getSessionId === "function", "Exports getSessionId()");
-  assert(typeof clientModule.getClientDeviceCategory === "function", "Exports getClientDeviceCategory()");
+  assert(
+    typeof clientModule.getClientDeviceCategory === "function",
+    "Exports getClientDeviceCategory()",
+  );
 
   // Summary
   console.log("\n==========================================");
@@ -362,4 +468,3 @@ runTests().catch((err) => {
   console.error("Test execution failed with fatal error:", err);
   process.exit(1);
 });
-

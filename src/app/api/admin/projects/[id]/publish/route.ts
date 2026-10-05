@@ -7,10 +7,7 @@ import { ApiResponse } from "@/lib/api/response";
 import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { logger } from "@/lib/logger";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -28,8 +25,7 @@ export async function PATCH(
     }
 
     const body = await req.json().catch(() => ({}));
-    const nextPublished =
-      typeof body.published === "boolean" ? body.published : !project.published;
+    const nextPublished = typeof body.published === "boolean" ? body.published : !project.published;
 
     const updatedProject = await prisma.project.update({
       where: { id },

@@ -3,11 +3,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { LeadDetailEditor } from "@/components/admin/lead-detail-editor";
 
-export default async function AdminLeadDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function AdminLeadDetailPage({ params }: { params: { id: string } }) {
   await requireAdmin();
 
   const lead = await prisma.lead.findUnique({

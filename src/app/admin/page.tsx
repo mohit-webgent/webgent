@@ -12,7 +12,6 @@ export default async function AdminDashboardPage() {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  // Parallel fetch real database metrics for instantaneous first paint
   const [
     allLeads,
     recentLeads,
@@ -76,7 +75,6 @@ export default async function AdminDashboardPage() {
     }),
   ]);
 
-  // Aggregate lead metrics
   const totalLeads = allLeads.length;
   let newLeads = 0;
   let contactedLeads = 0;
@@ -110,10 +108,8 @@ export default async function AdminDashboardPage() {
     }
   }
 
-  const conversionRate =
-    totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
-  const averageScore =
-    totalLeads > 0 ? Math.round(scoreSum / totalLeads) : 0;
+  const conversionRate = totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
+  const averageScore = totalLeads > 0 ? Math.round(scoreSum / totalLeads) : 0;
 
   const topPages = topPageViewsGrouped.map((item) => ({
     path: item.path,
@@ -155,10 +151,5 @@ export default async function AdminDashboardPage() {
     },
   };
 
-  return (
-    <AdminDashboardView
-      initialData={initialData}
-      userName={session.user.name || undefined}
-    />
-  );
+  return <AdminDashboardView initialData={initialData} userName={session.user.name || undefined} />;
 }

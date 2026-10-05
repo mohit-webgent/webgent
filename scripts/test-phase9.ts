@@ -65,7 +65,10 @@ async function runTests() {
   assert(jpegMime === "image/jpeg", "Correctly identifies valid JPEG magic bytes (FF D8 FF)");
 
   const pngMime = detectImageMimeType(createValidPngBuffer());
-  assert(pngMime === "image/png", "Correctly identifies valid PNG magic bytes (89 50 4E 47 0D 0A 1A 0A)");
+  assert(
+    pngMime === "image/png",
+    "Correctly identifies valid PNG magic bytes (89 50 4E 47 0D 0A 1A 0A)",
+  );
 
   const webpMime = detectImageMimeType(createValidWebpBuffer());
   assert(webpMime === "image/webp", "Correctly identifies valid WEBP magic bytes (RIFF ... WEBP)");
@@ -82,7 +85,10 @@ async function runTests() {
   assert(detectImageMimeType(pdfBuffer) === null, "Rejects PDF document upload");
 
   const exeBuffer = Buffer.from("MZ\x90\x00\x03\x00\x00\x00 simulated windows executable binary");
-  assert(detectImageMimeType(exeBuffer) === null, "Rejects executable binary file disguised as image");
+  assert(
+    detectImageMimeType(exeBuffer) === null,
+    "Rejects executable binary file disguised as image",
+  );
 
   const emptyBuffer = Buffer.alloc(0);
   assert(detectImageMimeType(emptyBuffer) === null, "Rejects empty 0-byte buffer");
@@ -92,7 +98,10 @@ async function runTests() {
   // -------------------------------------------------------------
   console.log("\n▶ [3/6] Testing Oversized File (Max 5MB) Guardrails...");
 
-  assert(MAX_FILE_SIZE === 5 * 1024 * 1024, "MAX_FILE_SIZE is strictly set to 5,242,880 bytes (5MB)");
+  assert(
+    MAX_FILE_SIZE === 5 * 1024 * 1024,
+    "MAX_FILE_SIZE is strictly set to 5,242,880 bytes (5MB)",
+  );
 
   // Create an oversized 5.1MB buffer with JPEG magic header
   const oversizedBuffer = Buffer.alloc(5 * 1024 * 1024 + 1024);
@@ -110,7 +119,10 @@ async function runTests() {
   } catch (err) {
     oversizedErrorCaught = true;
     const msg = err instanceof Error ? err.message : String(err);
-    assert(msg.includes("exceeds maximum allowed size"), "Throws informative error for files exceeding 5MB");
+    assert(
+      msg.includes("exceeds maximum allowed size"),
+      "Throws informative error for files exceeding 5MB",
+    );
   }
   assert(oversizedErrorCaught, "Strictly rejects oversized file (> 5MB)");
 
@@ -127,11 +139,17 @@ async function runTests() {
       folder,
     });
 
-    assert(uploadRes.key.startsWith(`images/${folder}/`), `Asset uploaded under predictable prefix "images/${folder}/"`);
+    assert(
+      uploadRes.key.startsWith(`images/${folder}/`),
+      `Asset uploaded under predictable prefix "images/${folder}/"`,
+    );
     assert(uploadRes.key.endsWith(".webp"), "Asset filename ends with correct detected extension");
     assert(uploadRes.url.includes(`images/${folder}/`), "Public URL contains correct folder path");
     assert(uploadRes.mimeType === "image/webp", "Upload result reflects valid MIME type");
-    assert(storageService.isValidKey(uploadRes.key), "Generated object key satisfies strict key validation");
+    assert(
+      storageService.isValidKey(uploadRes.key),
+      "Generated object key satisfies strict key validation",
+    );
   }
 
   // -------------------------------------------------------------
@@ -177,7 +195,10 @@ async function runTests() {
     const isAllowed = isValidObjectKey(maliciousKey);
     assert(!isAllowed, `Strictly rejects path traversal / dangerous key: "${maliciousKey}"`);
     const deleteAttempt = await storageService.deleteFile(maliciousKey);
-    assert(deleteAttempt === false, `deleteFile safely refuses deletion for path traversal: "${maliciousKey}"`);
+    assert(
+      deleteAttempt === false,
+      `deleteFile safely refuses deletion for path traversal: "${maliciousKey}"`,
+    );
   }
 
   // Unauthorized prefixes outside allowed media directories
@@ -193,12 +214,18 @@ async function runTests() {
     const isAllowed = isValidObjectKey(unauthKey);
     assert(!isAllowed, `Strictly rejects object key outside authorized prefixes: "${unauthKey}"`);
     const deleteAttempt = await storageService.deleteFile(unauthKey);
-    assert(deleteAttempt === false, `deleteFile refuses arbitrary deletion for key outside authorized directories: "${unauthKey}"`);
+    assert(
+      deleteAttempt === false,
+      `deleteFile refuses arbitrary deletion for key outside authorized directories: "${unauthKey}"`,
+    );
   }
 
   // Null and empty checks
   assert(isValidObjectKey("") === false, "Rejects empty string object key");
-  assert(storageService.extractKeyFromUrl("") === null, "extractKeyFromUrl returns null for empty string");
+  assert(
+    storageService.extractKeyFromUrl("") === null,
+    "extractKeyFromUrl returns null for empty string",
+  );
 
   console.log(`\n======================================================`);
   console.log(`🎉 ALL ${passedTests}/${totalTests} PHASE 9 TESTS PASSED!`);

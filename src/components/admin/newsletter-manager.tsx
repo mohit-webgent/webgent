@@ -31,7 +31,11 @@ export function NewsletterManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    total: 0,
+    totalPages: 1,
+  });
   const [isExporting, setIsExporting] = useState(false);
 
   const fetchSubscribers = useCallback(async () => {
@@ -70,7 +74,6 @@ export function NewsletterManager() {
       if (statusFilter !== "ALL") params.set("status", statusFilter);
       params.set("format", "csv");
 
-      // Trigger native download
       window.location.href = `/api/admin/newsletter/subscribers?${params.toString()}`;
     } finally {
       setTimeout(() => setIsExporting(false), 1500);
@@ -86,7 +89,6 @@ export function NewsletterManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header and CSV Export Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
@@ -103,32 +105,42 @@ export function NewsletterManager() {
           disabled={isExporting}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm shadow-lg shadow-violet-600/20 transition-all self-start sm:self-auto disabled:opacity-50"
         >
-          {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          {isExporting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
           <span>Export CSV</span>
         </button>
       </div>
 
-      {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total In View</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Total In View
+          </p>
           <p className="text-2xl font-extrabold text-white mt-1">{counts.total}</p>
         </div>
         <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Active Verified</p>
+          <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+            Active Verified
+          </p>
           <p className="text-2xl font-extrabold text-emerald-300 mt-1">{counts.active}</p>
         </div>
         <div className="bg-amber-950/20 border border-amber-800/40 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pending Opt-In</p>
+          <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+            Pending Opt-In
+          </p>
           <p className="text-2xl font-extrabold text-amber-300 mt-1">{counts.pending}</p>
         </div>
         <div className="bg-slate-950/40 border border-slate-800/40 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Unsubscribed</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Unsubscribed
+          </p>
           <p className="text-2xl font-extrabold text-slate-400 mt-1">{counts.unsubscribed}</p>
         </div>
       </div>
 
-      {/* Search and Status Filters */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -168,7 +180,6 @@ export function NewsletterManager() {
         </div>
       </div>
 
-      {/* Subscribers Table */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-violet-500 mb-2" />
@@ -211,8 +222,8 @@ export function NewsletterManager() {
                           sub.status === "ACTIVE"
                             ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
                             : sub.status === "PENDING"
-                            ? "bg-amber-500/10 border border-amber-500/30 text-amber-400"
-                            : "bg-slate-800 border border-slate-700 text-slate-400"
+                              ? "bg-amber-500/10 border border-amber-500/30 text-amber-400"
+                              : "bg-slate-800 border border-slate-700 text-slate-400"
                         }`}
                       >
                         {sub.status === "ACTIVE" && <CheckCircle2 className="w-3 h-3" />}
@@ -227,7 +238,11 @@ export function NewsletterManager() {
                         <span className="text-emerald-400 font-medium">Verified</span>
                       ) : sub.status === "PENDING" ? (
                         <span className="text-amber-400 font-medium">
-                          Pending confirmation (Token expires {sub.tokenExpiresAt ? new Date(sub.tokenExpiresAt).toLocaleTimeString() : "24h"})
+                          Pending confirmation (Token expires{" "}
+                          {sub.tokenExpiresAt
+                            ? new Date(sub.tokenExpiresAt).toLocaleTimeString()
+                            : "24h"}
+                          )
                         </span>
                       ) : (
                         <span className="text-slate-500">Unsubscribed</span>
@@ -247,7 +262,6 @@ export function NewsletterManager() {
             </table>
           </div>
 
-          {/* Pagination Controls */}
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between px-5 py-3 bg-slate-950/40 border-t border-slate-800 text-xs">
               <span className="text-slate-400">

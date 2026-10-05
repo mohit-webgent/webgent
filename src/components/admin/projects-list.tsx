@@ -55,7 +55,6 @@ export function ProjectsList() {
         setProjects(json.data || []);
       }
     } catch {
-      // Ignore
     } finally {
       setLoading(false);
     }
@@ -76,12 +75,10 @@ export function ProjectsList() {
 
       if (res.ok) {
         setProjects((prev) =>
-          prev.map((p) =>
-            p.id === project.id ? { ...p, published: !p.published } : p
-          )
+          prev.map((p) => (p.id === project.id ? { ...p, published: !p.published } : p)),
         );
         setFeedback(
-          `Project "${project.title}" ${!project.published ? "published" : "unpublished"}.`
+          `Project "${project.title}" ${!project.published ? "published" : "unpublished"}.`,
         );
       }
     } catch {
@@ -106,13 +103,9 @@ export function ProjectsList() {
       }
 
       setProjects((prev) =>
-        prev.map((p) =>
-          p.id === project.id ? { ...p, featured: !p.featured } : p
-        )
+        prev.map((p) => (p.id === project.id ? { ...p, featured: !p.featured } : p)),
       );
-      setFeedback(
-        `Project "${project.title}" ${!project.featured ? "featured" : "unfeatured"}.`
-      );
+      setFeedback(`Project "${project.title}" ${!project.featured ? "featured" : "unfeatured"}.`);
     } catch {
       setError("Failed to update featured state.");
     }
@@ -129,12 +122,10 @@ export function ProjectsList() {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     const reordered = [...projects];
 
-    // Swap position items
     const temp = reordered[index];
     reordered[index] = reordered[targetIndex];
     reordered[targetIndex] = temp;
 
-    // Recalculate order indices
     const payloadItems = reordered.map((item, idx) => ({
       id: item.id,
       order: idx,
@@ -149,7 +140,7 @@ export function ProjectsList() {
         body: JSON.stringify({ items: payloadItems }),
       });
     } catch {
-      fetchProjects(); // Revert on failure
+      fetchProjects();
     }
   };
 
@@ -182,12 +173,11 @@ export function ProjectsList() {
       ? true
       : p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.description.toLowerCase().includes(search.toLowerCase()) ||
-        (p.category && p.category.toLowerCase().includes(search.toLowerCase()))
+        (p.category && p.category.toLowerCase().includes(search.toLowerCase())),
   );
 
   return (
     <div className="space-y-8">
-      {/* Header & New Project Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">
@@ -228,16 +218,12 @@ export function ProjectsList() {
             <AlertTriangle className="w-4 h-4 text-red-400" />
             <span>{error}</span>
           </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-xs text-red-400 hover:underline"
-          >
+          <button onClick={() => setError(null)} className="text-xs text-red-400 hover:underline">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Filter / Search Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
@@ -251,7 +237,6 @@ export function ProjectsList() {
         </div>
       </div>
 
-      {/* Projects List Data Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
@@ -287,11 +272,7 @@ export function ProjectsList() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {filteredProjects.map((project, idx) => (
-                  <tr
-                    key={project.id}
-                    className="hover:bg-slate-800/40 transition-colors"
-                  >
-                    {/* Reorder Buttons */}
+                  <tr key={project.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-4 px-4 w-16">
                       <div className="flex items-center gap-1">
                         <button
@@ -311,11 +292,8 @@ export function ProjectsList() {
                       </div>
                     </td>
 
-                    {/* Title & Description */}
                     <td className="py-4 px-4">
-                      <div className="font-bold text-white text-sm">
-                        {project.title}
-                      </div>
+                      <div className="font-bold text-white text-sm">{project.title}</div>
                       <p className="text-slate-400 text-[11px] line-clamp-1 max-w-md mt-0.5">
                         {project.description}
                       </p>
@@ -334,12 +312,10 @@ export function ProjectsList() {
                       </div>
                     </td>
 
-                    {/* Category */}
                     <td className="py-4 px-4 text-slate-300 font-medium">
                       {project.category || "Uncategorized"}
                     </td>
 
-                    {/* Featured Toggle */}
                     <td className="py-4 px-4">
                       <button
                         onClick={() => handleToggleFeatured(project)}
@@ -354,7 +330,6 @@ export function ProjectsList() {
                       </button>
                     </td>
 
-                    {/* Publication Toggle */}
                     <td className="py-4 px-4">
                       <button
                         onClick={() => handleTogglePublish(project)}
@@ -376,7 +351,6 @@ export function ProjectsList() {
                       </button>
                     </td>
 
-                    {/* Actions */}
                     <td className="py-4 px-4 text-right space-x-2">
                       <Link
                         href={`/admin/projects/${project.id}/edit`}
@@ -400,7 +374,6 @@ export function ProjectsList() {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl">
@@ -415,7 +388,9 @@ export function ProjectsList() {
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed">
-              Are you sure you want to delete <strong className="text-white">&quot;{deleteTarget.title}&quot;</strong>? Attached media references will be cleaned up.
+              Are you sure you want to delete{" "}
+              <strong className="text-white">&quot;{deleteTarget.title}&quot;</strong>? Attached
+              media references will be cleaned up.
             </p>
 
             <div className="flex items-center justify-end gap-3">

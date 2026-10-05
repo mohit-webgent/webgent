@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     if (!queryResult.success) {
       return ApiResponse.validationError(
         "Invalid query parameters",
-        queryResult.error.flatten().fieldErrors
+        queryResult.error.flatten().fieldErrors,
       );
     }
 
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     if (!validation.success) {
       return ApiResponse.validationError(
         "Invalid blog post input data",
-        validation.error.flatten().fieldErrors
+        validation.error.flatten().fieldErrors,
       );
     }
 

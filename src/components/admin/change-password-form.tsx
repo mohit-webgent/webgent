@@ -18,7 +18,6 @@ export function ChangePasswordForm() {
     setError(null);
     setSuccess(null);
 
-    // Validate client-side inputs
     const validation = changePasswordSchema.safeParse({
       currentPassword,
       newPassword,
@@ -26,9 +25,7 @@ export function ChangePasswordForm() {
     });
 
     if (!validation.success) {
-      const firstError = Object.values(
-        validation.error.flatten().fieldErrors
-      )[0]?.[0];
+      const firstError = Object.values(validation.error.flatten().fieldErrors)[0]?.[0];
       setError(firstError || "Invalid password parameters.");
       return;
     }
@@ -96,7 +93,6 @@ export function ChangePasswordForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Current Password */}
         <div>
           <label
             htmlFor="current-password"
@@ -120,7 +116,6 @@ export function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* New Password */}
         <div>
           <label
             htmlFor="new-password"
@@ -144,7 +139,6 @@ export function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* Confirm Password */}
         <div>
           <label
             htmlFor="confirm-password"
@@ -168,7 +162,6 @@ export function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* Submit */}
         <button
           id="change-password-submit"
           type="submit"

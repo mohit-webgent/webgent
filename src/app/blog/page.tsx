@@ -1,15 +1,7 @@
 import { prisma } from "@/lib/db";
 import { BlogPost, User, Prisma } from "@prisma/client";
 import Link from "next/link";
-import {
-  BookOpen,
-  Clock,
-  Eye,
-  Tag,
-  ArrowRight,
-  Sparkles,
-  Calendar,
-} from "lucide-react";
+import { BookOpen, Clock, Eye, Tag, ArrowRight, Sparkles, Calendar } from "lucide-react";
 import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 
 import { siteConfig } from "@/config/site";
@@ -57,7 +49,12 @@ type PostWithAuthor = BlogPost & {
 export default async function PublicBlogPage({
   searchParams,
 }: {
-  searchParams?: { page?: string; tag?: string; category?: string; search?: string };
+  searchParams?: {
+    page?: string;
+    tag?: string;
+    category?: string;
+    search?: string;
+  };
 }) {
   const currentPage = Math.max(1, parseInt(searchParams?.page || "1", 10));
   const selectedTag = searchParams?.tag?.trim() || "";
@@ -88,14 +85,19 @@ export default async function PublicBlogPage({
     }
 
     if (selectedCategory && selectedCategory.toLowerCase() !== "all") {
-      whereCondition.category = { equals: selectedCategory, mode: "insensitive" };
+      whereCondition.category = {
+        equals: selectedCategory,
+        mode: "insensitive",
+      };
     }
 
     if (selectedTag) {
-      whereCondition.tags = { contains: selectedTag.toLowerCase(), mode: "insensitive" };
+      whereCondition.tags = {
+        contains: selectedTag.toLowerCase(),
+        mode: "insensitive",
+      };
     }
 
-    // Fetch featured spotlight post
     const featuredRes = await prisma.blogPost.findFirst({
       where: { ...whereCondition, featured: true },
       orderBy: [{ publishedAt: "desc" }],
@@ -106,7 +108,6 @@ export default async function PublicBlogPage({
 
     featuredPost = featuredRes as PostWithAuthor | null;
 
-    // Fetch paginated posts
     const [postsRes, countRes, allPublishedPosts] = await Promise.all([
       prisma.blogPost.findMany({
         where: whereCondition,
@@ -127,7 +128,6 @@ export default async function PublicBlogPage({
     posts = postsRes as PostWithAuthor[];
     totalPosts = countRes;
 
-    // Build unique tags array with counts
     const tagMap: Record<string, number> = {};
     allPublishedPosts.forEach((p) => {
       if (p.tags) {
@@ -141,19 +141,15 @@ export default async function PublicBlogPage({
     allTags = Object.entries(tagMap)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-  } catch {
-    // Database connection fallback
-  }
+  } catch {}
 
   const totalPages = Math.ceil(totalPosts / limit);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      {/* Ambient Lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-16 relative z-10">
-        {/* Page Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
             <BookOpen className="w-3.5 h-3.5" />
@@ -163,11 +159,11 @@ export default async function PublicBlogPage({
             Webgent Technical Blog
           </h1>
           <p className="text-base sm:text-lg text-slate-400">
-            Deep dives into modern web architecture, cloud platform design, Prisma ORM, and full-stack engineering.
+            Deep dives into modern web architecture, cloud platform design, Prisma ORM, and
+            full-stack engineering.
           </p>
         </div>
 
-        {/* Tag & Category Filter Pills */}
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
@@ -206,7 +202,6 @@ export default async function PublicBlogPage({
           </div>
         </div>
 
-        {/* Featured Spotlight Article */}
         {featuredPost && !selectedTag && !searchQuery && (
           <div className="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-500/30 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-6 relative overflow-hidden group">
             <h2 className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
@@ -220,9 +215,7 @@ export default async function PublicBlogPage({
               </span>
 
               <h3 className="text-3xl sm:text-4xl font-extrabold text-white group-hover:text-indigo-400 transition-colors">
-                <Link href={`/blog/${featuredPost.slug}`}>
-                  {featuredPost.title}
-                </Link>
+                <Link href={`/blog/${featuredPost.slug}`}>{featuredPost.title}</Link>
               </h3>
 
               <p className="text-base text-slate-300 line-clamp-3 leading-relaxed">
@@ -267,7 +260,6 @@ export default async function PublicBlogPage({
           </div>
         )}
 
-        {/* Blog Post Grid */}
         <div className="space-y-6">
           <h2 className="text-2xl font-extrabold text-white tracking-tight">
             {selectedTag
@@ -310,7 +302,6 @@ export default async function PublicBlogPage({
                       {post.excerpt || post.content.substring(0, 150)}
                     </p>
 
-                    {/* Tag Pills */}
                     {post.tags && (
                       <div className="flex flex-wrap gap-1 pt-2">
                         {post.tags.split(",").map((tagStr, i) => (
@@ -344,7 +335,6 @@ export default async function PublicBlogPage({
             </div>
           )}
 
-          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-3 pt-8">
               <Link
@@ -375,7 +365,6 @@ export default async function PublicBlogPage({
             </div>
           )}
 
-          {/* Newsletter Section */}
           <div className="pt-8">
             <NewsletterForm
               variant="card"

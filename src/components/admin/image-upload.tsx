@@ -28,14 +28,12 @@ export function ImageUpload({
   const handleFileChange = async (file: File) => {
     setError(null);
 
-    // Client-side MIME validation
     const validMimes = ["image/jpeg", "image/png", "image/webp"];
     if (!validMimes.includes(file.type)) {
       setError("Only JPG, PNG, and WEBP image formats are supported.");
       return;
     }
 
-    // Client-side 5MB limit
     if (file.size > 5 * 1024 * 1024) {
       setError("File exceeds the maximum limit of 5MB.");
       return;
@@ -79,7 +77,6 @@ export function ImageUpload({
     const previousUrl = value;
     onChange("");
 
-    // Try deleting from R2 if it's an R2-managed asset
     if (previousUrl.includes("images/")) {
       try {
         await fetch(`/api/admin/upload`, {
@@ -87,9 +84,7 @@ export function ImageUpload({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url: previousUrl }),
         });
-      } catch {
-        // Non-blocking cleanup
-      }
+      } catch {}
     }
   };
 
@@ -110,22 +105,14 @@ export function ImageUpload({
       )}
 
       {value ? (
-        /* Image Preview Box */
         <div className="relative group rounded-2xl overflow-hidden border border-slate-800 bg-slate-950/60 p-2 flex items-center gap-4">
           <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 shrink-0 relative flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={value}
-              alt="Uploaded preview"
-              className="w-full h-full object-cover"
-            />
+            <img src={value} alt="Uploaded preview" className="w-full h-full object-cover" />
           </div>
 
           <div className="flex-1 min-w-0 pr-10">
             <p className="text-xs font-mono text-slate-300 truncate">{value}</p>
-            <p className="text-[11px] text-emerald-400 font-semibold mt-1">
-              ✓ Ready and loaded
-            </p>
+            <p className="text-[11px] text-emerald-400 font-semibold mt-1">✓ Ready and loaded</p>
           </div>
 
           <button
@@ -138,7 +125,6 @@ export function ImageUpload({
           </button>
         </div>
       ) : (
-        /* Upload Area Dropzone */
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -188,7 +174,6 @@ export function ImageUpload({
         </div>
       )}
 
-      {/* Direct URL input fallback */}
       <div className="flex items-center gap-2 pt-1">
         <div className="relative flex-1">
           <ImageIcon className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />

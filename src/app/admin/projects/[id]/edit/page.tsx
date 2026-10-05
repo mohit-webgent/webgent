@@ -5,11 +5,7 @@ import { ProjectForm } from "@/components/admin/project-form";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default async function AdminEditProjectPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function AdminEditProjectPage({ params }: { params: { id: string } }) {
   await requireAdmin();
 
   const project = await prisma.project.findUnique({

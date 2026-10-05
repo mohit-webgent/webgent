@@ -1,8 +1,4 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import { logger } from "@/lib/logger";
 
@@ -14,15 +10,11 @@ export const ALLOWED_PREFIXES = [
 
 export type AllowedFolder = "projects" | "blog" | "testimonials";
 
-export const ALLOWED_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-] as const;
+export const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+export const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export interface UploadResult {
   url: string;
@@ -39,7 +31,7 @@ export interface StorageService {
       originalName?: string;
       mimeType: string;
       folder: AllowedFolder;
-    }
+    },
   ): Promise<UploadResult>;
   deleteFile(keyOrUrl: string | null | undefined): Promise<boolean>;
   deleteFiles(keysOrUrls: (string | null | undefined)[]): Promise<boolean>;
@@ -47,21 +39,13 @@ export interface StorageService {
   isValidKey(key: string): boolean;
 }
 
-/**
- * Inspects binary magic numbers to guarantee file integrity
- * and prevent renamed malicious executable uploads.
- */
-export function detectImageMimeType(
-  buffer: Buffer | Uint8Array
-): AllowedMimeType | null {
+export function detectImageMimeType(buffer: Buffer | Uint8Array): AllowedMimeType | null {
   if (buffer.length < 12) return null;
 
-  // JPEG: FF D8 FF
   if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
     return "image/jpeg";
   }
 
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
   if (
     buffer[0] === 0x89 &&
     buffer[1] === 0x50 &&
@@ -75,16 +59,15 @@ export function detectImageMimeType(
     return "image/png";
   }
 
-  // WEBP: "RIFF" at 0..3 and "WEBP" at 8..11
   if (
-    buffer[0] === 0x52 && // R
-    buffer[1] === 0x49 && // I
-    buffer[2] === 0x46 && // F
-    buffer[3] === 0x46 && // F
-    buffer[8] === 0x57 && // W
-    buffer[9] === 0x45 && // E
-    buffer[10] === 0x42 && // B
-    buffer[11] === 0x50 // P
+    buffer[0] === 0x52 &&
+    buffer[1] === 0x49 &&
+    buffer[2] === 0x46 &&
+    buffer[3] === 0x46 &&
+    buffer[8] === 0x57 &&
+    buffer[9] === 0x45 &&
+    buffer[10] === 0x42 &&
+    buffer[11] === 0x50
   ) {
     return "image/webp";
   }
@@ -92,27 +75,16 @@ export function detectImageMimeType(
   return null;
 }
 
-/**
- * Strict validator for object keys to prevent arbitrary file deletion and path traversal.
- */
 export function isValidObjectKey(key: string): boolean {
   if (!key || typeof key !== "string") return false;
 
-  // Guard against path traversal, backslashes, leading slashes, and control characters
-  if (
-    key.includes("..") ||
-    key.startsWith("/") ||
-    key.includes("\\") ||
-    key.includes("\0")
-  ) {
+  if (key.includes("..") || key.startsWith("/") || key.includes("\\") || key.includes("\0")) {
     return false;
   }
 
-  // Strictly check that key starts with an authorized directory prefix
   const hasValidPrefix = ALLOWED_PREFIXES.some((prefix) => key.startsWith(prefix));
   if (!hasValidPrefix) return false;
 
-  // Ensure key name only contains safe URL-friendly characters
   const keyFormatRegex = /^images\/(projects|blog|testimonials)\/[a-zA-Z0-9_\-\.]+$/;
   return keyFormatRegex.test(key);
 }
@@ -134,7 +106,6 @@ class CloudflareR2StorageService implements StorageService {
       "https://cdn.webgent.com"
     ).replace(/\/$/, "");
 
-    // Validate that R2 credentials exist and are not unconfigured placeholders
     if (
       accountId &&
       accessKeyId &&
@@ -158,14 +129,10 @@ class CloudflareR2StorageService implements StorageService {
     return isValidObjectKey(key);
   }
 
-  /**
-   * Safely extracts object key from either a full URL or a relative key string.
-   */
   extractKeyFromUrl(urlOrKey: string): string | null {
     if (!urlOrKey) return null;
     let clean = urlOrKey.trim();
 
-    // If it's a full URL, parse the pathname
     if (clean.startsWith("http://") || clean.startsWith("https://")) {
       try {
         const parsed = new URL(clean);
@@ -178,31 +145,27 @@ class CloudflareR2StorageService implements StorageService {
     return this.isValidKey(clean) ? clean : null;
   }
 
-  /**
-   * Uploads an image buffer to Cloudflare R2 under the designated prefix.
-   */
   async uploadFile(
     fileBuffer: Buffer | Uint8Array,
     options: {
       originalName?: string;
       mimeType: string;
       folder: AllowedFolder;
-    }
+    },
   ): Promise<UploadResult> {
     const { originalName = "upload", mimeType, folder } = options;
 
-    // 1. Validate folder parameter
     const validFolders: AllowedFolder[] = ["projects", "blog", "testimonials"];
     if (!validFolders.includes(folder)) {
       throw new Error(`Invalid folder prefix: "${folder}". Allowed: ${validFolders.join(", ")}`);
     }
 
-    // 2. Validate file size
     if (fileBuffer.length > MAX_FILE_SIZE) {
-      throw new Error(`File size (${(fileBuffer.length / (1024 * 1024)).toFixed(2)} MB) exceeds maximum allowed size of 5 MB.`);
+      throw new Error(
+        `File size (${(fileBuffer.length / (1024 * 1024)).toFixed(2)} MB) exceeds maximum allowed size of 5 MB.`,
+      );
     }
 
-    // 3. Determine file extension
     const extMap: Record<AllowedMimeType, string> = {
       "image/jpeg": "jpg",
       "image/png": "png",
@@ -210,15 +173,15 @@ class CloudflareR2StorageService implements StorageService {
     };
     const extension = extMap[mimeType as AllowedMimeType] || "jpg";
 
-    // 4. Generate safe unique filename
     const timestamp = Date.now();
     const randomHex = crypto.randomBytes(6).toString("hex");
-    const sanitizedBase = (originalName.substring(0, originalName.lastIndexOf(".")) || originalName)
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .substring(0, 30) || "asset";
+    const sanitizedBase =
+      (originalName.substring(0, originalName.lastIndexOf(".")) || originalName)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+        .substring(0, 30) || "asset";
 
     const filename = `${timestamp}-${randomHex}-${sanitizedBase}.${extension}`;
     const prefix = `images/${folder}/`;
@@ -226,7 +189,6 @@ class CloudflareR2StorageService implements StorageService {
 
     const publicUrl = `${this.publicBaseUrl}/${key}`;
 
-    // 5. Cloudflare R2 Production Upload
     if (this.isConfigured && this.s3Client) {
       try {
         await this.s3Client.send(
@@ -236,7 +198,7 @@ class CloudflareR2StorageService implements StorageService {
             Body: fileBuffer,
             ContentType: mimeType,
             CacheControl: "public, max-age=31536000, immutable",
-          })
+          }),
         );
 
         logger.info("[Storage Service] Successfully uploaded file to Cloudflare R2", {
@@ -262,7 +224,6 @@ class CloudflareR2StorageService implements StorageService {
       }
     }
 
-    // 6. Development / Test Simulation Mode
     logger.info("[Storage Service Simulation] Simulated image upload in dev/test environment", {
       key,
       size: fileBuffer.length,
@@ -280,17 +241,17 @@ class CloudflareR2StorageService implements StorageService {
     };
   }
 
-  /**
-   * Safely deletes an object from Cloudflare R2 after validating prefix integrity.
-   */
   async deleteFile(keyOrUrl: string | null | undefined): Promise<boolean> {
     if (!keyOrUrl) return true;
 
     const key = this.extractKeyFromUrl(keyOrUrl);
     if (!key) {
-      logger.warn("[Storage Service] Refused deletion: Key is invalid or outside authorized prefixes", {
-        target: keyOrUrl,
-      });
+      logger.warn(
+        "[Storage Service] Refused deletion: Key is invalid or outside authorized prefixes",
+        {
+          target: keyOrUrl,
+        },
+      );
       return false;
     }
 
@@ -300,9 +261,11 @@ class CloudflareR2StorageService implements StorageService {
           new DeleteObjectCommand({
             Bucket: this.bucketName,
             Key: key,
-          })
+          }),
         );
-        logger.info("[Storage Service] Deleted object from Cloudflare R2", { key });
+        logger.info("[Storage Service] Deleted object from Cloudflare R2", {
+          key,
+        });
         return true;
       } catch (err) {
         logger.error("[Storage Service] Error deleting object from Cloudflare R2", {
@@ -313,14 +276,12 @@ class CloudflareR2StorageService implements StorageService {
       }
     }
 
-    // Development / Simulation Mode
-    logger.info("[Storage Service Simulation] Simulated object deletion", { key });
+    logger.info("[Storage Service Simulation] Simulated object deletion", {
+      key,
+    });
     return true;
   }
 
-  /**
-   * Batch deletes an array of objects.
-   */
   async deleteFiles(keysOrUrls: (string | null | undefined)[]): Promise<boolean> {
     const validTargets = keysOrUrls.filter(Boolean) as string[];
     if (validTargets.length === 0) return true;

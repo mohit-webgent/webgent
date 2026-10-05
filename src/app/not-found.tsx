@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileQuestion, ArrowLeft, Briefcase, BookOpen, Mail, Home } from "lucide-react";
+import { FileQuestion, Briefcase, BookOpen, Mail, Home } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 export default function NotFoundPage() {
   return (
     <div className="min-h-[75vh] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans">
-      {/* Ambient background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-xl w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 text-center shadow-2xl backdrop-blur-xl relative z-10 space-y-8">
@@ -30,11 +29,11 @@ export default function NotFoundPage() {
             Page Not Found
           </h1>
           <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
-            The page or resource you requested could not be located. It may have been moved, renamed, or is temporarily unavailable.
+            The page or resource you requested could not be located. It may have been moved,
+            renamed, or is temporarily unavailable.
           </p>
         </div>
 
-        {/* Quick Explore Shortcuts */}
         <div className="grid grid-cols-2 gap-3 text-left">
           <Link
             href="/work"
@@ -59,7 +58,6 @@ export default function NotFoundPage() {
           </Link>
         </div>
 
-        {/* Action Button */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/"

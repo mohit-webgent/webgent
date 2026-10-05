@@ -8,9 +8,6 @@ export interface DbHealthResult {
   error?: string;
 }
 
-/**
- * Checks if the PostgreSQL database is online and reachable.
- */
 export async function checkDatabaseConnection(): Promise<DbHealthResult> {
   const start = Date.now();
   try {
@@ -19,7 +16,9 @@ export async function checkDatabaseConnection(): Promise<DbHealthResult> {
     return { connected: true, latencyMs };
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : String(err);
-    logger.error("Database connection health check failed", { error: errorMessage });
+    logger.error("Database connection health check failed", {
+      error: errorMessage,
+    });
     return {
       connected: false,
       error: errorMessage,
@@ -27,33 +26,18 @@ export async function checkDatabaseConnection(): Promise<DbHealthResult> {
   }
 }
 
-/**
- * Checks if an error is a Prisma Unique Constraint Violation (P2002).
- */
 export function isUniqueConstraintViolation(
-  error: unknown
+  error: unknown,
 ): error is Prisma.PrismaClientKnownRequestError {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === "P2002"
-  );
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
-/**
- * Checks if an error is a Prisma Record Not Found Error (P2025).
- */
 export function isRecordNotFoundError(
-  error: unknown
+  error: unknown,
 ): error is Prisma.PrismaClientKnownRequestError {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === "P2025"
-  );
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
 }
 
-/**
- * Normalizes database exceptions into structured error descriptors.
- */
 export function formatDatabaseError(error: unknown): {
   code: string;
   message: string;

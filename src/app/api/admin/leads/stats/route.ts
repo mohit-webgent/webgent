@@ -12,27 +12,19 @@ export async function GET() {
       return authGuard;
     }
 
-    const [
-      total,
-      newLeads,
-      contacted,
-      proposalSent,
-      won,
-      lost,
-      onHold,
-      avgScoreResult,
-    ] = await Promise.all([
-      prisma.lead.count(),
-      prisma.lead.count({ where: { status: "NEW" } }),
-      prisma.lead.count({ where: { status: "CONTACTED" } }),
-      prisma.lead.count({ where: { status: "PROPOSAL_SENT" } }),
-      prisma.lead.count({ where: { status: "WON" } }),
-      prisma.lead.count({ where: { status: "LOST" } }),
-      prisma.lead.count({ where: { status: "ON_HOLD" } }),
-      prisma.lead.aggregate({
-        _avg: { score: true },
-      }),
-    ]);
+    const [total, newLeads, contacted, proposalSent, won, lost, onHold, avgScoreResult] =
+      await Promise.all([
+        prisma.lead.count(),
+        prisma.lead.count({ where: { status: "NEW" } }),
+        prisma.lead.count({ where: { status: "CONTACTED" } }),
+        prisma.lead.count({ where: { status: "PROPOSAL_SENT" } }),
+        prisma.lead.count({ where: { status: "WON" } }),
+        prisma.lead.count({ where: { status: "LOST" } }),
+        prisma.lead.count({ where: { status: "ON_HOLD" } }),
+        prisma.lead.aggregate({
+          _avg: { score: true },
+        }),
+      ]);
 
     const conversionRate = total > 0 ? Number(((won / total) * 100).toFixed(1)) : 0;
     const averageScore = Number((avgScoreResult._avg.score || 0).toFixed(1));

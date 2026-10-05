@@ -98,7 +98,6 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300 pb-16 font-sans">
-      {/* Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold">
@@ -113,7 +112,6 @@ export default function AdminAnalyticsPage() {
           </p>
         </div>
 
-        {/* Period Selector Controls */}
         <div className="flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 shrink-0">
           {(["7d", "30d", "90d"] as ValidPeriod[]).map((p) => (
             <button
@@ -150,9 +148,7 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Total Page Views */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -170,7 +166,6 @@ export default function AdminAnalyticsPage() {
           <p className="text-xs text-slate-500 mt-1">Total public page visits</p>
         </div>
 
-        {/* Unique Visitors */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -188,7 +183,6 @@ export default function AdminAnalyticsPage() {
           <p className="text-xs text-slate-500 mt-1">Distinct anonymous sessions</p>
         </div>
 
-        {/* Total Events */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-purple-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -206,7 +200,6 @@ export default function AdminAnalyticsPage() {
           <p className="text-xs text-slate-500 mt-1">CTAs, forms & engagement</p>
         </div>
 
-        {/* Conversion Rate */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -225,7 +218,6 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Conversion Funnel Section */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
         <div className="flex items-center justify-between">
           <div>
@@ -254,8 +246,10 @@ export default function AdminAnalyticsPage() {
                 )}
               </div>
               <h3 className="text-sm font-bold text-white">{step.step}</h3>
-              <div className="text-2xl font-extrabold text-white">{step.count.toLocaleString()}</div>
-              {/* Funnel Progress Bar */}
+              <div className="text-2xl font-extrabold text-white">
+                {step.count.toLocaleString()}
+              </div>
+
               <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                 <div
                   className="bg-indigo-500 h-full rounded-full transition-all duration-500"
@@ -271,9 +265,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Two Column Grid: Top Pages & Event Counts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Pages Table */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -297,7 +289,10 @@ export default function AdminAnalyticsPage() {
                 {data?.topPages && data.topPages.length > 0 ? (
                   data.topPages.map((page) => (
                     <tr key={page.path} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 text-slate-200 font-sans truncate max-w-[200px]" title={page.path}>
+                      <td
+                        className="py-3 text-slate-200 font-sans truncate max-w-[200px]"
+                        title={page.path}
+                      >
                         {page.path}
                       </td>
                       <td className="py-3 text-right text-slate-300 font-semibold">
@@ -323,7 +318,6 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        {/* Event Breakdown */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -340,7 +334,10 @@ export default function AdminAnalyticsPage() {
                   key={name}
                   className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between"
                 >
-                  <span className="text-[11px] font-semibold text-slate-400 font-mono truncate" title={name}>
+                  <span
+                    className="text-[11px] font-semibold text-slate-400 font-mono truncate"
+                    title={name}
+                  >
                     {name}
                   </span>
                   <span className="text-xl font-extrabold text-white mt-2">
@@ -352,9 +349,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Two Column Grid: Device Split & Country Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Device Split */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -368,11 +363,7 @@ export default function AdminAnalyticsPage() {
             {data?.deviceSplit && data.deviceSplit.length > 0 ? (
               data.deviceSplit.map((dev) => {
                 const Icon =
-                  dev.device === "mobile"
-                    ? Smartphone
-                    : dev.device === "tablet"
-                    ? Tablet
-                    : Monitor;
+                  dev.device === "mobile" ? Smartphone : dev.device === "tablet" ? Tablet : Monitor;
                 return (
                   <div key={dev.device} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
@@ -381,7 +372,9 @@ export default function AdminAnalyticsPage() {
                         <span>{dev.device}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-400 font-mono">{dev.count.toLocaleString()} visits</span>
+                        <span className="text-slate-400 font-mono">
+                          {dev.count.toLocaleString()} visits
+                        </span>
                         <span className="font-bold text-white">{dev.percentage}%</span>
                       </div>
                     </div>
@@ -395,12 +388,13 @@ export default function AdminAnalyticsPage() {
                 );
               })
             ) : (
-              <p className="text-xs text-slate-500 py-4 text-center">No device statistics available.</p>
+              <p className="text-xs text-slate-500 py-4 text-center">
+                No device statistics available.
+              </p>
             )}
           </div>
         </div>
 
-        {/* Country Distribution */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -426,13 +420,19 @@ export default function AdminAnalyticsPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-400 font-mono">{item.count.toLocaleString()} visits</span>
-                    <span className="font-bold text-white min-w-[40px] text-right">{item.percentage}%</span>
+                    <span className="text-slate-400 font-mono">
+                      {item.count.toLocaleString()} visits
+                    </span>
+                    <span className="font-bold text-white min-w-[40px] text-right">
+                      {item.percentage}%
+                    </span>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-slate-500 py-4 text-center">No location headers recorded.</p>
+              <p className="text-xs text-slate-500 py-4 text-center">
+                No location headers recorded.
+              </p>
             )}
           </div>
         </div>

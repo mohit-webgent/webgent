@@ -5,17 +5,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { trackPageView, trackWhatsAppClick } from "@/lib/analytics/client";
 import { MessageCircle } from "lucide-react";
 
-/**
- * AnalyticsTracker automatically records page views upon route changes
- * and renders an accessible floating WhatsApp contact trigger.
- */
 export function AnalyticsTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const lastPathnameRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Only track public paths, ignore admin
     if (!pathname || pathname.startsWith("/admin")) {
       return;
     }
@@ -27,14 +22,17 @@ export function AnalyticsTracker() {
     }
   }, [pathname, searchParams]);
 
-  // If in admin, do not show public floating widgets
   if (pathname?.startsWith("/admin")) {
     return null;
   }
 
   const handleWhatsApp = () => {
     trackWhatsAppClick("floating_action_button");
-    window.open("https://wa.me/15551234567?text=Hello%20Webgent%20team,%20I%20would%20like%20to%20inquire%20about%20a%20project.", "_blank", "noopener,noreferrer");
+    window.open(
+      "https://wa.me/15551234567?text=Hello%20Webgent%20team,%20I%20would%20like%20to%20inquire%20about%20a%20project.",
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   return (

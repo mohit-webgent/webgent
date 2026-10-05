@@ -7,13 +7,7 @@ export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
 }
 
-export function Alert({
-  className,
-  variant = "info",
-  title,
-  children,
-  ...props
-}: AlertProps) {
+export function Alert({ className, variant = "info", title, children, ...props }: AlertProps) {
   const iconMap = {
     info: <Info className="h-5 w-5 text-sky-400 shrink-0" />,
     success: <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />,
