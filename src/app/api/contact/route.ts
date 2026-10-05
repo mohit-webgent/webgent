@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get("user-agent") || undefined;
 
     // 1. Enforce Rate Limiting (3 submissions per IP per 1 hour)
-    const rateLimit = checkRateLimit(`contact:${ipAddress}`, 3, 60 * 60 * 1000);
+    const rateLimit = await checkRateLimit(`contact:${ipAddress}`, 3, 60 * 60 * 1000);
     if (!rateLimit.success) {
       logger.warn("Contact form rate limit exceeded", { ipAddress });
       return ApiResponse.tooManyRequests(

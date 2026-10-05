@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     // 1. Abuse protection: Rate limit per IP
     const forwarded = req.headers.get("x-forwarded-for");
     const clientIp = forwarded ? forwarded.split(",")[0].trim() : "127.0.0.1";
-    const rateCheck = checkRateLimit(`pageview_${clientIp}`, 120, 60 * 1000);
+    const rateCheck = await checkRateLimit(`pageview_${clientIp}`, 120, 60 * 1000);
 
     if (!rateCheck.success) {
       return NextResponse.json(

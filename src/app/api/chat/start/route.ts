@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       "127.0.0.1";
 
     // Rate limit: max 15 session starts per 10 minutes per IP
-    const rateCheck = checkRateLimit(`chat_start_${ip}`, 15, 10 * 60 * 1000);
+    const rateCheck = await checkRateLimit(`chat_start_${ip}`, 15, 10 * 60 * 1000);
     if (!rateCheck.success) {
       return NextResponse.json(
         {

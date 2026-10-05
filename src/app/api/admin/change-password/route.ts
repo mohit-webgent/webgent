@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const userId = authGuard.session.user.id;
 
     // 2. Rate limiting check (max 5 password changes per 15 mins per user)
-    const rateLimit = checkRateLimit(`change-pw:${userId}`, 5, 15 * 60 * 1000);
+    const rateLimit = await checkRateLimit(`change-pw:${userId}`, 5, 15 * 60 * 1000);
     if (!rateLimit.success) {
       return ApiResponse.tooManyRequests(
         "Too many password change attempts. Please try again later."

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const { sessionId, message, visitorInfo } = validated.data;
 
     // Rate limiting: max 25 messages per 2 minutes per IP
-    const ipRate = checkRateLimit(`chat_msg_${ip}`, 25, 2 * 60 * 1000);
+    const ipRate = await checkRateLimit(`chat_msg_${ip}`, 25, 2 * 60 * 1000);
     if (!ipRate.success) {
       return NextResponse.json(
         {
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limiting per session
-    const sessionRate = checkRateLimit(`chat_session_${sessionId}`, 30, 2 * 60 * 1000);
+    const sessionRate = await checkRateLimit(`chat_session_${sessionId}`, 30, 2 * 60 * 1000);
     if (!sessionRate.success) {
       return NextResponse.json(
         {

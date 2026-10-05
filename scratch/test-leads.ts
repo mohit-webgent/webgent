@@ -61,9 +61,9 @@ async function runLeadTests() {
   // Test 4: Rate Limiter (Max 3 submissions per hour)
   const clientIp = "203.0.113.42";
   for (let i = 0; i < 3; i++) {
-    checkRateLimit(`contact:${clientIp}`, 3, 3600000);
+    await checkRateLimit(`contact:${clientIp}`, 3, 3600000);
   }
-  const blockedRateLimit = checkRateLimit(`contact:${clientIp}`, 3, 3600000);
+  const blockedRateLimit = await checkRateLimit(`contact:${clientIp}`, 3, 3600000);
   assert(!blockedRateLimit.success, "Enforces 3 submissions per IP per hour limit");
 
   // Test 5: Lead Update Schema

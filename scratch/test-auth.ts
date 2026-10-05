@@ -57,9 +57,9 @@ async function runAuthTests() {
   const ip = "192.168.1.100";
   let rateLimitResult = { success: true };
   for (let i = 0; i < 5; i++) {
-    rateLimitResult = checkRateLimit(ip, 5, 60000);
+    rateLimitResult = await checkRateLimit(ip, 5, 60000);
   }
-  const exceededResult = checkRateLimit(ip, 5, 60000);
+  const exceededResult = await checkRateLimit(ip, 5, 60000);
   assert(rateLimitResult.success && !exceededResult.success, "Rate limiter blocks excessive attempts");
 
   // Test 5: DB Error Masking

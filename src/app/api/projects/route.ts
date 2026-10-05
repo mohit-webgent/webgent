@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/api/response";
 import { Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,6 +15,12 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get("category")?.trim();
     const featuredOnly = searchParams.get("featured") === "true";
     const limitParam = searchParams.get("limit");
+
+    const cacheKey = `cache:projects:${category || "all"}:${featuredOnly}:${limitParam || "all"}`;
+    const cachedProjects = await cacheGet(cacheKey);
+    if (cachedProjects) {
+      return ApiResponse.success(cachedProjects);
+    }
 
     const where: Prisma.ProjectWhereInput = {
       published: true,
@@ -37,6 +44,8 @@ export async function GET(req: NextRequest) {
         { createdAt: "desc" },
       ],
     });
+
+    await cacheSet(cacheKey, projects, 60);
 
     return ApiResponse.success(projects);
   } catch (error) {

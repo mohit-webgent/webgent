@@ -40,6 +40,8 @@ const envSchema = z.object({
   SLACK_WEBHOOK_URL: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default("claude-3-5-sonnet-20241022"),
+  UPSTASH_REDIS_REST_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 });
 
 function parseEnv() {
@@ -66,6 +68,8 @@ function parseEnv() {
     SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   });
 
   if (!parsed.success) {
