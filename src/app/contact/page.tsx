@@ -1,6 +1,7 @@
 import { ContactForm } from "@/components/contact/contact-form";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
+import { ClipReveal } from "@/components/animations/clip-reveal";
 
 export const revalidate = 3600;
 
@@ -46,10 +47,12 @@ export default function ContactPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
             <span>DIRECT ENGAGEMENT / ARCHITECT CONSULTATION</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight uppercase">
-            Work With Webgent
-          </h1>
-          <p className="text-sm sm:text-base text-[#909090] max-w-2xl mx-auto">
+          <ClipReveal>
+            <h1 className="text-4xl sm:text-6xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+              Work With Webgent
+            </h1>
+          </ClipReveal>
+          <p className="text-sm sm:text-base text-[#909090] max-w-2xl mx-auto leading-relaxed">
             Ready to turn your vision into high-performance digital software? Reach out directly to
             our engineering leads.
           </p>

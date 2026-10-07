@@ -2,11 +2,13 @@ import { prisma } from "@/lib/db";
 import { Project } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Github, Tag, Building, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Github, Tag, Building, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { DemoLink } from "@/components/work/demo-link";
-
 import { siteConfig } from "@/config/site";
+import { ClipReveal } from "@/components/animations/clip-reveal";
+import { ParallaxImage } from "@/components/animations/parallax-image";
+import { CtaLink } from "@/components/ui/cta-link";
 
 export const revalidate = 60;
 
@@ -95,15 +97,17 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
-      <div className="max-w-5xl mx-auto space-y-12 relative z-10">
+      <div className="max-w-5xl mx-auto space-y-14 relative z-10 text-left">
+        {/* Navigation Return Link */}
         <Link
           href="/work"
-          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors group"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
           <span>PORTFOLIO / RETURN TO INDEX</span>
         </Link>
 
+        {/* Hero Header Sequence */}
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
@@ -117,15 +121,17 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
             )}
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight uppercase">
-            {project.title}
-          </h1>
+          <ClipReveal>
+            <h1 className="text-4xl sm:text-6xl font-bold text-[#F5F5F3] tracking-tight uppercase leading-tight">
+              {project.title}
+            </h1>
+          </ClipReveal>
 
-          <p className="text-base sm:text-lg text-[#909090] leading-relaxed max-w-3xl">
+          <p className="text-base sm:text-xl text-[#909090] leading-relaxed max-w-3xl">
             {project.description}
           </p>
 
-          <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/[0.06]">
+          <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/[0.06]">
             {project.technologies && (
               <div className="flex flex-wrap items-center gap-2">
                 <Tag className="w-3.5 h-3.5 text-[#8A8A8A] mr-1" />
@@ -157,36 +163,49 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
           </div>
         </div>
 
+        {/* Hero Cover Image with subtle Parallax */}
+        {project.imageUrl && (
+          <ParallaxImage className="rounded-2xl border border-white/[0.08] shadow-2xl">
+            <img
+              src={project.imageUrl}
+              alt={project.title}
+              className="w-full h-auto max-h-[560px] object-cover"
+            />
+          </ParallaxImage>
+        )}
+
+        {/* Project Architecture & Content */}
         {project.content && (
-          <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 sm:p-10 space-y-6 shadow-xl">
-            <h2 className="text-xl font-bold text-[#F5F5F3] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#8A8A8A]" />
-              <span>Project Architecture & Specifications</span>
+          <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-12 space-y-6 shadow-2xl">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] flex items-center gap-2.5 tracking-tight uppercase">
+              <Sparkles className="w-5 h-5 text-[#8A8A8A]" />
+              <span>Technical Architecture & Engineering Scope</span>
             </h2>
-            <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm whitespace-pre-wrap">
+            <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
               {project.content}
             </div>
           </div>
         )}
 
+        {/* Screenshot Gallery with custom cursor & parallax */}
         {screenshotList.length > 0 && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-[#F5F5F3] flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#8A8A8A]" />
+            <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] flex items-center gap-2.5 tracking-tight uppercase">
+              <CheckCircle2 className="w-5 h-5 text-[#8A8A8A]" />
               <span>Interface & Telemetry Gallery</span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {screenshotList.map((url, idx) => (
                 <div
                   key={idx}
-                  className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl overflow-hidden shadow-xl"
+                  className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl overflow-hidden shadow-xl group"
                 >
                   <img
                     src={url}
                     alt={`${project.title} screenshot ${idx + 1}`}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-auto object-cover"
+                    className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
               ))}
@@ -194,30 +213,33 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
           </div>
         )}
 
-        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 sm:p-12 text-center space-y-6">
-          <div className="space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#F5F5F3] tracking-tight">
+        {/* Closing Action Banner */}
+        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-14 text-center space-y-6 shadow-2xl">
+          <div className="space-y-3 max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#F5F5F3] tracking-tight uppercase">
               Ready to Engineer a Similar Platform?
             </h2>
-            <p className="text-xs sm:text-sm text-[#909090]">
+            <p className="text-xs sm:text-sm text-[#909090] leading-relaxed">
               Let&apos;s evaluate your technical requirements and construct an enterprise system
-              engineered for high scale.
+              engineered for high scale and longevity.
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link
+          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+            <CtaLink
               href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
+              label="Project Detail Discuss Architecture"
+              className="inline-flex items-center gap-2 px-7 py-3 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
             >
               <span>Discuss Your Architecture</span>
-              <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
-            </Link>
-            <Link
+              <ArrowRight className="w-3.5 h-3.5" />
+            </CtaLink>
+            <CtaLink
               href="/work"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-white/[0.04] text-[#E5E5E5] border border-white/14 font-medium text-xs rounded-lg transition-colors"
+              label="Project Detail Browse More"
+              className="inline-flex items-center gap-2 px-7 py-3 bg-transparent hover:bg-white/[0.04] text-[#E5E5E5] border border-white/14 font-medium text-xs rounded-lg transition-colors"
             >
               <span>Browse More Projects</span>
-            </Link>
+            </CtaLink>
           </div>
         </div>
       </div>

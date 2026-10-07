@@ -14,8 +14,10 @@ import {
 import type { Metadata } from "next";
 import { BlogReadTracker } from "@/components/blog/blog-read-tracker";
 import { NewsletterForm } from "@/components/newsletter/newsletter-form";
-
 import { siteConfig } from "@/config/site";
+import { ClipReveal } from "@/components/animations/clip-reveal";
+import { ParallaxImage } from "@/components/animations/parallax-image";
+import { Card3DTilt } from "@/components/animations/card-tilt";
 
 export const revalidate = 60;
 
@@ -160,12 +162,12 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
     <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
       <BlogReadTracker slug={post.slug} title={post.title} readTime={post.readTime} />
 
-      <div className="max-w-4xl mx-auto space-y-12 relative z-10">
+      <div className="max-w-4xl mx-auto space-y-12 relative z-10 text-left">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors group"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
           <span>INDEX / RETURN TO BLOG</span>
         </Link>
 
@@ -201,9 +203,11 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight leading-tight uppercase">
-            {post.title}
-          </h1>
+          <ClipReveal>
+            <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight leading-tight uppercase">
+              {post.title}
+            </h1>
+          </ClipReveal>
 
           <div className="flex items-center gap-3 pt-2">
             <div className="w-9 h-9 rounded-lg bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[#E5E5E3] font-bold">
@@ -229,20 +233,19 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
         </div>
 
         {post.coverImage && (
-          <div className="rounded-xl overflow-hidden border border-white/[0.08] shadow-xl">
+          <ParallaxImage className="rounded-xl border border-white/[0.08] shadow-2xl">
             <img
               src={post.coverImage}
               alt={post.title}
-
               fetchPriority="high"
               decoding="async"
               className="w-full h-auto max-h-[500px] object-cover"
             />
-          </div>
+          </ParallaxImage>
         )}
 
-        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 sm:p-10 space-y-6 shadow-xl">
-          <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
+        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-12 space-y-6 shadow-2xl">
+          <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm sm:text-base whitespace-pre-wrap font-sans">
             {post.content}
           </div>
 
@@ -266,40 +269,41 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
 
         {relatedPosts.length > 0 && (
           <div className="space-y-6 pt-6 border-t border-white/[0.06]">
-            <h2 className="text-xl font-bold text-[#F5F5F3] flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] flex items-center gap-2 tracking-tight uppercase">
               <BookOpen className="w-4 h-4 text-[#8A8A8A]" />
               <span>Related Technical Publications</span>
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {relatedPosts.map((rel) => (
-                <div
-                  key={rel.id}
-                  className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.16] rounded-xl p-5 space-y-3 flex flex-col justify-between transition-colors shadow-lg"
-                >
-                  <div className="space-y-2">
-                    <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-                      {rel.category || "Article"}
-                    </span>
-                    <h3 className="text-sm font-semibold text-[#F5F5F3]">
-                      <Link href={`/blog/${rel.slug}`}>{rel.title}</Link>
-                    </h3>
-                  </div>
+                <div key={rel.id}>
+                  <Card3DTilt>
+                    <div className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.18] rounded-xl p-5 space-y-3 flex flex-col justify-between transition-all duration-300 shadow-xl h-full min-h-[190px] group">
+                      <div className="space-y-2">
+                        <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
+                          {rel.category || "Article"}
+                        </span>
+                        <h3 className="text-sm font-bold text-[#F5F5F3] group-hover:text-white transition-colors">
+                          <Link href={`/blog/${rel.slug}`}>{rel.title}</Link>
+                        </h3>
+                      </div>
 
-                  <div className="pt-3 flex items-center justify-between gap-2 border-t border-white/[0.06] text-xs">
-                    <Link
-                      href={`/blog/${rel.slug}`}
-                      className="inline-flex items-center gap-1 font-medium text-[#E8E8E6] hover:text-white text-xs"
-                    >
-                      <span>Read Publication</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
+                      <div className="pt-3 flex items-center justify-between gap-2 border-t border-white/[0.06] text-xs">
+                        <Link
+                          href={`/blog/${rel.slug}`}
+                          className="inline-flex items-center gap-1 font-semibold text-[#E8E8E6] hover:text-white text-xs"
+                        >
+                          <span>Read Publication</span>
+                          <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                        </Link>
 
-                    <div className="flex items-center gap-1 text-[11px] text-[#666666] font-mono">
-                      <Clock className="w-3 h-3" />
-                      <span>{rel.readTime || 1}m</span>
+                        <div className="flex items-center gap-1 text-[11px] text-[#666666] font-mono">
+                          <Clock className="w-3 h-3" />
+                          <span>{rel.readTime || 1}m</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </Card3DTilt>
                 </div>
               ))}
             </div>

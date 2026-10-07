@@ -10,12 +10,25 @@ import {
   Mail,
   Phone,
   Building2,
-  Briefcase,
-  DollarSign,
   MessageSquare,
 } from "lucide-react";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
+
+const SERVICE_OPTIONS = [
+  { value: "web_development", label: "Web Applications" },
+  { value: "mobile_app", label: "Mobile & Edge" },
+  { value: "full_stack", label: "Full-Stack Cloud" },
+  { value: "enterprise", label: "Enterprise Software" },
+  { value: "ui_ux", label: "UI/UX Design Systems" },
+];
+
+const BUDGET_OPTIONS = [
+  { value: "under_5k", label: "< $5,000" },
+  { value: "5k_10k", label: "$5,000 - $10,000" },
+  { value: "10k_25k", label: "$10,000 - $25,000" },
+  { value: "25k_plus", label: "$25,000+" },
+];
 
 export function ContactForm() {
   const [name, setName] = useState("");
@@ -103,21 +116,23 @@ export function ContactForm() {
     return (
       <div
         id="contact-form-success"
-        className="bg-[#0D0D0D] border border-white/[0.12] rounded-xl p-8 sm:p-12 text-center space-y-6 animate-in fade-in zoom-in-95 duration-200 max-w-2xl mx-auto"
+        className="bg-[#0D0D0D] border border-white/[0.14] rounded-2xl p-8 sm:p-14 text-center space-y-6 animate-in fade-in zoom-in-95 duration-300 max-w-2xl mx-auto shadow-2xl"
       >
-        <div className="w-14 h-14 bg-[#141414] text-[#F5F5F3] border border-white/[0.10] rounded-xl flex items-center justify-center mx-auto">
-          <CheckCircle2 className="w-7 h-7" />
+        <div className="w-16 h-16 bg-[#161616] text-[#F5F5F3] border border-white/[0.12] rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+          <CheckCircle2 className="w-8 h-8" />
         </div>
-        <div className="space-y-2">
-          <h3 className="text-xl font-bold text-[#F5F5F3]">Inquiry Submitted Successfully</h3>
-          <p className="text-xs sm:text-sm text-[#909090] max-w-md mx-auto">
-            Thank you for contacting Webgent. Our architecture team has logged your requirements and
-            will respond within one business day.
+        <div className="space-y-2.5">
+          <h3 className="text-2xl font-bold text-[#F5F5F3] uppercase tracking-tight">
+            Inquiry Submitted Successfully
+          </h3>
+          <p className="text-xs sm:text-sm text-[#909090] max-w-md mx-auto leading-relaxed">
+            Thank you for contacting Webgent. Our principal engineering group has logged your project
+            specifications and will evaluate technical scope within one business day.
           </p>
         </div>
         <button
           onClick={() => setSuccess(false)}
-          className="px-6 py-2.5 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
+          className="px-7 py-3 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors active:scale-95"
         >
           Send Another Inquiry
         </button>
@@ -126,38 +141,39 @@ export function ContactForm() {
   }
 
   return (
-    <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-6 sm:p-10 shadow-xl max-w-3xl mx-auto">
-      <div className="space-y-2 mb-8">
-        <h2 className="text-xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+    <div className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-6 sm:p-12 shadow-2xl max-w-3xl mx-auto transition-colors">
+      <div className="space-y-2 mb-10 text-left">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] tracking-tight uppercase">
           Project Specification Form
         </h2>
-        <p className="text-xs sm:text-sm text-[#909090]">
+        <p className="text-xs sm:text-sm text-[#909090] leading-relaxed">
           Detail your requirements below and our principal engineers will evaluate technical
-          feasibility and scope.
+          feasibility, architecture stack, and development roadmap.
         </p>
       </div>
 
       {error && (
         <div
           id="contact-form-error"
-          className="mb-8 p-3.5 rounded-lg bg-white/[0.03] border border-white/[0.12] text-[#D0D0CE] text-xs flex items-start gap-3 animate-in fade-in"
+          className="mb-8 p-4 rounded-xl bg-white/[0.03] border border-white/[0.14] text-[#E5E5E3] text-xs flex items-start gap-3 animate-in fade-in"
         >
           <AlertCircle className="w-4 h-4 text-white shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8 text-left">
+        {/* Name and Email */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="contact-name"
-              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]"
             >
               Full Name *
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666] group-focus-within:text-[#E5E5E3] transition-colors">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -168,20 +184,20 @@ export function ContactForm() {
                 onFocus={handleFieldFocus}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
+                className="block w-full pl-10 pr-4 py-3 bg-[#080808] border border-white/[0.10] rounded-xl text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/30 focus:bg-[#0C0C0C] transition-all"
               />
             </div>
           </div>
 
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="contact-email"
-              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]"
             >
               Corporate Email *
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666] group-focus-within:text-[#E5E5E3] transition-colors">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -192,22 +208,23 @@ export function ContactForm() {
                 onFocus={handleFieldFocus}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john@company.com"
-                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
+                className="block w-full pl-10 pr-4 py-3 bg-[#080808] border border-white/[0.10] rounded-xl text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/30 focus:bg-[#0C0C0C] transition-all"
               />
             </div>
           </div>
         </div>
 
+        {/* Phone and Company */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="contact-phone"
-              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]"
             >
               Phone Number
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666] group-focus-within:text-[#E5E5E3] transition-colors">
                 <Phone className="w-4 h-4" />
               </div>
               <input
@@ -216,20 +233,20 @@ export function ContactForm() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 (555) 000-0000"
-                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
+                className="block w-full pl-10 pr-4 py-3 bg-[#080808] border border-white/[0.10] rounded-xl text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/30 focus:bg-[#0C0C0C] transition-all"
               />
             </div>
           </div>
 
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="contact-company"
-              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]"
             >
               Company / Organization
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666] group-focus-within:text-[#E5E5E3] transition-colors">
                 <Building2 className="w-4 h-4" />
               </div>
               <input
@@ -238,76 +255,74 @@ export function ContactForm() {
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Acme Corp"
-                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
+                className="block w-full pl-10 pr-4 py-3 bg-[#080808] border border-white/[0.10] rounded-xl text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/30 focus:bg-[#0C0C0C] transition-all"
               />
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label
-              htmlFor="contact-service"
-              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
-            >
-              Service Domain
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
-                <Briefcase className="w-4 h-4" />
-              </div>
-              <select
-                id="contact-service"
-                value={service}
-                onChange={(e) => setService(e.target.value)}
-                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] text-xs focus:outline-none focus:border-white/20 transition-colors"
-              >
-                <option value="">Select an engineering domain...</option>
-                <option value="web_development">Web Application Architecture</option>
-                <option value="mobile_app">Mobile & Edge Systems</option>
-                <option value="full_stack">Full-Stack Cloud Engineering</option>
-                <option value="enterprise">Enterprise Custom Software</option>
-                <option value="ui_ux">UI/UX Design Systems</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="contact-budget"
-              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
-            >
-              Estimated Investment
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
-                <DollarSign className="w-4 h-4" />
-              </div>
-              <select
-                id="contact-budget"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] text-xs focus:outline-none focus:border-white/20 transition-colors"
-              >
-                <option value="">Select investment scope...</option>
-                <option value="under_5k">&lt; $5,000</option>
-                <option value="5k_10k">$5,000 - $10,000</option>
-                <option value="10k_25k">$10,000 - $25,000</option>
-                <option value="25k_plus">$25,000+</option>
-              </select>
-            </div>
+        {/* Interactive "What are we building?" Service Selector */}
+        <div className="space-y-3">
+          <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
+            Service Domain (Optional)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {SERVICE_OPTIONS.map((opt) => {
+              const isSelected = service === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setService(isSelected ? "" : opt.value)}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                    isSelected
+                      ? "bg-[#E8E8E6] text-[#080808] font-semibold shadow-sm"
+                      : "bg-[#080808] border border-white/[0.10] text-[#909090] hover:text-[#F5F5F3] hover:border-white/[0.20]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div>
+        {/* Interactive Budget Selector */}
+        <div className="space-y-3">
+          <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
+            Estimated Investment Scope (Optional)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {BUDGET_OPTIONS.map((opt) => {
+              const isSelected = budget === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setBudget(isSelected ? "" : opt.value)}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                    isSelected
+                      ? "bg-[#E8E8E6] text-[#080808] font-semibold shadow-sm"
+                      : "bg-[#080808] border border-white/[0.10] text-[#909090] hover:text-[#F5F5F3] hover:border-white/[0.20]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Message */}
+        <div className="space-y-2">
           <label
             htmlFor="contact-message"
-            className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
+            className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]"
           >
             Technical Requirements & Overview *
           </label>
-          <div className="relative">
-            <div className="absolute top-3 left-3 text-[#666666] pointer-events-none">
+          <div className="relative group">
+            <div className="absolute top-3.5 left-3.5 text-[#666666] group-focus-within:text-[#E5E5E3] pointer-events-none transition-colors">
               <MessageSquare className="w-4 h-4" />
             </div>
             <textarea
@@ -317,19 +332,20 @@ export function ContactForm() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Outline project objectives, current architecture, scale goals, and delivery milestones..."
-              className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
+              className="block w-full pl-10 pr-4 py-3 bg-[#080808] border border-white/[0.10] rounded-xl text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/30 focus:bg-[#0C0C0C] transition-all"
             />
           </div>
-          <p className="text-[10px] text-[#666666] font-mono mt-1">
+          <p className="text-[10px] text-[#666666] font-mono">
             {message.length}/20 characters minimum
           </p>
         </div>
 
+        {/* Submit Button */}
         <button
           id="contact-submit-button"
           type="submit"
           disabled={loading}
-          className="w-full py-3 px-6 bg-[#E8E8E6] hover:bg-white active:bg-[#D6D6D4] text-[#080808] font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
+          className="w-full py-3.5 px-6 bg-[#E8E8E6] hover:bg-white active:bg-[#D6D6D4] text-[#080808] font-semibold text-xs tracking-wider uppercase rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg cursor-pointer"
         >
           {loading ? (
             <>
