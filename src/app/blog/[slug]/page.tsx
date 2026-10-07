@@ -121,9 +121,7 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
 
       const OR_conditions: Prisma.BlogPostWhereInput[] = [];
       if (post.category) {
-        OR_conditions.push({
-          category: { equals: post.category, mode: "insensitive" },
-        });
+        OR_conditions.push({ category: { equals: post.category, mode: "insensitive" } });
       }
       currentTags.forEach((t) => {
         OR_conditions.push({ tags: { contains: t, mode: "insensitive" } });
@@ -159,29 +157,27 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
       <BlogReadTracker slug={post.slug} title={post.title} readTime={post.readTime} />
-
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-4xl mx-auto space-y-12 relative z-10">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Articles</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>INDEX / RETURN TO BLOG</span>
         </Link>
 
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="px-3.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-xs font-bold rounded-full uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
               {post.category || "Engineering"}
             </span>
 
-            <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
+            <div className="flex items-center gap-4 text-xs font-mono text-[#8A8A8A]">
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                <Calendar className="w-3.5 h-3.5 text-[#666666]" />
                 <span>
                   {post.publishedAt
                     ? new Date(post.publishedAt).toLocaleDateString("en-US", {
@@ -194,44 +190,46 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
               </div>
 
               <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
+                <Clock className="w-3.5 h-3.5 text-[#666666]" />
                 <span>{post.readTime || 1} min read</span>
               </div>
 
-              <div className="flex items-center gap-1.5 text-indigo-400">
+              <div className="flex items-center gap-1.5 text-[#8A8A8A]">
                 <Eye className="w-3.5 h-3.5" />
                 <span>{post.views} views</span>
               </div>
             </div>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight leading-tight uppercase">
             {post.title}
           </h1>
 
           <div className="flex items-center gap-3 pt-2">
-            <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-indigo-400 font-bold">
+            <div className="w-9 h-9 rounded-lg bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[#E5E5E3] font-bold">
               {post.author.avatarUrl ? (
                 <img
                   src={post.author.avatarUrl}
                   alt={post.author.name}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full rounded-lg object-cover"
                 />
               ) : (
-                <UserIcon className="w-5 h-5" />
+                <UserIcon className="w-4 h-4 text-[#8A8A8A]" />
               )}
             </div>
             <div>
-              <div className="text-sm font-bold text-white">{post.author.name}</div>
-              <div className="text-[11px] text-slate-400">Software Architecture Team</div>
+              <div className="text-xs font-semibold text-[#F5F5F3]">{post.author.name}</div>
+              <div className="text-[11px] text-[#8A8A8A] font-mono">
+                Software Architecture Group
+              </div>
             </div>
           </div>
         </div>
 
         {post.coverImage && (
-          <div className="rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
+          <div className="rounded-xl overflow-hidden border border-white/[0.08] shadow-xl">
             <img
               src={post.coverImage}
               alt={post.title}
@@ -243,21 +241,21 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
           </div>
         )}
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 sm:p-12 space-y-6 shadow-2xl">
-          <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed text-base sm:text-lg whitespace-pre-wrap">
+        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 sm:p-10 space-y-6 shadow-xl">
+          <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
             {post.content}
           </div>
 
           {tagsList.length > 0 && (
-            <div className="pt-8 border-t border-slate-800/80 flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">
+            <div className="pt-6 border-t border-white/[0.06] flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-mono text-[#8A8A8A] uppercase tracking-wider mr-2">
                 Article Tags:
               </span>
               {tagsList.map((tag, idx) => (
                 <Link
                   key={idx}
                   href={`/blog?tag=${encodeURIComponent(tag)}`}
-                  className="px-3 py-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-indigo-400 text-xs font-mono rounded-xl transition-colors"
+                  className="px-2.5 py-1 bg-[#141414] hover:bg-[#1C1C1C] border border-white/[0.06] text-[#8A8A8A] hover:text-[#F5F5F3] text-xs font-mono rounded transition-colors"
                 >
                   #{tag}
                 </Link>
@@ -267,37 +265,37 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
         </div>
 
         {relatedPosts.length > 0 && (
-          <div className="space-y-6 pt-8 border-t border-slate-800">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-400" />
-              <span>Related Technical Articles</span>
+          <div className="space-y-6 pt-6 border-t border-white/[0.06]">
+            <h2 className="text-xl font-bold text-[#F5F5F3] flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#8A8A8A]" />
+              <span>Related Technical Publications</span>
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {relatedPosts.map((rel) => (
                 <div
                   key={rel.id}
-                  className="bg-slate-900/60 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between transition-all group"
+                  className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.16] rounded-xl p-5 space-y-3 flex flex-col justify-between transition-colors shadow-lg"
                 >
                   <div className="space-y-2">
-                    <span className="px-2.5 py-0.5 bg-slate-950 text-indigo-400 border border-slate-800 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
                       {rel.category || "Article"}
                     </span>
-                    <h3 className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors">
+                    <h3 className="text-sm font-semibold text-[#F5F5F3]">
                       <Link href={`/blog/${rel.slug}`}>{rel.title}</Link>
                     </h3>
                   </div>
 
-                  <div className="pt-3 flex items-center justify-between gap-2 border-t border-slate-800/40 text-xs">
+                  <div className="pt-3 flex items-center justify-between gap-2 border-t border-white/[0.06] text-xs">
                     <Link
                       href={`/blog/${rel.slug}`}
-                      className="inline-flex items-center gap-1 font-semibold text-indigo-400 hover:text-indigo-300"
+                      className="inline-flex items-center gap-1 font-medium text-[#E8E8E6] hover:text-white text-xs"
                     >
-                      <span>Read</span>
-                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      <span>Read Publication</span>
+                      <ArrowRight className="w-3 h-3" />
                     </Link>
 
-                    <div className="flex items-center gap-1 text-[11px] text-slate-500 font-mono">
+                    <div className="flex items-center gap-1 text-[11px] text-[#666666] font-mono">
                       <Clock className="w-3 h-3" />
                       <span>{rel.readTime || 1}m</span>
                     </div>
@@ -311,7 +309,7 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
         <div className="pt-6">
           <NewsletterForm
             variant="card"
-            title="Enjoyed this article? Get more delivered bi-weekly"
+            title="Enjoyed this technical brief? Subscribe bi-weekly"
             description="Subscribe for deep technical articles, system architecture breakdowns, and web performance insights."
           />
         </div>

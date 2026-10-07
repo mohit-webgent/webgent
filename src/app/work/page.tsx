@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Project, Prisma } from "@prisma/client";
 import Link from "next/link";
-import { ArrowRight, Star, ExternalLink, Github, Sparkles, Search, Layers, X } from "lucide-react";
+import { ArrowRight, Star, ExternalLink, Github, Search, Layers, X } from "lucide-react";
 import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
@@ -91,20 +91,17 @@ export default async function PublicProjectsPage({
   } catch {}
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-12 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto space-y-16 relative z-10">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Featured Case Studies & Work</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.02] border border-white/10 text-[#A0A0A0] text-xs font-mono uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+            <span>PORTFOLIO / CASE ARCHIVE</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight">
-            Engineering Excellence in Action
+          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+            Engineering Systems in Production
           </h1>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-sm sm:text-base text-[#909090]">
             A curated showcase of custom software platforms, cloud applications, and high-conversion
             web experiences.
           </p>
@@ -112,32 +109,32 @@ export default async function PublicProjectsPage({
 
         {!selectedCategory && !searchQuery && featuredProjects.length > 0 && (
           <div className="space-y-6">
-            <h2 className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
-              <Star className="w-4 h-4 fill-current" />
+            <h2 className="flex items-center gap-2 text-xs font-semibold text-[#8A8A8A] uppercase tracking-wider font-mono">
+              <Star className="w-3.5 h-3.5 fill-current" />
               <span>Spotlight Featured Projects</span>
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {featuredProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="group bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between"
+                  className="group bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.16] rounded-xl overflow-hidden shadow-xl transition-colors flex flex-col justify-between"
                 >
-                  <div className="space-y-4 p-6 sm:p-8">
+                  <div className="space-y-4 p-6 sm:p-7">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[11px] font-bold rounded-full uppercase tracking-wider">
+                      <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
                         {project.category || "Case Study"}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-amber-400 text-[11px] font-semibold">
+                      <span className="inline-flex items-center gap-1 text-[#8A8A8A] text-[11px] font-mono">
                         <Star className="w-3 h-3 fill-current" /> Featured
                       </span>
                     </div>
 
-                    <h3 className="text-2xl font-extrabold text-white group-hover:text-indigo-400 transition-colors">
+                    <h3 className="text-xl font-bold text-[#F5F5F3] transition-colors">
                       {project.title}
                     </h3>
 
-                    <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-[#909090] line-clamp-3 leading-relaxed">
                       {project.description}
                     </p>
 
@@ -149,7 +146,7 @@ export default async function PublicProjectsPage({
                           .map((tech, i) => (
                             <span
                               key={i}
-                              className="px-2.5 py-1 bg-slate-950 border border-slate-800 text-slate-400 text-[10px] font-semibold rounded-lg"
+                              className="px-2 py-0.5 bg-[#141414] border border-white/[0.06] text-[#8A8A8A] text-[10px] font-mono rounded"
                             >
                               {tech.trim()}
                             </span>
@@ -158,25 +155,25 @@ export default async function PublicProjectsPage({
                     )}
                   </div>
 
-                  <div className="p-6 sm:p-8 pt-0 flex items-center justify-between gap-4 border-t border-slate-800/60 mt-4">
+                  <div className="p-6 sm:p-7 pt-0 flex items-center justify-between gap-4 border-t border-white/[0.06] mt-4">
                     <Link
                       href={`/work/${project.slug}`}
-                      className="inline-flex items-center gap-2 text-xs font-bold text-white group-hover:text-indigo-400 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-[#E8E8E6] hover:text-white transition-colors"
                     >
                       <span>Read Case Study</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       {project.demoUrl && (
                         <a
                           href={project.demoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition-colors"
+                          className="p-1.5 text-[#8A8A8A] hover:text-white bg-[#141414] border border-white/[0.06] rounded-lg transition-colors"
                           title="Live Demo"
                         >
-                          <ExternalLink className="w-4 h-4" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
                       {project.githubUrl && (
@@ -184,10 +181,10 @@ export default async function PublicProjectsPage({
                           href={project.githubUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition-colors"
+                          className="p-1.5 text-[#8A8A8A] hover:text-white bg-[#141414] border border-white/[0.06] rounded-lg transition-colors"
                           title="GitHub Source Code"
                         >
-                          <Github className="w-4 h-4" />
+                          <Github className="w-3.5 h-3.5" />
                         </a>
                       )}
                     </div>
@@ -199,14 +196,14 @@ export default async function PublicProjectsPage({
         )}
 
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-3.5">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
               <Link
                 href="/work"
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   !selectedCategory
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                    : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                    ? "bg-[#E8E8E6] text-[#080808]"
+                    : "bg-[#141414] text-[#8A8A8A] hover:text-[#F5F5F3] border border-white/[0.06]"
                 }`}
               >
                 All Projects
@@ -217,10 +214,10 @@ export default async function PublicProjectsPage({
                   <Link
                     key={cat}
                     href={`/work?category=${encodeURIComponent(cat)}`}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                       isSelected
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                        : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                        ? "bg-[#E8E8E6] text-[#080808]"
+                        : "bg-[#141414] text-[#8A8A8A] hover:text-[#F5F5F3] border border-white/[0.06]"
                     }`}
                   >
                     {cat}
@@ -230,57 +227,55 @@ export default async function PublicProjectsPage({
             </div>
 
             <form method="GET" action="/work" className="relative sm:w-72">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-[#666666] absolute left-3 top-2.5" />
               <input
                 type="text"
                 name="search"
                 defaultValue={searchQuery}
                 aria-label="Filter case studies by keyword"
                 placeholder="Filter by keyword..."
-                className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full pl-9 pr-8 py-2 rounded-lg bg-[#080808] border border-white/[0.10] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/20 transition-colors"
               />
               {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
             </form>
           </div>
 
           {allProjects.length === 0 ? (
-            <div className="py-16 text-center space-y-3 bg-slate-900/40 border border-slate-800 rounded-3xl p-8">
-              <Layers className="w-8 h-8 text-slate-600 mx-auto" />
-              <p className="text-base font-bold text-white">No Projects Match Your Filter</p>
-              <p className="text-xs text-slate-400">
+            <div className="py-16 text-center space-y-3 bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8">
+              <Layers className="w-8 h-8 text-[#666666] mx-auto" />
+              <p className="text-sm font-semibold text-[#F5F5F3]">No Projects Match Your Filter</p>
+              <p className="text-xs text-[#909090]">
                 Try selecting a different category or clearing your search term.
               </p>
               <Link
                 href="/work"
-                className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 mt-2"
+                className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-[#161616] hover:bg-[#202020] text-xs font-medium text-[#F5F5F3] border border-white/[0.08] mt-2 transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
                 <span>Reset Filters</span>
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {allProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-slate-900/60 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 sm:p-8 space-y-4 flex flex-col justify-between transition-all group hover:-translate-y-1 shadow-xl"
+                  className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.16] rounded-xl p-6 space-y-4 flex flex-col justify-between transition-colors shadow-lg"
                 >
                   <div className="space-y-3">
-                    <span className="px-3 py-1 bg-slate-950 text-slate-400 border border-slate-800 text-[10px] font-bold rounded-full uppercase tracking-wider w-fit block">
+                    <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider w-fit block">
                       {project.category || "Project"}
                     </span>
-                    <h3 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                    <h3 className="text-base font-semibold text-[#F5F5F3]">{project.title}</h3>
+                    <p className="text-xs text-[#909090] line-clamp-3 leading-relaxed">
                       {project.description}
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                  <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between">
                     <Link
                       href={`/work/${project.slug}`}
-                      className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1.5 transition-colors"
+                      className="text-xs font-medium text-[#E8E8E6] hover:text-white inline-flex items-center gap-1.5 transition-colors"
                     >
                       <span>Explore Project</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -291,7 +286,7 @@ export default async function PublicProjectsPage({
                         href={project.demoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-slate-400 hover:text-white"
+                        className="text-[#8A8A8A] hover:text-white transition-colors"
                         title="Live Demo"
                       >
                         <ExternalLink className="w-4 h-4" />

@@ -39,21 +39,19 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
       <div className="max-w-4xl mx-auto relative z-10 space-y-12">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            Start Your Project
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.02] border border-white/10 text-[#A0A0A0] text-xs font-mono uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+            <span>DIRECT ENGAGEMENT / ARCHITECT CONSULTATION</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight uppercase">
             Work With Webgent
           </h1>
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
-            Ready to turn your vision into high-performance digital software? Reach out to our team
-            today.
+          <p className="text-sm sm:text-base text-[#909090] max-w-2xl mx-auto">
+            Ready to turn your vision into high-performance digital software? Reach out directly to
+            our engineering leads.
           </p>
         </div>
 

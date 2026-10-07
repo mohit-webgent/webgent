@@ -84,10 +84,7 @@ export function ContactForm() {
       }
 
       setSuccess(true);
-      trackFormSubmit("contact", {
-        service: service || undefined,
-        budget: budget || undefined,
-      });
+      trackFormSubmit("contact", { service: service || undefined, budget: budget || undefined });
       setName("");
       setEmail("");
       setPhone("");
@@ -106,45 +103,46 @@ export function ContactForm() {
     return (
       <div
         id="contact-form-success"
-        className="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-8 sm:p-12 text-center space-y-6 animate-in fade-in zoom-in-95 duration-300 max-w-2xl mx-auto"
+        className="bg-[#0D0D0D] border border-white/[0.12] rounded-xl p-8 sm:p-12 text-center space-y-6 animate-in fade-in zoom-in-95 duration-200 max-w-2xl mx-auto"
       >
-        <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
-          <CheckCircle2 className="w-8 h-8" />
+        <div className="w-14 h-14 bg-[#141414] text-[#F5F5F3] border border-white/[0.10] rounded-xl flex items-center justify-center mx-auto">
+          <CheckCircle2 className="w-7 h-7" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-extrabold text-white">Inquiry Submitted Successfully!</h3>
-          <p className="text-sm text-slate-300 max-w-md mx-auto">
-            Thank you for reaching out to Webgent. Our team has received your message and will
-            review your project details shortly.
+          <h3 className="text-xl font-bold text-[#F5F5F3]">Inquiry Submitted Successfully</h3>
+          <p className="text-xs sm:text-sm text-[#909090] max-w-md mx-auto">
+            Thank you for contacting Webgent. Our architecture team has logged your requirements and
+            will respond within one business day.
           </p>
         </div>
         <button
           onClick={() => setSuccess(false)}
-          className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm rounded-xl border border-slate-700 transition-all"
+          className="px-6 py-2.5 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
         >
-          Send Another Message
+          Send Another Inquiry
         </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl max-w-3xl mx-auto">
+    <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-6 sm:p-10 shadow-xl max-w-3xl mx-auto">
       <div className="space-y-2 mb-8">
-        <h2 className="text-2xl font-extrabold text-white tracking-tight">
-          Let&apos;s Build Something Exceptional
+        <h2 className="text-xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+          Project Specification Form
         </h2>
-        <p className="text-sm text-slate-400">
-          Fill out the form below and our engineering team will get back to you within 24 hours.
+        <p className="text-xs sm:text-sm text-[#909090]">
+          Detail your requirements below and our principal engineers will evaluate technical
+          feasibility and scope.
         </p>
       </div>
 
       {error && (
         <div
           id="contact-form-error"
-          className="mb-8 p-4 rounded-2xl bg-red-950/60 border border-red-800/60 text-red-200 text-sm flex items-start gap-3 animate-in fade-in"
+          className="mb-8 p-3.5 rounded-lg bg-white/[0.03] border border-white/[0.12] text-[#D0D0CE] text-xs flex items-start gap-3 animate-in fade-in"
         >
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 text-white shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
@@ -154,12 +152,12 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="contact-name"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
             >
-              Full Name <span className="text-red-400">*</span>
+              Full Name *
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -170,7 +168,7 @@ export function ContactForm() {
                 onFocus={handleFieldFocus}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -178,12 +176,12 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="contact-email"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
             >
-              Email Address <span className="text-red-400">*</span>
+              Corporate Email *
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -194,7 +192,7 @@ export function ContactForm() {
                 onFocus={handleFieldFocus}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john@company.com"
-                className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -204,12 +202,12 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="contact-phone"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
             >
               Phone Number
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Phone className="w-4 h-4" />
               </div>
               <input
@@ -218,7 +216,7 @@ export function ContactForm() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 (555) 000-0000"
-                className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -226,12 +224,12 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="contact-company"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
             >
               Company / Organization
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Building2 className="w-4 h-4" />
               </div>
               <input
@@ -240,7 +238,7 @@ export function ContactForm() {
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Acme Corp"
-                className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -250,26 +248,26 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="contact-service"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
             >
-              Service Required
+              Service Domain
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <Briefcase className="w-4 h-4" />
               </div>
               <select
                 id="contact-service"
                 value={service}
                 onChange={(e) => setService(e.target.value)}
-                className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] text-xs focus:outline-none focus:border-white/20 transition-colors"
               >
-                <option value="">Select a service...</option>
-                <option value="web_development">Web Development</option>
-                <option value="mobile_app">Mobile App Development</option>
-                <option value="full_stack">Full Stack Engineering</option>
+                <option value="">Select an engineering domain...</option>
+                <option value="web_development">Web Application Architecture</option>
+                <option value="mobile_app">Mobile & Edge Systems</option>
+                <option value="full_stack">Full-Stack Cloud Engineering</option>
                 <option value="enterprise">Enterprise Custom Software</option>
-                <option value="ui_ux">UI/UX Design</option>
+                <option value="ui_ux">UI/UX Design Systems</option>
               </select>
             </div>
           </div>
@@ -277,21 +275,21 @@ export function ContactForm() {
           <div>
             <label
               htmlFor="contact-budget"
-              className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+              className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
             >
-              Estimated Budget
+              Estimated Investment
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#666666]">
                 <DollarSign className="w-4 h-4" />
               </div>
               <select
                 id="contact-budget"
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
-                className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] text-xs focus:outline-none focus:border-white/20 transition-colors"
               >
-                <option value="">Select budget range...</option>
+                <option value="">Select investment scope...</option>
                 <option value="under_5k">&lt; $5,000</option>
                 <option value="5k_10k">$5,000 - $10,000</option>
                 <option value="10k_25k">$10,000 - $25,000</option>
@@ -304,12 +302,12 @@ export function ContactForm() {
         <div>
           <label
             htmlFor="contact-message"
-            className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
+            className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0] mb-2"
           >
-            Project Description <span className="text-red-400">*</span>
+            Technical Requirements & Overview *
           </label>
           <div className="relative">
-            <div className="absolute top-3.5 left-3.5 text-slate-500 pointer-events-none">
+            <div className="absolute top-3 left-3 text-[#666666] pointer-events-none">
               <MessageSquare className="w-4 h-4" />
             </div>
             <textarea
@@ -318,28 +316,30 @@ export function ContactForm() {
               rows={5}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell us about your project goals, timelines, and technical requirements (min 20 characters)..."
-              className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              placeholder="Outline project objectives, current architecture, scale goals, and delivery milestones..."
+              className="block w-full pl-10 pr-4 py-2.5 bg-[#080808] border border-white/[0.10] rounded-lg text-[#F5F5F3] placeholder-[#666666] text-xs focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">{message.length}/20 characters minimum</p>
+          <p className="text-[10px] text-[#666666] font-mono mt-1">
+            {message.length}/20 characters minimum
+          </p>
         </div>
 
         <button
           id="contact-submit-button"
           type="submit"
           disabled={loading}
-          className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-xl shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all disabled:opacity-50"
+          className="w-full py-3 px-6 bg-[#E8E8E6] hover:bg-white active:bg-[#D6D6D4] text-[#080808] font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Sending Inquiry...</span>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Transmitting Requirements...</span>
             </>
           ) : (
             <>
-              <span>Submit Inquiry</span>
-              <Send className="w-4 h-4" />
+              <span>Dispatch Project Inquiry</span>
+              <Send className="w-3.5 h-3.5" />
             </>
           )}
         </button>

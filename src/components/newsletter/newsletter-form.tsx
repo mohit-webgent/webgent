@@ -77,14 +77,16 @@ export function NewsletterForm({
   if (variant === "footer") {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-bold text-white uppercase tracking-wider">Stay in the Loop</p>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs font-semibold text-[#F5F5F3] uppercase tracking-wider font-mono">
+          Stay in the Loop
+        </p>
+        <p className="text-xs text-[#909090]">
           Subscribe for software architecture insights and industry updates.
         </p>
 
         {success ? (
-          <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 text-emerald-300 text-xs flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />
+          <div className="p-3 rounded-lg bg-white/[0.04] border border-white/[0.10] text-[#D0D0CE] text-xs flex items-start gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#F5F5F3]" />
             <span>{success}</span>
           </div>
         ) : (
@@ -97,12 +99,12 @@ export function NewsletterForm({
                 onFocus={handleFocus}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#0D0D0D] border border-white/[0.10] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={loading || !email}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all disabled:opacity-50 shrink-0"
+                className="px-3.5 py-2 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs transition-colors disabled:opacity-40 shrink-0"
               >
                 {loading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -112,8 +114,8 @@ export function NewsletterForm({
               </button>
             </div>
             {error && (
-              <p className="text-[11px] text-rose-400 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3 shrink-0" />
+              <p className="text-[11px] text-[#D0D0CE] flex items-center gap-1">
+                <AlertCircle className="w-3 h-3 shrink-0 text-white" />
                 <span>{error}</span>
               </p>
             )}
@@ -124,26 +126,24 @@ export function NewsletterForm({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900 border border-indigo-500/20 p-8 sm:p-10 text-center sm:text-left">
-      <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-xl bg-[#0D0D0D] border border-white/[0.08] p-6 sm:p-8 md:p-10 text-center sm:text-left">
       <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
         <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.03] border border-white/[0.08] text-[#A0A0A0] text-xs font-mono">
             <Mail className="w-3.5 h-3.5" />
             <span>Bi-weekly Engineering Digest</span>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{title}</h3>
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{description}</p>
+          <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F3] tracking-tight">{title}</h3>
+          <p className="text-xs sm:text-sm text-[#909090] leading-relaxed">{description}</p>
         </div>
 
-        <div className="w-full lg:w-auto lg:min-w-[380px]">
+        <div className="w-full lg:w-auto lg:min-w-[360px] max-w-full">
           {success ? (
-            <div className="p-5 rounded-2xl bg-emerald-950/50 border border-emerald-800/60 text-emerald-200 text-xs sm:text-sm flex items-start gap-3 shadow-lg">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="p-5 rounded-lg bg-white/[0.04] border border-white/[0.10] text-[#D0D0CE] text-xs sm:text-sm flex items-start gap-3 shadow-lg">
+              <CheckCircle2 className="w-5 h-5 text-[#F5F5F3] shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-bold text-white">Subscription Initiated!</p>
-                <p className="text-xs text-slate-300 leading-relaxed">{success}</p>
+                <p className="font-semibold text-[#F5F5F3]">Subscription Initiated</p>
+                <p className="text-xs text-[#909090] leading-relaxed">{success}</p>
               </div>
             </div>
           ) : (
@@ -151,17 +151,17 @@ export function NewsletterForm({
               <div className="flex flex-col sm:flex-row gap-2.5">
                 <input
                   type="email"
-                  placeholder="Enter your email address..."
+                  placeholder="Enter your corporate email..."
                   value={email}
                   onFocus={handleFocus}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                  className="w-full px-4 py-2.5 rounded-lg bg-[#080808] border border-white/[0.10] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={loading || !email}
-                  className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/30 shrink-0 disabled:opacity-50 flex items-center justify-center gap-2 hover:scale-105"
+                  className="px-6 py-2.5 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs transition-colors shrink-0 disabled:opacity-40 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
@@ -178,13 +178,13 @@ export function NewsletterForm({
               </div>
 
               {error && (
-                <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-800/40 text-rose-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <div className="p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.10] text-[#D0D0CE] text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-white" />
                   <span>{error}</span>
                 </div>
               )}
 
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-[#666666]">
                 Zero spam. Double opt-in confirmation required. Unsubscribe anytime.
               </p>
             </form>

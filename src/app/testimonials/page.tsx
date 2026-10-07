@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { Star, MessageSquareQuote, ArrowRight, Sparkles } from "lucide-react";
+import { Star, MessageSquareQuote, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -73,32 +73,29 @@ export default async function PublicTestimonialsPage() {
   } catch {}
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto space-y-16 relative z-10">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Social Proof & Partner Feedback</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.02] border border-white/10 text-[#A0A0A0] text-xs font-mono uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+            <span>TESTIMONIALS / VERIFIED FEEDBACK</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight uppercase">
             Trusted by Builders & Visionaries
           </h1>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-sm sm:text-base text-[#909090]">
             Hear directly from the founders, executives, and engineering leads who have scaled their
             businesses with Webgent.
           </p>
         </div>
 
         {testimonials.length === 0 ? (
-          <div className="max-w-md mx-auto py-16 text-center space-y-3 p-8 rounded-3xl bg-slate-900/60 border border-slate-800">
-            <MessageSquareQuote className="w-10 h-10 text-slate-600 mx-auto" />
-            <h2 className="text-base font-bold text-white">Client Reviews Coming Soon</h2>
-            <p className="text-xs text-slate-400">
+          <div className="max-w-md mx-auto py-16 text-center space-y-3 p-8 rounded-xl bg-[#0D0D0D] border border-white/[0.08]">
+            <MessageSquareQuote className="w-8 h-8 text-[#666666] mx-auto" />
+            <h2 className="text-sm font-semibold text-[#F5F5F3]">Client Reviews Coming Soon</h2>
+            <p className="text-xs text-[#909090]">
               We are compiling our latest verified case studies and testimonials. Check back
-              shortly!
+              shortly.
             </p>
           </div>
         ) : (
@@ -106,29 +103,29 @@ export default async function PublicTestimonialsPage() {
             {testimonials.map((t) => (
               <div
                 key={t.id}
-                className="bg-slate-900/80 border border-slate-800 hover:border-pink-500/30 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 transition-all duration-300 shadow-xl group hover:-translate-y-1"
+                className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.16] rounded-xl p-6 sm:p-7 flex flex-col justify-between space-y-6 transition-colors shadow-lg"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-amber-400">
+                    <div className="flex items-center gap-1 text-[#B5B5B3]">
                       {Array.from({ length: t.rating || 5 }).map((_, idx) => (
-                        <Star key={idx} className="w-4 h-4 fill-current" />
+                        <Star key={idx} className="w-3.5 h-3.5 fill-current" />
                       ))}
                     </div>
                     {t.featured && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20 text-[10px] font-bold">
+                      <span className="px-2.5 py-0.5 rounded bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono">
                         Featured Review
                       </span>
                     )}
                   </div>
 
-                  <p className="text-sm text-slate-300 leading-relaxed italic">
+                  <p className="text-xs sm:text-sm text-[#D0D0CE] leading-relaxed italic">
                     &ldquo;{t.content}&rdquo;
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0 shadow-md">
+                <div className="pt-4 border-t border-white/[0.06] flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#161616] border border-white/[0.10] flex items-center justify-center text-[#E5E5E3] font-mono text-xs font-bold overflow-hidden shrink-0">
                     {t.avatarUrl ? (
                       <img
                         src={t.avatarUrl}
@@ -142,8 +139,10 @@ export default async function PublicTestimonialsPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-bold text-sm text-white truncate">{t.clientName}</h3>
-                    <p className="text-xs text-slate-400 truncate">
+                    <h3 className="font-semibold text-xs text-[#F5F5F3] truncate">
+                      {t.clientName}
+                    </h3>
+                    <p className="text-[10px] text-[#8A8A8A] truncate">
                       {t.clientTitle || "Partner"}
                       {t.company ? ` • ${t.company}` : ""}
                     </p>
@@ -154,29 +153,29 @@ export default async function PublicTestimonialsPage() {
           </div>
         )}
 
-        <div className="bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-slate-900 border border-pink-500/20 rounded-3xl p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
+        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 sm:p-12 text-center space-y-6">
           <div className="space-y-3 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#F5F5F3] tracking-tight">
               Ready to Achieve Extraordinary Results?
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-[#909090]">
               Partner with an engineering team dedicated to high performance, reliability, and
               precision craft.
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-pink-600/30 transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
             >
               <span>Start Your Project</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link
               href="/work"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-semibold text-xs rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-white/[0.04] text-[#E5E5E5] border border-white/14 font-medium text-xs rounded-lg transition-colors"
             >
-              <span>Explore Case Studies</span>
+              <span>Explore Portfolio</span>
             </Link>
           </div>
         </div>

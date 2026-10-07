@@ -13,22 +13,20 @@ export const metadata: Metadata = {
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-[75vh] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="max-w-xl w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 text-center shadow-2xl backdrop-blur-xl relative z-10 space-y-8">
-        <div className="p-4 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 w-20 h-20 mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/10">
-          <FileQuestion className="w-10 h-10" />
+    <div className="min-h-[75vh] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans bg-[#080808]">
+      <div className="max-w-xl w-full bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 sm:p-12 text-center shadow-2xl relative z-10 space-y-8">
+        <div className="p-4 rounded-xl bg-[#141414] border border-white/[0.10] text-[#E5E5E3] w-16 h-16 mx-auto flex items-center justify-center">
+          <FileQuestion className="w-8 h-8 text-[#E8E8E6]" />
         </div>
 
         <div className="space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.02] border border-white/[0.10] text-[#A0A0A0] text-xs font-mono uppercase tracking-wider">
             404 Error
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-light text-[#F5F5F3] tracking-tight">
             Page Not Found
           </h1>
-          <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-[#969696] max-w-md mx-auto leading-relaxed">
             The page or resource you requested could not be located. It may have been moved,
             renamed, or is temporarily unavailable.
           </p>
@@ -37,42 +35,42 @@ export default function NotFoundPage() {
         <div className="grid grid-cols-2 gap-3 text-left">
           <Link
             href="/work"
-            className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-indigo-500/40 hover:bg-slate-800/50 transition-all group"
+            className="p-3.5 rounded-lg bg-[#111111] border border-white/[0.06] hover:border-white/[0.16] hover:bg-[#151515] transition-colors group"
           >
-            <div className="flex items-center gap-2 text-indigo-400 group-hover:text-indigo-300 font-semibold text-xs mb-1">
+            <div className="flex items-center gap-2 text-[#E5E5E3] group-hover:text-white font-mono text-xs mb-1">
               <Briefcase className="w-3.5 h-3.5" />
               <span>Case Studies</span>
             </div>
-            <p className="text-[11px] text-slate-400">View customer projects</p>
+            <p className="text-[11px] text-[#666666]">Production telemetry</p>
           </Link>
 
           <Link
             href="/blog"
-            className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-indigo-500/40 hover:bg-slate-800/50 transition-all group"
+            className="p-3.5 rounded-lg bg-[#111111] border border-white/[0.06] hover:border-white/[0.16] hover:bg-[#151515] transition-colors group"
           >
-            <div className="flex items-center gap-2 text-indigo-400 group-hover:text-indigo-300 font-semibold text-xs mb-1">
+            <div className="flex items-center gap-2 text-[#E5E5E3] group-hover:text-white font-mono text-xs mb-1">
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Tech Blog</span>
+              <span>Technical Notes</span>
             </div>
-            <p className="text-[11px] text-slate-400">Engineering insights</p>
+            <p className="text-[11px] text-[#666666]">Engineering insights</p>
           </Link>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/30 hover:scale-105"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs transition-colors"
           >
-            <Home className="w-4 h-4" />
+            <Home className="w-3.5 h-3.5" />
             <span>Return to Homepage</span>
           </Link>
 
           <Link
             href="/contact"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-[#141414] hover:bg-[#1A1A1A] text-[#E5E5E3] border border-white/[0.12] font-medium text-xs transition-colors"
           >
-            <Mail className="w-4 h-4" />
-            <span>Contact Support</span>
+            <Mail className="w-3.5 h-3.5" />
+            <span>Contact Studio</span>
           </Link>
         </div>
       </div>
