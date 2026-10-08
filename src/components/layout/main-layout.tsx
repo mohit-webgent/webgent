@@ -10,6 +10,7 @@ import { ChatWidget } from "@/components/chat/chat-widget";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { ScrollProgressBar } from "@/components/animations/scroll-progress";
 import { PageTransition } from "@/components/animations/page-transition";
+import { WebgentOpeningAnimation } from "@/components/animations/webgent-opening-animation";
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  const isHome = pathname === "/";
 
   if (isAdmin) {
     return (
@@ -32,6 +34,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <SmoothScrollProvider>
+      {isHome && <WebgentOpeningAnimation />}
       <div className="relative flex min-h-screen flex-col bg-transparent text-[#D0D0CE] selection:bg-white/15 selection:text-[#F5F5F3] overflow-x-hidden w-full">
         <ScrollProgressBar />
         <a

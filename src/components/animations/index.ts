@@ -8,4 +8,5 @@ export * from "./card-tilt";
 export * from "./custom-cursor";
 export * from "./scroll-progress";
 export * from "./page-transition";
+export * from "./webgent-opening-animation";
 export * from "../providers/smooth-scroll-provider";
