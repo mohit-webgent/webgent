@@ -169,13 +169,13 @@ export function HeroSection() {
             className="text-5xl sm:text-6xl lg:text-[4.75rem] xl:text-[5.25rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
           >
             <span className="block overflow-hidden">
-              <span className="hero-headline-line block">WE BUILD</span>
+              <span className="hero-headline-line block">YOU IMAGINE</span>
             </span>
             <span className="block overflow-hidden">
-              <span className="hero-headline-line block text-[#A8A8A8]">DIGITAL</span>
+              <span className="hero-headline-line block text-[#A8A8A8]">WE ENGINEER</span>
             </span>
             <span className="block overflow-hidden">
-              <span className="hero-headline-line block">SYSTEMS.</span>
+              <span className="hero-headline-line block">REALITY.</span>
             </span>
           </h1>
 
