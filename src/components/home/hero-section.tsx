@@ -166,7 +166,7 @@ export function HeroSection() {
           {/* Headline with line-based reveal */}
           <h1
             ref={headlineRef}
-            className="text-5xl sm:text-6xl lg:text-[4.75rem] xl:text-[5.25rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
+            className="text-5xl lg:text-[4rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
           >
             <span className="block overflow-hidden">
               <span className="hero-headline-line block">YOU IMAGINE</span>
