@@ -108,7 +108,9 @@ export default async function HomePage() {
       <HeroSection />
 
       {/* 2. CAPABILITIES SECTION (Interactive Sticky Discipline) */}
-      <InteractiveCapabilities />
+      <div className="-mt-14 sm:-mt-20 lg:-mt-24">
+        <InteractiveCapabilities />
+      </div>
 
       {/* 3. SIGNATURE 'HOW WE BUILD' 3D DIGITAL PRODUCT EVOLUTION */}
       <HowWeBuildSection />

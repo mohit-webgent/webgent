@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight } from "lucide-react";
 import { CtaLink } from "@/components/ui/cta-link";
+import { HeroStartProjectButton } from "./hero-start-project-button";
 import { HeroResponsiveVisual } from "./hero-responsive-visual";
 import {
   gsap,
@@ -150,7 +151,7 @@ export function HeroSection() {
   return (
     <section
       ref={heroSectionRef}
-      className="relative w-full min-h-[calc(100vh-4rem)] flex items-center justify-center py-16 sm:py-20 lg:py-0 overflow-x-clip lg:overflow-visible"
+      className="relative w-full min-h-[75vh] lg:min-h-[82vh] flex items-center justify-center pt-8 pb-4 sm:pt-12 sm:pb-8 lg:py-0 overflow-x-clip lg:overflow-visible"
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-10 xl:gap-16 items-center w-full">
         {/* Left Column: Text & CTA */}
@@ -182,7 +183,7 @@ export function HeroSection() {
           {/* Supporting paragraph */}
           <p
             ref={paragraphRef}
-            className="text-base sm:text-lg lg:text-[19px] text-[#8A8A8A] max-w-[520px] leading-[1.6] font-normal"
+            className="text-base sm:text-md lg:text-[15px] text-[#8A8A8A] max-w-[520px] leading-[1.6] font-normal"
           >
             We design and build digital products for ambitious businesses.
           </p>
@@ -190,24 +191,17 @@ export function HeroSection() {
           {/* CTA Buttons */}
           <div
             ref={ctaRef}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-3"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-3"
           >
-            <CtaLink
-              href="/contact"
-              label="Hero Start Project"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs sm:text-sm tracking-wide transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] active:translate-y-0 active:scale-[0.99]"
-            >
-              <span>START YOUR PROJECT</span>
-              <ArrowRight className="w-4 h-4" />
-            </CtaLink>
+            <HeroStartProjectButton />
 
             <CtaLink
               href="/work"
               label="Hero Browse Work"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-transparent hover:bg-white/[0.04] text-[#E5E5E3] border border-white/[0.12] hover:border-white/[0.20] font-medium text-xs sm:text-sm tracking-wide transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-[#E5E5E3] hover:text-white border border-white/[0.12] hover:border-white/[0.24] font-medium text-xs sm:text-[13px] tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(0,0,0,0.3)] backdrop-blur-md"
             >
               <span>EXPLORE PORTFOLIO</span>
-              <ArrowRight className="w-4 h-4 opacity-50" />
+              <ArrowRight className="w-4 h-4 opacity-50 transition-transform duration-200 group-hover:translate-x-1" />
             </CtaLink>
           </div>
         </div>
