@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
