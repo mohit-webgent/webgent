@@ -64,18 +64,18 @@ export function HorizontalShowcase({ projects }: HorizontalShowcaseProps) {
   return (
     <section
       ref={containerRef}
-      className="relative w-full py-12 lg:py-20 overflow-hidden text-left"
+      className="relative w-full py-8 sm:py-12 lg:py-20 overflow-hidden text-left"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-12">
-        <div className="space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#8A8A8A] font-mono block">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-12">
+        <div className="space-y-1.5 sm:space-y-2">
+          <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-[#8A8A8A] font-mono block">
             FEATURED ARCHITECTURE / 03
           </span>
-          <h2 className="text-2xl sm:text-4xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+          <h2 className="text-xl sm:text-4xl font-bold text-[#F5F5F3] tracking-tight uppercase">
             Selected Systems In Production
           </h2>
-          <p className="text-xs sm:text-sm text-[#909090]">
+          <p className="text-[11px] sm:text-sm text-[#909090]">
             High-scale platforms, custom SaaS architectures, and conversion-engineered systems.
           </p>
         </div>
@@ -92,7 +92,7 @@ export function HorizontalShowcase({ projects }: HorizontalShowcaseProps) {
       {/* Horizontal Strip Container (Pinned on Desktop, Natural Grid on Mobile) */}
       <div
         ref={trackRef}
-        className="flex flex-col lg:flex-row gap-6 lg:gap-8 will-change-transform lg:w-max"
+        className="flex flex-col lg:flex-row gap-5 lg:gap-8 will-change-transform lg:w-max"
       >
         {projects.map((project, idx) => (
           <div
@@ -100,7 +100,7 @@ export function HorizontalShowcase({ projects }: HorizontalShowcaseProps) {
             className="w-full lg:w-[480px] shrink-0"
           >
             <Card3DTilt>
-              <div className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.20] rounded-2xl p-7 sm:p-8 space-y-6 flex flex-col justify-between transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.8)] h-full min-h-[340px]">
+              <div className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.20] rounded-2xl p-5 sm:p-8 space-y-4 sm:space-y-6 flex flex-col justify-between transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.8)] h-full min-h-[260px] sm:min-h-[340px]">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-2">
                     <span className="px-2.5 py-0.5 rounded bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono uppercase tracking-wider font-medium">

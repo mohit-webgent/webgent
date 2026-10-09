@@ -103,14 +103,12 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="space-y-24 sm:space-y-32 pb-20 max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 font-sans w-full">
+    <div className="space-y-14 sm:space-y-24 pb-16 sm:pb-20 max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 font-sans w-full">
       {/* 1. HERO SECTION (Approved Product Visual preserved with choreographed entrance & scroll story) */}
       <HeroSection />
 
       {/* 2. CAPABILITIES SECTION (Interactive Sticky Discipline) */}
-      <div className="-mt-14 sm:-mt-20 lg:-mt-24">
-        <InteractiveCapabilities />
-      </div>
+      <InteractiveCapabilities />
 
       {/* 3. SIGNATURE 'HOW WE BUILD' 3D DIGITAL PRODUCT EVOLUTION */}
       <HowWeBuildSection />

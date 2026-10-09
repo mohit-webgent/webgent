@@ -151,15 +151,15 @@ export function HeroSection() {
   return (
     <section
       ref={heroSectionRef}
-      className="relative w-full min-h-[75vh] lg:min-h-[82vh] flex items-center justify-center pt-8 pb-4 sm:pt-12 sm:pb-8 lg:py-0 overflow-x-clip lg:overflow-visible"
+      className="relative w-full min-h-[58vh] lg:min-h-[64vh] flex items-center justify-center pt-6 pb-2 sm:pt-8 sm:pb-4 lg:pt-2 lg:pb-4 overflow-x-clip lg:overflow-visible"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-10 xl:gap-16 items-center w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-10 xl:gap-16 items-center w-full">
         {/* Left Column: Text & CTA */}
-        <div className="lg:col-span-6 xl:col-span-6 space-y-8 text-left z-10">
+        <div className="lg:col-span-6 xl:col-span-6 space-y-6 sm:space-y-8 text-left z-10">
           {/* Eyebrow */}
           <div
             ref={eyebrowRef}
-            className="text-[11px] sm:text-xs font-mono tracking-[0.22em] text-[#8A8A8A] uppercase"
+            className="text-[10px] sm:text-xs font-mono tracking-[0.2em] sm:tracking-[0.22em] text-[#8A8A8A] uppercase"
           >
             WEBGENT <span className="text-[#444444] mx-2">/</span> DIGITAL ENGINEERING STUDIO
           </div>
@@ -167,7 +167,7 @@ export function HeroSection() {
           {/* Headline with line-based reveal */}
           <h1
             ref={headlineRef}
-            className="text-5xl lg:text-[4rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
+            className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
           >
             <span className="block overflow-hidden">
               <span className="hero-headline-line block">YOU IMAGINE</span>
@@ -183,7 +183,7 @@ export function HeroSection() {
           {/* Supporting paragraph */}
           <p
             ref={paragraphRef}
-            className="text-base sm:text-md lg:text-[15px] text-[#8A8A8A] max-w-[520px] leading-[1.6] font-normal"
+            className="text-sm sm:text-base lg:text-[15px] text-[#8A8A8A] max-w-[520px] leading-[1.6] font-normal"
           >
             We design and build digital products for ambitious businesses.
           </p>
@@ -191,7 +191,7 @@ export function HeroSection() {
           {/* CTA Buttons */}
           <div
             ref={ctaRef}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-3"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-3"
           >
             <HeroStartProjectButton />
 
