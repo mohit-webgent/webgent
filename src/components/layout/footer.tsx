@@ -3,8 +3,7 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
-import { NewsletterForm } from "@/components/newsletter/newsletter-form";
-import { Shield } from "lucide-react";
+import { Shield, ArrowUpRight, ArrowUp } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 
@@ -39,31 +38,64 @@ export function Footer() {
     { scope: footerRef }
   );
 
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <footer
       ref={footerRef}
-      className="relative border-t border-white/[0.08] bg-[#080808] text-[#909090] overflow-hidden select-none"
+      className="relative border-t border-white/[0.08] bg-[#070707] text-[#909090] overflow-hidden select-none"
     >
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-16 sm:py-20 relative z-10 text-left">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
-          {/* Brand Info */}
-          <div className="lg:col-span-2 space-y-4">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pt-12 sm:pt-16 pb-6 relative z-10 text-left">
+        {/* Top Status Ribbon */}
+        <div className="border-b border-white/[0.08] pb-6 mb-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5 text-xs font-mono">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-[#A0A0A0] text-[11px] font-medium uppercase tracking-wider">
+              All Systems Operational
+            </span>
+          </div>
+
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#A0A0A0] hover:text-white transition-colors"
+          >
+            <span>Initiate Project Consultation</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Main 4-Column Minimal Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12">
+          {/* Brand Info (Col span 5) */}
+          <div className="lg:col-span-5 space-y-4">
             <Link
               href="/"
-              className="flex items-center gap-2.5 font-bold text-base text-[#F5F5F3] group w-fit"
+              className="inline-flex items-center gap-3 group w-fit"
             >
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#141414] border border-white/[0.12] text-[#F5F5F3] font-bold text-xs tracking-wider transition-colors group-hover:bg-[#1C1C1C]">
                 W
               </span>
-              <span className="font-bold text-[#F5F5F3] tracking-tight">{siteConfig.name}</span>
+              <span className="font-bold text-base text-[#F5F5F3] tracking-tight group-hover:text-white transition-colors">
+                {siteConfig.name}
+              </span>
             </Link>
+
             <p className="text-xs sm:text-sm text-[#909090] max-w-sm leading-relaxed">
-              {siteConfig.description}
+              Designing and engineering high-performance web applications, scalable cloud backends,
+              and digital platforms for ambitious modern enterprises.
             </p>
-            <div className="pt-2 flex items-center gap-3 text-xs">
+
+            <div className="pt-1 flex items-center gap-3">
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111111] border border-white/[0.08] text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors text-[11px]"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111111] border border-white/[0.08] hover:border-white/20 text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors text-[11px] font-mono"
               >
                 <Shield className="w-3.5 h-3.5 text-[#8A8A8A]" />
                 <span>Admin Console</span>
@@ -71,29 +103,24 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Navigation */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-[#F5F5F3] uppercase tracking-wider font-mono">
-              Navigation
+          {/* Column 2: Systems (Col span 3) */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-[#F5F5F3] font-semibold">
+              Systems
             </p>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href="/" className="text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
                 <Link
                   href="/work"
-                  className="text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors"
+                  className="text-[#9E9E9E] hover:text-white transition-colors block"
                 >
-                  Case Studies & Work
+                  Selected Case Studies
                 </Link>
               </li>
               <li>
                 <Link
                   href="/blog"
-                  className="text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors"
+                  className="text-[#9E9E9E] hover:text-white transition-colors block"
                 >
                   Engineering Blog
                 </Link>
@@ -101,7 +128,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/testimonials"
-                  className="text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors"
+                  className="text-[#9E9E9E] hover:text-white transition-colors block"
                 >
                   Client Reviews
                 </Link>
@@ -109,7 +136,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors"
+                  className="text-[#9E9E9E] hover:text-white transition-colors block"
                 >
                   Contact Us
                 </Link>
@@ -117,50 +144,98 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Architecture Pillars */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-[#F5F5F3] uppercase tracking-wider font-mono">
+          {/* Column 3: Core Stack (Col span 2) */}
+          <div className="lg:col-span-2 space-y-3.5">
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-[#F5F5F3] font-semibold">
               Core Stack
             </p>
-            <ul className="space-y-2.5 text-xs text-[#8A8A8A]">
-              <li>Next.js 14 App Router</li>
-              <li>PostgreSQL & Prisma ORM</li>
-              <li>TypeScript & Zod</li>
-              <li>Cloudflare R2 & Edge</li>
-              <li>Three.js & GSAP Motion</li>
+            <ul className="space-y-2.5 text-xs text-[#9E9E9E]">
+              <li className="hover:text-white transition-colors">Next.js 14</li>
+              <li className="hover:text-white transition-colors">PostgreSQL & Prisma</li>
+              <li className="hover:text-white transition-colors">TypeScript</li>
+              <li className="hover:text-white transition-colors">Tailwind CSS</li>
+              <li className="hover:text-white transition-colors">GSAP Motion</li>
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div className="lg:col-span-1">
-            <NewsletterForm variant="footer" />
+          {/* Column 4: Connect (Col span 2) */}
+          <div className="lg:col-span-2 space-y-3.5">
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-[#F5F5F3] font-semibold">
+              Connect
+            </p>
+            <ul className="space-y-2.5 text-xs">
+              <li>
+                <a
+                  href={siteConfig.links.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>GitHub</span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={siteConfig.links.twitter}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Twitter / X</span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={siteConfig.links.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>LinkedIn</span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                </a>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Direct Inquiries</span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-white/[0.07] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#666666] text-center sm:text-left">
-          <p>
-            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+        {/* Bottom Bar: Copyright & Navigation */}
+        <div className="mt-12 pt-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#707070]">
+          <p className="text-[#8A8A8A] text-[11px] font-mono text-center sm:text-left">
+            &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1.5 text-[#8A8A8A] text-[11px] font-mono">
-            <span>TypeScript</span>
-            <span>•</span>
-            <span>Next.js 14</span>
-            <span>•</span>
-            <span>Prisma</span>
-            <span>•</span>
-            <span>PostgreSQL</span>
-          </div>
+
+          <button
+            onClick={scrollToTop}
+            className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-[#8A8A8A] hover:text-white transition-colors cursor-pointer"
+            aria-label="Back to top of page"
+          >
+            <span>Back to Top</span>
+            <ArrowUp className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      {/* Dramatic Typographic Watermark Reveal in Background */}
-      <div
-        ref={watermarkRef}
-        className="pointer-events-none absolute -bottom-6 left-1/2 -translate-x-1/2 font-bold text-[18vw] leading-none tracking-tighter text-white opacity-0 whitespace-nowrap will-change-transform"
-        aria-hidden="true"
-      >
-        WEBGENT
+      {/* Dedicated Dramatic Typographic Brand Watermark (Zero Overlap with Items) */}
+      <div className="relative w-full overflow-hidden flex justify-center pointer-events-none -mb-3 sm:-mb-6 lg:-mb-8">
+        <div
+          ref={watermarkRef}
+          className="font-bold text-[18vw] leading-[0.76] tracking-tighter text-white opacity-0 whitespace-nowrap will-change-transform select-none"
+          aria-hidden="true"
+        >
+          WEBGENT
+        </div>
       </div>
     </footer>
   );

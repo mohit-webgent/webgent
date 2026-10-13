@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Mail, CheckCircle2, AlertCircle, Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Check } from "lucide-react";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 
 interface NewsletterFormProps {
@@ -12,11 +12,10 @@ interface NewsletterFormProps {
 
 export function NewsletterForm({
   variant = "card",
-  title = "Subscribe to Technical Insights",
-  description = "Get our best architectural deep dives, engineering guides, and product updates delivered to your inbox.",
+  title = "Engineering Insights",
+  description = "A private fortnightly monograph on distributed architecture, system design, and high-scale engineering.",
 }: NewsletterFormProps) {
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -50,7 +49,7 @@ export function NewsletterForm({
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailTrimmed, name: name.trim() || undefined }),
+        body: JSON.stringify({ email: emailTrimmed }),
       });
 
       const data = await res.json();
@@ -63,10 +62,9 @@ export function NewsletterForm({
       trackFormSubmit("newsletter");
       setSuccess(
         data.data?.message ||
-          "Almost there! Please check your email to confirm your subscription (double opt-in).",
+          "Subscription registered. Please check your inbox to confirm opt-in.",
       );
       setEmail("");
-      setName("");
     } catch {
       setError("An unexpected network error occurred. Please try again.");
     } finally {
@@ -74,10 +72,11 @@ export function NewsletterForm({
     }
   };
 
+  // FOOTER VARIANT (Sharp, dark, zero roundedness)
   if (variant === "footer") {
     return (
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-[#F5F5F3] uppercase tracking-wider font-mono">
+      <div className="space-y-3 rounded-none">
+        <p className="text-xs font-semibold text-[#F5F5F3] uppercase tracking-widest font-mono rounded-none">
           Stay in the Loop
         </p>
         <p className="text-xs text-[#909090]">
@@ -85,13 +84,13 @@ export function NewsletterForm({
         </p>
 
         {success ? (
-          <div className="p-3 rounded-lg bg-white/[0.04] border border-white/[0.10] text-[#D0D0CE] text-xs flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#F5F5F3]" />
+          <div className="p-3 bg-white/[0.04] border border-white/[0.15] text-[#D0D0CE] text-xs flex items-start gap-2 rounded-none">
+            <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-white" />
             <span>{success}</span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <div className="flex gap-2">
+          <form onSubmit={handleSubmit} className="space-y-2 rounded-none">
+            <div className="flex rounded-none">
               <input
                 type="email"
                 placeholder="your.email@example.com"
@@ -99,12 +98,12 @@ export function NewsletterForm({
                 onFocus={handleFocus}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="w-full px-3.5 py-2 rounded-lg bg-[#0D0D0D] border border-white/[0.10] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+                className="w-full px-3.5 py-2 bg-[#0D0D0D] border border-white/[0.15] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white transition-colors disabled:opacity-50 rounded-none"
               />
               <button
                 type="submit"
                 disabled={loading || !email}
-                className="px-3.5 py-2 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs transition-colors disabled:opacity-40 shrink-0"
+                className="px-4 py-2 bg-[#E8E8E6] hover:bg-white text-black font-mono text-xs transition-colors disabled:opacity-40 shrink-0 rounded-none"
               >
                 {loading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -114,9 +113,8 @@ export function NewsletterForm({
               </button>
             </div>
             {error && (
-              <p className="text-[11px] text-[#D0D0CE] flex items-center gap-1">
-                <AlertCircle className="w-3 h-3 shrink-0 text-white" />
-                <span>{error}</span>
+              <p className="text-[11px] text-[#D0D0CE] flex items-center gap-1 font-mono">
+                <span>&bull; {error}</span>
               </p>
             )}
           </form>
@@ -125,68 +123,111 @@ export function NewsletterForm({
     );
   }
 
+  // =========================================================================
+  // CARD VARIANT: Classic, Architectural, Balanced Height (Zero Roundedness)
+  // =========================================================================
   return (
-    <div className="relative overflow-hidden rounded-xl bg-[#0D0D0D] border border-white/[0.08] p-6 sm:p-8 md:p-10 text-center sm:text-left">
-      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-        <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.03] border border-white/[0.08] text-[#A0A0A0] text-xs font-mono">
-            <Mail className="w-3.5 h-3.5" />
-            <span>Bi-weekly Engineering Digest</span>
+    <div className="relative w-full bg-[#FBFBFA] text-[#0A0A0A] border border-[#0A0A0A]/20 shadow-[0_24px_65px_rgba(0,0,0,0.65)] py-9 sm:py-11 lg:py-12 px-7 sm:px-10 lg:px-14 select-none rounded-none overflow-hidden">
+      {/* Precision Inner Hairline Frame (Architectural Blueprint Style) */}
+      <div className="pointer-events-none absolute inset-2.5 sm:inset-3 border border-[#0A0A0A]/[0.12] rounded-none" />
+
+      {/* Hairline Corner Alignment Marks */}
+      <div className="pointer-events-none absolute top-1.5 left-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+        +
+      </div>
+      <div className="pointer-events-none absolute top-1.5 right-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+        +
+      </div>
+      <div className="pointer-events-none absolute bottom-1.5 left-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+        +
+      </div>
+      <div className="pointer-events-none absolute bottom-1.5 right-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+        +
+      </div>
+
+      {/* Balanced 2-Column Architectural Layout */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-7 lg:gap-12 rounded-none">
+        {/* Left Column: Classic Luxury Typography */}
+        <div className="lg:col-span-7 space-y-2.5 rounded-none">
+          <div className="inline-flex items-center gap-2 rounded-none">
+            <span className="w-1.5 h-1.5 bg-[#0A0A0A] rounded-none shrink-0" />
+            <span className="text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-[0.25em] text-[#0A0A0A]/70 font-semibold">
+              DISPATCH // NO. 048 &bull; PRIVATE CIRCULATION
+            </span>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F3] tracking-tight">{title}</h3>
-          <p className="text-xs sm:text-sm text-[#909090] leading-relaxed">{description}</p>
+
+          <h3 className="text-2xl sm:text-3xl lg:text-[2.2rem] font-serif text-[#0A0A0A] tracking-tight leading-[1.12]">
+            {title}
+          </h3>
+
+          <p className="text-xs sm:text-[13px] text-[#4A4A48] font-serif italic max-w-lg leading-relaxed">
+            &ldquo;{description}&rdquo;
+          </p>
         </div>
 
-        <div className="w-full lg:w-auto lg:min-w-[360px] max-w-full">
+        {/* Right Column: Sharp Subscription Form & Editorial Metadata */}
+        <div className="lg:col-span-5 lg:border-l lg:border-[#0A0A0A]/12 lg:pl-10 rounded-none">
           {success ? (
-            <div className="p-5 rounded-lg bg-white/[0.04] border border-white/[0.10] text-[#D0D0CE] text-xs sm:text-sm flex items-start gap-3 shadow-lg">
-              <CheckCircle2 className="w-5 h-5 text-[#F5F5F3] shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="font-semibold text-[#F5F5F3]">Subscription Initiated</p>
-                <p className="text-xs text-[#909090] leading-relaxed">{success}</p>
+            <div className="p-4 sm:p-5 bg-white border border-[#0A0A0A] text-[#0A0A0A] space-y-1.5 shadow-sm rounded-none">
+              <div className="text-xs font-mono font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                REGISTRATION CONFIRMED
               </div>
+              <p className="text-xs text-[#555555] font-serif italic">
+                {success}
+              </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="flex flex-col sm:flex-row gap-2.5">
+            <form onSubmit={handleSubmit} className="space-y-2 rounded-none">
+              {/* Form Header Stamp */}
+              <div className="flex items-center justify-between text-[9.5px] font-mono uppercase tracking-[0.18em] text-[#0A0A0A]/60 font-semibold px-0.5">
+                <span>DIRECT INBOX DISPATCH</span>
+                <span>FORTNIGHTLY RELEASE</span>
+              </div>
+
+              {/* Sharp Inline Input & Button */}
+              <div className="flex flex-col sm:flex-row items-stretch border border-[#0A0A0A] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-none">
                 <input
                   type="email"
-                  placeholder="Enter your corporate email..."
+                  required
+                  placeholder="Enter corporate email..."
                   value={email}
                   onFocus={handleFocus}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full px-4 py-2.5 rounded-lg bg-[#080808] border border-white/[0.10] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+                  className="w-full px-4 py-3 bg-transparent text-xs sm:text-[13px] text-[#0A0A0A] placeholder-[#888888] font-mono focus:outline-none rounded-none border-0"
                 />
+
                 <button
                   type="submit"
                   disabled={loading || !email}
-                  className="px-6 py-2.5 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs transition-colors shrink-0 disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="px-6 py-3 bg-[#0A0A0A] hover:bg-[#222222] text-[#FBFBFA] text-xs font-mono font-bold tracking-[0.18em] uppercase transition-colors shrink-0 flex items-center justify-center gap-2 border-0 rounded-none disabled:opacity-40 cursor-pointer"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Subscribing...</span>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                      <span>SENDING</span>
                     </>
                   ) : (
                     <>
-                      <span>Subscribe</span>
+                      <span>SUBSCRIBE</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}
                 </button>
               </div>
 
-              {error && (
-                <div className="p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.10] text-[#D0D0CE] text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-white" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <p className="text-[11px] text-[#666666]">
-                Zero spam. Double opt-in confirmation required. Unsubscribe anytime.
-              </p>
+              {/* Error or Disclaimer */}
+              <div className="flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.15em] text-[#777777] px-0.5 pt-0.5">
+                {error ? (
+                  <span className="text-[#A81D1D] font-mono font-semibold">&bull; {error}</span>
+                ) : (
+                  <>
+                    <span>ZERO MARKETING NOISE</span>
+                    <span>1-CLICK UNSUBSCRIBE</span>
+                  </>
+                )}
+              </div>
             </form>
           )}
         </div>
