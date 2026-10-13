@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   Monitor,
   Smartphone,
-  Sparkles,
+  Mouse,
+  ChevronDown,
 } from "lucide-react";
 
 interface StepConfig {
@@ -33,42 +34,42 @@ const ASSEMBLY_STEPS: StepConfig[] = [
     id: "navbar",
     label: "Navbar",
     detail: "Brand emblem, menu links, search & cart anchors",
-    threshold: 0.10,
+    threshold: 0.08,
   },
   {
     stepNum: 2,
     id: "categories",
     label: "Categories",
     detail: "Curated jewelry collections & visual squircles",
-    threshold: 0.26,
+    threshold: 0.24,
   },
   {
     stepNum: 3,
     id: "hero",
     label: "Hero Section",
     detail: "Luxury jewelry photography, headline & call to action",
-    threshold: 0.44,
+    threshold: 0.42,
   },
   {
     stepNum: 4,
     id: "products",
     label: "Bestseller Products",
     detail: "Handcrafted silver cards with live pricing & stock",
-    threshold: 0.62,
+    threshold: 0.60,
   },
   {
     stepNum: 5,
     id: "testimonial",
     label: "Testimonials",
     detail: "Verified buyer reviews, 5-star rating & social proof",
-    threshold: 0.80,
+    threshold: 0.78,
   },
   {
     stepNum: 6,
     id: "footer",
     label: "Footer & Launch",
     detail: "Brand credentials, guarantees & secure payment gateways",
-    threshold: 0.94,
+    threshold: 0.92,
   },
 ];
 
@@ -184,12 +185,12 @@ export function HowWeBuildSection() {
   }, []);
 
   // Strict step thresholds
-  const hasNavbar = progress >= 0.10;
-  const hasCategories = progress >= 0.26;
-  const hasHero = progress >= 0.44;
-  const hasProducts = progress >= 0.62;
-  const hasTestimonial = progress >= 0.80;
-  const hasFooter = progress >= 0.94;
+  const hasNavbar = progress >= 0.08;
+  const hasCategories = progress >= 0.24;
+  const hasHero = progress >= 0.42;
+  const hasProducts = progress >= 0.60;
+  const hasTestimonial = progress >= 0.78;
+  const hasFooter = progress >= 0.92;
 
   const currentStep =
     [...ASSEMBLY_STEPS].reverse().find((s) => progress >= s.threshold) || ASSEMBLY_STEPS[0];
@@ -228,9 +229,9 @@ export function HowWeBuildSection() {
         scrollTrigger: {
           trigger: triggerRef.current,
           start: "top top",
-          end: "+=3600",
+          end: "+=1200",
           pin: true,
-          scrub: 0.6,
+          scrub: 0.35,
           onUpdate: (self) => {
             setProgress(self.progress);
           },
@@ -255,21 +256,21 @@ export function HowWeBuildSection() {
   const activeMaxScroll = isMobile ? mobileMaxScroll : desktopMaxScroll;
 
   const getScrollY = (p: number, maxScroll: number) => {
-    if (maxScroll <= 0 || p < 0.44) return 0;
-    if (p < 0.64) {
+    if (maxScroll <= 0 || p < 0.42) return 0;
+    if (p < 0.60) {
       // Smoothly reveal Products
-      const t = (p - 0.44) / (0.64 - 0.44);
+      const t = (p - 0.42) / (0.60 - 0.42);
       return t * (maxScroll * 0.42);
     }
-    if (p < 0.82) {
+    if (p < 0.78) {
       // Smoothly reveal Testimonial
-      const t = (p - 0.64) / (0.82 - 0.64);
+      const t = (p - 0.60) / (0.78 - 0.60);
       const start = maxScroll * 0.42;
       const end = maxScroll * 0.76;
       return start + t * (end - start);
     }
     // Reveal Footer and dock exactly flush at bottom (Zero empty space below)
-    const t = Math.min(1, (p - 0.82) / (0.95 - 0.82));
+    const t = Math.min(1, (p - 0.78) / (0.92 - 0.78));
     const start = maxScroll * 0.76;
     const end = maxScroll;
     return Math.min(maxScroll, start + t * (end - start));
@@ -338,6 +339,12 @@ export function HowWeBuildSection() {
 
             {/* Current Step Pill */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {progress < 0.12 && (
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 font-mono text-[9.5px] font-bold tracking-wider uppercase animate-pulse">
+                  <Mouse className="w-3 h-3 text-sky-400" />
+                  <span>Scroll &darr;</span>
+                </span>
+              )}
               <span className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.1] text-white font-semibold">
                 STEP {currentStep.stepNum}/6 &bull; {currentStep.label}
               </span>
@@ -422,14 +429,23 @@ export function HowWeBuildSection() {
 
                 {/* Empty State Banner before Step 1 */}
                 {!hasNavbar && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center font-mono text-xs text-[#777777] gap-2">
-                    <Sparkles className="w-5 h-5 text-sky-400 animate-pulse" />
-                    <span className="text-white/80 font-semibold tracking-wider uppercase text-[11px]">
-                      &lt; INITIALIZING STOREFRONT CANVAS &gt;
-                    </span>
-                    <span className="text-[10px] text-[#666666]">
-                      Scroll down to assemble website components
-                    </span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center font-mono text-xs text-[#777777] gap-3 z-30 p-4 text-center">
+                    <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-400/30 text-sky-400 shadow-[0_0_25px_rgba(56,189,248,0.2)]">
+                      <Mouse className="w-5 h-5 animate-pulse" />
+                      <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500" />
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-white font-bold tracking-wider uppercase text-xs block">
+                        Interactive Storefront Assembly
+                      </span>
+                      <span className="text-[11px] text-sky-300 font-semibold flex items-center justify-center gap-1.5 animate-bounce">
+                        <span>Scroll down to construct website</span>
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
                   </div>
                 )}
 
@@ -843,14 +859,23 @@ export function HowWeBuildSection() {
 
                   {/* Empty State Banner */}
                   {!hasNavbar && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center font-mono text-[10px] text-[#777777] gap-2 px-4 text-center">
-                      <Sparkles className="w-5 h-5 text-sky-400 animate-pulse" />
-                      <span className="text-white/80 font-semibold tracking-wider uppercase text-[10px]">
-                        &lt; MOBILE STOREFRONT &gt;
-                      </span>
-                      <span className="text-[9px] text-[#666666]">
-                        Scroll down to assemble mobile layout
-                      </span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center font-mono text-[10px] text-[#777777] gap-3 px-4 text-center z-30">
+                      <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-400/30 text-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.2)]">
+                        <Mouse className="w-4 h-4 animate-pulse" />
+                        <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-white font-bold tracking-wider uppercase text-[11px] block">
+                          Mobile Storefront
+                        </span>
+                        <span className="text-[9.5px] text-sky-300 font-semibold flex items-center justify-center gap-1 animate-bounce">
+                          <span>Scroll down to assemble</span>
+                          <ChevronDown className="w-3 h-3" />
+                        </span>
+                      </div>
                     </div>
                   )}
 
@@ -1122,6 +1147,25 @@ export function HowWeBuildSection() {
               <div className="w-28 sm:w-44 h-1 sm:h-1.5 rounded-full bg-gradient-to-r from-[#121316] via-[#22242B] to-[#121316] border border-white/[0.12] shadow-md" />
             </div>
           )}
+
+          {/* Floating Scroll Helper Pill (Visible at start, smoothly fades out on scroll) */}
+          <div
+            className={`absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-500 ease-out ${
+              progress < 0.12
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-3 scale-95 pointer-events-none"
+            }`}
+          >
+            <div className="flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#080B10]/95 border border-sky-400/40 text-white shadow-[0_10px_35px_rgba(0,0,0,0.9)] ring-1 ring-sky-400/20 backdrop-blur-md">
+              <div className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sky-500/20 text-sky-400 shrink-0">
+                <Mouse className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-pulse" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-mono tracking-wider uppercase text-sky-100 font-bold whitespace-nowrap">
+                Scroll to Assemble Website
+              </span>
+              <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-400 animate-bounce" />
+            </div>
+          </div>
         </div>
 
         {/* ===================================================================== */}
