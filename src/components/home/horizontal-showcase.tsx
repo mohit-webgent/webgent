@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -99,7 +99,7 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
 
   const totalItems = displayProjects.length;
 
-  const updateScrollState = () => {
+  const updateScrollState = useCallback(() => {
     if (!scrollContainerRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
     const maxScroll = scrollWidth - clientWidth;
@@ -115,14 +115,14 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
     const cardWidth = firstChild ? firstChild.offsetWidth + 16 : 300;
     const activeIdx = Math.round(scrollLeft / cardWidth);
     setCurrentIndex(Math.min(totalItems - 1, Math.max(0, activeIdx)));
-  };
+  }, [totalItems]);
 
   useEffect(() => {
     updateScrollState();
     const handleResize = () => updateScrollState();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [displayProjects]);
+  }, [updateScrollState]);
 
   const scrollByDirection = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;

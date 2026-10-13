@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Clock, BookOpen, Terminal, Sparkles } from "lucide-react";
+import { ArrowRight, Clock, Terminal } from "lucide-react";
 import { Card3DTilt } from "@/components/animations/card-tilt";
 
 export interface BlogPostItem {

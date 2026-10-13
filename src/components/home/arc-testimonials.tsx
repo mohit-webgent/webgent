@@ -78,8 +78,19 @@ const DEFAULT_REVIEWS: TestimonialItem[] = [
   },
 ];
 
+export interface DbTestimonialItem {
+  id?: string;
+  clientName?: string | null;
+  clientTitle?: string | null;
+  company?: string | null;
+  avatarUrl?: string | null;
+  rating?: number | null;
+  createdAt?: Date | string | null;
+  content?: string | null;
+}
+
 interface ArcTestimonialsProps {
-  initialTestimonials?: any[];
+  initialTestimonials?: DbTestimonialItem[];
 }
 
 export function ArcTestimonials({ initialTestimonials = [] }: ArcTestimonialsProps) {
