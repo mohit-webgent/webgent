@@ -125,6 +125,14 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/about"
+                  className="text-[#9E9E9E] hover:text-white transition-colors block"
+                >
+                  About Founder
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/contact"
                   className="text-[#9E9E9E] hover:text-white transition-colors block"
                 >
