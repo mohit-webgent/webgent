@@ -707,31 +707,42 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                     </div>
 
                     {/* Title & Price */}
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                        <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-mono">
                           {formatCurrencyINR(pkg.startingPrice)}
                         </span>
                         <span className="text-xs font-mono text-[#888888]">starting</span>
                       </div>
-                      <p className="text-xs font-medium text-[#DCDCDA]">{pkg.tagline}</p>
-                      <p className="text-[11px] text-[#8E8E8C] leading-relaxed line-clamp-2">{pkg.summary}</p>
+                      <p className="text-xs sm:text-sm font-semibold text-white">{pkg.tagline}</p>
+                      <p className="text-[11px] sm:text-xs text-[#A3A3A3] leading-relaxed">{pkg.summary}</p>
+                      {pkg.idealFor && (
+                        <div className="pt-0.5">
+                          <span className="text-[10px] sm:text-[11px] font-mono text-emerald-400/90 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20 inline-block leading-normal">
+                            <strong className="text-emerald-300">Best For:</strong> {pkg.idealFor}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Highlights */}
-                    <ul className="space-y-1.5 pt-2 border-t border-white/[0.06] text-xs text-[#B5B5B3]">
-                      {pkg.keyHighlights.slice(0, 6).map((hl, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                          <span>{hl}</span>
-                        </li>
-                      ))}
-                      {pkg.keyHighlights.length > 6 && (
-                        <li className="text-[10px] text-[#777777] font-mono pl-5">
-                          +{pkg.keyHighlights.length - 6} more features included
-                        </li>
-                      )}
-                    </ul>
+                    {/* Highlights — Complete list of all points without truncation */}
+                    <div className="space-y-2 pt-3 border-t border-white/[0.08]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-[#A0A0A0] font-semibold">
+                          What&apos;s Included ({pkg.keyHighlights.length} Features):
+                        </span>
+                      </div>
+                      <ul className="space-y-2 text-xs sm:text-[13px] text-[#D4D4D4]">
+                        {pkg.keyHighlights.map((hl, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <span className="p-0.5 rounded bg-emerald-400/10 text-emerald-400 shrink-0 mt-0.5">
+                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            </span>
+                            <span className="leading-snug">{hl}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
 
                     {/* Delivery & Selection Button */}
                     <div className="pt-2 flex items-center justify-between gap-2">
