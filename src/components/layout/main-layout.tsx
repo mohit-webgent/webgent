@@ -35,7 +35,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SmoothScrollProvider>
       {isHome && <WebgentOpeningAnimation />}
-      <div className="relative flex min-h-screen flex-col bg-transparent text-[#D0D0CE] selection:bg-white/15 selection:text-[#F5F5F3] overflow-x-hidden w-full">
+      <div className="relative flex min-h-screen flex-col bg-transparent text-[#D0D0CE] selection:bg-white/15 selection:text-[#F5F5F3] overflow-x-clip w-full">
         <ScrollProgressBar />
         <a
           href="#main-content"

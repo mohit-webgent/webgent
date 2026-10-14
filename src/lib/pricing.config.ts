@@ -42,6 +42,7 @@ export interface FeatureOption {
   categoryTag: string;
   popularFor?: string[];
   includedInDynamic?: boolean;
+  costNote?: string;
 }
 
 export interface PageCountSettings {
@@ -206,6 +207,7 @@ export const POPULAR_FEATURES: FeatureOption[] = [
     icon: "CreditCard",
     categoryTag: "Payments",
     popularFor: ["ecommerce", "saas", "education"],
+    costNote: "Gateway transaction fees apply (billed by Razorpay/Stripe at standard rates)",
   },
   {
     id: "whatsapp_chat",
@@ -226,6 +228,7 @@ export const POPULAR_FEATURES: FeatureOption[] = [
     icon: "Send",
     categoryTag: "Communication",
     popularFor: ["ecommerce", "healthcare", "realestate"],
+    costNote: "WhatsApp Business API/provider message charges at actuals",
   },
   {
     id: "booking_calendar",
@@ -343,6 +346,147 @@ export const POPULAR_FEATURES: FeatureOption[] = [
     price: 7500,
     icon: "Bot",
     categoryTag: "AI Integration",
+    costNote: "Third-party AI API usage billed by the provider at actuals",
+  },
+  {
+    id: "newsletter_subscribe",
+    name: "Newsletter & Email Lead Capture",
+    simpleDescription:
+      "Branded newsletter subscription form with double opt-in validation and auto-sync to Mailchimp or Brevo.",
+    price: 1500,
+    icon: "Mail",
+    categoryTag: "Communication",
+    popularFor: ["business", "saas", "education"],
+  },
+  {
+    id: "live_chat_support",
+    name: "Live Chat Concierge (Crisp / Tawk)",
+    simpleDescription:
+      "Real-time visitor chat widget integrated with mobile app notifications for instant client replies.",
+    price: 2000,
+    icon: "MessageCircle",
+    categoryTag: "Communication",
+    popularFor: ["business", "ecommerce", "healthcare"],
+  },
+  {
+    id: "coupon_discounts",
+    name: "Promotional Coupons & Discount Rules",
+    simpleDescription:
+      "Create coupon codes, percentage or flat discounts, expiration schedules, and minimum order limits.",
+    price: 2500,
+    icon: "CreditCard",
+    categoryTag: "Payments",
+    popularFor: ["ecommerce", "saas"],
+  },
+  {
+    id: "inventory_stock",
+    name: "Live Inventory & Low Stock Alerts",
+    simpleDescription:
+      "Live product stock counter, sold-out badges, and automated email alerts to store managers.",
+    price: 3000,
+    icon: "ShoppingBag",
+    categoryTag: "E-Commerce",
+    popularFor: ["ecommerce"],
+  },
+  {
+    id: "invoice_generation",
+    name: "Automated PDF Invoice & GST Billing",
+    simpleDescription:
+      "Instant branded PDF invoice generation dispatched automatically to customers upon order placement.",
+    price: 3000,
+    icon: "Building2",
+    categoryTag: "Payments",
+    popularFor: ["ecommerce", "business", "saas"],
+  },
+  {
+    id: "customer_reviews",
+    name: "Client Testimonials & Rating Carousel",
+    simpleDescription:
+      "Verified client review showcase with 5-star ratings and structured schema markup for Google SERP display.",
+    price: 1500,
+    icon: "Sparkles",
+    categoryTag: "Content",
+    popularFor: ["business", "healthcare", "realestate", "portfolio"],
+  },
+  {
+    id: "video_embed",
+    name: "High-Definition Video Showcase & Reels",
+    simpleDescription:
+      "Responsive video hero backgrounds, interactive YouTube/Vimeo modals, and smooth HTML5 video player.",
+    price: 1500,
+    icon: "Image",
+    categoryTag: "Design",
+    popularFor: ["portfolio", "restaurant", "realestate"],
+  },
+  {
+    id: "faq_accordion",
+    name: "Searchable Interactive FAQ Section",
+    simpleDescription:
+      "Categorized accordion FAQ with live keyword search and Google FAQ schema markup.",
+    price: 1000,
+    icon: "BookOpen",
+    categoryTag: "Content",
+    popularFor: ["business", "saas", "healthcare", "education"],
+  },
+  {
+    id: "pdf_download",
+    name: "Downloadable Resource Library (Gated)",
+    simpleDescription:
+      "Gated PDF brochure, menu, or case study downloads with contact form capture before download access.",
+    price: 1500,
+    icon: "Layers",
+    categoryTag: "Content",
+    popularFor: ["business", "education", "realestate"],
+  },
+  {
+    id: "analytics_tracking",
+    name: "Google Analytics 4 & Meta Pixel Setup",
+    simpleDescription:
+      "Complete custom conversion event tracking, CTA button click monitors, and custom executive reports.",
+    price: 2000,
+    icon: "Search",
+    categoryTag: "Growth",
+    popularFor: ["business", "ecommerce", "saas"],
+  },
+  {
+    id: "schema_structured",
+    name: "Rich Google Snippets Schema Markup",
+    simpleDescription:
+      "JSON-LD structured data implementation for LocalBusiness, FAQ, Breadcrumbs, and Organization entities.",
+    price: 1500,
+    icon: "Search",
+    categoryTag: "Growth",
+    popularFor: ["business", "healthcare", "realestate"],
+  },
+  {
+    id: "pwa_offline",
+    name: "Progressive Web App (PWA) Offline Support",
+    simpleDescription:
+      "Installable app icon on mobile home screens with offline asset caching and ultra-fast launch speeds.",
+    price: 4000,
+    icon: "Zap",
+    categoryTag: "Performance",
+    popularFor: ["saas", "ecommerce", "business"],
+  },
+  {
+    id: "dark_mode",
+    name: "Dark / Light Mode Dynamic Switcher",
+    simpleDescription:
+      "Seamless theme toggle with localStorage user persistence and tailored high-contrast color palettes.",
+    price: 2000,
+    icon: "Sparkles",
+    categoryTag: "Design",
+    popularFor: ["saas", "portfolio", "business"],
+  },
+  {
+    id: "interactive_calculator",
+    name: "Custom ROI / Pricing Interactive Calculator",
+    simpleDescription:
+      "Interactive multi-slider cost estimator or savings calculator tailored to your specific service packages.",
+    price: 4500,
+    icon: "Calendar",
+    categoryTag: "Functionality",
+    popularFor: ["business", "saas", "realestate"],
   },
 ];
 
@@ -650,3 +794,133 @@ export function calculatePricing(
     autoSwitchedToDynamic,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Trust Badges Configuration (Task 4)
+// Enabled by default: "100% Source Code Ownership" and "Transparent Pricing"
+// Disabled by default: "95+ Speed Score", "Milestone Escrow", "Guaranteed SLA"
+// ---------------------------------------------------------------------------
+
+export interface TrustBadgeConfig {
+  id: string;
+  label: string;
+  enabled: boolean;
+  iconName: "Shield" | "CheckCircle2" | "Zap" | "Lock" | "Clock";
+}
+
+export const TRUST_BADGES: TrustBadgeConfig[] = [
+  {
+    id: "source_code_ownership",
+    label: "100% Source Code Ownership",
+    enabled: true,
+    iconName: "Shield",
+  },
+  {
+    id: "transparent_pricing",
+    label: "Transparent Pricing",
+    enabled: true,
+    iconName: "CheckCircle2",
+  },
+  {
+    id: "speed_score",
+    label: "95+ Speed Score",
+    enabled: false,
+    iconName: "Zap",
+  },
+  {
+    id: "milestone_escrow",
+    label: "Milestone Escrow",
+    enabled: false,
+    iconName: "Lock",
+  },
+  {
+    id: "guaranteed_sla",
+    label: "Guaranteed SLA",
+    enabled: false,
+    iconName: "Clock",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Launch Pricing Badge Configuration (Task 7)
+// Enabled by default near the total. Does not change any prices.
+// ---------------------------------------------------------------------------
+
+export interface LaunchPricingBadgeConfig {
+  enabled: boolean;
+  label: string;
+  description: string;
+}
+
+export const LAUNCH_PRICING_CONFIG: LaunchPricingBadgeConfig = {
+  enabled: true,
+  label: "Launch Pricing",
+  description: "Introductory promotional rates for new projects",
+};
+
+// ---------------------------------------------------------------------------
+// Terms & FAQ Configuration (Task 6)
+// ---------------------------------------------------------------------------
+
+export interface PricingTermsConfig {
+  advancePercentage: number;
+  deliveryPercentage: number;
+  revisionRounds: number;
+  freeSupportDays: number;
+  gst: {
+    enabled: boolean; // Configurable flag
+    taxRatePercentage: number;
+    statement: string;
+  };
+  timelineNote: string;
+  extraPageDefinition: string;
+  hostingAndDomainNote: string;
+}
+
+export const PRICING_TERMS: PricingTermsConfig = {
+  advancePercentage: 50,
+  deliveryPercentage: 50,
+  revisionRounds: 2,
+  freeSupportDays: 15,
+  gst: {
+    enabled: true,
+    taxRatePercentage: 18,
+    statement: "Prices are exclusive of applicable 18% GST. A valid tax invoice with GSTIN is issued upon milestone payments.",
+  },
+  timelineNote: "The delivery timeline officially begins after all necessary project content, branding assets, and external credentials are provided.",
+  extraPageDefinition: "An extra page is defined as any distinct URL route or custom layout containing independent content beyond the included base pages.",
+  hostingAndDomainNote: "Domain registration and cloud hosting accounts are maintained directly by the client and billed at provider actuals.",
+};
+
+export interface PricingFaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export const PRICING_FAQS: PricingFaqItem[] = [
+  {
+    id: "faq-revisions",
+    question: "How do revisions work?",
+    answer:
+      "Each project includes 2 full rounds of feedback and revisions. The first round occurs after the initial design and structure layout. The second round takes place on the interactive staging deployment before launch. Additional revisions can be scheduled if needed at standard rates.",
+  },
+  {
+    id: "faq-hosting",
+    question: "How are domain and hosting billed?",
+    answer:
+      "We believe you should have complete autonomy over your online presence. You register and pay for your domain and hosting directly with providers (such as Vercel, AWS, or Cloudflare) at actual costs. We handle complete DNS setup and deployment configuration for you.",
+  },
+  {
+    id: "faq-source-code",
+    question: "Do I get full ownership of the source code?",
+    answer:
+      "Yes. Once final payment is settled, full ownership of the Git repository, production code, design files, and database schemas is transferred to your organization. There are no proprietary lock-ins or recurring licensing fees to Webgent.",
+  },
+  {
+    id: "faq-not-included",
+    question: "What is not included in this pricing estimate?",
+    answer:
+      "Third-party provider usage fees (such as domain registration, cloud server hosting tiers, WhatsApp Business API message usage, third-party AI API tokens, and payment gateway transaction fees) are billed by their respective providers at actuals. Professional copywriting and photo shoot production are also available separately if needed.",
+  },
+];

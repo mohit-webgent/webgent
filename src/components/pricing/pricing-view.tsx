@@ -66,7 +66,7 @@ export function formatINR(amount: number): string {
   }).format(amount);
 }
 
-const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => boolean }[] = [
+const FILTER_GROUPS: { id: string; label: string; count?: number; match: (f: FeatureOption) => boolean }[] = [
   { id: "all", label: "All Features", match: () => true },
   {
     id: "communication",
@@ -76,7 +76,9 @@ const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => b
       f.categoryTag === "Automation" ||
       f.id.includes("whatsapp") ||
       f.id.includes("form") ||
-      f.id.includes("email"),
+      f.id.includes("email") ||
+      f.id.includes("chat") ||
+      f.id.includes("newsletter"),
   },
   {
     id: "commerce",
@@ -85,7 +87,10 @@ const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => b
       f.categoryTag === "Payments" ||
       f.categoryTag === "E-Commerce" ||
       f.id.includes("payment") ||
-      f.id.includes("cart"),
+      f.id.includes("cart") ||
+      f.id.includes("coupon") ||
+      f.id.includes("inventory") ||
+      f.id.includes("invoice"),
   },
   {
     id: "portal",
@@ -98,7 +103,8 @@ const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => b
       f.id.includes("login") ||
       f.id.includes("auth") ||
       f.id.includes("dashboard") ||
-      f.id.includes("admin"),
+      f.id.includes("admin") ||
+      f.id.includes("calculator"),
   },
   {
     id: "growth",
@@ -112,7 +118,15 @@ const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => b
       f.id.includes("speed") ||
       f.id.includes("animation") ||
       f.id.includes("gallery") ||
-      f.id.includes("blog"),
+      f.id.includes("blog") ||
+      f.id.includes("review") ||
+      f.id.includes("video") ||
+      f.id.includes("faq") ||
+      f.id.includes("pdf") ||
+      f.id.includes("analytics") ||
+      f.id.includes("schema") ||
+      f.id.includes("pwa") ||
+      f.id.includes("dark_mode"),
   },
   {
     id: "advanced",
@@ -322,7 +336,6 @@ export function PricingView({ initialData }: PricingViewProps) {
         );
         setSelectedFeatureIds(updatedFeatures);
 
-        // If the deselected feature was the reason for a notice, clear it
         if (dependencyNotice?.featureName === feat?.name) {
           setDependencyNotice(null);
         }
@@ -536,6 +549,30 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
     }
   };
 
+  // Category Tag badge styling helper to make sections visually rich
+  const getCategoryTagStyle = (tag: string) => {
+    switch (tag) {
+      case "Communication":
+        return "bg-sky-500/15 text-sky-300 border-sky-500/30";
+      case "Payments":
+      case "E-Commerce":
+        return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+      case "Security":
+      case "Management":
+        return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+      case "Content":
+      case "Design":
+        return "bg-rose-500/15 text-rose-300 border-rose-500/30";
+      case "Growth":
+      case "Performance":
+        return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+      case "AI Integration":
+        return "bg-purple-500/15 text-purple-300 border-purple-500/30";
+      default:
+        return "bg-teal-500/15 text-teal-300 border-teal-500/30";
+    }
+  };
+
   // Filtered features for the single catalog
   const displayedFeatures = useMemo(() => {
     let list = allFeatures;
@@ -556,10 +593,10 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
   }, [allFeatures, featureCategoryFilter, featureSearchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-8 pb-36 lg:pb-20 px-3 sm:px-6 lg:px-10 font-sans overflow-x-hidden selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-8 pb-36 lg:pb-20 px-3 sm:px-6 lg:px-10 font-sans selection:bg-white selection:text-black">
       <div className="max-w-[1440px] mx-auto space-y-8 relative z-10">
         {/* ========================================================================= */}
-        {/* Page Header */}
+        {/* Page Top Header */}
         {/* ========================================================================= */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
           <div className="space-y-1.5">
@@ -567,14 +604,14 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
               <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
               <span className="text-[11px] font-mono tracking-widest text-emerald-400 font-semibold uppercase flex items-center gap-1.5">
                 <Database className="w-3 h-3" />
-                Backend-Connected Studio Rates
+                Backend-Connected Studio Pricing
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-[#F5F5F3] tracking-tight">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-light text-[#F5F5F3] tracking-tight break-words">
               Website Cost & <span className="font-semibold text-white">Requirements Estimator</span>
             </h1>
             <p className="text-xs sm:text-sm text-[#A3A3A3] font-light max-w-2xl leading-relaxed">
-              Transparent, fixed studio pricing. Configure your specifications and select modular features. The project cost recalculates live in the sticky breakdown panel.
+              Transparent, fixed studio rates. Customize your project parameters and select from 30 modular features. The sticky cost ledger on the right updates live.
             </p>
           </div>
 
@@ -601,204 +638,237 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
         </header>
 
         {/* ========================================================================= */}
-        {/* Main Two-Column Layout: Form & Features (Left) + Sticky Cost Panel (Right) */}
+        {/* Main 2-Column Grid: Configurator (Left) + Sticky Cost Ledger (Right)       */}
         {/* ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ===================================================================== */}
-          {/* LEFT COLUMN: Configurator & Modular Feature Catalog (7 Cols)         */}
+          {/* LEFT COLUMN: Distinct Step Sections + Vibrant Feature Marketplace    */}
           {/* ===================================================================== */}
-          <div className="lg:col-span-7 xl:col-span-7 space-y-8">
+          <div className="lg:col-span-7 xl:col-span-7 space-y-7">
             {/* ----------------------------------------------------------------- */}
-            {/* Box 1: Core Project Specifications Form                           */}
-            {/* (Industry, Architecture, Pages, Delivery Speed)                    */}
+            {/* SECTION 1: Website Industry / Category (Cyan / Electric Theme)     */}
             {/* ----------------------------------------------------------------- */}
-            <div className="bg-[#0C0C0C] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-6 shadow-xl">
-              <div className="space-y-1 border-b border-white/[0.08] pb-4">
-                <span className="text-[11px] font-mono tracking-widest uppercase text-emerald-400 font-semibold block">
-                  STEP 1 TO 4
-                </span>
-                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                  Core Project Specifications
-                </h2>
-                <p className="text-xs text-[#A3A3A3] font-light">
-                  Choose your industry baseline, technical architecture, required page count, and delivery timeline.
-                </p>
-              </div>
-
-              {/* Section 1: Website Industry / Category */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
-                    1. Website Industry / Category
-                  </label>
-                  <span className="text-xs font-mono text-emerald-400 font-bold tabular-nums">
-                    Base: {formatINR(currentCategory.startingPrice)}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  {categories.map((cat) => {
-                    const isSelected = selectedCategoryId === cat.id;
-
-                    return (
-                      <div
-                        key={cat.id}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={isSelected}
-                        onClick={() => handleCategoryChange(cat.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleCategoryChange(cat.id);
-                          }
-                        }}
-                        className={`min-h-[74px] p-3 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
-                          isSelected
-                            ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
-                            : "bg-[#141414] border-white/[0.07] hover:border-white/[0.20] hover:bg-[#1A1A1A] text-[#D4D4D4]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div
-                            className={`p-1.5 rounded-lg shrink-0 ${
-                              isSelected ? "bg-emerald-400 text-black font-bold" : "bg-white/[0.06] text-[#A3A3A3]"
-                            }`}
-                          >
-                            {renderIcon(cat.icon, "w-3.5 h-3.5")}
-                          </div>
-                          <span className="text-xs font-mono font-bold text-white tabular-nums">
-                            {formatINR(cat.startingPrice)}
-                          </span>
-                        </div>
-                        <h3 className="text-xs font-semibold text-white truncate">{cat.title}</h3>
-                        <p className="text-[11px] text-[#A3A3A3] truncate mt-0.5 font-mono">
-                          {cat.deliveryDays} • {cat.recommendedPages} Pages
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Section 2: Website Architecture & CMS */}
-              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
-                    2. Website Architecture & CMS
-                  </label>
-                  <span className="text-xs font-mono text-[#A3A3A3] tabular-nums">
-                    {selectedTypeId === "dynamic" ? "+₹8,000 (Database & Backend)" : "Included (₹0)"}
-                  </span>
-                </div>
-
-                {/* Inline Dependency Notice (Auto-switched or Blocked) */}
-                {dependencyNotice && (
-                  <div
-                    className={`p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-3 ${
-                      dependencyNotice.type === "auto-switched"
-                        ? "bg-blue-950/40 border-blue-500/40 text-blue-200"
-                        : "bg-amber-950/40 border-amber-500/40 text-amber-200"
-                    }`}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      {dependencyNotice.type === "auto-switched" ? (
-                        <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                      )}
-                      <div className="space-y-1">
-                        <div className="font-semibold text-white flex items-center gap-2">
-                          <span>{dependencyNotice.title}</span>
-                          {dependencyNotice.costDiff ? (
-                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 tabular-nums">
-                              +{formatINR(dependencyNotice.costDiff)}
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="text-xs leading-relaxed text-[#DCDCDA]">
-                          {dependencyNotice.message}
-                        </p>
-                        {dependencyNotice.type === "blocked-static" && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedFeatureIds((prev) =>
-                                prev.filter((id) => !featureRequiresDynamic(id))
-                              );
-                              setSelectedTypeId("static");
-                              setDependencyNotice(null);
-                            }}
-                            className="mt-1.5 text-xs font-semibold text-amber-300 underline hover:text-white transition-colors block text-left min-h-[44px] flex items-center"
-                          >
-                            Deselect dynamic features and switch to Static
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setDependencyNotice(null)}
-                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                      aria-label="Dismiss notice"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+            <div className="rounded-2xl p-5 sm:p-7 space-y-5 border border-sky-500/20 bg-gradient-to-b from-[#09111D] to-[#070B12] shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-sky-500/15 pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
+                      Step 1
+                    </span>
+                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                      Website Industry & Category
+                    </h2>
                   </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {types.map((type) => {
-                    const isSelected = selectedTypeId === type.id;
-                    return (
-                      <div
-                        key={type.id}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={isSelected}
-                        onClick={() => handleTypeChange(type.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleTypeChange(type.id);
-                          }
-                        }}
-                        className={`min-h-[96px] p-4 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
-                          isSelected
-                            ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
-                            : "bg-[#141414] border-white/[0.07] hover:border-white/[0.20] hover:bg-[#1A1A1A] text-[#D4D4D4]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">{type.title}</span>
-                          <span
-                            className={`text-xs font-mono font-bold tabular-nums ${
-                              type.additionalCost === 0 ? "text-emerald-400" : "text-white"
-                            }`}
-                          >
-                            {type.additionalCost === 0 ? "Included (₹0)" : `+${formatINR(type.additionalCost)}`}
-                          </span>
-                        </div>
-                        <span className="text-[11px] font-mono text-[#A3A3A3] block mt-1">
-                          {type.subtitle}
-                        </span>
-                        <p className="text-xs text-[#A3A3A3] mt-2 leading-relaxed">
-                          {type.description}
-                        </p>
-                      </div>
-                    );
-                  })}
+                  <p className="text-xs text-[#9CA3AF] font-light">
+                    Select your business model. Sets recommended page count and default baseline features.
+                  </p>
                 </div>
+
+                <span className="text-xs font-mono text-sky-400 font-bold tabular-nums shrink-0 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20">
+                  Base: {formatINR(currentCategory.startingPrice)}
+                </span>
               </div>
 
-              {/* Section 3: Total Custom Pages Required */}
-              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {categories.map((cat) => {
+                  const isSelected = selectedCategoryId === cat.id;
+
+                  return (
+                    <div
+                      key={cat.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
+                      onClick={() => handleCategoryChange(cat.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleCategoryChange(cat.id);
+                        }
+                      }}
+                      className={`min-h-[74px] p-3 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070B12] ${
+                        isSelected
+                          ? "bg-sky-950/40 border-sky-400 text-white shadow-lg ring-1 ring-sky-400/40"
+                          : "bg-[#0E1524]/70 border-white/[0.06] hover:border-sky-500/40 hover:bg-[#121C30] text-[#D4D4D4]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div
+                          className={`p-1.5 rounded-lg shrink-0 ${
+                            isSelected ? "bg-sky-400 text-black font-bold" : "bg-white/[0.06] text-sky-300"
+                          }`}
+                        >
+                          {renderIcon(cat.icon, "w-3.5 h-3.5")}
+                        </div>
+                        <span className="text-xs font-mono font-bold text-white tabular-nums">
+                          {formatINR(cat.startingPrice)}
+                        </span>
+                      </div>
+                      <h3 className="text-xs font-semibold text-white truncate">{cat.title}</h3>
+                      <p className="text-[11px] text-[#9CA3AF] truncate mt-0.5 font-mono">
+                        {cat.deliveryDays} • {cat.recommendedPages} Pages
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ----------------------------------------------------------------- */}
+            {/* SECTION 2: Architecture & CMS (Indigo / Violet Theme)              */}
+            {/* ----------------------------------------------------------------- */}
+            <div className="rounded-2xl p-5 sm:p-7 space-y-5 border border-indigo-500/20 bg-gradient-to-b from-[#0E0F22] to-[#080914] shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-indigo-500/15 pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                      Step 2
+                    </span>
+                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                      Technical Architecture & CMS
+                    </h2>
+                  </div>
+                  <p className="text-xs text-[#9CA3AF] font-light">
+                    Static for zero-maintenance marketing sites. Dynamic for CMS, databases, portals, and e-commerce.
+                  </p>
+                </div>
+
+                <span className="text-xs font-mono text-indigo-400 font-bold tabular-nums shrink-0 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                  {selectedTypeId === "dynamic" ? "+₹8,000" : "Included"}
+                </span>
+              </div>
+
+              {/* Inline Dependency Notice (Auto-switched or Blocked) */}
+              {dependencyNotice && (
+                <div
+                  className={`p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-3 ${
+                    dependencyNotice.type === "auto-switched"
+                      ? "bg-blue-950/50 border-blue-400/50 text-blue-200"
+                      : "bg-amber-950/50 border-amber-400/50 text-amber-200"
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    {dependencyNotice.type === "auto-switched" ? (
+                      <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    )}
+                    <div className="space-y-1">
+                      <div className="font-semibold text-white flex items-center gap-2">
+                        <span>{dependencyNotice.title}</span>
+                        {dependencyNotice.costDiff ? (
+                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 tabular-nums">
+                            +{formatINR(dependencyNotice.costDiff)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="text-xs leading-relaxed text-[#DCDCDA]">
+                        {dependencyNotice.message}
+                      </p>
+                      {dependencyNotice.type === "blocked-static" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFeatureIds((prev) =>
+                              prev.filter((id) => !featureRequiresDynamic(id))
+                            );
+                            setSelectedTypeId("static");
+                            setDependencyNotice(null);
+                          }}
+                          className="mt-1.5 text-xs font-semibold text-amber-300 underline hover:text-white transition-colors block text-left min-h-[44px] flex items-center"
+                        >
+                          Deselect dynamic features and switch to Static
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setDependencyNotice(null)}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                    aria-label="Dismiss notice"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {types.map((type) => {
+                  const isSelected = selectedTypeId === type.id;
+                  return (
+                    <div
+                      key={type.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
+                      onClick={() => handleTypeChange(type.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleTypeChange(type.id);
+                        }
+                      }}
+                      className={`min-h-[96px] p-4 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080914] ${
+                        isSelected
+                          ? "bg-indigo-950/40 border-indigo-400 text-white shadow-lg ring-1 ring-indigo-400/40"
+                          : "bg-[#14152A]/60 border-white/[0.06] hover:border-indigo-500/40 hover:bg-[#181A36] text-[#D4D4D4]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">{type.title}</span>
+                        <span
+                          className={`text-xs font-mono font-bold tabular-nums ${
+                            type.additionalCost === 0 ? "text-emerald-400" : "text-indigo-300"
+                          }`}
+                        >
+                          {type.additionalCost === 0 ? "Included (₹0)" : `+${formatINR(type.additionalCost)}`}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono text-[#A3A3A3] block mt-1">
+                        {type.subtitle}
+                      </span>
+                      <p className="text-xs text-[#A3A3A3] mt-2 leading-relaxed">
+                        {type.description}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ----------------------------------------------------------------- */}
+            {/* SECTION 3 & 4: Pages & Delivery Speed SLA (Amber / Gold Theme)     */}
+            {/* ----------------------------------------------------------------- */}
+            <div className="rounded-2xl p-5 sm:p-7 space-y-6 border border-amber-500/20 bg-gradient-to-b from-[#141108] to-[#0A0905] shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-amber-500/15 pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                      Steps 3 & 4
+                    </span>
+                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                      Page Scope & Delivery Speed SLA
+                    </h2>
+                  </div>
+                  <p className="text-xs text-[#9CA3AF] font-light">
+                    Adjust required custom pages and select your target deployment speed.
+                  </p>
+                </div>
+
+                <span className="text-xs font-mono text-amber-400 font-bold tabular-nums shrink-0 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  {pageCount} Pages • {deliverySpeed === "express" ? "Express" : "Standard"}
+                </span>
+              </div>
+
+              {/* Pages Interactive Controls */}
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
                     3. Total Custom Pages Required
                   </label>
-                  <span className="text-xs font-mono text-emerald-400 font-bold tabular-nums">
+                  <span className="text-xs font-mono text-amber-400 font-bold tabular-nums">
                     {pageCount === 1
                       ? "-₹2,000 (Landing Page)"
                       : pageCount <= 5
@@ -807,7 +877,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                   </span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#141414] border border-white/[0.08]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#1A160D]/80 border border-amber-500/20">
                   <div className="space-y-0.5">
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold font-mono text-white tabular-nums">{pageCount}</span>
@@ -828,7 +898,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                       onClick={() => handlePagesChange(pageCount - 1)}
                       disabled={pageCount <= 1}
                       aria-label="Decrease page count"
-                      className="w-11 h-11 rounded-lg bg-[#1C1C1C] border border-white/[0.12] flex items-center justify-center text-white hover:bg-[#282828] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                      className="w-11 h-11 rounded-lg bg-[#252014] border border-amber-500/30 flex items-center justify-center text-white hover:bg-[#332C1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -839,10 +909,10 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                           key={cnt}
                           type="button"
                           onClick={() => handlePagesChange(cnt)}
-                          className={`min-h-[44px] min-w-[36px] sm:min-w-[44px] px-2 sm:px-3 py-2 rounded-lg text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                          className={`min-h-[44px] min-w-[36px] sm:min-w-[44px] px-2 sm:px-3 py-2 rounded-lg text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                             pageCount === cnt
-                              ? "bg-white text-black font-bold shadow-sm"
-                              : "bg-[#1C1C1C] text-[#A3A3A3] hover:text-white border border-white/[0.08] hover:bg-[#282828]"
+                              ? "bg-amber-400 text-black font-bold shadow-sm"
+                              : "bg-[#252014] text-[#D4D4D4] hover:text-white border border-amber-500/20 hover:bg-[#332C1B]"
                           }`}
                         >
                           {cnt === 1 ? "1P" : `${cnt}P`}
@@ -855,7 +925,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                       onClick={() => handlePagesChange(pageCount + 1)}
                       disabled={pageCount >= 30}
                       aria-label="Increase page count"
-                      className="w-11 h-11 rounded-lg bg-[#1C1C1C] border border-white/[0.12] flex items-center justify-center text-white hover:bg-[#282828] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                      className="w-11 h-11 rounded-lg bg-[#252014] border border-amber-500/30 flex items-center justify-center text-white hover:bg-[#332C1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -863,8 +933,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
               </div>
 
-              {/* Section 4: Project Delivery Speed SLA */}
-              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+              {/* Delivery Speed SLA */}
+              <div className="space-y-3 pt-2 border-t border-amber-500/15">
                 <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
                   4. Project Delivery Speed SLA
                 </label>
@@ -880,10 +950,10 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                         setDeliverySpeed("standard");
                       }
                     }}
-                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0905] ${
                       deliverySpeed === "standard"
-                        ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
-                        : "bg-[#141414] border-white/[0.07] text-[#D4D4D4] hover:border-white/[0.20] hover:bg-[#1A1A1A]"
+                        ? "bg-amber-950/40 border-amber-400 text-white shadow-lg ring-1 ring-amber-400/40"
+                        : "bg-[#1A160D]/60 border-white/[0.06] text-[#D4D4D4] hover:border-amber-500/40 hover:bg-[#252014]"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -906,15 +976,15 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                         setDeliverySpeed("express");
                       }
                     }}
-                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0905] ${
                       deliverySpeed === "express"
-                        ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
-                        : "bg-[#141414] border-white/[0.07] text-[#D4D4D4] hover:border-white/[0.20] hover:bg-[#1A1A1A]"
+                        ? "bg-amber-950/40 border-amber-400 text-white shadow-lg ring-1 ring-amber-400/40"
+                        : "bg-[#1A160D]/60 border-white/[0.06] text-[#D4D4D4] hover:border-amber-500/40 hover:bg-[#252014]"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-white">Express Delivery</span>
-                      <span className="text-xs font-mono text-white font-bold">+20%</span>
+                      <span className="text-xs font-mono text-amber-300 font-bold">+20%</span>
                     </div>
                     <span className="text-xs text-[#A3A3A3] block mt-1.5 font-mono">
                       Fast-Track Priority (3–5 Days)
@@ -925,20 +995,28 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
             </div>
 
             {/* ----------------------------------------------------------------- */}
-            {/* Box 2: Modular Features & Add-on Catalog (The ONE Feature Selector) */}
+            {/* SECTION 5: MODULAR FEATURE MARKETPLACE (Vibrant Emerald Showcase)  */}
             {/* ----------------------------------------------------------------- */}
-            <div id="features-catalog" className="bg-[#0C0C0C] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-6 shadow-xl">
-              {/* Header with Title and Feature Counter */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+            <div
+              id="features-catalog"
+              className="rounded-2xl p-5 sm:p-7 space-y-6 border border-emerald-500/30 bg-gradient-to-b from-[#091711] via-[#060F0B] to-[#040907] shadow-2xl relative"
+            >
+              {/* Studio Marketplace Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                      Modular Features & Add-ons Catalog
+                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Step 5 • Marketplace
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                      <span>Modular Studio Features Catalog</span>
+                      <span className="text-xs font-mono font-normal text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30">
+                        {allFeatures.length} Add-ons
+                      </span>
                     </h2>
                   </div>
-                  <p className="text-xs text-[#A3A3A3] font-light">
-                    Select the functionality you need. Click any card to add/remove, or click &quot;Details&quot; to expand.
+                  <p className="text-xs text-[#A3A3A3] font-light max-w-xl">
+                    Every modern feature modularly priced. Click any card to select, or click &quot;Details&quot; to expand transparent technical specifications.
                   </p>
                 </div>
 
@@ -946,14 +1024,14 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                   <button
                     type="button"
                     onClick={handleSelectRecommended}
-                    className="min-h-[44px] px-3.5 py-2 rounded-lg text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     Recommended
                   </button>
                   <button
                     type="button"
                     onClick={handleClearFeatures}
-                    className="min-h-[44px] px-3.5 py-2 rounded-lg text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl text-[#A3A3A3] hover:text-white bg-black/40 hover:bg-white/10 border border-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     Clear All
                   </button>
@@ -965,31 +1043,43 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-mono">
                   {FILTER_GROUPS.map((group) => {
                     const isActive = featureCategoryFilter === group.id;
+                    const groupCount =
+                      group.id === "all"
+                        ? allFeatures.length
+                        : allFeatures.filter(group.match).length;
+
                     return (
                       <button
                         key={group.id}
                         type="button"
                         onClick={() => setFeatureCategoryFilter(group.id)}
-                        className={`min-h-[44px] px-3.5 py-2 rounded-xl transition-all duration-150 whitespace-nowrap flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                        className={`min-h-[44px] px-3.5 py-2 rounded-xl transition-all duration-150 whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                           isActive
-                            ? "bg-white text-black font-bold shadow-md"
-                            : "bg-[#141414] text-[#A3A3A3] hover:text-white border border-white/[0.08] hover:bg-[#1C1C1C]"
+                            ? "bg-emerald-400 text-black font-bold shadow-lg shadow-emerald-400/20"
+                            : "bg-[#0D1812] text-[#A3A3A3] hover:text-white border border-emerald-500/20 hover:bg-[#12221A]"
                         }`}
                       >
                         <span>{group.label}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                            isActive ? "bg-black/20 text-black" : "bg-white/10 text-emerald-400"
+                          }`}
+                        >
+                          {groupCount}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
 
                 <div className="relative">
-                  <Search className="w-4 h-4 text-[#A3A3A3] absolute left-3.5 top-3.5 pointer-events-none" />
+                  <Search className="w-4 h-4 text-emerald-400/70 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
                     type="text"
-                    placeholder="Search features (e.g. payment, booking, whatsapp, blog)..."
+                    placeholder="Search 30 features (e.g. payment, booking, whatsapp, blog, invoice, seo)..."
                     value={featureSearchQuery}
                     onChange={(e) => setFeatureSearchQuery(e.target.value)}
-                    className="w-full min-h-[44px] pl-10 pr-4 py-2.5 rounded-xl bg-[#141414] border border-white/[0.08] text-xs text-[#F5F5F3] placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:border-transparent transition-colors"
+                    className="w-full min-h-[44px] pl-10 pr-4 py-2.5 rounded-xl bg-[#0B1410] border border-emerald-500/25 text-xs text-[#F5F5F3] placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:border-transparent transition-colors"
                   />
                   {featureSearchQuery && (
                     <button
@@ -1006,14 +1096,14 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
 
               {/* Status info bar */}
               <div className="flex items-center justify-between text-xs font-mono text-[#A3A3A3] px-1">
-                <span>Showing {displayedFeatures.length} of {allFeatures.length} features</span>
+                <span>Showing {displayedFeatures.length} of {allFeatures.length} modular features</span>
                 <span className="text-emerald-400 font-bold tabular-nums">
                   {selectedFeaturesList.length} Selected (+{formatINR(featuresCost)})
                 </span>
               </div>
 
-              {/* Grid of Modular Feature Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Grid of Modular Feature Cards (Responsive 2 to 3 Columns) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {displayedFeatures.map((feat) => {
                   const isSelected =
                     selectedFeatureIds.includes(feat.id) ||
@@ -1034,17 +1124,21 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                           toggleFeature(feat.id);
                         }
                       }}
-                      className={`p-3.5 sm:p-4 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                      className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060F0B] ${
                         isBundledInDynamic && isSelected
-                          ? "bg-emerald-950/25 border-emerald-400/80 ring-1 ring-emerald-500/40 text-white"
+                          ? "bg-emerald-950/35 border-emerald-400/90 ring-1 ring-emerald-400/50 text-white shadow-md"
                           : isSelected
-                          ? "bg-emerald-950/20 border-emerald-400 ring-1 ring-emerald-400/50 text-white shadow-lg"
-                          : "bg-[#141414] border-white/[0.08] hover:border-white/[0.22] hover:bg-[#1A1A1A] text-[#D4D4D4]"
+                          ? "bg-emerald-950/30 border-emerald-400 ring-1 ring-emerald-400/50 text-white shadow-lg"
+                          : "bg-[#0C1510]/80 border-white/[0.07] hover:border-emerald-500/40 hover:bg-[#101D16] text-[#D4D4D4]"
                       }`}
                     >
-                      {/* Top Row: Category Chip & Price */}
+                      {/* Top Row: Category Tag Chip & Price */}
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-[#D4D4D4] border border-white/[0.08]">
+                        <span
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${getCategoryTagStyle(
+                            feat.categoryTag
+                          )}`}
+                        >
                           {feat.categoryTag}
                         </span>
 
@@ -1061,8 +1155,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                         </span>
                       </div>
 
-                      {/* Middle: Icon, Title & Obvious Selected State (Check + Badge) */}
-                      <div className="flex items-start justify-between gap-2.5">
+                      {/* Middle: Icon, Title & Obvious Selected State */}
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex items-start gap-2.5 min-w-0">
                           <div
                             className={`p-2 rounded-lg shrink-0 transition-colors ${
@@ -1070,7 +1164,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                                 ? "bg-emerald-400 text-black font-bold"
                                 : isSelected
                                 ? "bg-emerald-400 text-black font-bold"
-                                : "bg-white/[0.06] text-[#A3A3A3]"
+                                : "bg-white/[0.06] text-emerald-400"
                             }`}
                           >
                             {renderIcon(feat.icon, "w-4 h-4")}
@@ -1080,21 +1174,25 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                             <h3 className="font-semibold text-xs text-white leading-snug">
                               {feat.name}
                             </h3>
-                            <p className={`text-xs text-[#A3A3A3] leading-relaxed ${isExpanded ? "" : "line-clamp-1"}`}>
+                            <p
+                              className={`text-xs text-[#A3A3A3] leading-relaxed ${
+                                isExpanded ? "" : "line-clamp-1"
+                              }`}
+                            >
                               {feat.simpleDescription}
                             </p>
                           </div>
                         </div>
 
-                        {/* Obvious Selected State without relying on color alone (Icon + Text Badge) */}
+                        {/* Selected State Badge (Never relies on color alone) */}
                         <div className="shrink-0 flex items-center">
                           {isSelected ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-400 text-black text-[11px] font-bold font-mono shadow-sm">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-400 text-black text-[10px] font-bold font-mono shadow-sm">
                               <Check className="w-3 h-3 stroke-[3]" />
                               <span>Added</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.08] text-[#D4D4D4] text-[11px] font-mono hover:text-white border border-white/[0.08]">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.08] text-[#D4D4D4] text-[10px] font-mono hover:text-white border border-white/[0.08]">
                               <Plus className="w-3 h-3" />
                               <span>Add</span>
                             </span>
@@ -1109,7 +1207,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                         </div>
                       )}
 
-                      {/* Bottom Toggle Button for Expandable Details (min 44px touch target) */}
+                      {/* Bottom Toggle Button for Expandable Details */}
                       <div className="pt-1 flex items-center justify-between border-t border-white/[0.06]">
                         <button
                           type="button"
@@ -1119,7 +1217,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                             e.stopPropagation();
                             toggleFeatureExpansion(feat.id);
                           }}
-                          className="min-h-[44px] inline-flex items-center gap-1.5 text-[11px] font-mono text-[#A3A3A3] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-md px-1"
+                          className="min-h-[44px] inline-flex items-center gap-1 text-[11px] font-mono text-[#A3A3A3] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-md px-1"
                         >
                           <span>{isExpanded ? "Hide Details" : "View Details"}</span>
                           {isExpanded ? (
@@ -1130,8 +1228,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                         </button>
 
                         {feat.popularFor && feat.popularFor.includes(selectedCategoryId) && (
-                          <span className="text-[10px] font-mono text-emerald-400 font-semibold">
-                            ★ Recommended for {currentCategory.title.split(" ")[0]}
+                          <span className="text-[10px] font-mono text-emerald-400 font-semibold truncate max-w-[120px]">
+                            ★ {currentCategory.title.split(" ")[0]} Pick
                           </span>
                         )}
                       </div>
@@ -1142,35 +1240,40 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
             </div>
 
             {/* ----------------------------------------------------------------- */}
-            {/* Box 3: Custom Notes or Competitor Reference                      */}
+            {/* SECTION 6: Custom Notes & Competitor Reference (Minimal Zinc)      */}
             {/* ----------------------------------------------------------------- */}
-            <div className="bg-[#0C0C0C] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-3 shadow-xl">
-              <label
-                htmlFor="custom-notes"
-                className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold"
-              >
-                5. Custom Notes or Competitor Reference (Optional)
-              </label>
+            <div className="rounded-2xl p-5 sm:p-7 space-y-3 border border-zinc-700/40 bg-[#0C0C0E] shadow-xl">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-zinc-700/30 text-zinc-300 border border-zinc-700/40">
+                  Step 6
+                </span>
+                <label
+                  htmlFor="custom-notes"
+                  className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold"
+                >
+                  Custom Notes or Reference URL (Optional)
+                </label>
+              </div>
               <textarea
                 id="custom-notes"
                 rows={3}
                 value={customNotes}
                 onChange={(e) => setCustomNotes(e.target.value)}
                 placeholder="Mention any specific feature, reference website URL, design link, or target launch deadline..."
-                className="w-full px-4 py-3 rounded-xl bg-[#141414] border border-white/[0.08] text-xs text-white placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 resize-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-[#141418] border border-white/[0.08] text-xs text-white placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 resize-none transition-colors"
               />
             </div>
           </div>
 
           {/* ===================================================================== */}
-          {/* RIGHT COLUMN: Sticky Project Cost Breakdown Panel (5 Cols)           */}
+          {/* RIGHT COLUMN: STICKY Project Cost Breakdown Panel (5 Cols)           */}
           {/* ===================================================================== */}
-          <aside className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-24 space-y-6">
-            <div className="bg-[#0C0C0C] border border-white/[0.14] rounded-2xl p-5 sm:p-7 shadow-2xl space-y-6">
+          <aside className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 lg:self-start space-y-6">
+            <div className="rounded-2xl p-5 sm:p-7 space-y-6 border border-emerald-400/40 bg-gradient-to-b from-[#0A120E] to-[#050907] shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(16,185,129,0.10)] relative">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-4">
                 <div className="space-y-0.5">
-                  <span className="text-[11px] font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
                     LIVE CALCULATION
                   </span>
                   <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
@@ -1179,7 +1282,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[11px] font-mono text-[#A3A3A3] block">Target SLA</span>
+                  <span className="text-[10px] font-mono text-[#A3A3A3] block">Target SLA</span>
                   <span className="text-xs font-mono font-bold text-emerald-400 tabular-nums">
                     {estimatedDays}
                   </span>
@@ -1187,7 +1290,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
               </div>
 
               {/* Dynamic Line-Items Ledger */}
-              <div className="space-y-3 text-xs divide-y divide-white/[0.05]">
+              <div className="space-y-3 text-xs divide-y divide-white/[0.06]">
                 {/* 1. Category */}
                 <div className="flex items-start justify-between gap-3 pt-1">
                   <div>
@@ -1256,7 +1359,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                       No additional features selected (Standard contact form included).
                     </p>
                   ) : (
-                    <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                    <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
                       {selectedFeaturesList.map((feat) => {
                         const isBundled = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
                         return (
@@ -1286,8 +1389,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
               </div>
 
-              {/* Grand Total Live Counter (Tabular numbers, no layout shift) */}
-              <div className="pt-4 border-t border-white/[0.10] space-y-2">
+              {/* Grand Total Live Counter */}
+              <div className="pt-4 border-t border-emerald-500/20 space-y-2">
                 <div className="flex items-baseline justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -1316,7 +1419,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
 
                 <p className="text-[11px] font-mono text-[#A3A3A3] pt-1 leading-relaxed">
-                  *Transparent rates. 100% full source code ownership. Domain & hosting direct to client at actuals. Third-party provider usage fees (AI API, WhatsApp Business API, payment gateway) billed at actuals.
+                  *Transparent rates. 100% full source code ownership. Domain & hosting direct to client at actuals. Third-party provider usage fees billed at actuals.
                 </p>
               </div>
 
@@ -1324,7 +1427,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
               <div className="space-y-2.5">
                 <Link
                   href={quotationUrl}
-                  className="min-h-[48px] inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl bg-white hover:bg-[#E8E8E6] text-black font-semibold text-xs tracking-wide transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C]"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl bg-white hover:bg-[#E8E8E6] text-black font-semibold text-xs tracking-wide transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]"
                 >
                   <span>Request This Quote</span>
                   <ArrowRight className="w-4 h-4" />
@@ -1335,9 +1438,9 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </p>
               </div>
 
-              {/* Trust Badges Configurable via PRICING_CONFIG */}
+              {/* Trust Badges */}
               {TRUST_BADGES.filter((b) => b.enabled).length > 0 && (
-                <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-white/[0.08] text-[11px] font-mono text-[#D4D4D4]">
+                <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-emerald-500/20 text-[11px] font-mono text-[#D4D4D4]">
                   {TRUST_BADGES.filter((b) => b.enabled).map((badge) => (
                     <div key={badge.id} className="flex items-center gap-2">
                       {badge.iconName === "CheckCircle2" ? (
@@ -1502,6 +1605,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
           </Link>
         </div>
       </div>
+
       {/* Lift site-wide chat widget above mobile sticky bottom bar on mobile viewports */}
       <style
         dangerouslySetInnerHTML={{
