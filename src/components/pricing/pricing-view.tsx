@@ -35,21 +35,23 @@ import {
   CheckCircle2,
   Share2,
   Clock,
-  FileText,
   X,
   Database,
   ArrowDownCircle,
+  AlertCircle,
 } from "lucide-react";
 import { BackendPricingData } from "@/lib/services/pricing";
 import {
   WEBSITE_CATEGORIES,
   WEBSITE_TYPES,
   POPULAR_FEATURES,
-  BASE_PAGES_INCLUDED,
-  COST_PER_EXTRA_PAGE,
-  DISCOUNT_FOR_ONE_PAGE,
+  PAGE_SETTINGS,
+  PRICING_SETTINGS,
+  normalizeFeatureId,
+  featureRequiresDynamic,
+  calculatePricing,
   FeatureOption,
-} from "@/data/configurator-data";
+} from "@/lib/pricing.config";
 
 export function formatINR(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -88,7 +90,9 @@ const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => b
       f.categoryTag === "Security" ||
       f.categoryTag === "Management" ||
       f.id.includes("booking") ||
+      f.id.includes("login") ||
       f.id.includes("auth") ||
+      f.id.includes("dashboard") ||
       f.id.includes("admin"),
   },
   {
@@ -115,6 +119,14 @@ const FILTER_GROUPS: { id: string; label: string; match: (f: FeatureOption) => b
   },
 ];
 
+interface DependencyNotice {
+  type: "auto-switched" | "blocked-static";
+  title: string;
+  message: string;
+  featureName?: string;
+  costDiff?: number;
+}
+
 interface PricingViewProps {
   initialData?: BackendPricingData;
 }
@@ -122,18 +134,18 @@ interface PricingViewProps {
 export function PricingView({ initialData }: PricingViewProps) {
   const searchParams = useSearchParams();
 
-  // Backend data state (initialized from SSR, revalidated via API if available)
+  // Backend data state (initialized from centralized config / SSR, revalidated via API if available)
   const [backendData, setBackendData] = useState<BackendPricingData>(
     initialData || {
       categories: WEBSITE_CATEGORIES,
       types: WEBSITE_TYPES,
       features: POPULAR_FEATURES,
       settings: {
-        basePagesIncluded: BASE_PAGES_INCLUDED,
-        costPerExtraPage: COST_PER_EXTRA_PAGE,
-        discountForOnePage: DISCOUNT_FOR_ONE_PAGE,
-        currency: "INR",
-        currencySymbol: "₹",
+        basePagesIncluded: PAGE_SETTINGS.basePagesIncluded,
+        costPerExtraPage: PAGE_SETTINGS.costPerExtraPage,
+        discountForOnePage: PAGE_SETTINGS.discountForOnePage,
+        currency: PRICING_SETTINGS.currency,
+        currencySymbol: PRICING_SETTINGS.currencySymbol,
       },
     }
   );
@@ -149,7 +161,7 @@ export function PricingView({ initialData }: PricingViewProps) {
         }
       })
       .catch((err) => {
-        console.warn("Pricing live sync fallback to SSR data:", err);
+        console.warn("Pricing live sync fallback to centralized data:", err);
       });
     return () => {
       isMounted = false;
@@ -161,69 +173,173 @@ export function PricingView({ initialData }: PricingViewProps) {
   const allFeatures = backendData.features;
   const settings = backendData.settings;
 
-  // Initial State from URL params or defaults
-  const initialCategory = searchParams.get("cat") || "business";
-  const initialType = (searchParams.get("type") as "static" | "dynamic") || "static";
-  const initialPages = parseInt(searchParams.get("pages") || "5", 10);
-  const initialFeatures = useMemo(() => {
-    const raw = searchParams.get("feat");
-    if (!raw) {
-      const cat = categories.find((c) => c.id === initialCategory);
-      return cat ? cat.defaultFeatures : ["contact_form", "whatsapp_chat", "seo_basic"];
+  // ---------------------------------------------------------------------------
+  // Initial State from URL params or defaults (Task 5: Shareable State)
+  // ---------------------------------------------------------------------------
+  const initialCategory = useMemo(() => {
+    const cat = searchParams.get("cat");
+    return cat && categories.some((c) => c.id === cat) ? cat : "business";
+  }, [searchParams, categories]);
+
+  const initialDelivery = useMemo(() => {
+    const del = searchParams.get("delivery");
+    return del === "express" ? "express" : "standard";
+  }, [searchParams]);
+
+  const initialPages = useMemo(() => {
+    const raw = searchParams.get("pages");
+    const p = parseInt(raw || "", 10);
+    if (!isNaN(p)) {
+      return Math.max(1, Math.min(30, p));
     }
-    return raw.split(",").filter(Boolean);
+    const cat = categories.find((c) => c.id === initialCategory);
+    return cat ? cat.recommendedPages : 5;
   }, [searchParams, initialCategory, categories]);
 
+  const initialFeatures = useMemo(() => {
+    const raw = searchParams.get("feat");
+    if (raw !== null) {
+      if (!raw.trim()) return [];
+      return raw
+        .split(",")
+        .map((id) => normalizeFeatureId(id.trim()))
+        .filter((id) => allFeatures.some((f) => f.id === id));
+    }
+    const cat = categories.find((c) => c.id === initialCategory);
+    return cat
+      ? cat.defaultFeatures.map(normalizeFeatureId)
+      : ["contact_form", "whatsapp_chat", "seo_basic"];
+  }, [searchParams, initialCategory, categories, allFeatures]);
+
+  const initialType = useMemo(() => {
+    // If any restored feature requires dynamic, initialize to dynamic
+    if (initialFeatures.some(featureRequiresDynamic)) {
+      return "dynamic";
+    }
+    const raw = searchParams.get("type");
+    return raw === "dynamic" ? "dynamic" : "static";
+  }, [searchParams, initialFeatures]);
+
+  // Component State
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(initialCategory);
   const [selectedTypeId, setSelectedTypeId] = useState<"static" | "dynamic">(initialType);
-  const [pageCount, setPageCount] = useState<number>(Math.max(1, Math.min(30, initialPages)));
-  const [deliverySpeed, setDeliverySpeed] = useState<"standard" | "express">("standard");
+  const [pageCount, setPageCount] = useState<number>(initialPages);
+  const [deliverySpeed, setDeliverySpeed] = useState<"standard" | "express">(initialDelivery);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>(initialFeatures);
+  const [dependencyNotice, setDependencyNotice] = useState<DependencyNotice | null>(null);
+
   const [topCategoryFilter, setTopCategoryFilter] = useState<string>("all");
   const [formSearchQuery, setFormSearchQuery] = useState<string>("");
   const [customNotes, setCustomNotes] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
-  // Selected category object
-  const currentCategory = useMemo(() => {
-    return categories.find((c) => c.id === selectedCategoryId) || categories[0];
-  }, [selectedCategoryId, categories]);
-
-  // Selected type object
-  const currentType = useMemo(() => {
-    return types.find((t) => t.id === selectedTypeId) || types[0];
-  }, [selectedTypeId, types]);
-
-  // Synchronize state changes to URL query string without causing full reload
+  // Synchronize state changes to URL query string without causing full reload (Task 5)
   useEffect(() => {
     const params = new URLSearchParams();
-    if (selectedCategoryId !== "business") params.set("cat", selectedCategoryId);
-    if (selectedTypeId !== "static") params.set("type", selectedTypeId);
-    if (pageCount !== 5) params.set("pages", String(pageCount));
-    if (selectedFeatureIds.length > 0) params.set("feat", selectedFeatureIds.join(","));
+    if (selectedCategoryId) params.set("cat", selectedCategoryId);
+    if (selectedTypeId) params.set("type", selectedTypeId);
+    if (pageCount) params.set("pages", String(pageCount));
+    if (deliverySpeed) params.set("delivery", deliverySpeed);
+    if (selectedFeatureIds.length > 0) {
+      params.set("feat", selectedFeatureIds.join(","));
+    }
 
     const qs = params.toString();
     const newPath = qs ? `/pricing?${qs}` : "/pricing";
     if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", newPath);
+      const currentPath = window.location.pathname + window.location.search;
+      if (currentPath !== newPath) {
+        window.history.replaceState(null, "", newPath);
+      }
     }
-  }, [selectedCategoryId, selectedTypeId, pageCount, selectedFeatureIds]);
+  }, [selectedCategoryId, selectedTypeId, pageCount, deliverySpeed, selectedFeatureIds]);
 
-  // Reactive toggle feature function
+  // Pure Calculation invocation from centralized config (Task 1)
+  const calculation = useMemo(() => {
+    return calculatePricing(
+      {
+        categoryId: selectedCategoryId,
+        typeId: selectedTypeId,
+        pageCount,
+        deliverySpeed,
+        selectedFeatureIds,
+      },
+      {
+        categories,
+        types,
+        features: allFeatures,
+        pageSettings: {
+          basePagesIncluded: settings.basePagesIncluded,
+          costPerExtraPage: settings.costPerExtraPage,
+          discountForOnePage: settings.discountForOnePage,
+        },
+      }
+    );
+  }, [
+    selectedCategoryId,
+    selectedTypeId,
+    pageCount,
+    deliverySpeed,
+    selectedFeatureIds,
+    categories,
+    types,
+    allFeatures,
+    settings,
+  ]);
+
+  const {
+    category: currentCategory,
+    type: currentType,
+    baseCategoryPrice,
+    typePrice,
+    pagesPrice,
+    featuresCost,
+    expressPrice,
+    selectedFeaturesList,
+    grandTotal,
+    estimatedDays,
+  } = calculation;
+
+  // Reactive toggle feature with Dependency Auto-Switching (Task 2)
   const toggleFeature = useCallback(
-    (featId: string) => {
-      // If dynamic architecture is selected, Admin Panel is automatically included
-      if (featId === "admin_panel" && selectedTypeId === "dynamic") return;
+    (rawFeatId: string) => {
+      const featId = normalizeFeatureId(rawFeatId);
+      const feat = allFeatures.find((f) => f.id === featId || f.id === rawFeatId);
+      const isCurrentlySelected =
+        selectedFeatureIds.includes(featId) || selectedFeatureIds.includes(rawFeatId);
 
-      setSelectedFeatureIds((prev) => {
-        if (prev.includes(featId)) {
-          return prev.filter((id) => id !== featId);
-        } else {
-          return [...prev, featId];
+      if (isCurrentlySelected) {
+        // Deselecting feature
+        const updatedFeatures = selectedFeatureIds.filter(
+          (id) => id !== featId && id !== rawFeatId && normalizeFeatureId(id) !== featId
+        );
+        setSelectedFeatureIds(updatedFeatures);
+
+        // If the deselected feature was the reason for a notice, clear it
+        if (dependencyNotice?.featureName === feat?.name) {
+          setDependencyNotice(null);
         }
-      });
+      } else {
+        // Selecting feature
+        const updatedFeatures = [...selectedFeatureIds, featId];
+        setSelectedFeatureIds(updatedFeatures);
+
+        // Check if feature requires Dynamic and we are currently on Static
+        if (selectedTypeId === "static" && featureRequiresDynamic(featId)) {
+          setSelectedTypeId("dynamic");
+          const dynamicType = types.find((t) => t.id === "dynamic");
+          const dynamicCost = dynamicType?.additionalCost || 8000;
+          setDependencyNotice({
+            type: "auto-switched",
+            title: "Switched to Dynamic Website (+₹8,000)",
+            message: `"${feat?.name || "This feature"}" requires a backend & database to function. Architecture automatically updated to Dynamic Website (+${formatINR(dynamicCost)}).`,
+            featureName: feat?.name,
+            costDiff: dynamicCost,
+          });
+        }
+      }
     },
-    [selectedTypeId]
+    [selectedFeatureIds, selectedTypeId, allFeatures, types, dependencyNotice]
   );
 
   // Handle Category Change
@@ -232,19 +348,39 @@ export function PricingView({ initialData }: PricingViewProps) {
     const cat = categories.find((c) => c.id === catId);
     if (cat) {
       setPageCount(cat.recommendedPages);
-      // Set to the category's curated defaults
-      setSelectedFeatureIds(cat.defaultFeatures);
+      const normalizedDefaults = cat.defaultFeatures.map(normalizeFeatureId);
+      setSelectedFeatureIds(normalizedDefaults);
+
+      // If category defaults contain dynamic features, switch to dynamic
+      if (normalizedDefaults.some(featureRequiresDynamic)) {
+        setSelectedTypeId("dynamic");
+      }
     }
   };
 
-  // Handle Architecture Change
+  // Handle Architecture Change with Blocking Logic (Task 2)
   const handleTypeChange = (typeId: "static" | "dynamic") => {
-    setSelectedTypeId(typeId);
-    if (typeId === "dynamic") {
-      setSelectedFeatureIds((prev) =>
-        prev.includes("admin_panel") ? prev : [...prev, "admin_panel"]
-      );
+    if (typeId === "static") {
+      // Check for conflicting features requiring Dynamic
+      const conflicting = selectedFeatureIds
+        .map((id) => allFeatures.find((f) => f.id === id || f.id === normalizeFeatureId(id)))
+        .filter((f): f is FeatureOption => Boolean(f && featureRequiresDynamic(f.id)));
+
+      if (conflicting.length > 0) {
+        // Block the switch and explain which features need Dynamic
+        const names = conflicting.map((f) => f.name).join(", ");
+        setDependencyNotice({
+          type: "blocked-static",
+          title: "Static Website Architecture Blocked",
+          message: `Cannot switch to Static Website because the following selected feature(s) require a backend & database: ${names}. Deselect them first to switch to Static.`,
+        });
+        return;
+      }
     }
+
+    // Switch allowed
+    setSelectedTypeId(typeId);
+    setDependencyNotice(null);
   };
 
   // Change Pages
@@ -259,26 +395,28 @@ export function PricingView({ initialData }: PricingViewProps) {
     setPageCount(5);
     setDeliverySpeed("standard");
     setCustomNotes("");
+    setDependencyNotice(null);
     setSelectedFeatureIds(["contact_form", "whatsapp_chat", "seo_basic"]);
   };
 
   // Select recommended features for current category
   const handleSelectRecommended = () => {
     if (currentCategory && currentCategory.defaultFeatures) {
-      setSelectedFeatureIds(currentCategory.defaultFeatures);
+      const normalizedDefaults = currentCategory.defaultFeatures.map(normalizeFeatureId);
+      setSelectedFeatureIds(normalizedDefaults);
+      if (normalizedDefaults.some(featureRequiresDynamic)) {
+        setSelectedTypeId("dynamic");
+      }
     }
   };
 
   // Clear all optional features
   const handleClearFeatures = () => {
-    if (selectedTypeId === "dynamic") {
-      setSelectedFeatureIds(["admin_panel"]);
-    } else {
-      setSelectedFeatureIds([]);
-    }
+    setSelectedFeatureIds([]);
+    setDependencyNotice(null);
   };
 
-  // Share estimate URL
+  // Share estimate URL (Task 5)
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
@@ -287,78 +425,17 @@ export function PricingView({ initialData }: PricingViewProps) {
     }
   };
 
-  // Dynamic Live Calculation
-  const {
-    baseCategoryPrice,
-    typePrice,
-    pagesPrice,
-    featuresCost,
-    expressPrice,
-    selectedFeaturesList,
-    grandTotal,
-    estimatedDays,
-  } = useMemo(() => {
-    const base = currentCategory.startingPrice;
-    const typeCost = currentType.additionalCost;
-
-    let pagesCost = 0;
-    if (pageCount === 1) {
-      pagesCost = -settings.discountForOnePage;
-    } else if (pageCount > settings.basePagesIncluded) {
-      pagesCost = (pageCount - settings.basePagesIncluded) * settings.costPerExtraPage;
-    }
-
-    let featCost = 0;
-    const fList: FeatureOption[] = [];
-
-    selectedFeatureIds.forEach((id) => {
-      const feat = allFeatures.find((f) => f.id === id);
-      if (!feat) return;
-
-      const isBundledInDynamic = feat.id === "admin_panel" && selectedTypeId === "dynamic";
-      if (!isBundledInDynamic) {
-        featCost += feat.price;
-      }
-      fList.push(feat);
-    });
-
-    const standardTotal = Math.max(4999, base + typeCost + pagesCost + featCost);
-    const expressCost = deliverySpeed === "express" ? Math.round(standardTotal * 0.2) : 0;
-    const total = standardTotal + expressCost;
-
-    let days = currentCategory.deliveryDays;
-    if (deliverySpeed === "express") {
-      days = "Fast-Track Priority (3–5 Days)";
-    } else if (selectedTypeId === "dynamic" || pageCount > 8 || fList.length > 5) {
-      days = "2–3 Weeks";
-    }
-
-    return {
-      baseCategoryPrice: base,
-      typePrice: typeCost,
-      pagesPrice: pagesCost,
-      featuresCost: featCost,
-      expressPrice: expressCost,
-      selectedFeaturesList: fList,
-      subtotal: standardTotal,
-      grandTotal: total,
-      estimatedDays: days,
-    };
-  }, [
-    currentCategory,
-    currentType,
-    pageCount,
-    selectedFeatureIds,
-    selectedTypeId,
-    deliverySpeed,
-    allFeatures,
-    settings,
-  ]);
-
   // Pre-filled URL for Contact Page
   const quotationUrl = useMemo(() => {
     const featuresSummary = selectedFeaturesList
-      .map((f) => `• ${f.name} (${f.id === "admin_panel" && selectedTypeId === "dynamic" ? "Included Free" : formatINR(f.price)})`)
+      .map(
+        (f) =>
+          `• ${f.name} (${
+            f.includedInDynamic && selectedTypeId === "dynamic"
+              ? "Included Free"
+              : formatINR(f.price)
+          })`
+      )
       .join("\n");
 
     const message = `Website Requirements Specification:
@@ -592,16 +669,18 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
           {/* Full Grid of All Features */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
             {displayedTopFeatures.map((feat) => {
-              const isSelected = selectedFeatureIds.includes(feat.id);
-              const isBundledInDynamic = feat.id === "admin_panel" && selectedTypeId === "dynamic";
+              const isSelected =
+                selectedFeatureIds.includes(feat.id) ||
+                selectedFeatureIds.includes(normalizeFeatureId(feat.id));
+              const isBundledInDynamic = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
 
               return (
                 <div
                   key={feat.id}
-                  onClick={() => !isBundledInDynamic && toggleFeature(feat.id)}
+                  onClick={() => toggleFeature(feat.id)}
                   className={`p-3 rounded-xl border text-left cursor-pointer transition-all duration-200 flex items-center justify-between gap-2.5 group ${
-                    isBundledInDynamic
-                      ? "bg-emerald-950/20 border-emerald-500/30 cursor-default"
+                    isBundledInDynamic && isSelected
+                      ? "bg-emerald-950/20 border-emerald-500/30 ring-1 ring-emerald-500/20"
                       : isSelected
                       ? "bg-white/[0.08] border-emerald-400 text-white shadow-lg ring-1 ring-emerald-400/40"
                       : "bg-[#101010] border-white/[0.06] hover:border-white/[0.20] hover:bg-white/[0.02] text-[#B0B0AE]"
@@ -610,7 +689,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
                       className={`p-1.5 rounded-lg shrink-0 transition-colors ${
-                        isBundledInDynamic
+                        isBundledInDynamic && isSelected
                           ? "bg-emerald-500/20 text-emerald-400"
                           : isSelected
                           ? "bg-emerald-400 text-black shadow-sm"
@@ -627,25 +706,25 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                   <div className="flex items-center gap-2 shrink-0">
                     <span
                       className={`text-xs font-mono font-bold ${
-                        isBundledInDynamic
+                        isBundledInDynamic && isSelected
                           ? "text-emerald-400"
                           : isSelected
                           ? "text-emerald-400"
                           : "text-white"
                       }`}
                     >
-                      {isBundledInDynamic ? "Included" : `+${formatINR(feat.price)}`}
+                      {isBundledInDynamic && isSelected ? "Included" : `+${formatINR(feat.price)}`}
                     </span>
                     <div
                       className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
-                        isBundledInDynamic
+                        isBundledInDynamic && isSelected
                           ? "bg-emerald-500/20 text-emerald-400"
                           : isSelected
                           ? "bg-emerald-400 text-black shadow-sm"
                           : "bg-white/[0.04] text-[#888888] group-hover:text-white group-hover:bg-white/[0.10]"
                       }`}
                     >
-                      {isBundledInDynamic || isSelected ? (
+                      {isSelected ? (
                         <Check className="w-3 h-3 stroke-[2.5]" />
                       ) : (
                         <Plus className="w-3 h-3" />
@@ -659,24 +738,20 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. MAIN 50/50 SPLIT: Requirements Form (Left) & Live Quote Ledger (Right) */}
+        {/* 2. BOTTOM 50/50 SECTION: Step-by-Step Form (Left) & Sticky Quote (Right) */}
         {/* ========================================================================= */}
         <div id="requirements-form" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ===================================================================== */}
-          {/* LEFT 50% (Col Span 6): The Detailed Requirements Form */}
+          {/* LEFT 50% (Col Span 6): Step-by-step Interactive Specification Form */}
           {/* ===================================================================== */}
           <div className="lg:col-span-6 bg-[#0B0B0B] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-7 shadow-2xl">
-            {/* Form Title */}
-            <div className="border-b border-white/[0.06] pb-4 space-y-1">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
-                  <span>Project Requirements Form</span>
-                </h2>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded">
-                  Live Recalculation
-                </span>
-              </div>
+            <div className="space-y-1 border-b border-white/[0.08] pb-4">
+              <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-semibold block">
+                STEP-BY-STEP CONFIGURATOR
+              </span>
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                Project Requirements Specification
+              </h2>
               <p className="text-xs text-[#808080] font-light">
                 Fill or toggle your project specifications. Watch the itemized ledger on the right update instantly.
               </p>
@@ -729,16 +804,72 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
               </div>
             </div>
 
-            {/* Field 2: Static vs Dynamic Architecture */}
+            {/* Field 2: Static vs Dynamic Architecture (Task 2 & 3) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
                   2. Website Architecture & CMS
                 </label>
                 <span className="text-[11px] font-mono text-[#808080]">
-                  {selectedTypeId === "dynamic" ? "+₹8,000 (Admin Included)" : "Included (₹0)"}
+                  {selectedTypeId === "dynamic" ? "+₹8,000 (Database & Backend)" : "Included (₹0)"}
                 </span>
               </div>
+
+              {/* Inline Dependency Notice (Auto-switched or Blocked) */}
+              {dependencyNotice && (
+                <div
+                  className={`p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-3 ${
+                    dependencyNotice.type === "auto-switched"
+                      ? "bg-blue-950/40 border-blue-500/40 text-blue-200"
+                      : "bg-amber-950/40 border-amber-500/40 text-amber-200"
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    {dependencyNotice.type === "auto-switched" ? (
+                      <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    )}
+                    <div className="space-y-1">
+                      <div className="font-semibold text-white flex items-center gap-2">
+                        <span>{dependencyNotice.title}</span>
+                        {dependencyNotice.costDiff ? (
+                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                            +{formatINR(dependencyNotice.costDiff)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[#D0D0CE]">
+                        {dependencyNotice.message}
+                      </p>
+                      {dependencyNotice.type === "blocked-static" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFeatureIds((prev) =>
+                              prev.filter((id) => !featureRequiresDynamic(id))
+                            );
+                            setSelectedTypeId("static");
+                            setDependencyNotice(null);
+                          }}
+                          className="mt-1 text-[11px] font-medium text-amber-400 underline hover:text-white transition-colors block text-left"
+                        >
+                          Deselect dynamic features and switch to Static
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setDependencyNotice(null)}
+                    className="p-1 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors shrink-0"
+                    aria-label="Dismiss notice"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {types.map((type) => {
@@ -763,6 +894,9 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                           {type.additionalCost === 0 ? "Included (₹0)" : `+${formatINR(type.additionalCost)}`}
                         </span>
                       </div>
+                      <span className="text-[10px] font-mono text-[#888888] block mt-0.5">
+                        {type.subtitle}
+                      </span>
                       <p className="text-[11px] text-[#707070] mt-1.5 leading-relaxed">
                         {type.description}
                       </p>
@@ -909,7 +1043,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                     onClick={handleClearFeatures}
                     className="text-[#888888] hover:text-white underline underline-offset-2"
                   >
-                    Clear Optional
+                    Clear All
                   </button>
                 </div>
               </div>
@@ -929,16 +1063,18 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
               {/* Feature Items List */}
               <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1 scrollbar-thin">
                 {displayedFormFeatures.map((feat) => {
-                  const isChecked = selectedFeatureIds.includes(feat.id);
-                  const isBundledInDynamic = feat.id === "admin_panel" && selectedTypeId === "dynamic";
+                  const isChecked =
+                    selectedFeatureIds.includes(feat.id) ||
+                    selectedFeatureIds.includes(normalizeFeatureId(feat.id));
+                  const isBundledInDynamic = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
 
                   return (
                     <div
                       key={feat.id}
-                      onClick={() => !isBundledInDynamic && toggleFeature(feat.id)}
+                      onClick={() => toggleFeature(feat.id)}
                       className={`px-3 py-2 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all duration-150 ${
-                        isBundledInDynamic
-                          ? "bg-emerald-950/20 border-emerald-500/30 cursor-default"
+                        isBundledInDynamic && isChecked
+                          ? "bg-emerald-950/20 border-emerald-500/30"
                           : isChecked
                           ? "bg-white/[0.07] border-emerald-400/70 text-white shadow-sm"
                           : "bg-[#121212] border-white/[0.05] hover:border-white/[0.14] text-[#B0B0AE]"
@@ -947,14 +1083,12 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
                           className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                            isBundledInDynamic
-                              ? "bg-emerald-400 text-black border-emerald-400"
-                              : isChecked
+                            isChecked
                               ? "bg-emerald-400 text-black border-emerald-400"
                               : "border-white/20 bg-white/[0.02]"
                           }`}
                         >
-                          {(isChecked || isBundledInDynamic) && <Check className="w-3 h-3 stroke-[3]" />}
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
 
                         <span className="text-xs font-semibold text-white truncate block">
@@ -964,14 +1098,14 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
 
                       <span
                         className={`text-xs font-mono font-bold shrink-0 ${
-                          isBundledInDynamic
+                          isBundledInDynamic && isChecked
                             ? "text-emerald-400"
                             : isChecked
                             ? "text-emerald-400"
-                            : "text-white"
+                            : "text-[#888888]"
                         }`}
                       >
-                        {isBundledInDynamic ? "Included Free" : `+${formatINR(feat.price)}`}
+                        {isBundledInDynamic && isChecked ? "Included" : `+${formatINR(feat.price)}`}
                       </span>
                     </div>
                   );
@@ -1090,23 +1224,21 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                   ) : (
                     <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
                       {selectedFeaturesList.map((feat) => {
-                        const isBundled = feat.id === "admin_panel" && selectedTypeId === "dynamic";
+                        const isBundled = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
                         return (
                           <div
                             key={feat.id}
                             className="flex items-center justify-between text-[11px] text-[#A0A09E] hover:text-white group"
                           >
                             <div className="flex items-center gap-1.5 truncate pr-2">
-                              {!isBundled && (
-                                <button
-                                  type="button"
-                                  onClick={() => toggleFeature(feat.id)}
-                                  className="text-[#666666] hover:text-red-400 transition-colors p-0.5 rounded"
-                                  title="Remove feature"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              )}
+                              <button
+                                type="button"
+                                onClick={() => toggleFeature(feat.id)}
+                                className="text-[#666666] hover:text-red-400 transition-colors p-0.5 rounded"
+                                title="Remove feature"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
                               <span className="truncate">{feat.name}</span>
                             </div>
                             <span className="font-mono text-white shrink-0">
@@ -1120,21 +1252,25 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
               </div>
 
-              {/* Total Summary Box with live price pulse */}
-              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.08] space-y-2.5">
+              {/* Grand Total Live Counter */}
+              <div className="pt-4 border-t border-white/[0.10] space-y-2">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-[#A0A0A0] font-medium">Total Project Investment:</span>
-                  <span
-                    key={grandTotal}
-                    className="text-2xl sm:text-3xl font-extrabold text-white font-mono transition-all animate-pulse"
-                  >
-                    {formatINR(grandTotal)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400 pt-2 border-t border-white/[0.06]">
-                  <span>Target SLA:</span>
-                  <span className="font-bold">{estimatedDays}</span>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#888888] block">
+                      Total Investment Estimate
+                    </span>
+                    <span className="text-xs text-[#808080]">
+                      Includes design, engineering, QA & launch
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div
+                      key={grandTotal}
+                      className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight animate-pulse"
+                    >
+                      {formatINR(grandTotal)}
+                    </div>
+                  </div>
                 </div>
 
                 <p className="text-[10px] font-mono text-[#666666] pt-1 leading-tight">
@@ -1142,18 +1278,18 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </p>
               </div>
 
-              {/* CTA Action */}
+              {/* CTA Action (Task 4: Rename Lock Quote to Request This Quote with helper text) */}
               <div className="space-y-2.5">
                 <Link
                   href={quotationUrl}
                   className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl bg-[#E8E8E6] hover:bg-white text-black font-semibold text-xs tracking-wide transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  <span>Submit Requirements & Lock Quote</span>
+                  <span>Request This Quote</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
-                <p className="text-[10px] text-[#777777] text-center font-light">
-                  Pre-fills this exact specification into our technical inquiry form.
+                <p className="text-[11px] text-[#888888] text-center font-normal leading-relaxed">
+                  This sends your requirements to us. Final quote is confirmed after discussion.
                 </p>
               </div>
 
@@ -1181,8 +1317,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
         </div>
       </div>
 
-      {/* Mobile Floating Bottom Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0C0C0C]/95 backdrop-blur-md border-t border-white/[0.14] p-3.5 shadow-2xl">
+      {/* Mobile Floating Bottom Bar (Task 4) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0C0C0C]/95 backdrop-blur-md border-t border-white/[0.14] p-3 shadow-2xl space-y-1.5">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
             <span className="text-[10px] font-mono text-[#808080] block truncate">
@@ -1197,10 +1333,13 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
             href={quotationUrl}
             className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs transition-colors shrink-0 flex items-center gap-1.5 shadow-md"
           >
-            <span>Lock Quote</span>
+            <span>Request This Quote</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
+        <p className="text-[10px] text-[#777777] text-center font-light leading-tight">
+          This sends your requirements to us. Final quote is confirmed after discussion.
+        </p>
       </div>
     </div>
   );

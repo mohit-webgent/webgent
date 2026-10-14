@@ -9,7 +9,7 @@ import {
   WebsiteCategory,
   WebsiteTypeOption,
   FeatureOption,
-} from "@/data/configurator-data";
+} from "@/lib/pricing.config";
 
 export interface BackendPricingData {
   categories: WebsiteCategory[];
