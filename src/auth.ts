@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 import { UserRole, UserStatus } from "@prisma/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   secret: env.AUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {

@@ -373,9 +373,16 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
 - Target Delivery Timeline: ${estimatedDays}
 - Note: Domain & hosting direct to client at actuals. 100% full source code ownership.`;
 
+    const getBudgetBucket = (total: number): string => {
+      if (total < 25000) return "under_5k";
+      if (total <= 50000) return "5k_10k";
+      if (total <= 100000) return "10k_25k";
+      return "25k_plus";
+    };
+
     const params = new URLSearchParams({
       service: currentCategory.title,
-      budget: grandTotal > 50000 ? "25k_plus" : grandTotal > 25000 ? "10k_25k" : "5k_10k",
+      budget: getBudgetBucket(grandTotal),
       message: message,
     });
 
@@ -583,7 +590,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
           </div>
 
           {/* Full Grid of All Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
             {displayedTopFeatures.map((feat) => {
               const isSelected = selectedFeatureIds.includes(feat.id);
               const isBundledInDynamic = feat.id === "admin_panel" && selectedTypeId === "dynamic";
@@ -592,7 +599,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 <div
                   key={feat.id}
                   onClick={() => !isBundledInDynamic && toggleFeature(feat.id)}
-                  className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-200 flex flex-col justify-between group ${
+                  className={`p-3 rounded-xl border text-left cursor-pointer transition-all duration-200 flex items-center justify-between gap-2.5 group ${
                     isBundledInDynamic
                       ? "bg-emerald-950/20 border-emerald-500/30 cursor-default"
                       : isSelected
@@ -600,80 +607,48 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                       : "bg-[#101010] border-white/[0.06] hover:border-white/[0.20] hover:bg-white/[0.02] text-[#B0B0AE]"
                   }`}
                 >
-                  <div className="space-y-2">
-                    {/* Top Row: Icon + Price Tag */}
-                    <div className="flex items-center justify-between">
-                      <div
-                        className={`p-2 rounded-lg transition-colors ${
-                          isBundledInDynamic
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : isSelected
-                            ? "bg-emerald-400 text-black shadow-sm"
-                            : "bg-white/[0.05] text-[#A0A0A0] group-hover:text-white"
-                        }`}
-                      >
-                        {renderIcon(feat.icon, "w-4 h-4")}
-                      </div>
-
-                      <div className="text-right">
-                        <span
-                          className={`text-xs font-mono font-bold block ${
-                            isBundledInDynamic
-                              ? "text-emerald-400"
-                              : isSelected
-                              ? "text-emerald-400"
-                              : "text-white"
-                          }`}
-                        >
-                          {isBundledInDynamic ? "Included Free" : `+${formatINR(feat.price)}`}
-                        </span>
-                        <span className="text-[9px] font-mono text-[#666666] uppercase block">
-                          {feat.categoryTag}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Name & Description */}
-                    <div>
-                      <h3 className="font-semibold text-xs text-white leading-snug group-hover:text-emerald-300 transition-colors">
-                        {feat.name}
-                      </h3>
-                      <p className="text-[11px] text-[#707070] line-clamp-2 leading-relaxed mt-1">
-                        {feat.simpleDescription}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Bottom Action Pill (pointer-events-none so click always triggers card onClick) */}
-                  <div className="pt-3 mt-3 border-t border-white/[0.05] flex items-center justify-between pointer-events-none">
-                    <span className="text-[10px] font-mono text-[#666666]">
-                      {isBundledInDynamic ? "Dynamic CMS" : "One-Time"}
-                    </span>
-
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <div
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold transition-all flex items-center gap-1 ${
+                      className={`p-1.5 rounded-lg shrink-0 transition-colors ${
                         isBundledInDynamic
-                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                          ? "bg-emerald-500/20 text-emerald-400"
                           : isSelected
                           ? "bg-emerald-400 text-black shadow-sm"
-                          : "bg-white/[0.04] text-[#888888] group-hover:text-white group-hover:bg-white/[0.10] border border-white/[0.06]"
+                          : "bg-white/[0.05] text-[#A0A0A0] group-hover:text-white"
                       }`}
                     >
-                      {isBundledInDynamic ? (
-                        <>
-                          <Check className="w-3 h-3 stroke-[3]" />
-                          <span>Bundled</span>
-                        </>
-                      ) : isSelected ? (
-                        <>
-                          <Check className="w-3 h-3 stroke-[3]" />
-                          <span>Added</span>
-                        </>
+                      {renderIcon(feat.icon, "w-3.5 h-3.5")}
+                    </div>
+                    <span className="font-semibold text-xs text-white truncate leading-snug group-hover:text-emerald-300 transition-colors">
+                      {feat.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className={`text-xs font-mono font-bold ${
+                        isBundledInDynamic
+                          ? "text-emerald-400"
+                          : isSelected
+                          ? "text-emerald-400"
+                          : "text-white"
+                      }`}
+                    >
+                      {isBundledInDynamic ? "Included" : `+${formatINR(feat.price)}`}
+                    </span>
+                    <div
+                      className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                        isBundledInDynamic
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : isSelected
+                          ? "bg-emerald-400 text-black shadow-sm"
+                          : "bg-white/[0.04] text-[#888888] group-hover:text-white group-hover:bg-white/[0.10]"
+                      }`}
+                    >
+                      {isBundledInDynamic || isSelected ? (
+                        <Check className="w-3 h-3 stroke-[2.5]" />
                       ) : (
-                        <>
-                          <Plus className="w-3 h-3" />
-                          <span>Add</span>
-                        </>
+                        <Plus className="w-3 h-3" />
                       )}
                     </div>
                   </div>
@@ -952,7 +927,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
               </div>
 
               {/* Feature Items List */}
-              <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1 scrollbar-thin">
+              <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1 scrollbar-thin">
                 {displayedFormFeatures.map((feat) => {
                   const isChecked = selectedFeatureIds.includes(feat.id);
                   const isBundledInDynamic = feat.id === "admin_panel" && selectedTypeId === "dynamic";
@@ -961,7 +936,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                     <div
                       key={feat.id}
                       onClick={() => !isBundledInDynamic && toggleFeature(feat.id)}
-                      className={`p-3 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all duration-150 ${
+                      className={`px-3 py-2 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all duration-150 ${
                         isBundledInDynamic
                           ? "bg-emerald-950/20 border-emerald-500/30 cursor-default"
                           : isChecked
@@ -969,7 +944,7 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                           : "bg-[#121212] border-white/[0.05] hover:border-white/[0.14] text-[#B0B0AE]"
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         <div
                           className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
                             isBundledInDynamic
@@ -982,19 +957,9 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                           {(isChecked || isBundledInDynamic) && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
 
-                        <div className="truncate">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-white truncate block">
-                              {feat.name}
-                            </span>
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/[0.05] text-[#707070] shrink-0">
-                              {feat.categoryTag}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-[#707070] truncate block mt-0.5">
-                            {feat.simpleDescription}
-                          </span>
-                        </div>
+                        <span className="text-xs font-semibold text-white truncate block">
+                          {feat.name}
+                        </span>
                       </div>
 
                       <span

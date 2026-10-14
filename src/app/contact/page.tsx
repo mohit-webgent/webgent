@@ -7,11 +7,11 @@ import { ClipReveal } from "@/components/animations/clip-reveal";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Contact Us & Project Inquiries | Webgent",
+  title: "Contact Us & Project Inquiries",
   description:
     "Get in touch with Webgent for custom web engineering, mobile app development, and cloud software solutions. Discuss your project directly with our technical team.",
   alternates: {
-    canonical: "/contact",
+    canonical: `${siteConfig.url}/contact`,
   },
   openGraph: {
     title: "Contact Us & Project Inquiries | Webgent",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: "/api/og?title=Start+Your+Project+With+Webgent&badge=Direct+Consultation",
+        url: `${siteConfig.url}/api/og?title=Start+Your+Project+With+Webgent&badge=Direct+Consultation`,
         width: 1200,
         height: 630,
         alt: "Contact Webgent",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "Contact Us & Project Inquiries | Webgent",
     description:
       "Discuss your software architecture, web development, or custom product requirements with Webgent engineers.",
-    images: ["/api/og?title=Start+Your+Project+With+Webgent&badge=Direct+Consultation"],
+    images: [`${siteConfig.url}/api/og?title=Start+Your+Project+With+Webgent&badge=Direct+Consultation`],
     creator: "@webgent",
   },
 };

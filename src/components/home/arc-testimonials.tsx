@@ -212,9 +212,9 @@ export function ArcTestimonials({ initialTestimonials = [] }: ArcTestimonialsPro
 
                 {/* Info */}
                 <div className="space-y-0.5 min-w-0 transition-all duration-500">
-                  <h4 className="text-xs sm:text-[13px] font-semibold text-[#D0D0CE] group-hover:text-white transition-colors truncate">
+                  <h3 className="text-xs sm:text-[13px] font-semibold text-[#D0D0CE] group-hover:text-white transition-colors truncate">
                     {prevItem.name}
-                  </h4>
+                  </h3>
                   <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-mono text-[#888888]">
                     <span className="text-emerald-400 font-bold">★ {prevItem.rating.toFixed(1)}</span>
                     <span className="text-white/20">&bull;</span>
@@ -274,9 +274,9 @@ export function ArcTestimonials({ initialTestimonials = [] }: ArcTestimonialsPro
 
                 {/* Info */}
                 <div className="space-y-0.5 min-w-0 transition-all duration-500">
-                  <h4 className="text-xs sm:text-[13px] font-semibold text-[#D0D0CE] group-hover:text-white transition-colors truncate">
+                  <h3 className="text-xs sm:text-[13px] font-semibold text-[#D0D0CE] group-hover:text-white transition-colors truncate">
                     {nextItem.name}
-                  </h4>
+                  </h3>
                   <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-mono text-[#888888]">
                     <span className="text-emerald-400 font-bold">★ {nextItem.rating.toFixed(1)}</span>
                     <span className="text-white/20">&bull;</span>

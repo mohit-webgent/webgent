@@ -40,12 +40,13 @@ export async function generateMetadata({
 
     if (!post) {
       return {
-        title: "Article Not Found | Webgent",
+        title: "Article Not Found",
         robots: { index: false, follow: false },
       };
     }
 
-    const title = post.seoTitle || `${post.title} | Webgent Blog`;
+    const baseTitle = post.seoTitle || post.title;
+    const fullTitle = `${baseTitle} | Webgent`;
     const description = post.seoDescription || post.excerpt || post.content.substring(0, 160);
     const ogImage =
       post.ogImage ||
@@ -55,13 +56,13 @@ export async function generateMetadata({
     const tagsList = post.tags ? post.tags.split(",").map((t) => t.trim()) : [];
 
     return {
-      title,
+      title: baseTitle,
       description,
       alternates: {
-        canonical: `/blog/${post.slug}`,
+        canonical: `${siteConfig.url}/blog/${post.slug}`,
       },
       openGraph: {
-        title: post.seoTitle || post.title,
+        title: fullTitle,
         description,
         url: `${siteConfig.url}/blog/${post.slug}`,
         siteName: siteConfig.name,
@@ -80,14 +81,14 @@ export async function generateMetadata({
       },
       twitter: {
         card: "summary_large_image",
-        title: post.seoTitle || post.title,
+        title: fullTitle,
         description,
         images: [ogImage],
         creator: "@webgent",
       },
     };
   } catch {
-    return { title: "Technical Article | Webgent" };
+    return { title: "Technical Article" };
   }
 }
 

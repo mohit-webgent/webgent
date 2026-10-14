@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
-import { Shield, ArrowUpRight, ArrowUp } from "lucide-react";
+import { ArrowUpRight, ArrowUp } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 
@@ -91,16 +91,6 @@ export function Footer() {
               Designing and engineering high-performance web applications, scalable cloud backends,
               and digital platforms for ambitious modern enterprises.
             </p>
-
-            <div className="pt-1 flex items-center gap-3">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111111] border border-white/[0.08] hover:border-white/20 text-[#8A8A8A] hover:text-[#F0F0EE] transition-colors text-[11px] font-mono"
-              >
-                <Shield className="w-3.5 h-3.5 text-[#8A8A8A]" />
-                <span>Admin Console</span>
-              </Link>
-            </div>
           </div>
 
           {/* Column 2: Systems (Col span 3) */}

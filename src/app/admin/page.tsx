@@ -4,6 +4,10 @@ import { AdminDashboardView } from "@/components/admin/admin-dashboard-view";
 
 export const metadata = {
   title: "Dashboard Overview — Webgent Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminDashboardPage() {

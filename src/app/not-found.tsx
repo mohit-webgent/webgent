@@ -3,7 +3,7 @@ import { FileQuestion, Briefcase, BookOpen, Mail, Home } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "404 — Page Not Found | Webgent",
+  title: "404 — Page Not Found",
   description: "The page or resource you are looking for does not exist or has been relocated.",
   robots: {
     index: false,

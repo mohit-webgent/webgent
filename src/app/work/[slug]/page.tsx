@@ -24,25 +24,26 @@ export async function generateMetadata({
 
     if (!project || !project.published) {
       return {
-        title: "Project Not Found | Webgent",
+        title: "Project Not Found",
         robots: { index: false, follow: false },
       };
     }
 
-    const title = project.seoTitle || `${project.title} — Case Study | Webgent`;
+    const baseTitle = project.seoTitle || `${project.title} — Case Study`;
+    const fullTitle = `${baseTitle} | Webgent`;
     const description = project.seoDescription || project.description;
     const ogImage =
       project.imageUrl ||
       `${siteConfig.url}/api/og?title=${encodeURIComponent(project.title)}&badge=${encodeURIComponent(project.category || "Case Study")}&desc=${encodeURIComponent(project.description.slice(0, 140))}`;
 
     return {
-      title,
+      title: baseTitle,
       description,
       alternates: {
-        canonical: `/work/${project.slug}`,
+        canonical: `${siteConfig.url}/work/${project.slug}`,
       },
       openGraph: {
-        title: project.seoTitle || `${project.title} — Webgent Case Study`,
+        title: fullTitle,
         description,
         url: `${siteConfig.url}/work/${project.slug}`,
         siteName: siteConfig.name,
@@ -58,14 +59,14 @@ export async function generateMetadata({
       },
       twitter: {
         card: "summary_large_image",
-        title: project.seoTitle || `${project.title} — Case Study | Webgent`,
+        title: fullTitle,
         description,
         images: [ogImage],
         creator: "@webgent",
       },
     };
   } catch {
-    return { title: "Case Study | Webgent" };
+    return { title: "Case Study" };
   }
 }
 
@@ -147,7 +148,9 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
             )}
 
             <div className="flex items-center gap-3">
-              {project.demoUrl && <DemoLink projectSlug={project.slug} demoUrl={project.demoUrl} />}
+              {project.demoUrl && project.demoUrl.trim() !== "" && !project.demoUrl.includes("demo.webgent.com") ? (
+                <DemoLink projectSlug={project.slug} demoUrl={project.demoUrl.trim()} />
+              ) : null}
               {project.githubUrl && (
                 <a
                   href={project.githubUrl}

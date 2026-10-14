@@ -7,11 +7,11 @@ import { siteConfig } from "@/config/site";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Blog & Insights | Webgent",
+  title: "Blog & Insights",
   description:
     "Explore engineering insights, product design case studies, and modern web architecture articles.",
   alternates: {
-    canonical: "/blog",
+    canonical: `${siteConfig.url}/blog`,
   },
   openGraph: {
     title: "Blog & Insights | Webgent",
@@ -19,7 +19,23 @@ export const metadata: Metadata = {
       "Explore engineering insights, product design case studies, and modern web architecture articles.",
     url: `${siteConfig.url}/blog`,
     siteName: siteConfig.name,
+    images: [
+      {
+        url: `${siteConfig.url}/api/og?title=Blog+%26+Insights&badge=Engineering`,
+        width: 1200,
+        height: 630,
+        alt: "Blog & Insights | Webgent",
+      },
+    ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog & Insights | Webgent",
+    description:
+      "Explore engineering insights, product design case studies, and modern web architecture articles.",
+    images: [`${siteConfig.url}/api/og?title=Blog+%26+Insights&badge=Engineering`],
+    creator: "@webgent",
   },
 };
 

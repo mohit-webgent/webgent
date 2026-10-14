@@ -32,7 +32,7 @@ const CURATED_SYSTEMS: ProjectItem[] = [
       "Distributed multi-tenant analytics core with row-level tenant isolation, real-time event streaming, and automated global failover.",
     imageUrl:
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
-    demoUrl: "https://demo.webgent.com/nextgen",
+    demoUrl: null,
   },
   {
     id: "system-2",
@@ -43,7 +43,7 @@ const CURATED_SYSTEMS: ProjectItem[] = [
       "Ultra-low latency institutional trading interface with WebSockets, dedicated Web Workers, and hardware-accelerated charting.",
     imageUrl:
       "https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=800&auto=format&fit=crop",
-    demoUrl: "https://demo.webgent.com/fintech",
+    demoUrl: null,
   },
   {
     id: "system-3",
@@ -54,7 +54,7 @@ const CURATED_SYSTEMS: ProjectItem[] = [
       "HIPAA and SOC2 compliant telemedicine architecture with end-to-end KMS encrypted medical records, biometric auth, and WebRTC streaming.",
     imageUrl:
       "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=800&auto=format&fit=crop",
-    demoUrl: "https://demo.webgent.com/healthcare",
+    demoUrl: null,
   },
   {
     id: "system-4",
@@ -65,7 +65,7 @@ const CURATED_SYSTEMS: ProjectItem[] = [
       "Luxury multi-region commerce platform featuring Anycast edge caching, automated multi-currency pricing, and real-time inventory locking.",
     imageUrl:
       "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=800&auto=format&fit=crop",
-    demoUrl: "https://demo.webgent.com/commerce",
+    demoUrl: null,
   },
 ];
 
@@ -79,13 +79,19 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
     projects && projects.length > 0
       ? projects.map((p, idx) => {
           const fallback = CURATED_SYSTEMS[idx % CURATED_SYSTEMS.length];
+          const rawDemo = p.demoUrl || fallback.demoUrl;
+          const isRealDemo =
+            typeof rawDemo === "string" &&
+            rawDemo.trim() !== "" &&
+            !rawDemo.includes("demo.webgent.com");
+
           return {
             id: p.id || fallback.id,
             title: p.title || fallback.title,
             slug: p.slug || fallback.slug,
             description: p.description || fallback.description,
             category: p.category || fallback.category,
-            demoUrl: p.demoUrl || fallback.demoUrl,
+            demoUrl: isRealDemo ? rawDemo.trim() : null,
             imageUrl: p.imageUrl || fallback.imageUrl,
           };
         })
@@ -279,7 +285,7 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
                       <ArrowRight className="w-2.5 h-2.5 transition-transform duration-200 group-hover/link:translate-x-1" />
                     </Link>
 
-                    {project.demoUrl && (
+                    {project.demoUrl && project.demoUrl.trim() !== "" && !project.demoUrl.includes("demo.webgent.com") ? (
                       <a
                         href={project.demoUrl}
                         target="_blank"
@@ -289,7 +295,7 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
                       >
                         <ExternalLink className="w-2.5 h-2.5" />
                       </a>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </Card3DTilt>

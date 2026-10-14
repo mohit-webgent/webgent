@@ -52,7 +52,7 @@ async function main() {
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
       ]),
-      demoUrl: "https://demo.webgent.com/nextgen",
+      demoUrl: undefined,
       githubUrl: "https://github.com/webgent/nextgen-saas",
       technologies: "Next.js, TypeScript, PostgreSQL, Prisma, TailwindCSS, Docker",
       featured: true,
@@ -76,7 +76,7 @@ async function main() {
       screenshots: JSON.stringify([
         "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80",
       ]),
-      demoUrl: "https://demo.webgent.com/fintech",
+      demoUrl: undefined,
       githubUrl: "https://github.com/webgent/fintech-portal",
       technologies: "React, TypeScript, WebSockets, Node.js, Redis",
       featured: true,
@@ -100,7 +100,7 @@ async function main() {
       screenshots: JSON.stringify([
         "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
       ]),
-      demoUrl: "https://demo.webgent.com/healthcare",
+      demoUrl: undefined,
       githubUrl: undefined,
       technologies: "Next.js, TailwindCSS, WebRTC, PostgreSQL, AWS KMS",
       featured: true,

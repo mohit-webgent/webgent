@@ -189,6 +189,7 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
       <Link
         ref={buttonRef}
         href="/contact"
+        aria-label={textLabel}
         onClick={handleClick}
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
@@ -208,8 +209,11 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
           className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-white/90 z-[2]"
         />
 
-        {/* Kinetic Staggered Characters */}
-        <span className="relative z-[3] font-mono text-xs sm:text-[13px] font-semibold tracking-[0.14em] uppercase text-[#09090B] inline-flex items-center overflow-hidden">
+        {/* Kinetic Staggered Characters (Decorative animated letters hidden from screen readers) */}
+        <span
+          aria-hidden="true"
+          className="relative z-[3] font-mono text-xs sm:text-[13px] font-semibold tracking-[0.14em] uppercase text-[#09090B] inline-flex items-center overflow-hidden"
+        >
           {textLabel.split("").map((char, index) => (
             <span
               key={index}
@@ -231,6 +235,7 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
         {/* Arrow Capsule */}
         <span
           ref={arrowRef}
+          aria-hidden="true"
           className="relative z-[3] inline-flex items-center justify-center w-5 h-5 text-[#09090B] will-change-transform"
         >
           <ArrowRight className="w-4 h-4 stroke-[2.2]" />

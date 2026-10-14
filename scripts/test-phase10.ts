@@ -45,7 +45,7 @@ async function runTests() {
   console.log("--- 1. Analytics Context & Header Detection ---");
 
   // 1.1 Cloudflare Country Header
-  const reqCf = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const reqCf = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     headers: {
       "cf-ipcountry": "US",
       "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15",
@@ -65,7 +65,7 @@ async function runTests() {
   );
 
   // 1.2 Vercel Header & Tablet UA
-  const reqVercel = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const reqVercel = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     headers: {
       "x-vercel-ip-country": "IN",
       "user-agent": "Mozilla/5.0 (iPad; CPU OS 16_5 like Mac OS X) AppleWebKit/605.1.15",
@@ -76,7 +76,7 @@ async function runTests() {
   assert(contextVercel.device === "tablet", "Detects tablet device category from iPad User-Agent");
 
   // 1.3 Desktop UA & CloudFront Country
-  const reqDesktop = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const reqDesktop = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     headers: {
       "cloudfront-viewer-country": "GB",
       "user-agent":
@@ -100,7 +100,7 @@ async function runTests() {
   console.log("\n--- 2. Public POST /api/analytics/pageview ---");
 
   // 2.1 Valid pageview with session cookie generation
-  const pageViewReq1 = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const pageViewReq1 = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -144,7 +144,7 @@ async function runTests() {
   );
 
   // 2.2 Reuses client session ID
-  const pageViewReq2 = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const pageViewReq2 = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -163,7 +163,7 @@ async function runTests() {
   assert(data2.data.sessionId === testSessionId, "Maintains existing session ID across pageviews");
 
   // 2.3 Invalid payload validation
-  const invalidPvReq = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const invalidPvReq = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: "" }),
@@ -171,7 +171,7 @@ async function runTests() {
   const resInvalidPv = await handlePageView(invalidPvReq);
   assert(resInvalidPv.status === 400, "Rejects empty path with 400 Bad Request");
 
-  const nonJsonPvReq = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+  const nonJsonPvReq = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: "not json",
@@ -210,7 +210,7 @@ async function runTests() {
   ];
 
   for (const item of testEvents) {
-    const eventReq = new NextRequest("http://localhost:3000/api/analytics/event", {
+    const eventReq = new NextRequest("https://webgent.vercel.app/api/analytics/event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -234,7 +234,7 @@ async function runTests() {
   }
 
   // 3.2 Metadata PII Sanitization
-  const piiEventReq = new NextRequest("http://localhost:3000/api/analytics/event", {
+  const piiEventReq = new NextRequest("https://webgent.vercel.app/api/analytics/event", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -263,7 +263,7 @@ async function runTests() {
   assert(parsedMeta.buttonId === "quote-now", "Preserves safe metadata properties");
 
   // 3.3 Invalid event name validation
-  const invalidNameReq = new NextRequest("http://localhost:3000/api/analytics/event", {
+  const invalidNameReq = new NextRequest("https://webgent.vercel.app/api/analytics/event", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: "lowercase_invalid_event" }),
@@ -284,7 +284,7 @@ async function runTests() {
   let rateLimited = false;
 
   for (let i = 0; i < 130; i++) {
-    const floodReq = new NextRequest("http://localhost:3000/api/analytics/pageview", {
+    const floodReq = new NextRequest("https://webgent.vercel.app/api/analytics/pageview", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -307,7 +307,7 @@ async function runTests() {
   console.log("\n--- 5. Admin Analytics & Metric Computations ---");
 
   // 5.1 Unauthorized access check (no auth header/session)
-  const unauthReq = new NextRequest("http://localhost:3000/api/admin/analytics?period=30d");
+  const unauthReq = new NextRequest("https://webgent.vercel.app/api/admin/analytics?period=30d");
   const resUnauth = await handleAdminAnalytics(unauthReq);
   assert(resUnauth.status === 401, "Unauthenticated request rejected with 401 Unauthorized");
 

@@ -3,7 +3,7 @@ export const siteConfig = {
   tagline: "Next-Gen Web Solutions & Engineering",
   description:
     "Webgent builds high-performance web applications, scalable cloud software, and digital platforms for ambitious modern brands.",
-  url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  url: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://webgent.vercel.app",
   mainNav: [
     { title: "Home", href: "/" },
     { title: "Work", href: "/work" },

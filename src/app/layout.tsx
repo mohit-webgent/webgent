@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   metadataBase: new URL(siteConfig.url),
   alternates: {
-    canonical: "/",
+    canonical: `${siteConfig.url}/`,
   },
   keywords: [
     "Web Engineering",
@@ -62,13 +62,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: siteConfig.url,
+    url: `${siteConfig.url}/`,
     siteName: siteConfig.name,
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
     description: siteConfig.description,
     images: [
       {
-        url: "/api/og?title=Webgent&badge=Elite+Web+Engineering",
+        url: `${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`,
         width: 1200,
         height: 630,
         alt: "Webgent — Elite Web Solutions & Engineering Architecture",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
     description: siteConfig.description,
-    images: ["/api/og?title=Webgent&badge=Elite+Web+Engineering"],
+    images: [`${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`],
     creator: "@webgent",
     site: "@webgent",
   },

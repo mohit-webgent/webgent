@@ -14,20 +14,22 @@ import { siteConfig } from "@/config/site";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Webgent — Elite Web Solutions & Engineering Architecture",
+  title: {
+    absolute: "Webgent — Elite Web Solutions & Engineering Architecture",
+  },
   description:
     "Webgent designs and engineers high-performance web applications, scalable cloud backends, and digital platforms for ambitious modern brands.",
   alternates: {
-    canonical: "/",
+    canonical: `${siteConfig.url}/`,
   },
   openGraph: {
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
     description: "High-performance web applications, scalable cloud backends, and digital systems.",
-    url: siteConfig.url,
+    url: `${siteConfig.url}/`,
     siteName: siteConfig.name,
     images: [
       {
-        url: "/api/og?title=Webgent&badge=Elite+Web+Engineering",
+        url: `${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`,
         width: 1200,
         height: 630,
         alt: "Webgent — Next-Gen Web Solutions",
@@ -39,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Webgent — Elite Web Solutions & Engineering Architecture",
     description: "High-performance web applications, scalable cloud backends, and digital systems.",
-    images: ["/api/og?title=Webgent&badge=Elite+Web+Engineering"],
+    images: [`${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`],
     creator: "@webgent",
     site: "@webgent",
   },

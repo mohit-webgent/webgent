@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, Home } from "lucide-react";
 import type { Metadata } from "next";
+import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Inquiry Received | Webgent",
+  title: "Inquiry Received",
   description:
     "Thank you for reaching out to Webgent. Our engineering team is reviewing your project details.",
   robots: {
@@ -11,7 +12,21 @@ export const metadata: Metadata = {
     follow: false,
   },
   alternates: {
-    canonical: "/contact/thank-you",
+    canonical: `${siteConfig.url}/contact/thank-you`,
+  },
+  openGraph: {
+    title: "Inquiry Received | Webgent",
+    description:
+      "Thank you for reaching out to Webgent. Our engineering team is reviewing your project details.",
+    url: `${siteConfig.url}/contact/thank-you`,
+    siteName: siteConfig.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inquiry Received | Webgent",
+    description:
+      "Thank you for reaching out to Webgent. Our engineering team is reviewing your project details.",
   },
 };
 

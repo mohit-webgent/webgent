@@ -167,16 +167,19 @@ export function HeroSection() {
           {/* Headline with line-based reveal */}
           <h1
             ref={headlineRef}
+            aria-label="YOU IMAGINE WE ENGINEER REALITY."
             className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
           >
-            <span className="block overflow-hidden">
-              <span className="hero-headline-line block">YOU IMAGINE</span>
-            </span>
-            <span className="block overflow-hidden">
-              <span className="hero-headline-line block text-[#A8A8A8]">WE ENGINEER</span>
-            </span>
-            <span className="block overflow-hidden">
-              <span className="hero-headline-line block">REALITY.</span>
+            <span aria-hidden="true">
+              <span className="block overflow-hidden">
+                <span className="hero-headline-line block">YOU IMAGINE</span>
+              </span>
+              <span className="block overflow-hidden">
+                <span className="hero-headline-line block text-[#A8A8A8]">WE ENGINEER</span>
+              </span>
+              <span className="block overflow-hidden">
+                <span className="hero-headline-line block">REALITY.</span>
+              </span>
             </span>
           </h1>
 

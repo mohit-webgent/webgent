@@ -6,11 +6,11 @@ import { siteConfig } from "@/config/site";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Work | Webgent",
+  title: "Work",
   description:
     "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and digital experiences.",
   alternates: {
-    canonical: "/work",
+    canonical: `${siteConfig.url}/work`,
   },
   openGraph: {
     title: "Work | Webgent",
@@ -18,6 +18,14 @@ export const metadata: Metadata = {
       "A curated showcase of custom software platforms, cloud applications, and high-conversion web experiences.",
     url: `${siteConfig.url}/work`,
     siteName: siteConfig.name,
+    images: [
+      {
+        url: `${siteConfig.url}/api/og?title=Work&badge=Portfolio`,
+        width: 1200,
+        height: 630,
+        alt: "Work | Webgent",
+      },
+    ],
     type: "website",
   },
   twitter: {
@@ -25,6 +33,8 @@ export const metadata: Metadata = {
     title: "Work | Webgent",
     description:
       "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and digital experiences.",
+    images: [`${siteConfig.url}/api/og?title=Work&badge=Portfolio`],
+    creator: "@webgent",
   },
 };
 

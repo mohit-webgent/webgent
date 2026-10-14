@@ -34,10 +34,11 @@ export const pageViewSchema = z.object({
     .transform((val) => {
       if (!val) return null;
       try {
-        const parsed = new URL(val, "http://localhost");
+        const dummyBase = "https://webgent.vercel.app";
+        const parsed = new URL(val, dummyBase);
         const sensitiveKeys = ["token", "key", "secret", "password", "email", "auth"];
         sensitiveKeys.forEach((k) => parsed.searchParams.delete(k));
-        return parsed.origin === "http://localhost" ? parsed.pathname : parsed.toString();
+        return parsed.origin === dummyBase ? parsed.pathname : parsed.toString();
       } catch {
         return val.substring(0, 500);
       }
