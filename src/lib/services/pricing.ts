@@ -41,7 +41,7 @@ export async function getPricingData(): Promise<BackendPricingData> {
   let types = WEBSITE_TYPES;
   let features = POPULAR_FEATURES;
   let matrixPackages = MASTER_PACKAGES;
-  let matrixCategories = MASTER_CATEGORIES;
+  const matrixCategories = MASTER_CATEGORIES;
   let matrixFeatures = MASTER_FEATURES;
 
   try {
