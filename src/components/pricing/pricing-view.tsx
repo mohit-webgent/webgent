@@ -37,8 +37,9 @@ import {
   Clock,
   X,
   Database,
-  ArrowDownCircle,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { BackendPricingData } from "@/lib/services/pricing";
 import {
@@ -51,6 +52,10 @@ import {
   featureRequiresDynamic,
   calculatePricing,
   FeatureOption,
+  TRUST_BADGES,
+  LAUNCH_PRICING_CONFIG,
+  PRICING_TERMS,
+  PRICING_FAQS,
 } from "@/lib/pricing.config";
 
 export function formatINR(amount: number): string {
@@ -150,7 +155,7 @@ export function PricingView({ initialData }: PricingViewProps) {
     }
   );
 
-  // Client-side background sync with /api/pricing to guarantee 100% backend dependency
+  // Client-side background sync with /api/pricing to guarantee live sync
   useEffect(() => {
     let isMounted = true;
     fetch("/api/pricing")
@@ -174,7 +179,7 @@ export function PricingView({ initialData }: PricingViewProps) {
   const settings = backendData.settings;
 
   // ---------------------------------------------------------------------------
-  // Initial State from URL params or defaults (Task 5: Shareable State)
+  // Initial State from URL params or defaults
   // ---------------------------------------------------------------------------
   const initialCategory = useMemo(() => {
     const cat = searchParams.get("cat");
@@ -212,7 +217,6 @@ export function PricingView({ initialData }: PricingViewProps) {
   }, [searchParams, initialCategory, categories, allFeatures]);
 
   const initialType = useMemo(() => {
-    // If any restored feature requires dynamic, initialize to dynamic
     if (initialFeatures.some(featureRequiresDynamic)) {
       return "dynamic";
     }
@@ -228,12 +232,15 @@ export function PricingView({ initialData }: PricingViewProps) {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>(initialFeatures);
   const [dependencyNotice, setDependencyNotice] = useState<DependencyNotice | null>(null);
 
-  const [topCategoryFilter, setTopCategoryFilter] = useState<string>("all");
-  const [formSearchQuery, setFormSearchQuery] = useState<string>("");
+  // Feature Catalog Filters & Search
+  const [featureCategoryFilter, setFeatureCategoryFilter] = useState<string>("all");
+  const [featureSearchQuery, setFeatureSearchQuery] = useState<string>("");
+  const [expandedFeatureIds, setExpandedFeatureIds] = useState<Record<string, boolean>>({});
+
   const [customNotes, setCustomNotes] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
-  // Synchronize state changes to URL query string without causing full reload (Task 5)
+  // Synchronize state changes to URL query string
   useEffect(() => {
     const params = new URLSearchParams();
     if (selectedCategoryId) params.set("cat", selectedCategoryId);
@@ -254,7 +261,7 @@ export function PricingView({ initialData }: PricingViewProps) {
     }
   }, [selectedCategoryId, selectedTypeId, pageCount, deliverySpeed, selectedFeatureIds]);
 
-  // Pure Calculation invocation from centralized config (Task 1)
+  // Pure Calculation invocation from centralized config
   const calculation = useMemo(() => {
     return calculatePricing(
       {
@@ -300,7 +307,7 @@ export function PricingView({ initialData }: PricingViewProps) {
     estimatedDays,
   } = calculation;
 
-  // Reactive toggle feature with Dependency Auto-Switching (Task 2)
+  // Toggle Feature Selection
   const toggleFeature = useCallback(
     (rawFeatId: string) => {
       const featId = normalizeFeatureId(rawFeatId);
@@ -342,6 +349,14 @@ export function PricingView({ initialData }: PricingViewProps) {
     [selectedFeatureIds, selectedTypeId, allFeatures, types, dependencyNotice]
   );
 
+  // Toggle Description Expansion
+  const toggleFeatureExpansion = (featId: string) => {
+    setExpandedFeatureIds((prev) => ({
+      ...prev,
+      [featId]: !prev[featId],
+    }));
+  };
+
   // Handle Category Change
   const handleCategoryChange = (catId: string) => {
     setSelectedCategoryId(catId);
@@ -351,23 +366,20 @@ export function PricingView({ initialData }: PricingViewProps) {
       const normalizedDefaults = cat.defaultFeatures.map(normalizeFeatureId);
       setSelectedFeatureIds(normalizedDefaults);
 
-      // If category defaults contain dynamic features, switch to dynamic
       if (normalizedDefaults.some(featureRequiresDynamic)) {
         setSelectedTypeId("dynamic");
       }
     }
   };
 
-  // Handle Architecture Change with Blocking Logic (Task 2)
+  // Handle Architecture Change with Blocking Logic
   const handleTypeChange = (typeId: "static" | "dynamic") => {
     if (typeId === "static") {
-      // Check for conflicting features requiring Dynamic
       const conflicting = selectedFeatureIds
         .map((id) => allFeatures.find((f) => f.id === id || f.id === normalizeFeatureId(id)))
         .filter((f): f is FeatureOption => Boolean(f && featureRequiresDynamic(f.id)));
 
       if (conflicting.length > 0) {
-        // Block the switch and explain which features need Dynamic
         const names = conflicting.map((f) => f.name).join(", ");
         setDependencyNotice({
           type: "blocked-static",
@@ -378,17 +390,14 @@ export function PricingView({ initialData }: PricingViewProps) {
       }
     }
 
-    // Switch allowed
     setSelectedTypeId(typeId);
     setDependencyNotice(null);
   };
 
-  // Change Pages
   const handlePagesChange = (newCount: number) => {
     setPageCount(Math.max(1, Math.min(30, newCount)));
   };
 
-  // Reset all to standard defaults
   const handleReset = () => {
     setSelectedCategoryId("business");
     setSelectedTypeId("static");
@@ -399,7 +408,6 @@ export function PricingView({ initialData }: PricingViewProps) {
     setSelectedFeatureIds(["contact_form", "whatsapp_chat", "seo_basic"]);
   };
 
-  // Select recommended features for current category
   const handleSelectRecommended = () => {
     if (currentCategory && currentCategory.defaultFeatures) {
       const normalizedDefaults = currentCategory.defaultFeatures.map(normalizeFeatureId);
@@ -410,13 +418,11 @@ export function PricingView({ initialData }: PricingViewProps) {
     }
   };
 
-  // Clear all optional features
   const handleClearFeatures = () => {
     setSelectedFeatureIds([]);
     setDependencyNotice(null);
   };
 
-  // Share estimate URL (Task 5)
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
@@ -530,53 +536,54 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
     }
   };
 
-  // Filtered top features
-  const displayedTopFeatures = useMemo(() => {
-    const activeGroup = FILTER_GROUPS.find((g) => g.id === topCategoryFilter);
-    if (!activeGroup || activeGroup.id === "all") return allFeatures;
-    return allFeatures.filter(activeGroup.match);
-  }, [allFeatures, topCategoryFilter]);
-
-  // Filtered form features for the checklist
-  const displayedFormFeatures = useMemo(() => {
-    if (!formSearchQuery.trim()) return allFeatures;
-    const q = formSearchQuery.toLowerCase();
-    return allFeatures.filter(
-      (f) =>
-        f.name.toLowerCase().includes(q) ||
-        f.simpleDescription.toLowerCase().includes(q) ||
-        f.categoryTag.toLowerCase().includes(q)
-    );
-  }, [allFeatures, formSearchQuery]);
+  // Filtered features for the single catalog
+  const displayedFeatures = useMemo(() => {
+    let list = allFeatures;
+    const activeGroup = FILTER_GROUPS.find((g) => g.id === featureCategoryFilter);
+    if (activeGroup && activeGroup.id !== "all") {
+      list = list.filter(activeGroup.match);
+    }
+    if (featureSearchQuery.trim()) {
+      const q = featureSearchQuery.toLowerCase();
+      list = list.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          f.simpleDescription.toLowerCase().includes(q) ||
+          f.categoryTag.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [allFeatures, featureCategoryFilter, featureSearchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-8 pb-24 sm:pt-12 sm:pb-32 px-4 sm:px-6 lg:px-10 font-sans selection:bg-white selection:text-black">
-      <div className="max-w-[1400px] mx-auto space-y-10 relative z-10">
+    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-8 pb-36 lg:pb-20 px-3 sm:px-6 lg:px-10 font-sans overflow-x-hidden selection:bg-white selection:text-black">
+      <div className="max-w-[1440px] mx-auto space-y-8 relative z-10">
         {/* ========================================================================= */}
-        {/* Page Top Header */}
+        {/* Page Header */}
         {/* ========================================================================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
+              <span className="text-[11px] font-mono tracking-widest text-emerald-400 font-semibold uppercase flex items-center gap-1.5">
                 <Database className="w-3 h-3" />
-                Backend-Connected Studio Pricing
+                Backend-Connected Studio Rates
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-light text-[#F5F5F3] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-[#F5F5F3] tracking-tight">
               Website Cost & <span className="font-semibold text-white">Requirements Estimator</span>
             </h1>
-            <p className="text-xs text-[#888888] font-light max-w-2xl">
-              Transparent 2026 rates. Browse features at the top or configure your requirements in the form below. Total price recalculates live with every selection.
+            <p className="text-xs sm:text-sm text-[#A3A3A3] font-light max-w-2xl leading-relaxed">
+              Transparent, fixed studio pricing. Configure your specifications and select modular features. The project cost recalculates live in the sticky breakdown panel.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="flex items-center gap-2 text-xs font-mono shrink-0">
             <button
               type="button"
               onClick={handleReset}
-              className="px-3 py-1.5 rounded-lg text-[#888888] hover:text-white bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] transition-colors flex items-center gap-1.5"
+              className="min-h-[44px] px-4 py-2 rounded-xl text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]"
+              aria-label="Reset estimator to defaults"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>
@@ -584,560 +591,587 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
             <button
               type="button"
               onClick={handleCopyLink}
-              className="px-3 py-1.5 rounded-lg text-[#888888] hover:text-white bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] transition-colors flex items-center gap-1.5"
+              className="min-h-[44px] px-4 py-2 rounded-xl text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]"
+              aria-label="Copy shareable link for this configuration"
             >
               {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
               <span>{copiedLink ? "Link Copied" : "Share"}</span>
             </button>
           </div>
-        </div>
+        </header>
 
         {/* ========================================================================= */}
-        {/* 1. TOP SECTION: Complete Interactive Feature Catalog & Rates */}
+        {/* Main Two-Column Layout: Form & Features (Left) + Sticky Cost Panel (Right) */}
         {/* ========================================================================= */}
-        <div id="features-catalog" className="bg-[#0B0B0B] border border-white/[0.09] rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl">
-          {/* Header Row with Live Stats */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/[0.06] pb-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
-                <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
-                  All Feature Rates & Add-on Catalog
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* ===================================================================== */}
+          {/* LEFT COLUMN: Configurator & Modular Feature Catalog (7 Cols)         */}
+          {/* ===================================================================== */}
+          <div className="lg:col-span-7 xl:col-span-7 space-y-8">
+            {/* ----------------------------------------------------------------- */}
+            {/* Box 1: Core Project Specifications Form                           */}
+            {/* (Industry, Architecture, Pages, Delivery Speed)                    */}
+            {/* ----------------------------------------------------------------- */}
+            <div className="bg-[#0C0C0C] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-6 shadow-xl">
+              <div className="space-y-1 border-b border-white/[0.08] pb-4">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-emerald-400 font-semibold block">
+                  STEP 1 TO 4
+                </span>
+                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                  Core Project Specifications
                 </h2>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-[#A0A0A0]">
-                  {allFeatures.length} Modular Features
-                </span>
-              </div>
-              <p className="text-xs text-[#808080]">
-                Click any feature card or button to immediately add or remove it from your project estimate.
-              </p>
-            </div>
-
-            {/* Live Top Summary Ribbon */}
-            <div className="flex items-center gap-3 bg-[#121212] border border-white/[0.08] px-3.5 py-2 rounded-xl text-xs font-mono">
-              <div className="space-y-0.5">
-                <span className="text-[10px] text-[#707070] block uppercase tracking-wider">
-                  Features Added
-                </span>
-                <span className="text-white font-bold">
-                  {selectedFeaturesList.length} Selected (+{formatINR(featuresCost)})
-                </span>
-              </div>
-              <div className="h-6 w-px bg-white/[0.1]" />
-              <div className="space-y-0.5">
-                <span className="text-[10px] text-[#707070] block uppercase tracking-wider">
-                  Live Project Total
-                </span>
-                <span
-                  key={grandTotal}
-                  className="text-emerald-400 font-extrabold text-sm sm:text-base animate-pulse"
-                >
-                  {formatINR(grandTotal)}
-                </span>
-              </div>
-              <a
-                href="#requirements-form"
-                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] text-white text-[11px] font-medium transition-colors ml-1"
-              >
-                <span>Edit Form</span>
-                <ArrowDownCircle className="w-3.5 h-3.5 text-emerald-400" />
-              </a>
-            </div>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-mono">
-            {FILTER_GROUPS.map((group) => {
-              const isActive = topCategoryFilter === group.id;
-              return (
-                <button
-                  key={group.id}
-                  type="button"
-                  onClick={() => setTopCategoryFilter(group.id)}
-                  className={`px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap flex items-center gap-1.5 ${
-                    isActive
-                      ? "bg-white text-black font-semibold shadow-md"
-                      : "bg-[#141414] text-[#808080] hover:text-white border border-white/[0.06] hover:bg-white/[0.04]"
-                  }`}
-                >
-                  <span>{group.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Full Grid of All Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-            {displayedTopFeatures.map((feat) => {
-              const isSelected =
-                selectedFeatureIds.includes(feat.id) ||
-                selectedFeatureIds.includes(normalizeFeatureId(feat.id));
-              const isBundledInDynamic = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
-
-              return (
-                <div
-                  key={feat.id}
-                  onClick={() => toggleFeature(feat.id)}
-                  className={`p-3 rounded-xl border text-left cursor-pointer transition-all duration-200 flex items-center justify-between gap-2.5 group ${
-                    isBundledInDynamic && isSelected
-                      ? "bg-emerald-950/20 border-emerald-500/30 ring-1 ring-emerald-500/20"
-                      : isSelected
-                      ? "bg-white/[0.08] border-emerald-400 text-white shadow-lg ring-1 ring-emerald-400/40"
-                      : "bg-[#101010] border-white/[0.06] hover:border-white/[0.20] hover:bg-white/[0.02] text-[#B0B0AE]"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={`p-1.5 rounded-lg shrink-0 transition-colors ${
-                        isBundledInDynamic && isSelected
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : isSelected
-                          ? "bg-emerald-400 text-black shadow-sm"
-                          : "bg-white/[0.05] text-[#A0A0A0] group-hover:text-white"
-                      }`}
-                    >
-                      {renderIcon(feat.icon, "w-3.5 h-3.5")}
-                    </div>
-                    <span className="font-semibold text-xs text-white truncate leading-snug group-hover:text-emerald-300 transition-colors">
-                      {feat.name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span
-                      className={`text-xs font-mono font-bold ${
-                        isBundledInDynamic && isSelected
-                          ? "text-emerald-400"
-                          : isSelected
-                          ? "text-emerald-400"
-                          : "text-white"
-                      }`}
-                    >
-                      {isBundledInDynamic && isSelected ? "Included" : `+${formatINR(feat.price)}`}
-                    </span>
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
-                        isBundledInDynamic && isSelected
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : isSelected
-                          ? "bg-emerald-400 text-black shadow-sm"
-                          : "bg-white/[0.04] text-[#888888] group-hover:text-white group-hover:bg-white/[0.10]"
-                      }`}
-                    >
-                      {isSelected ? (
-                        <Check className="w-3 h-3 stroke-[2.5]" />
-                      ) : (
-                        <Plus className="w-3 h-3" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 2. BOTTOM 50/50 SECTION: Step-by-Step Form (Left) & Sticky Quote (Right) */}
-        {/* ========================================================================= */}
-        <div id="requirements-form" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* ===================================================================== */}
-          {/* LEFT 50% (Col Span 6): Step-by-step Interactive Specification Form */}
-          {/* ===================================================================== */}
-          <div className="lg:col-span-6 bg-[#0B0B0B] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-7 shadow-2xl">
-            <div className="space-y-1 border-b border-white/[0.08] pb-4">
-              <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-semibold block">
-                STEP-BY-STEP CONFIGURATOR
-              </span>
-              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                Project Requirements Specification
-              </h2>
-              <p className="text-xs text-[#808080] font-light">
-                Fill or toggle your project specifications. Watch the itemized ledger on the right update instantly.
-              </p>
-            </div>
-
-            {/* Field 1: Website Category / Industry */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                  1. Website Industry / Category
-                </label>
-                <span className="text-[11px] font-mono text-emerald-400 font-bold">
-                  Base: {formatINR(currentCategory.startingPrice)}
-                </span>
+                <p className="text-xs text-[#A3A3A3] font-light">
+                  Choose your industry baseline, technical architecture, required page count, and delivery timeline.
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {categories.map((cat) => {
-                  const isSelected = selectedCategoryId === cat.id;
-
-                  return (
-                    <div
-                      key={cat.id}
-                      onClick={() => handleCategoryChange(cat.id)}
-                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                        isSelected
-                          ? "bg-white/[0.09] border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/30"
-                          : "bg-[#121212] border-white/[0.06] hover:border-white/[0.16] hover:bg-white/[0.02] text-[#A0A09E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div
-                          className={`p-1.5 rounded ${
-                            isSelected ? "bg-emerald-400 text-black" : "bg-white/[0.05] text-[#888888]"
-                          }`}
-                        >
-                          {renderIcon(cat.icon, "w-3.5 h-3.5")}
-                        </div>
-                        <span className="text-xs font-mono font-bold text-white">
-                          {formatINR(cat.startingPrice)}
-                        </span>
-                      </div>
-                      <h4 className="text-xs font-semibold text-white truncate">{cat.title}</h4>
-                      <p className="text-[10px] text-[#707070] truncate mt-0.5">
-                        {cat.deliveryDays} • {cat.recommendedPages} Pages
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Field 2: Static vs Dynamic Architecture (Task 2 & 3) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                  2. Website Architecture & CMS
-                </label>
-                <span className="text-[11px] font-mono text-[#808080]">
-                  {selectedTypeId === "dynamic" ? "+₹8,000 (Database & Backend)" : "Included (₹0)"}
-                </span>
-              </div>
-
-              {/* Inline Dependency Notice (Auto-switched or Blocked) */}
-              {dependencyNotice && (
-                <div
-                  className={`p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-3 ${
-                    dependencyNotice.type === "auto-switched"
-                      ? "bg-blue-950/40 border-blue-500/40 text-blue-200"
-                      : "bg-amber-950/40 border-amber-500/40 text-amber-200"
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5">
-                    {dependencyNotice.type === "auto-switched" ? (
-                      <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    )}
-                    <div className="space-y-1">
-                      <div className="font-semibold text-white flex items-center gap-2">
-                        <span>{dependencyNotice.title}</span>
-                        {dependencyNotice.costDiff ? (
-                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                            +{formatINR(dependencyNotice.costDiff)}
-                          </span>
-                        ) : null}
-                      </div>
-                      <p className="text-[11px] leading-relaxed text-[#D0D0CE]">
-                        {dependencyNotice.message}
-                      </p>
-                      {dependencyNotice.type === "blocked-static" && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedFeatureIds((prev) =>
-                              prev.filter((id) => !featureRequiresDynamic(id))
-                            );
-                            setSelectedTypeId("static");
-                            setDependencyNotice(null);
-                          }}
-                          className="mt-1 text-[11px] font-medium text-amber-400 underline hover:text-white transition-colors block text-left"
-                        >
-                          Deselect dynamic features and switch to Static
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setDependencyNotice(null)}
-                    className="p-1 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors shrink-0"
-                    aria-label="Dismiss notice"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {types.map((type) => {
-                  const isSelected = selectedTypeId === type.id;
-                  return (
-                    <div
-                      key={type.id}
-                      onClick={() => handleTypeChange(type.id)}
-                      className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all ${
-                        isSelected
-                          ? "bg-white/[0.09] border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/30"
-                          : "bg-[#121212] border-white/[0.06] hover:border-white/[0.16] hover:bg-white/[0.02] text-[#A0A09E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white">{type.title}</span>
-                        <span
-                          className={`text-[11px] font-mono font-bold ${
-                            type.additionalCost === 0 ? "text-emerald-400" : "text-white"
-                          }`}
-                        >
-                          {type.additionalCost === 0 ? "Included (₹0)" : `+${formatINR(type.additionalCost)}`}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono text-[#888888] block mt-0.5">
-                        {type.subtitle}
-                      </span>
-                      <p className="text-[11px] text-[#707070] mt-1.5 leading-relaxed">
-                        {type.description}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Field 3: Total Custom Pages Required */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                  3. Total Custom Pages Required
-                </label>
-                <span className="text-[11px] font-mono text-emerald-400">
-                  {pageCount === 1
-                    ? "-₹2,000 (Landing Page)"
-                    : pageCount <= 5
-                    ? "5 Pages in Base Package"
-                    : `+${formatINR((pageCount - 5) * settings.costPerExtraPage)}`}
-                </span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#121212] border border-white/[0.08]">
-                <div className="space-y-0.5">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold font-mono text-white">{pageCount}</span>
-                    <span className="text-xs text-[#888888]">Pages Total</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-[#777777] block">
-                    {pageCount === 1
-                      ? "Single-page landing (₹2,000 discount applied)"
-                      : pageCount <= 5
-                      ? "Standard 5 pages included in base package"
-                      : `5 Base Included + ${pageCount - 5} Extra Pages @ ₹${settings.costPerExtraPage}/page`}
+              {/* Section 1: Website Industry / Category */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
+                    1. Website Industry / Category
+                  </label>
+                  <span className="text-xs font-mono text-emerald-400 font-bold tabular-nums">
+                    Base: {formatINR(currentCategory.startingPrice)}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handlePagesChange(pageCount - 1)}
-                    disabled={pageCount <= 1}
-                    className="w-9 h-9 rounded-lg bg-[#181818] border border-white/[0.10] flex items-center justify-center text-white hover:bg-white/[0.10] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {categories.map((cat) => {
+                    const isSelected = selectedCategoryId === cat.id;
 
-                  <div className="flex items-center gap-1">
-                    {[1, 5, 8, 12].map((cnt) => (
-                      <button
-                        key={cnt}
-                        type="button"
-                        onClick={() => handlePagesChange(cnt)}
-                        className={`px-2.5 py-1.5 rounded text-[11px] font-mono transition-colors ${
-                          pageCount === cnt
-                            ? "bg-white text-black font-bold shadow-sm"
-                            : "bg-[#181818] text-[#808080] hover:text-white border border-white/[0.06]"
+                    return (
+                      <div
+                        key={cat.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        onClick={() => handleCategoryChange(cat.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleCategoryChange(cat.id);
+                          }
+                        }}
+                        className={`min-h-[74px] p-3 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                          isSelected
+                            ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
+                            : "bg-[#141414] border-white/[0.07] hover:border-white/[0.20] hover:bg-[#1A1A1A] text-[#D4D4D4]"
                         }`}
                       >
-                        {cnt === 1 ? "1 (Landing)" : `${cnt} P`}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handlePagesChange(pageCount + 1)}
-                    disabled={pageCount >= 30}
-                    className="w-9 h-9 rounded-lg bg-[#181818] border border-white/[0.10] flex items-center justify-center text-white hover:bg-white/[0.10] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div
+                            className={`p-1.5 rounded-lg shrink-0 ${
+                              isSelected ? "bg-emerald-400 text-black font-bold" : "bg-white/[0.06] text-[#A3A3A3]"
+                            }`}
+                          >
+                            {renderIcon(cat.icon, "w-3.5 h-3.5")}
+                          </div>
+                          <span className="text-xs font-mono font-bold text-white tabular-nums">
+                            {formatINR(cat.startingPrice)}
+                          </span>
+                        </div>
+                        <h3 className="text-xs font-semibold text-white truncate">{cat.title}</h3>
+                        <p className="text-[11px] text-[#A3A3A3] truncate mt-0.5 font-mono">
+                          {cat.deliveryDays} • {cat.recommendedPages} Pages
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
 
-            {/* Field 4: Project Delivery Speed SLA */}
-            <div className="space-y-3">
-              <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                4. Project Delivery Speed SLA
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div
-                  onClick={() => setDeliverySpeed("standard")}
-                  className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                    deliverySpeed === "standard"
-                      ? "bg-white/[0.09] border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/30"
-                      : "bg-[#121212] border-white/[0.06] text-[#A0A09E] hover:border-white/[0.16]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white">Standard Delivery</span>
-                    <span className="text-[11px] font-mono text-emerald-400 font-bold">Included</span>
-                  </div>
-                  <span className="text-[11px] text-[#707070] block mt-1">
-                    {currentCategory.deliveryDays} (Standard SLA)
-                  </span>
-                </div>
-
-                <div
-                  onClick={() => setDeliverySpeed("express")}
-                  className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                    deliverySpeed === "express"
-                      ? "bg-white/[0.09] border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/30"
-                      : "bg-[#121212] border-white/[0.06] text-[#A0A09E] hover:border-white/[0.16]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white">Express Delivery</span>
-                    <span className="text-[11px] font-mono text-white font-bold">+20%</span>
-                  </div>
-                  <span className="text-[11px] text-[#707070] block mt-1">
-                    Fast-Track Priority (3–5 Days)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Field 5: Detailed Features Checklist with Live Toggles */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                    5. Features & Add-ons Selection
+              {/* Section 2: Website Architecture & CMS */}
+              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
+                    2. Website Architecture & CMS
                   </label>
-                  <span className="text-[10px] text-[#707070] block">
-                    {selectedFeatureIds.length} Features Selected (+{formatINR(featuresCost)})
+                  <span className="text-xs font-mono text-[#A3A3A3] tabular-nums">
+                    {selectedTypeId === "dynamic" ? "+₹8,000 (Database & Backend)" : "Included (₹0)"}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-[10px] font-mono">
+                {/* Inline Dependency Notice (Auto-switched or Blocked) */}
+                {dependencyNotice && (
+                  <div
+                    className={`p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-3 ${
+                      dependencyNotice.type === "auto-switched"
+                        ? "bg-blue-950/40 border-blue-500/40 text-blue-200"
+                        : "bg-amber-950/40 border-amber-500/40 text-amber-200"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {dependencyNotice.type === "auto-switched" ? (
+                        <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      )}
+                      <div className="space-y-1">
+                        <div className="font-semibold text-white flex items-center gap-2">
+                          <span>{dependencyNotice.title}</span>
+                          {dependencyNotice.costDiff ? (
+                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 tabular-nums">
+                              +{formatINR(dependencyNotice.costDiff)}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-xs leading-relaxed text-[#DCDCDA]">
+                          {dependencyNotice.message}
+                        </p>
+                        {dependencyNotice.type === "blocked-static" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFeatureIds((prev) =>
+                                prev.filter((id) => !featureRequiresDynamic(id))
+                              );
+                              setSelectedTypeId("static");
+                              setDependencyNotice(null);
+                            }}
+                            className="mt-1.5 text-xs font-semibold text-amber-300 underline hover:text-white transition-colors block text-left min-h-[44px] flex items-center"
+                          >
+                            Deselect dynamic features and switch to Static
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setDependencyNotice(null)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                      aria-label="Dismiss notice"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {types.map((type) => {
+                    const isSelected = selectedTypeId === type.id;
+                    return (
+                      <div
+                        key={type.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        onClick={() => handleTypeChange(type.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleTypeChange(type.id);
+                          }
+                        }}
+                        className={`min-h-[96px] p-4 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                          isSelected
+                            ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
+                            : "bg-[#141414] border-white/[0.07] hover:border-white/[0.20] hover:bg-[#1A1A1A] text-[#D4D4D4]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">{type.title}</span>
+                          <span
+                            className={`text-xs font-mono font-bold tabular-nums ${
+                              type.additionalCost === 0 ? "text-emerald-400" : "text-white"
+                            }`}
+                          >
+                            {type.additionalCost === 0 ? "Included (₹0)" : `+${formatINR(type.additionalCost)}`}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono text-[#A3A3A3] block mt-1">
+                          {type.subtitle}
+                        </span>
+                        <p className="text-xs text-[#A3A3A3] mt-2 leading-relaxed">
+                          {type.description}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 3: Total Custom Pages Required */}
+              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
+                    3. Total Custom Pages Required
+                  </label>
+                  <span className="text-xs font-mono text-emerald-400 font-bold tabular-nums">
+                    {pageCount === 1
+                      ? "-₹2,000 (Landing Page)"
+                      : pageCount <= 5
+                      ? "5 Pages in Base Package"
+                      : `+${formatINR((pageCount - 5) * settings.costPerExtraPage)}`}
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#141414] border border-white/[0.08]">
+                  <div className="space-y-0.5">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold font-mono text-white tabular-nums">{pageCount}</span>
+                      <span className="text-xs text-[#D4D4D4]">Pages Total</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-[#A3A3A3] block">
+                      {pageCount === 1
+                        ? "Single-page landing (₹2,000 discount applied)"
+                        : pageCount <= 5
+                        ? "Standard 5 pages included in base package"
+                        : `5 Base Included + ${pageCount - 5} Extra Pages @ ₹${settings.costPerExtraPage}/page`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => handlePagesChange(pageCount - 1)}
+                      disabled={pageCount <= 1}
+                      aria-label="Decrease page count"
+                      className="w-11 h-11 rounded-lg bg-[#1C1C1C] border border-white/[0.12] flex items-center justify-center text-white hover:bg-[#282828] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {[1, 5, 8, 12].map((cnt) => (
+                        <button
+                          key={cnt}
+                          type="button"
+                          onClick={() => handlePagesChange(cnt)}
+                          className={`min-h-[44px] min-w-[36px] sm:min-w-[44px] px-2 sm:px-3 py-2 rounded-lg text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                            pageCount === cnt
+                              ? "bg-white text-black font-bold shadow-sm"
+                              : "bg-[#1C1C1C] text-[#A3A3A3] hover:text-white border border-white/[0.08] hover:bg-[#282828]"
+                          }`}
+                        >
+                          {cnt === 1 ? "1P" : `${cnt}P`}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handlePagesChange(pageCount + 1)}
+                      disabled={pageCount >= 30}
+                      aria-label="Increase page count"
+                      className="w-11 h-11 rounded-lg bg-[#1C1C1C] border border-white/[0.12] flex items-center justify-center text-white hover:bg-[#282828] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: Project Delivery Speed SLA */}
+              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
+                  4. Project Delivery Speed SLA
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={deliverySpeed === "standard"}
+                    onClick={() => setDeliverySpeed("standard")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setDeliverySpeed("standard");
+                      }
+                    }}
+                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                      deliverySpeed === "standard"
+                        ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
+                        : "bg-[#141414] border-white/[0.07] text-[#D4D4D4] hover:border-white/[0.20] hover:bg-[#1A1A1A]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-white">Standard Delivery</span>
+                      <span className="text-xs font-mono text-emerald-400 font-bold">Included</span>
+                    </div>
+                    <span className="text-xs text-[#A3A3A3] block mt-1.5 font-mono">
+                      {currentCategory.deliveryDays} (Standard Timeline)
+                    </span>
+                  </div>
+
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={deliverySpeed === "express"}
+                    onClick={() => setDeliverySpeed("express")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setDeliverySpeed("express");
+                      }
+                    }}
+                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                      deliverySpeed === "express"
+                        ? "bg-emerald-950/20 border-emerald-400 text-white shadow-md ring-1 ring-emerald-400/40"
+                        : "bg-[#141414] border-white/[0.07] text-[#D4D4D4] hover:border-white/[0.20] hover:bg-[#1A1A1A]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-white">Express Delivery</span>
+                      <span className="text-xs font-mono text-white font-bold">+20%</span>
+                    </div>
+                    <span className="text-xs text-[#A3A3A3] block mt-1.5 font-mono">
+                      Fast-Track Priority (3–5 Days)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ----------------------------------------------------------------- */}
+            {/* Box 2: Modular Features & Add-on Catalog (The ONE Feature Selector) */}
+            {/* ----------------------------------------------------------------- */}
+            <div id="features-catalog" className="bg-[#0C0C0C] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-6 shadow-xl">
+              {/* Header with Title and Feature Counter */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                      Modular Features & Add-ons Catalog
+                    </h2>
+                  </div>
+                  <p className="text-xs text-[#A3A3A3] font-light">
+                    Select the functionality you need. Click any card to add/remove, or click &quot;Details&quot; to expand.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-mono shrink-0">
                   <button
                     type="button"
                     onClick={handleSelectRecommended}
-                    className="text-[#888888] hover:text-white underline underline-offset-2"
+                    className="min-h-[44px] px-3.5 py-2 rounded-lg text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     Recommended
                   </button>
-                  <span className="text-[#444444]">•</span>
                   <button
                     type="button"
                     onClick={handleClearFeatures}
-                    className="text-[#888888] hover:text-white underline underline-offset-2"
+                    className="min-h-[44px] px-3.5 py-2 rounded-lg text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     Clear All
                   </button>
                 </div>
               </div>
 
-              {/* Quick Search inside Form */}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-[#666666] absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Filter features by name or keyword..."
-                  value={formSearchQuery}
-                  onChange={(e) => setFormSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#121212] border border-white/[0.08] text-xs text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/20 transition-colors"
-                />
+              {/* Category Filter Pills & Search */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-mono">
+                  {FILTER_GROUPS.map((group) => {
+                    const isActive = featureCategoryFilter === group.id;
+                    return (
+                      <button
+                        key={group.id}
+                        type="button"
+                        onClick={() => setFeatureCategoryFilter(group.id)}
+                        className={`min-h-[44px] px-3.5 py-2 rounded-xl transition-all duration-150 whitespace-nowrap flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                          isActive
+                            ? "bg-white text-black font-bold shadow-md"
+                            : "bg-[#141414] text-[#A3A3A3] hover:text-white border border-white/[0.08] hover:bg-[#1C1C1C]"
+                        }`}
+                      >
+                        <span>{group.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="relative">
+                  <Search className="w-4 h-4 text-[#A3A3A3] absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search features (e.g. payment, booking, whatsapp, blog)..."
+                    value={featureSearchQuery}
+                    onChange={(e) => setFeatureSearchQuery(e.target.value)}
+                    className="w-full min-h-[44px] pl-10 pr-4 py-2.5 rounded-xl bg-[#141414] border border-white/[0.08] text-xs text-[#F5F5F3] placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:border-transparent transition-colors"
+                  />
+                  {featureSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setFeatureSearchQuery("")}
+                      className="absolute right-3 top-2.5 text-[#A3A3A3] hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-label="Clear search"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Feature Items List */}
-              <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1 scrollbar-thin">
-                {displayedFormFeatures.map((feat) => {
-                  const isChecked =
+              {/* Status info bar */}
+              <div className="flex items-center justify-between text-xs font-mono text-[#A3A3A3] px-1">
+                <span>Showing {displayedFeatures.length} of {allFeatures.length} features</span>
+                <span className="text-emerald-400 font-bold tabular-nums">
+                  {selectedFeaturesList.length} Selected (+{formatINR(featuresCost)})
+                </span>
+              </div>
+
+              {/* Grid of Modular Feature Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {displayedFeatures.map((feat) => {
+                  const isSelected =
                     selectedFeatureIds.includes(feat.id) ||
                     selectedFeatureIds.includes(normalizeFeatureId(feat.id));
                   const isBundledInDynamic = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
+                  const isExpanded = Boolean(expandedFeatureIds[feat.id]);
 
                   return (
                     <div
                       key={feat.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
                       onClick={() => toggleFeature(feat.id)}
-                      className={`px-3 py-2 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all duration-150 ${
-                        isBundledInDynamic && isChecked
-                          ? "bg-emerald-950/20 border-emerald-500/30"
-                          : isChecked
-                          ? "bg-white/[0.07] border-emerald-400/70 text-white shadow-sm"
-                          : "bg-[#121212] border-white/[0.05] hover:border-white/[0.14] text-[#B0B0AE]"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleFeature(feat.id);
+                        }
+                      }}
+                      className={`p-3.5 sm:p-4 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C] ${
+                        isBundledInDynamic && isSelected
+                          ? "bg-emerald-950/25 border-emerald-400/80 ring-1 ring-emerald-500/40 text-white"
+                          : isSelected
+                          ? "bg-emerald-950/20 border-emerald-400 ring-1 ring-emerald-400/50 text-white shadow-lg"
+                          : "bg-[#141414] border-white/[0.08] hover:border-white/[0.22] hover:bg-[#1A1A1A] text-[#D4D4D4]"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                            isChecked
-                              ? "bg-emerald-400 text-black border-emerald-400"
-                              : "border-white/20 bg-white/[0.02]"
+                      {/* Top Row: Category Chip & Price */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-[#D4D4D4] border border-white/[0.08]">
+                          {feat.categoryTag}
+                        </span>
+
+                        <span
+                          className={`text-xs font-mono font-bold tabular-nums ${
+                            isBundledInDynamic && isSelected
+                              ? "text-emerald-400"
+                              : isSelected
+                              ? "text-emerald-400"
+                              : "text-white"
                           }`}
                         >
-                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
-
-                        <span className="text-xs font-semibold text-white truncate block">
-                          {feat.name}
+                          {isBundledInDynamic && isSelected ? "Included Free" : `+${formatINR(feat.price)}`}
                         </span>
                       </div>
 
-                      <span
-                        className={`text-xs font-mono font-bold shrink-0 ${
-                          isBundledInDynamic && isChecked
-                            ? "text-emerald-400"
-                            : isChecked
-                            ? "text-emerald-400"
-                            : "text-[#888888]"
-                        }`}
-                      >
-                        {isBundledInDynamic && isChecked ? "Included" : `+${formatINR(feat.price)}`}
-                      </span>
+                      {/* Middle: Icon, Title & Obvious Selected State (Check + Badge) */}
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <div
+                            className={`p-2 rounded-lg shrink-0 transition-colors ${
+                              isBundledInDynamic && isSelected
+                                ? "bg-emerald-400 text-black font-bold"
+                                : isSelected
+                                ? "bg-emerald-400 text-black font-bold"
+                                : "bg-white/[0.06] text-[#A3A3A3]"
+                            }`}
+                          >
+                            {renderIcon(feat.icon, "w-4 h-4")}
+                          </div>
+
+                          <div className="space-y-0.5 min-w-0">
+                            <h3 className="font-semibold text-xs text-white leading-snug">
+                              {feat.name}
+                            </h3>
+                            <p className={`text-xs text-[#A3A3A3] leading-relaxed ${isExpanded ? "" : "line-clamp-1"}`}>
+                              {feat.simpleDescription}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Obvious Selected State without relying on color alone (Icon + Text Badge) */}
+                        <div className="shrink-0 flex items-center">
+                          {isSelected ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-400 text-black text-[11px] font-bold font-mono shadow-sm">
+                              <Check className="w-3 h-3 stroke-[3]" />
+                              <span>Added</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.08] text-[#D4D4D4] text-[11px] font-mono hover:text-white border border-white/[0.08]">
+                              <Plus className="w-3 h-3" />
+                              <span>Add</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Expandable Details Container */}
+                      {isExpanded && feat.costNote && (
+                        <div className="text-[11px] text-amber-200/90 font-mono bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 mt-1 leading-relaxed">
+                          Note: {feat.costNote}
+                        </div>
+                      )}
+
+                      {/* Bottom Toggle Button for Expandable Details (min 44px touch target) */}
+                      <div className="pt-1 flex items-center justify-between border-t border-white/[0.06]">
+                        <button
+                          type="button"
+                          aria-expanded={isExpanded}
+                          aria-controls={`feature-desc-${feat.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFeatureExpansion(feat.id);
+                          }}
+                          className="min-h-[44px] inline-flex items-center gap-1.5 text-[11px] font-mono text-[#A3A3A3] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-md px-1"
+                        >
+                          <span>{isExpanded ? "Hide Details" : "View Details"}</span>
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-[#D4D4D4]" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 text-[#D4D4D4]" />
+                          )}
+                        </button>
+
+                        {feat.popularFor && feat.popularFor.includes(selectedCategoryId) && (
+                          <span className="text-[10px] font-mono text-emerald-400 font-semibold">
+                            ★ Recommended for {currentCategory.title.split(" ")[0]}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Field 6: Project Notes & Reference URL */}
-            <div className="space-y-2">
-              <label className="block text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                6. Custom Notes or Competitor Reference (Optional)
+            {/* ----------------------------------------------------------------- */}
+            {/* Box 3: Custom Notes or Competitor Reference                      */}
+            {/* ----------------------------------------------------------------- */}
+            <div className="bg-[#0C0C0C] border border-white/[0.09] rounded-2xl p-5 sm:p-7 space-y-3 shadow-xl">
+              <label
+                htmlFor="custom-notes"
+                className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold"
+              >
+                5. Custom Notes or Competitor Reference (Optional)
               </label>
               <textarea
-                rows={2}
+                id="custom-notes"
+                rows={3}
                 value={customNotes}
                 onChange={(e) => setCustomNotes(e.target.value)}
-                placeholder="Mention any specific feature, reference website, design link, or target launch date..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#121212] border border-white/[0.10] text-xs text-white placeholder-[#666666] focus:outline-none focus:border-white/30 resize-none transition-colors"
+                placeholder="Mention any specific feature, reference website URL, design link, or target launch deadline..."
+                className="w-full px-4 py-3 rounded-xl bg-[#141414] border border-white/[0.08] text-xs text-white placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 resize-none transition-colors"
               />
             </div>
           </div>
 
           {/* ===================================================================== */}
-          {/* RIGHT 50% (Col Span 6): Sticky Dynamic Live Quote Summary */}
+          {/* RIGHT COLUMN: Sticky Project Cost Breakdown Panel (5 Cols)           */}
           {/* ===================================================================== */}
-          <div className="lg:col-span-6 sticky top-24">
+          <aside className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-24 space-y-6">
             <div className="bg-[#0C0C0C] border border-white/[0.14] rounded-2xl p-5 sm:p-7 shadow-2xl space-y-6">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
-                    LIVE DYNAMIC SPECIFICATION
+                  <span className="text-[11px] font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
+                    LIVE CALCULATION
                   </span>
                   <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
                     Project Cost Breakdown
@@ -1145,103 +1179,103 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] font-mono text-[#888888] block">Timeline SLA</span>
-                  <span className="text-xs font-mono font-bold text-emerald-400">{estimatedDays}</span>
+                  <span className="text-[11px] font-mono text-[#A3A3A3] block">Target SLA</span>
+                  <span className="text-xs font-mono font-bold text-emerald-400 tabular-nums">
+                    {estimatedDays}
+                  </span>
                 </div>
               </div>
 
               {/* Dynamic Line-Items Ledger */}
-              <div className="space-y-2.5 text-xs divide-y divide-white/[0.05]">
-                {/* Category */}
+              <div className="space-y-3 text-xs divide-y divide-white/[0.05]">
+                {/* 1. Category */}
                 <div className="flex items-start justify-between gap-3 pt-1">
                   <div>
-                    <span className="text-[10px] font-mono text-[#777777] uppercase block">
+                    <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
                       1. Website Category
                     </span>
                     <span className="font-semibold text-white">{currentCategory.title}</span>
                   </div>
-                  <span className="font-mono font-semibold text-white shrink-0">
+                  <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
                     {formatINR(baseCategoryPrice)}
                   </span>
                 </div>
 
-                {/* Architecture */}
-                <div className="flex items-start justify-between gap-3 pt-2.5">
+                {/* 2. Architecture */}
+                <div className="flex items-start justify-between gap-3 pt-3">
                   <div>
-                    <span className="text-[10px] font-mono text-[#777777] uppercase block">
+                    <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
                       2. Architecture
                     </span>
                     <span className="font-semibold text-white">{currentType.title}</span>
                   </div>
-                  <span className="font-mono font-semibold text-white shrink-0">
+                  <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
                     {typePrice === 0 ? "Included" : `+${formatINR(typePrice)}`}
                   </span>
                 </div>
 
-                {/* Pages */}
-                <div className="flex items-start justify-between gap-3 pt-2.5">
+                {/* 3. Pages */}
+                <div className="flex items-start justify-between gap-3 pt-3">
                   <div>
-                    <span className="text-[10px] font-mono text-[#777777] uppercase block">
+                    <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
                       3. Pages ({pageCount})
                     </span>
                     <span className="font-semibold text-white">{pageCount} Custom Pages</span>
                   </div>
-                  <span className="font-mono font-semibold text-white shrink-0">
+                  <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
                     {pagesPrice > 0 ? `+${formatINR(pagesPrice)}` : pagesPrice < 0 ? `-₹2,000` : "Included in Base"}
                   </span>
                 </div>
 
-                {/* Delivery SLA */}
+                {/* 4. Delivery SLA */}
                 {deliverySpeed === "express" && (
-                  <div className="flex items-start justify-between gap-3 pt-2.5">
+                  <div className="flex items-start justify-between gap-3 pt-3">
                     <div>
-                      <span className="text-[10px] font-mono text-[#777777] uppercase block">
+                      <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
                         4. Delivery Speed
                       </span>
                       <span className="font-semibold text-white">Express Priority (+20%)</span>
                     </div>
-                    <span className="font-mono font-semibold text-white shrink-0">
+                    <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
                       +{formatINR(expressPrice)}
                     </span>
                   </div>
                 )}
 
-                {/* Selected Features */}
-                <div className="pt-2.5 space-y-2">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#777777] uppercase">
-                    <span>
-                      5. Selected Features ({selectedFeaturesList.length})
-                    </span>
-                    <span className="text-emerald-400 font-semibold">
+                {/* 5. Selected Features List */}
+                <div className="pt-3 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#A3A3A3] uppercase">
+                    <span>Selected Features ({selectedFeaturesList.length})</span>
+                    <span className="text-emerald-400 font-bold tabular-nums">
                       +{formatINR(featuresCost)}
                     </span>
                   </div>
 
                   {selectedFeaturesList.length === 0 ? (
-                    <p className="text-[11px] text-[#666666] italic py-1">
+                    <p className="text-xs text-[#A3A3A3] italic py-1">
                       No additional features selected (Standard contact form included).
                     </p>
                   ) : (
-                    <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                    <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
                       {selectedFeaturesList.map((feat) => {
                         const isBundled = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
                         return (
                           <div
                             key={feat.id}
-                            className="flex items-center justify-between text-[11px] text-[#A0A09E] hover:text-white group"
+                            className="flex items-center justify-between text-xs text-[#D4D4D4] hover:text-white group py-0.5"
                           >
                             <div className="flex items-center gap-1.5 truncate pr-2">
                               <button
                                 type="button"
                                 onClick={() => toggleFeature(feat.id)}
-                                className="text-[#666666] hover:text-red-400 transition-colors p-0.5 rounded"
-                                title="Remove feature"
+                                className="min-w-[32px] min-h-[32px] flex items-center justify-center text-[#A3A3A3] hover:text-red-400 transition-colors rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
+                                aria-label={`Remove ${feat.name}`}
                               >
-                                <X className="w-3 h-3" />
+                                <X className="w-3.5 h-3.5" />
                               </button>
                               <span className="truncate">{feat.name}</span>
                             </div>
-                            <span className="font-mono text-white shrink-0">
+                            <span className="font-mono text-white shrink-0 tabular-nums">
                               {isBundled ? "Included Free" : `+${formatINR(feat.price)}`}
                             </span>
                           </div>
@@ -1252,95 +1286,235 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
                 </div>
               </div>
 
-              {/* Grand Total Live Counter */}
+              {/* Grand Total Live Counter (Tabular numbers, no layout shift) */}
               <div className="pt-4 border-t border-white/[0.10] space-y-2">
                 <div className="flex items-baseline justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#888888] block">
-                      Total Investment Estimate
-                    </span>
-                    <span className="text-xs text-[#808080]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-[#A3A3A3] block">
+                        Total Investment Estimate
+                      </span>
+                      {LAUNCH_PRICING_CONFIG.enabled && (
+                        <span
+                          title={LAUNCH_PRICING_CONFIG.description}
+                          className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-mono font-medium tracking-wide"
+                        >
+                          {LAUNCH_PRICING_CONFIG.label}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-[#A3A3A3]">
                       Includes design, engineering, QA & launch
                     </span>
                   </div>
+
                   <div className="text-right">
-                    <div
-                      key={grandTotal}
-                      className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight animate-pulse"
-                    >
+                    <div className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight tabular-nums">
                       {formatINR(grandTotal)}
                     </div>
                   </div>
                 </div>
 
-                <p className="text-[10px] font-mono text-[#666666] pt-1 leading-tight">
-                  *Zero hidden charges. Domain & hosting direct to client at actuals. 100% full source code ownership.
+                <p className="text-[11px] font-mono text-[#A3A3A3] pt-1 leading-relaxed">
+                  *Transparent rates. 100% full source code ownership. Domain & hosting direct to client at actuals. Third-party provider usage fees (AI API, WhatsApp Business API, payment gateway) billed at actuals.
                 </p>
               </div>
 
-              {/* CTA Action (Task 4: Rename Lock Quote to Request This Quote with helper text) */}
+              {/* CTA Action */}
               <div className="space-y-2.5">
                 <Link
                   href={quotationUrl}
-                  className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl bg-[#E8E8E6] hover:bg-white text-black font-semibold text-xs tracking-wide transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl bg-white hover:bg-[#E8E8E6] text-black font-semibold text-xs tracking-wide transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0C0C]"
                 >
                   <span>Request This Quote</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
-                <p className="text-[11px] text-[#888888] text-center font-normal leading-relaxed">
+                <p className="text-xs text-[#A3A3A3] text-center font-normal leading-relaxed">
                   This sends your requirements to us. Final quote is confirmed after discussion.
                 </p>
               </div>
 
-              {/* Guarantees */}
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/[0.06] text-[10px] font-mono text-[#808080]">
-                <div className="flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>100% IP Ownership</span>
+              {/* Trust Badges Configurable via PRICING_CONFIG */}
+              {TRUST_BADGES.filter((b) => b.enabled).length > 0 && (
+                <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-white/[0.08] text-[11px] font-mono text-[#D4D4D4]">
+                  {TRUST_BADGES.filter((b) => b.enabled).map((badge) => (
+                    <div key={badge.id} className="flex items-center gap-2">
+                      {badge.iconName === "CheckCircle2" ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      ) : (
+                        <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                      )}
+                      <span>{badge.label}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>95+ Speed Score</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Milestone Escrow</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Guaranteed SLA</span>
-                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* Full-Width Bottom Section: Terms of Engagement & FAQ                     */}
+        {/* ========================================================================= */}
+        <section id="terms-and-faq" className="pt-12 border-t border-white/[0.08] space-y-10">
+          <div className="space-y-2 text-left">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-[11px] font-mono uppercase tracking-widest text-[#A3A3A3]">
+                POLICIES & TRANSPARENCY
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F5F5F3]">
+              Terms of Engagement & FAQ
+            </h2>
+            <p className="text-xs sm:text-sm text-[#A3A3A3] max-w-2xl leading-relaxed">
+              Clear payment milestones, revisions, bug-fix guarantees, and honest answers to common questions.
+            </p>
+          </div>
+
+          {/* Key Engagement Terms Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                <CreditCard className="w-4 h-4" />
+                <span>Payment Milestones</span>
               </div>
+              <h3 className="text-sm font-semibold text-white">
+                {PRICING_TERMS.advancePercentage}% Advance / {PRICING_TERMS.deliveryPercentage}% on Delivery
+              </h3>
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                Initial deposit begins UI/UX design and architecture. Final balance is payable only after your review and final staging approval.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                <RotateCcw className="w-4 h-4" />
+                <span>Included Revisions</span>
+              </div>
+              <h3 className="text-sm font-semibold text-white">
+                {PRICING_TERMS.revisionRounds} Comprehensive Review Rounds
+              </h3>
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                Feedback iterations during the Figma design phase and functional staging preview to ensure every detail matches your brand.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                <Shield className="w-4 h-4" />
+                <span>Post-Launch Warranty</span>
+              </div>
+              <h3 className="text-sm font-semibold text-white">
+                {PRICING_TERMS.freeSupportDays} Days Free Bug-Fix Support
+              </h3>
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                Complimentary post-deployment stabilization covering technical bugs, browser compatibility, and minor layout adjustments.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                <Building2 className="w-4 h-4" />
+                <span>Taxes & GST</span>
+              </div>
+              <h3 className="text-sm font-semibold text-white">
+                {PRICING_TERMS.gst.enabled ? "Tax Invoice (GST Applicable)" : "Tax Exempt"}
+              </h3>
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                {PRICING_TERMS.gst.statement}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                <Clock className="w-4 h-4" />
+                <span>Timeline Kickoff</span>
+              </div>
+              <h3 className="text-sm font-semibold text-white">
+                Content-Ready Start
+              </h3>
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                {PRICING_TERMS.timelineNote}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                <Layers className="w-4 h-4" />
+                <span>Extra Page Definition</span>
+              </div>
+              <h3 className="text-sm font-semibold text-white">
+                Clear Page Boundaries
+              </h3>
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                {PRICING_TERMS.extraPageDefinition} Standard pricing includes 5 base pages.
+              </p>
             </div>
           </div>
-        </div>
+
+          {/* Frequently Asked Questions */}
+          <div className="space-y-4 pt-4">
+            <h3 className="text-lg font-semibold text-white">Frequently Asked Questions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {PRICING_FAQS.map((faq) => (
+                <div
+                  key={faq.id}
+                  className="p-5 rounded-xl bg-[#0C0C0C] border border-white/[0.08] space-y-2 text-left"
+                >
+                  <h4 className="text-xs sm:text-sm font-semibold text-[#F5F5F3]">
+                    {faq.question}
+                  </h4>
+                  <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Mobile Spacer to guarantee sticky bar never covers content or footer */}
+        <div className="h-28 lg:hidden pointer-events-none" aria-hidden="true" />
       </div>
 
-      {/* Mobile Floating Bottom Bar (Task 4) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0C0C0C]/95 backdrop-blur-md border-t border-white/[0.14] p-3 shadow-2xl space-y-1.5">
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-mono text-[#808080] block truncate">
+      {/* ========================================================================= */}
+      {/* Mobile Floating Sticky Bottom Bar (lg:hidden)                             */}
+      {/* ========================================================================= */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0C0C0C]/95 backdrop-blur-md border-t border-white/[0.14] px-4 py-3 shadow-2xl">
+        <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
+          <div className="space-y-0.5 min-w-0">
+            <span className="text-[11px] font-mono text-[#A3A3A3] block truncate">
               {currentCategory.title.split(" ")[0]} • {pageCount}P • {selectedFeaturesList.length} Feat
             </span>
-            <div className="text-lg font-bold text-white font-mono">
+            <div className="text-xl font-bold text-white font-mono tabular-nums">
               {formatINR(grandTotal)}
             </div>
           </div>
 
           <Link
             href={quotationUrl}
-            className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs transition-colors shrink-0 flex items-center gap-1.5 shadow-md"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-white hover:bg-[#E8E8E6] text-black font-semibold text-xs tracking-wide transition-colors shrink-0 whitespace-nowrap flex items-center gap-1.5 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           >
-            <span>Request This Quote</span>
+            <span>Request Quote</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <p className="text-[10px] text-[#777777] text-center font-light leading-tight">
-          This sends your requirements to us. Final quote is confirmed after discussion.
-        </p>
       </div>
+      {/* Lift site-wide chat widget above mobile sticky bottom bar on mobile viewports */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (max-width: 1023px) {
+              div:has(> #webgent-chat-widget-button),
+              #webgent-chat-widget-button {
+                bottom: 5.5rem !important;
+              }
+            }
+          `,
+        }}
+      />
     </div>
   );
 }
