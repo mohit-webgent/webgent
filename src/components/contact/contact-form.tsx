@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Send,
   CheckCircle2,
@@ -12,6 +12,7 @@ import {
   Building2,
   MessageSquare,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 
@@ -24,13 +25,15 @@ const SERVICE_OPTIONS = [
 ];
 
 const BUDGET_OPTIONS = [
-  { value: "under_5k", label: "< $5,000" },
-  { value: "5k_10k", label: "$5,000 - $10,000" },
-  { value: "10k_25k", label: "$10,000 - $25,000" },
-  { value: "25k_plus", label: "$25,000+" },
+  { value: "under_5k", label: "< ₹25,000 / $5k" },
+  { value: "5k_10k", label: "₹25,000 - ₹50,000" },
+  { value: "10k_25k", label: "₹50,000 - ₹1,00,000" },
+  { value: "25k_plus", label: "₹1,00,000+" },
 ];
 
 export function ContactForm() {
+  const searchParams = useSearchParams();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,6 +46,17 @@ export function ContactForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const hasStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const prefillMsg = searchParams.get("message");
+    const prefillService = searchParams.get("service");
+    const prefillBudget = searchParams.get("budget");
+
+    if (prefillMsg) setMessage(prefillMsg);
+    if (prefillService) setService(prefillService);
+    if (prefillBudget) setBudget(prefillBudget);
+  }, [searchParams]);
 
   const handleFieldFocus = () => {
     if (!hasStartedRef.current) {

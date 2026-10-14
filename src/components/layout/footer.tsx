@@ -127,10 +127,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/testimonials"
+                  href="/pricing"
                   className="text-[#9E9E9E] hover:text-white transition-colors block"
                 >
-                  Client Reviews
+                  Pricing & Plans
                 </Link>
               </li>
               <li>

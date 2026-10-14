@@ -75,7 +75,7 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
     project = await prisma.project.findUnique({
       where: { slug: params.slug },
     });
-  } catch {}
+  } catch { }
 
   if (!project || !project.published) {
     notFound();
