@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description:
     "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and digital experiences.",
   alternates: {
-    canonical: `${siteConfig.url}/work`,
+    canonical: "/work",
   },
   openGraph: {
     title: "Work | Webgent",
@@ -41,6 +41,14 @@ export const metadata: Metadata = {
 // Fallback projects if database is empty
 const fallbackProjects = [
   {
+    id: "edayaa-jewellery",
+    title: "Edayaa Jewellery E-Commerce Store",
+    slug: "edayaa-jewellery",
+    category: "E-Commerce & Retail",
+    imageUrl:
+      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=85",
+  },
+  {
     id: "fallback-1",
     title: "NextGen Enterprise SaaS Platform",
     slug: "nextgen-enterprise-saas-platform",
@@ -64,17 +72,13 @@ const fallbackProjects = [
     imageUrl:
       "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=85",
   },
-  {
-    id: "fallback-4",
-    title: "Quantum Intelligence Engine",
-    slug: "quantum-intelligence-engine",
-    category: "AI Product Engineering",
-    imageUrl:
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=85",
-  },
 ];
 
-export default async function WorkPage() {
+export default async function WorkPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined; category?: string; q?: string };
+}) {
   let projects: Array<{
     id: string;
     title: string;
@@ -92,48 +96,96 @@ export default async function WorkPage() {
     console.error("Failed to load projects from DB:", error);
   }
 
-  const displayProjects = projects.length > 0 ? projects : fallbackProjects;
+  const categoryFilter = typeof searchParams?.category === "string" ? searchParams.category : undefined;
+  const queryFilter = typeof searchParams?.q === "string" ? searchParams.q.toLowerCase() : undefined;
+
+  let displayProjects = projects.length > 0 ? projects : fallbackProjects;
+  if (categoryFilter) {
+    const cat = categoryFilter.toLowerCase();
+    displayProjects = displayProjects.filter((p) => p.category?.toLowerCase().includes(cat));
+  }
+  if (queryFilter) {
+    displayProjects = displayProjects.filter((p) => p.title.toLowerCase().includes(queryFilter));
+  }
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#EDEDED] pt-8 pb-20 sm:pt-12 sm:pb-28 px-6 sm:px-10 lg:px-16">
       <div className="max-w-7xl mx-auto">
-        {/* 2x2 Grid with large images, project name & type below */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20">
-          {displayProjects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/work/${project.slug}`}
-              className="group block focus:outline-none"
-            >
-              {/* Large Image (Sharp, Non-Rounded) */}
-              <div className="w-full aspect-[16/10] bg-[#121212] overflow-hidden border border-white/[0.08] relative">
-                {project.imageUrl ? (
-                  <img
-                    src={project.imageUrl}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#161616] to-[#0D0D0D]">
-                    <span className="text-4xl sm:text-6xl font-light text-white/20 select-none">
-                      {project.title.charAt(0)}
-                    </span>
-                  </div>
-                )}
-              </div>
+        {/* Header Intro */}
+        <div className="mb-10 sm:mb-14">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F5F5F3]">
+            Selected Work & Case Studies
+          </h1>
+          <p className="mt-2 text-sm text-[#888888] max-w-2xl">
+            Real client implementations and technical concept architectures developed by Webgent.
+          </p>
+        </div>
 
-              {/* Project Name and Type */}
-              <div className="mt-5 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-4">
-                <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-[#F5F5F3] group-hover:text-white transition-colors">
-                  {project.title}
-                </h2>
-                <span className="text-sm text-[#888888] font-normal shrink-0">
-                  {project.category || "Case Study"}
-                </span>
-              </div>
-            </Link>
-          ))}
+        {/* 2x2 Grid with large images, project name, badges & type below */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20">
+          {displayProjects.map((project) => {
+            const isProduction = project.slug === "edayaa-jewellery";
+
+            return (
+              <Link
+                key={project.id}
+                href={`/work/${project.slug}`}
+                className="group block focus:outline-none"
+              >
+                {/* Large Image (Sharp, Non-Rounded) */}
+                <div className="w-full aspect-[16/10] bg-[#121212] overflow-hidden border border-white/[0.08] relative">
+                  {project.imageUrl ? (
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#161616] to-[#0D0D0D]">
+                      <span className="text-4xl sm:text-6xl font-light text-white/20 select-none">
+                        {project.title.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Corner Badge */}
+                  <div className="absolute top-3 left-3 z-10">
+                    {isProduction ? (
+                      <span className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-emerald-500/40 text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
+                        Live Client Work
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-amber-500/40 text-[10px] font-mono uppercase tracking-wider text-amber-300 font-medium">
+                        Concept Project
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Project Name and Type */}
+                <div className="mt-5 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-[#F5F5F3] group-hover:text-white transition-colors">
+                      {project.title}
+                    </h2>
+                    {isProduction ? (
+                      <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/20 text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+                        Production
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-500/20 text-[10px] font-mono uppercase tracking-wider text-amber-300">
+                        Concept
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm text-[#888888] font-normal shrink-0">
+                    {project.category || "Case Study"}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

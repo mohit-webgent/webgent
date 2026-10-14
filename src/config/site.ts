@@ -14,6 +14,7 @@ export const siteConfig = {
   links: {
     github: "https://github.com/mohit-webgent/webgent",
     twitter: "https://twitter.com/webgent",
-    linkedin: "https://linkedin.com/company/webgent",
+    linkedin: "https://www.linkedin.com",
+    testimonials: "/testimonials",
   },
 };

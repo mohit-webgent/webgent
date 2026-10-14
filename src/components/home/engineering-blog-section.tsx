@@ -17,77 +17,35 @@ export interface BlogPostItem {
   tags?: string[];
 }
 
-const CURATED_POSTS: BlogPostItem[] = [
-  {
-    id: "curated-1",
-    title: "Architecting Zero-Downtime Micro-Frontends at Scale",
-    slug: "architecting-zero-downtime-micro-frontends-at-scale",
-    category: "Architecture",
-    readTime: 6,
-    publishedAt: "Oct 12, 2025",
-    excerpt:
-      "How we decoupled edge caching, AST generation, and Next.js App Router streaming to handle 10M+ monthly events with zero performance degradation.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=800&auto=format&fit=crop",
-    tags: ["Next.js 14", "Edge AST", "Distributed CDN"],
-  },
-  {
-    id: "curated-2",
-    title: "Sub-Millisecond State Synchronization with WebSockets & Redis",
-    slug: "sub-millisecond-state-synchronization-websockets-redis",
-    category: "Distributed Systems",
-    readTime: 8,
-    publishedAt: "Sep 28, 2025",
-    excerpt:
-      "An in-depth postmortem on building institutional financial orderbooks using Web Workers, shared array buffers, and low-latency Redis Pub/Sub clusters.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
-    tags: ["WebSockets", "Redis", "Low Latency"],
-  },
-  {
-    id: "curated-3",
-    title: "Database Resilience: Multi-Tenant Row Security in PostgreSQL",
-    slug: "database-resilience-multi-tenant-row-security-postgresql",
-    category: "Database & Security",
-    readTime: 5,
-    publishedAt: "Aug 15, 2025",
-    excerpt:
-      "Implementing zero-trust tenant boundaries and connection pooling in Prisma, preventing noisy-neighbor bottlenecks across high-concurrency SaaS platforms.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop",
-    tags: ["PostgreSQL", "RLS Security", "Prisma ORM"],
-  },
-];
-
 interface EngineeringBlogSectionProps {
   posts?: BlogPostItem[];
 }
 
 export function EngineeringBlogSection({ posts = [] }: EngineeringBlogSectionProps) {
-  // Use DB posts if available, otherwise fallback to curated elite articles
-  const displayPosts: BlogPostItem[] =
-    posts && posts.length > 0
-      ? posts.map((p, idx) => {
-          const fallback = CURATED_POSTS[idx % CURATED_POSTS.length];
-          return {
-            id: p.id || fallback.id,
-            title: p.title || fallback.title,
-            slug: p.slug || fallback.slug,
-            excerpt: p.excerpt || fallback.excerpt,
-            category: p.category || fallback.category,
-            readTime: p.readTime || fallback.readTime,
-            publishedAt: p.publishedAt
-              ? new Date(p.publishedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })
-              : fallback.publishedAt,
-            imageUrl: p.imageUrl || fallback.imageUrl,
-            tags: p.tags || fallback.tags,
-          };
+  // Gracefully hide blog section if no genuine published articles exist
+  if (!posts || posts.length === 0) {
+    return null;
+  }
+
+  const displayPosts: BlogPostItem[] = posts.map((p, idx) => ({
+    id: p.id || `post-${idx}`,
+    title: p.title,
+    slug: p.slug,
+    excerpt: p.excerpt || "",
+    category: p.category || "Engineering",
+    readTime: p.readTime || 4,
+    publishedAt: p.publishedAt
+      ? new Date(p.publishedAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
         })
-      : CURATED_POSTS;
+      : "Recent Article",
+    imageUrl:
+      p.imageUrl ||
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=800&auto=format&fit=crop",
+    tags: p.tags || ["Next.js", "Web Engineering"],
+  }));
 
   return (
     <section className="relative w-full py-5 sm:py-7 lg:py-9 border-t border-white/[0.06] text-left select-none overflow-hidden bg-[#07080A]">

@@ -89,7 +89,7 @@ export function Footer() {
 
             <p className="text-xs sm:text-sm text-[#909090] max-w-sm leading-relaxed">
               Designing and engineering high-performance web applications, scalable cloud backends,
-              and digital platforms for ambitious modern enterprises.
+              and digital platforms for growing businesses and modern brands.
             </p>
           </div>
 

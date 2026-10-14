@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "Get in touch with Webgent for custom web engineering, mobile app development, and cloud software solutions. Discuss your project directly with our technical team.",
   alternates: {
-    canonical: `${siteConfig.url}/contact`,
+    canonical: "/contact",
   },
   openGraph: {
     title: "Contact Us & Project Inquiries | Webgent",

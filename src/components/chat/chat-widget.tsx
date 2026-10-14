@@ -275,7 +275,7 @@ export function ChatWidget() {
       {isOpen && (
         <div
           id="webgent-chat-window"
-          className="fixed bottom-16 sm:bottom-24 right-2 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-[400px] h-[520px] sm:h-[560px] max-h-[calc(100vh-5rem)] rounded-xl bg-[#0D0D0D] border border-white/[0.10] shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200"
+          className="fixed bottom-16 sm:bottom-24 right-2 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-[420px] h-[520px] sm:h-[560px] max-h-[calc(100vh-5rem)] rounded-xl bg-[#0D0D0D] border border-white/[0.10] shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200"
         >
           <div className="p-4 bg-[#111111] border-b border-white/[0.08] flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-3">
@@ -478,7 +478,7 @@ export function ChatWidget() {
                     <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.15s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" />
                   </div>
-                  <span className="text-[11px]">Processing...</span>
+                  <span className="text-[11px]">Thinking...</span>
                 </div>
               </div>
             )}

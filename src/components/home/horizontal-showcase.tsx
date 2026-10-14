@@ -21,50 +21,50 @@ export interface ProjectItem {
   imageUrl?: string | null;
 }
 
-// Curated high-scale production systems (Minimalist, elite & premium)
+// Curated systems with honest framing: live client work and technical concept prototypes
 const CURATED_SYSTEMS: ProjectItem[] = [
   {
-    id: "system-1",
-    title: "NextGen Enterprise Cloud Platform",
-    slug: "nextgen-enterprise-saas-platform",
-    category: "Cloud Architecture",
+    id: "system-edayaa",
+    title: "Edayaa Jewellery E-Commerce Store",
+    slug: "edayaa-jewellery",
+    category: "E-Commerce & Retail",
     description:
-      "Distributed multi-tenant analytics core with row-level tenant isolation, real-time event streaming, and automated global failover.",
+      "Production silver jewellery store built with Next.js, featuring Razorpay checkout, product filters, and fast mobile loading.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop",
+    demoUrl: "https://edayaajewellery.com",
+  },
+  {
+    id: "system-1",
+    title: "Enterprise SaaS Analytics (Concept)",
+    slug: "nextgen-enterprise-saas-platform",
+    category: "Cloud Dashboard",
+    description:
+      "Concept dashboard illustrating multi-tenant analytics, responsive data tables, and modern cloud database architecture.",
     imageUrl:
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
     demoUrl: null,
   },
   {
     id: "system-2",
-    title: "Institutional Real-Time Trading Core",
+    title: "Real-Time Trading Interface (Concept)",
     slug: "fintech-realtime-trading-portal",
-    category: "Financial Systems",
+    category: "Financial Dashboard",
     description:
-      "Ultra-low latency institutional trading interface with WebSockets, dedicated Web Workers, and hardware-accelerated charting.",
+      "Concept market-tracking interface designed with WebSockets and charting components for fast client-side rendering.",
     imageUrl:
       "https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=800&auto=format&fit=crop",
     demoUrl: null,
   },
   {
     id: "system-3",
-    title: "Zero-Trust Healthcare Telemetry Vault",
+    title: "Telehealth Patient Portal (Concept)",
     slug: "healthcare-digital-patient-portal",
-    category: "Healthcare Infrastructure",
+    category: "Healthcare UI",
     description:
-      "HIPAA and SOC2 compliant telemedicine architecture with end-to-end KMS encrypted medical records, biometric auth, and WebRTC streaming.",
+      "Concept medical portal showcasing appointment scheduling, doctor availability, and private consultation workflows.",
     imageUrl:
       "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=800&auto=format&fit=crop",
-    demoUrl: null,
-  },
-  {
-    id: "system-4",
-    title: "Global Autonomous Commerce Engine",
-    slug: "global-autonomous-commerce-engine",
-    category: "Digital Commerce",
-    description:
-      "Luxury multi-region commerce platform featuring Anycast edge caching, automated multi-currency pricing, and real-time inventory locking.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=800&auto=format&fit=crop",
     demoUrl: null,
   },
 ];
@@ -173,10 +173,10 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#F5F5F3] tracking-tight uppercase">
-              Selected Systems In Production
+              Selected Work & Concept Studies
             </h2>
             <p className="text-[11px] sm:text-xs text-[#8E8E8C] leading-relaxed">
-              High-scale cloud platforms, custom SaaS architectures, and digital systems engineered for ambitious brands.
+              Production client implementations and technical concept projects engineered by Webgent.
             </p>
           </div>
 
@@ -255,9 +255,20 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
 
                     {/* Visual Header Overlays */}
                     <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
-                      <span className="px-2 py-0.5 rounded bg-black/85 backdrop-blur-md border border-white/[0.1] text-[8px] font-mono uppercase tracking-wider text-[#D0D0CE] font-medium">
-                        {project.category || "Architecture"}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded bg-black/85 backdrop-blur-md border border-white/[0.1] text-[8px] font-mono uppercase tracking-wider text-[#D0D0CE] font-medium">
+                          {project.category || "Architecture"}
+                        </span>
+                        {project.slug === "edayaa-jewellery" ? (
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-950/85 backdrop-blur-md border border-emerald-500/40 text-[8px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
+                            Live Work
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-950/85 backdrop-blur-md border border-amber-500/40 text-[8px] font-mono uppercase tracking-wider text-amber-300 font-medium">
+                            Concept
+                          </span>
+                        )}
+                      </div>
 
                       <span className="text-[8px] font-mono text-[#888888] px-1.5 py-0.5 rounded bg-black/85 backdrop-blur-md border border-white/[0.1]">
                         0{idx + 1}
@@ -316,12 +327,16 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
                   type="button"
                   onClick={() => scrollToItem(dotIdx)}
                   aria-label={`Jump to system 0${dotIdx + 1}`}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    currentIndex === dotIdx
-                      ? "w-4 bg-white shadow-[0_0_6px_rgba(255,255,255,0.4)]"
-                      : "w-1.5 bg-white/20 hover:bg-white/40"
-                  }`}
-                />
+                  className="py-3 px-1.5 flex items-center justify-center focus:outline-none"
+                >
+                  <span
+                    className={`h-1 rounded-full transition-all duration-300 block ${
+                      currentIndex === dotIdx
+                        ? "w-4 bg-white shadow-[0_0_6px_rgba(255,255,255,0.4)]"
+                        : "w-1.5 bg-white/20 hover:bg-white/40"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
 
@@ -334,7 +349,7 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
           </div>
 
           <div className="text-[9px] sm:text-[9.5px] font-mono text-[#666666]">
-            Zero-downtime production architecture
+            Modern web engineering & reliable client delivery
           </div>
         </div>
       </div>

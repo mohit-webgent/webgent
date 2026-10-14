@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     follow: false,
   },
   alternates: {
-    canonical: `${siteConfig.url}/contact/thank-you`,
+    canonical: "/contact/thank-you",
   },
   openGraph: {
     title: "Inquiry Received | Webgent",
@@ -47,7 +47,7 @@ export default function ContactThankYouPage() {
           </h1>
           <p className="text-sm text-[#969696] leading-relaxed">
             Thank you for reaching out to Webgent. An automated confirmation has been sent to your
-            email, and a principal architect will review your project requirements within 24 hours.
+            email, and our technical team will review your project requirements within 24 hours.
           </p>
         </div>
 

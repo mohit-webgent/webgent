@@ -15,21 +15,21 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Webgent — Elite Web Solutions & Engineering Architecture",
+    absolute: "Webgent — Modern Web Development & Engineering Solutions",
   },
   description:
-    "Webgent designs and engineers high-performance web applications, scalable cloud backends, and digital platforms for ambitious modern brands.",
+    "Webgent designs and engineers high-performance web applications, scalable cloud backends, and digital platforms for growing businesses and modern brands.",
   alternates: {
-    canonical: `${siteConfig.url}/`,
+    canonical: "/",
   },
   openGraph: {
-    title: "Webgent — Elite Web Solutions & Engineering Architecture",
+    title: "Webgent — Modern Web Development & Engineering Solutions",
     description: "High-performance web applications, scalable cloud backends, and digital systems.",
     url: `${siteConfig.url}/`,
     siteName: siteConfig.name,
     images: [
       {
-        url: `${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`,
+        url: `${siteConfig.url}/api/og?title=Webgent&badge=Web+Engineering`,
         width: 1200,
         height: 630,
         alt: "Webgent — Next-Gen Web Solutions",
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Webgent — Elite Web Solutions & Engineering Architecture",
+    title: "Webgent — Modern Web Development & Engineering Solutions",
     description: "High-performance web applications, scalable cloud backends, and digital systems.",
-    images: [`${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`],
+    images: [`${siteConfig.url}/api/og?title=Webgent&badge=Web+Engineering`],
     creator: "@webgent",
     site: "@webgent",
   },
@@ -101,6 +101,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 lg:space-y-10 pb-8 sm:pb-12 max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 font-sans w-full">
+      <h1 className="sr-only">Webgent — Modern Web Development & Engineering Solutions</h1>
       {/* 1. HERO SECTION (Approved Product Visual preserved with choreographed entrance & scroll story) */}
       <HeroSection />
 
@@ -129,8 +130,8 @@ export default async function HomePage() {
             Have Something Worth Building?
           </h2>
           <p className="text-xs sm:text-sm text-[#909090] max-w-xl mx-auto leading-relaxed">
-            Let&apos;s turn your vision into high-scale software. Speak directly with a principal
-            architect today.
+            Let&apos;s turn your vision into modern, reliable web solutions. Speak directly with our technical
+            team today.
           </p>
         </div>
 

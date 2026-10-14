@@ -38,14 +38,38 @@ async function main() {
 
   const sampleProjects = [
     {
-      title: "NextGen Enterprise SaaS Platform",
+      title: "Edayaa Jewellery E-Commerce Store",
+      slug: "edayaa-jewellery",
+      description:
+        "High-performance artisan silver jewellery online store with Razorpay payment gateway, shopping cart, and mobile-optimized catalog.",
+      content:
+        "### Project Overview\n\nFull production e-commerce website designed and developed for Edayaa Jewellery. Features dynamic product filtering, secure UPI and card payments, and fast mobile browsing.",
+      clientName: "Edayaa Jewellery Ltd.",
+      category: "E-Commerce & Retail",
+      imageUrl:
+        "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80",
+      screenshots: JSON.stringify([
+        "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+      ]),
+      demoUrl: "https://edayaajewellery.com",
+      githubUrl: undefined,
+      technologies: "Next.js 14, TypeScript, TailwindCSS, Razorpay, PostgreSQL, Prisma",
+      featured: true,
+      published: true,
+      order: 1,
+      seoTitle: "Edayaa Jewellery E-Commerce Case Study | Webgent",
+      seoDescription: "Production e-commerce case study for Edayaa Jewellery built with Next.js and Razorpay.",
+      authorId: adminUser.id,
+    },
+    {
+      title: "Cloud Analytics Platform (Concept)",
       slug: "nextgen-enterprise-saas-platform",
       description:
-        "An AI-powered multi-tenant cloud analytics platform designed for high-scale enterprise operations.",
+        "Concept project: A multi-tenant cloud analytics dashboard designed for high-concurrency data reporting.",
       content:
-        "### Architectural Highlights\n\n- Multi-tenant architecture with row-level tenant isolation\n- Real-time data processing pipeline handling 10k events/sec\n- Micro-frontend architecture with Next.js App Router and TailwindCSS\n- Automated CI/CD integration with automated smoke testing",
-      clientName: "Enterprise Cloud Systems",
-      category: "AI & Cloud Infrastructure",
+        "### Concept Architecture Highlights\n\n- Multi-tenant architecture with tenant isolation\n- Real-time data processing pipeline\n- Micro-frontend architecture with Next.js App Router and TailwindCSS",
+      clientName: "Concept Project",
+      category: "Cloud Architecture",
       imageUrl:
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
       screenshots: JSON.stringify([
@@ -57,20 +81,20 @@ async function main() {
       technologies: "Next.js, TypeScript, PostgreSQL, Prisma, TailwindCSS, Docker",
       featured: true,
       published: true,
-      order: 1,
-      seoTitle: "NextGen Enterprise SaaS Platform | Webgent Portfolio",
-      seoDescription: "Case study on building a high-scale enterprise SaaS analytics engine.",
+      order: 2,
+      seoTitle: "Cloud Analytics Platform Concept | Webgent Portfolio",
+      seoDescription: "Concept project exploring multi-tenant SaaS analytics architecture.",
       authorId: adminUser.id,
     },
     {
-      title: "Fintech Real-Time Trading Portal",
+      title: "Real-Time Trading Interface (Concept)",
       slug: "fintech-realtime-trading-portal",
       description:
-        "Ultra-low latency web interface for institutional crypto and stock algorithmic trading.",
+        "Concept project: Responsive trading interface exploring WebSockets and modular charting components.",
       content:
-        "### Platform Overview\n\nBuilt with WebSockets, Web Workers, and custom charting engines to render high-frequency ticker updates without frame drops.",
-      clientName: "Apex Financial",
-      category: "Fintech & Web3",
+        "### Concept Overview\n\nBuilt with WebSockets and custom charting components to render financial data updates with smooth frame rates.",
+      clientName: "Concept Project",
+      category: "Fintech Systems",
       imageUrl:
         "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
       screenshots: JSON.stringify([
@@ -81,19 +105,19 @@ async function main() {
       technologies: "React, TypeScript, WebSockets, Node.js, Redis",
       featured: true,
       published: true,
-      order: 2,
-      seoTitle: "Fintech Real-Time Trading Portal Case Study",
-      seoDescription: "High frequency trading portal built with WebSockets and React.",
+      order: 3,
+      seoTitle: "Real-Time Trading Interface Concept",
+      seoDescription: "Concept project exploring WebSockets and real-time dashboard UI.",
       authorId: adminUser.id,
     },
     {
-      title: "Healthcare Digital Patient Portal",
+      title: "Patient Telemedicine Portal (Concept)",
       slug: "healthcare-digital-patient-portal",
       description:
-        "HIPAA-compliant telemedicine and appointment scheduling portal for modern healthcare providers.",
+        "Concept project: Telemedicine and appointment scheduling interface for private clinics and healthcare practitioners.",
       content:
-        "### Security & Compliance\n\nEnd-to-end encrypted medical record storage, WebRTC encrypted video consultations, and automated patient notifications.",
-      clientName: "CarePlus Medical Group",
+        "### Concept Architecture\n\nEncrypted record storage patterns, WebRTC consultation flows, and automated appointment reminders.",
+      clientName: "Concept Project",
       category: "Healthcare Technology",
       imageUrl:
         "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
@@ -102,12 +126,12 @@ async function main() {
       ]),
       demoUrl: undefined,
       githubUrl: undefined,
-      technologies: "Next.js, TailwindCSS, WebRTC, PostgreSQL, AWS KMS",
+      technologies: "Next.js, TailwindCSS, WebRTC, PostgreSQL",
       featured: true,
       published: true,
-      order: 3,
-      seoTitle: "Healthcare Telemedicine Portal Case Study",
-      seoDescription: "HIPAA compliant patient booking and telehealth platform.",
+      order: 4,
+      seoTitle: "Patient Telemedicine Portal Concept",
+      seoDescription: "Concept project for clinic booking and telehealth consultation interface.",
       authorId: adminUser.id,
     },
   ];
@@ -198,10 +222,10 @@ Conclusion: By structuring database queries with tenant scope, applications stay
       category: "Architecture",
       tags: "nextjs,prisma,typescript,architecture",
       readTime: 3,
-      status: "PUBLISHED" as const,
-      featured: true,
-      publishedAt: new Date(),
-      views: 142,
+      status: "DRAFT" as const,
+      featured: false,
+      publishedAt: null,
+      views: 0,
       seoTitle: "Building Multi-Tenant Apps with Next.js 14 & Prisma",
       seoDescription: "Learn multi-tenant SaaS architecture principles with Next.js and Prisma.",
       authorId: adminUser.id,
@@ -227,10 +251,10 @@ Database latency is often the primary bottleneck in web application throughput. 
       category: "Database",
       tags: "postgresql,prisma,performance,database",
       readTime: 4,
-      status: "PUBLISHED" as const,
+      status: "DRAFT" as const,
       featured: false,
-      publishedAt: new Date(),
-      views: 89,
+      publishedAt: null,
+      views: 0,
       seoTitle: "PostgreSQL Query Performance & Indexing Guide",
       seoDescription: "Optimize PostgreSQL queries and index strategies for Next.js applications.",
       authorId: adminUser.id,
@@ -282,60 +306,8 @@ Database latency is often the primary bottleneck in web application throughput. 
   }
   console.log("✅ Seeded site configuration settings.");
 
-  const sampleTestimonials = [
-    {
-      clientName: "Alex Vance",
-      clientTitle: "Chief Technology Officer",
-      company: "Synthetix Cloud Labs",
-      content:
-        "Webgent transformed our entire enterprise infrastructure. Their architectural execution with Next.js and PostgreSQL cut our latency by 65% and allowed us to scale seamlessly across international regions.",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-      rating: 5,
-      featured: true,
-      status: TestimonialStatus.APPROVED,
-      order: 1,
-    },
-    {
-      clientName: "Marcus Sterling",
-      clientTitle: "Head of Digital Experience",
-      company: "Apex Global FinTech",
-      content:
-        "The level of engineering rigor and design polish delivered by the Webgent team exceeded our highest expectations. They built a mission-critical platform on time and under budget.",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-      rating: 5,
-      featured: true,
-      status: TestimonialStatus.APPROVED,
-      order: 2,
-    },
-    {
-      clientName: "Elena Rostova",
-      clientTitle: "VP of Product Engineering",
-      company: "BioHealth Diagnostics",
-      content:
-        "Working with Webgent was an absolute game changer. Their deep understanding of modern web architectures and real-time state synchronization gave us an immense competitive edge.",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
-      rating: 5,
-      featured: false,
-      status: TestimonialStatus.APPROVED,
-      order: 3,
-    },
-  ];
-
-  for (const testimonial of sampleTestimonials) {
-    const existing = await prisma.testimonial.findFirst({
-      where: {
-        clientName: testimonial.clientName,
-        company: testimonial.company,
-      },
-    });
-    if (!existing) {
-      await prisma.testimonial.create({ data: testimonial });
-    }
-  }
-  console.log("✅ Seeded sample client testimonials.");
+  // Testimonials: Empty by default. Real testimonials will be added by genuine clients.
+  console.log("ℹ️ Testimonials: Zero fabricated testimonials seeded.");
 
   const sampleSubscribers = [
     {

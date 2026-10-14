@@ -201,9 +201,9 @@ const DISCIPLINES: DisciplineStory[] = [
     id: "security",
     num: "03",
     badge: "NEXTAUTH / BCRYPT",
-    title: "Enterprise Security & Auth",
+    title: "Authentication & Web Security",
     description:
-      "NextAuth v5 session management, BCrypt hashing, role-based route guards, and zero-compromise push protection.",
+      "NextAuth session management, BCrypt password hashing, and role-based route middleware protection.",
     filename: "middleware.ts",
     language: "ts",
     icon: <Shield className="w-3.5 h-3.5" />,
@@ -262,7 +262,7 @@ const DISCIPLINES: DisciplineStory[] = [
     runtimeTelemetry: [
       { status: "JWT HANDSHAKE", details: "Stateless edge verification", metrics: "256-bit Key" },
       { status: "BCRYPT HASH", details: "12-round salted key derivation", metrics: "Isolated Worker" },
-      { status: "RBAC GUARD", details: "Strict role validation at edge router", metrics: "Zero Unauthorized" },
+      { status: "RBAC GUARD", details: "Strict role validation at edge router", metrics: "Middleware Guard" },
     ],
     techStack: ["NextAuth v5", "BCrypt", "JWT", "RBAC Middleware"],
   },
@@ -270,9 +270,9 @@ const DISCIPLINES: DisciplineStory[] = [
     id: "realtime",
     num: "04",
     badge: "EVENT DISPATCH",
-    title: "Real-Time Engines & Notifications",
+    title: "Messaging & Real-Time Alerts",
     description:
-      "Multi-provider dispatch engines spanning WhatsApp Business, Twilio, Slack webhooks, and Resend transactional emails.",
+      "Multi-provider dispatch integrations spanning WhatsApp Business API, Twilio SMS, Slack webhooks, and Resend transactional emails.",
     filename: "lib/dispatch/engine.ts",
     language: "ts",
     icon: <Zap className="w-3.5 h-3.5" />,
@@ -320,7 +320,7 @@ const DISCIPLINES: DisciplineStory[] = [
     runtimeTelemetry: [
       { status: "RESEND EMAIL", details: "Transactional DKIM verified delivery", metrics: "<120ms Transit" },
       { status: "WHATSAPP API", details: "Instant client alert webhook sync", metrics: "200 ACK" },
-      { status: "FAILOVER", details: "Secondary Twilio SMS circuit breaker", metrics: "99.98% SLA" },
+      { status: "FAILOVER", details: "Secondary Twilio SMS fallback", metrics: "Webhook Fallback" },
     ],
     techStack: ["Resend Email", "WhatsApp Cloud", "Twilio SMS", "Slack Webhooks"],
   },

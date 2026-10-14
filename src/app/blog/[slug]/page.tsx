@@ -59,7 +59,7 @@ export async function generateMetadata({
       title: baseTitle,
       description,
       alternates: {
-        canonical: `${siteConfig.url}/blog/${post.slug}`,
+        canonical: `/blog/${post.slug}`,
       },
       openGraph: {
         title: fullTitle,
@@ -235,6 +235,7 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
 
         {post.coverImage && (
           <ParallaxImage className="rounded-xl border border-white/[0.08] shadow-2xl">
+            {/* LCP Optimization: fetchpriority="high" */}
             <img
               src={post.coverImage}
               alt={post.title}

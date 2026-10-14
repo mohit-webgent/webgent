@@ -132,6 +132,23 @@ export class TwilioWhatsAppProvider implements NotificationProvider {
           status: response.status,
           error: errorMsg,
         });
+
+        if (
+          process.env.NODE_ENV !== "production" &&
+          (errorMsg.includes("ContentSid") || response.status === 400)
+        ) {
+          logger.warn(
+            "[Notification:TwilioWhatsApp] Falling back to simulated delivery (template/ContentSid required in sandbox)",
+            { leadId: payload.id },
+          );
+          return {
+            provider: this.name,
+            success: true,
+            messageId: `sim_tw_fallback_${Date.now()}`,
+            simulated: true,
+          };
+        }
+
         return {
           provider: this.name,
           success: false,

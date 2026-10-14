@@ -683,9 +683,9 @@ export function HowWeBuildSection() {
                               </span>
                               <span>92.5 Silver</span>
                             </div>
-                            <h5 className="text-[9.5px] sm:text-[10.5px] font-semibold text-white truncate">
+                            <p className="text-[9.5px] sm:text-[10.5px] font-semibold text-white truncate">
                               {prod.name}
-                            </h5>
+                            </p>
                             <div className="flex items-center gap-1.5">
                               <span className="text-[10px] sm:text-[11px] font-bold text-amber-300 font-mono">
                                 {prod.price}
@@ -1052,9 +1052,9 @@ export function HowWeBuildSection() {
                             </div>
 
                             <div className="space-y-0.5">
-                              <h5 className="text-[8px] font-semibold text-white truncate">
+                              <p className="text-[8px] font-semibold text-white truncate">
                                 {prod.name}
-                              </h5>
+                              </p>
                               <div className="flex items-center gap-1">
                                 <span className="text-[8.5px] font-bold text-amber-300 font-mono">
                                   {prod.price}

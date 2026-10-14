@@ -16,7 +16,7 @@ import {
 export function HeroSection() {
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const eyebrowRef = useRef<HTMLDivElement | null>(null);
-  const headlineRef = useRef<HTMLHeadingElement | null>(null);
+  const headlineRef = useRef<HTMLDivElement | null>(null);
   const paragraphRef = useRef<HTMLParagraphElement | null>(null);
   const ctaRef = useRef<HTMLDivElement | null>(null);
   const visualEntranceRef = useRef<HTMLDivElement | null>(null);
@@ -165,7 +165,9 @@ export function HeroSection() {
           </div>
 
           {/* Headline with line-based reveal */}
-          <h1
+          <div
+            role="heading"
+            aria-level={2}
             ref={headlineRef}
             aria-label="YOU IMAGINE WE ENGINEER REALITY."
             className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
@@ -181,7 +183,7 @@ export function HeroSection() {
                 <span className="hero-headline-line block">REALITY.</span>
               </span>
             </span>
-          </h1>
+          </div>
 
           {/* Supporting paragraph */}
           <p

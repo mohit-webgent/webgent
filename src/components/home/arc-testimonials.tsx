@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -14,69 +14,6 @@ export interface TestimonialItem {
   date: string;
   content: string;
 }
-
-const DEFAULT_REVIEWS: TestimonialItem[] = [
-  {
-    id: "review-1",
-    name: "Edward Alexander",
-    role: "Founder & CTO",
-    company: "Apex Systems",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop",
-    rating: 4.9,
-    date: "29 Aug, 2025",
-    content:
-      "They have awesome customer service. I wouldn't recommend going to anyone else. All of you guys are awesome. Definitely love the way Webgent works.",
-  },
-  {
-    id: "review-2",
-    name: "Lauren Contreras",
-    role: "VP Engineering",
-    company: "CloudPulse Labs",
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop",
-    rating: 4.9,
-    date: "14 Jul, 2025",
-    content:
-      "Webgent delivered our entire distributed platform ahead of schedule with flawless architecture. The level of engineering discipline and attention to detail is truly world-class.",
-  },
-  {
-    id: "review-3",
-    name: "Diana Johnston",
-    role: "Head of Product",
-    company: "FinScale Core",
-    avatar:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=300&auto=format&fit=crop",
-    rating: 4.9,
-    date: "03 Sep, 2025",
-    content:
-      "The transformation in our web performance was night and day. P99 latency dropped by 70%, and our conversion rate jumped significantly in the very first month.",
-  },
-  {
-    id: "review-4",
-    name: "Marcus Vance",
-    role: "Co-Founder",
-    company: "Horizon AI",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop",
-    rating: 5.0,
-    date: "18 Oct, 2025",
-    content:
-      "Working with Webgent felt like having an elite Silicon Valley engineering core embedded right inside our company. From technical architecture to launch, pure excellence.",
-  },
-  {
-    id: "review-5",
-    name: "Sarah Jenkins",
-    role: "Design Director",
-    company: "Lumina Digital",
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&auto=format&fit=crop",
-    rating: 4.9,
-    date: "22 Nov, 2025",
-    content:
-      "Incredible attention to aesthetics, speed, and responsiveness. Their mastery of micro-interactions and dark-mode elegance set our digital product light-years apart from competitors.",
-  },
-];
 
 export interface DbTestimonialItem {
   id?: string;
@@ -94,41 +31,48 @@ interface ArcTestimonialsProps {
 }
 
 export function ArcTestimonials({ initialTestimonials = [] }: ArcTestimonialsProps) {
-  // Use DB testimonials if available, otherwise use curated reference reviews
-  const reviews: TestimonialItem[] =
-    initialTestimonials && initialTestimonials.length >= 3
-      ? initialTestimonials.map((t, idx) => ({
-          id: t.id || `db-${idx}`,
-          name: t.clientName || DEFAULT_REVIEWS[idx % DEFAULT_REVIEWS.length].name,
-          role: t.clientTitle || DEFAULT_REVIEWS[idx % DEFAULT_REVIEWS.length].role,
-          company: t.company || DEFAULT_REVIEWS[idx % DEFAULT_REVIEWS.length].company,
-          avatar:
-            t.avatarUrl || DEFAULT_REVIEWS[idx % DEFAULT_REVIEWS.length].avatar,
-          rating: t.rating || 4.9,
-          date: t.createdAt
-            ? new Date(t.createdAt).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : DEFAULT_REVIEWS[idx % DEFAULT_REVIEWS.length].date,
-          content: t.content || DEFAULT_REVIEWS[idx % DEFAULT_REVIEWS.length].content,
-        }))
-      : DEFAULT_REVIEWS;
-
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const reviews: TestimonialItem[] = useMemo(() => {
+    if (!initialTestimonials || initialTestimonials.length === 0) return [];
+    return initialTestimonials.map((t, idx) => ({
+      id: t.id || `db-${idx}`,
+      name: t.clientName || "Client",
+      role: t.clientTitle || undefined,
+      company: t.company || undefined,
+      avatar:
+        t.avatarUrl ||
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop",
+      rating: t.rating || 5.0,
+      date: t.createdAt
+        ? new Date(t.createdAt).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "Verified Review",
+      content: t.content || "",
+    }));
+  }, [initialTestimonials]);
+
   const total = reviews.length;
 
-  // Unconditionally auto-cycle continuously every 3.5 seconds (never paused by hover)
+  // Unconditionally auto-cycle continuously every 3.5 seconds
   useEffect(() => {
+    if (total <= 1) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % total);
     }, 3500);
 
     return () => clearInterval(timer);
-  }, [total, activeIndex]);
+  }, [total]);
 
-  // Compute 3 visible slots along the arc: Top (prev), Center (active), Bottom (next)
+  // Gracefully hide section completely if no genuine client testimonials exist
+  if (total === 0) {
+    return null;
+  }
+
+  // Compute 3 visible slots along the arc
   const prevIndex = (activeIndex - 1 + total) % total;
   const nextIndex = (activeIndex + 1) % total;
 

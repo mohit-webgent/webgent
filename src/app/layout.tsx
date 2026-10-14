@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Webgent — Elite Web Solutions & Engineering Architecture",
+    default: "Webgent — Modern Web Development & Engineering Solutions",
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -64,22 +64,22 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: `${siteConfig.url}/`,
     siteName: siteConfig.name,
-    title: "Webgent — Elite Web Solutions & Engineering Architecture",
+    title: "Webgent — Modern Web Development & Engineering Solutions",
     description: siteConfig.description,
     images: [
       {
-        url: `${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`,
+        url: `${siteConfig.url}/api/og?title=Webgent&badge=Web+Engineering`,
         width: 1200,
         height: 630,
-        alt: "Webgent — Elite Web Solutions & Engineering Architecture",
+        alt: "Webgent — Modern Web Development & Engineering Solutions",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Webgent — Elite Web Solutions & Engineering Architecture",
+    title: "Webgent — Modern Web Development & Engineering Solutions",
     description: siteConfig.description,
-    images: [`${siteConfig.url}/api/og?title=Webgent&badge=Elite+Web+Engineering`],
+    images: [`${siteConfig.url}/api/og?title=Webgent&badge=Web+Engineering`],
     creator: "@webgent",
     site: "@webgent",
   },

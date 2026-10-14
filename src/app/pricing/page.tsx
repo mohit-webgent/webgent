@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "Explore transparent starting rates and configure your project with our interactive budget calculator for web development, React/Next.js apps, SaaS MVPs, and integrations.",
   alternates: {
-    canonical: `${siteConfig.url}/pricing`,
+    canonical: "/pricing",
   },
   openGraph: {
     title: "Website Pricing & Cost Estimator | Webgent",
