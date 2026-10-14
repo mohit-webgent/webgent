@@ -333,9 +333,21 @@ export function InteractiveCapabilities() {
   const tabRef = useRef<HTMLDivElement | null>(null);
   const scanlineRef = useRef<HTMLDivElement | null>(null);
 
+  const triggerInstanceRef = useRef<ScrollTrigger | null>(null);
+
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // GSAP ScrollTrigger Setup
+  const handleSelectIndex = (idx: number) => {
+    setActiveIndex(idx);
+    if (triggerInstanceRef.current) {
+      const st = triggerInstanceRef.current;
+      const targetScroll =
+        st.start + ((idx + 0.3) / DISCIPLINES.length) * (st.end - st.start);
+      window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    }
+  };
+
+  // GSAP ScrollTrigger Setup - Highly responsive slide transitions with minimal scroll distance
   useGSAP(
     () => {
       if (!sectionRef.current || isReducedMotion()) return;
@@ -343,11 +355,11 @@ export function InteractiveCapabilities() {
       const trigger = ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top top",
-        end: "+=1600",
+        end: "+=500",
         pin: true,
         pinSpacing: true,
         anticipatePin: 1,
-        scrub: 0.35,
+        scrub: 0.1,
         onUpdate: (self) => {
           const p = self.progress;
           const index = Math.min(
@@ -358,8 +370,11 @@ export function InteractiveCapabilities() {
         },
       });
 
+      triggerInstanceRef.current = trigger;
+
       return () => {
         trigger.kill();
+        triggerInstanceRef.current = null;
       };
     },
     { scope: sectionRef }
@@ -513,7 +528,7 @@ export function InteractiveCapabilities() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveIndex(idx)}
+                    onClick={() => handleSelectIndex(idx)}
                     type="button"
                     className={`py-1 sm:py-1.5 px-1 rounded-lg text-center transition-all duration-200 flex flex-col items-center gap-0.5 ${
                       isActive
@@ -560,7 +575,7 @@ export function InteractiveCapabilities() {
               return (
                 <div
                   key={item.id}
-                  onClick={() => setActiveIndex(idx)}
+                  onClick={() => handleSelectIndex(idx)}
                   className={`group relative p-3 sm:p-3.5 rounded-xl transition-all duration-300 cursor-pointer overflow-hidden ${
                     isActive
                       ? "bg-[#111215] border border-white/[0.18] shadow-[0_4px_24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)] translate-x-1"
