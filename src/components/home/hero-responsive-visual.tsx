@@ -153,7 +153,7 @@ export function HeroResponsiveVisual() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-[620px] lg:max-w-[560px] xl:max-w-[660px] flex items-center justify-center select-none group perspective-[1400px]"
+      className="relative w-full max-w-[620px] lg:max-w-[560px] xl:max-w-[680px] 2xl:max-w-[820px] 3xl:max-w-[940px] flex items-center justify-center select-none group perspective-[1400px]"
     >
       {/* Soft atmospheric ambient glow that naturally blends into the site's dark canvas */}
       <div

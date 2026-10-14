@@ -492,7 +492,7 @@ export function InteractiveCapabilities() {
       className="relative w-full min-h-screen bg-[#07080A] border-t border-white/[0.06] flex flex-col justify-center text-left select-none overflow-hidden z-20"
     >
       {/* Scroll Trigger Container */}
-      <div className="w-full max-w-6xl mx-auto flex flex-col justify-center px-3 sm:px-6 pt-4 sm:pt-6 lg:pt-8 pb-2 sm:pb-4">
+      <div className="w-full max-w-7xl 2xl:max-w-[1760px] 3xl:max-w-[2040px] mx-auto flex flex-col justify-center px-3 sm:px-6 2xl:px-10 pt-4 sm:pt-6 lg:pt-8 pb-2 sm:pb-4">
         {/* Section Editorial Header - Compact Scale */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-4">
           <div className="space-y-0.5 sm:space-y-1">

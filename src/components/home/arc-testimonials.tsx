@@ -88,7 +88,7 @@ export function ArcTestimonials({ initialTestimonials = [] }: ArcTestimonialsPro
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(255,255,255,0.015),transparent_70%)]"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-5 sm:space-y-8">
+      <div className="max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-16 relative z-10 space-y-5 sm:space-y-8">
         {/* =================================================================== */}
         {/* HEADER: Exactly matching reference image layout                    */}
         {/* =================================================================== */}

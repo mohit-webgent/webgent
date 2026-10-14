@@ -160,7 +160,7 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.015),transparent_70%)]"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6 relative z-10">
+      <div className="max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-16 space-y-4 sm:space-y-6 relative z-10">
         {/* =================================================================== */}
         {/* HEADER BAR: Editorial Dark Monochrome                              */}
         {/* =================================================================== */}
@@ -227,12 +227,12 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
         <div
           ref={scrollContainerRef}
           onScroll={updateScrollState}
-          className="flex gap-3.5 sm:gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1.5 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 touch-pan-x scroll-smooth"
+          className="flex gap-3.5 sm:gap-4 lg:gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1.5 -mx-4 sm:-mx-6 lg:-mx-8 2xl:-mx-16 px-4 sm:px-6 lg:px-8 2xl:px-16 touch-pan-x scroll-smooth"
         >
           {displayProjects.map((project, idx) => (
             <div
               key={project.id || idx}
-              className="w-[260px] sm:w-[300px] lg:w-[320px] shrink-0 snap-start"
+              className="w-[260px] sm:w-[300px] lg:w-[320px] 2xl:w-[360px] shrink-0 snap-start"
             >
               <Card3DTilt maxTilt={2} spotlight={true}>
                 <div className="group relative rounded-xl bg-[#090A0D] border border-white/[0.08] hover:border-white/[0.22] transition-all duration-300 shadow-[0_12px_32px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] overflow-hidden flex flex-col justify-between h-[255px] sm:h-[275px]">

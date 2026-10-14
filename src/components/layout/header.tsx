@@ -73,7 +73,7 @@ export function Header() {
       }`}
     >
       <div
-        className={`max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-8 lg:px-12 transition-all duration-300 ${
+        className={`max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] w-full mx-auto flex items-center justify-between px-5 sm:px-8 lg:px-12 2xl:px-16 3xl:px-24 transition-all duration-300 ${
           isScrolled ? "h-14" : "h-16 sm:h-20"
         }`}
       >

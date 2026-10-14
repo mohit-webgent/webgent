@@ -109,20 +109,20 @@ export default async function WorkPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#EDEDED] pt-8 pb-20 sm:pt-12 sm:pb-28 px-6 sm:px-10 lg:px-16">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#080808] text-[#EDEDED] pt-8 pb-20 sm:pt-12 sm:pb-28 px-6 sm:px-10 lg:px-16 2xl:px-24">
+      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto">
         {/* Header Intro */}
         <div className="mb-10 sm:mb-14">
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F5F5F3]">
+          <h1 className="text-3xl sm:text-4xl 2xl:text-5xl font-semibold tracking-tight text-[#F5F5F3]">
             Selected Work & Case Studies
           </h1>
-          <p className="mt-2 text-sm text-[#888888] max-w-2xl">
+          <p className="mt-2 text-sm 2xl:text-base text-[#888888] max-w-2xl 2xl:max-w-3xl">
             Real client implementations and technical concept architectures developed by Webgent.
           </p>
         </div>
 
-        {/* 2x2 Grid with large images, project name, badges & type below */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20">
+        {/* Responsive Grid with large images, project name, badges & type below */}
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20 2xl:gap-x-14 2xl:gap-y-20">
           {displayProjects.map((project) => {
             const isProduction = project.slug === "edayaa-jewellery";
 

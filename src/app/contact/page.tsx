@@ -41,8 +41,8 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
-      <div className="max-w-4xl mx-auto relative z-10 space-y-12">
+    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 2xl:px-20 relative overflow-hidden font-sans">
+      <div className="max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl mx-auto relative z-10 space-y-12">
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.02] border border-white/10 text-[#A0A0A0] text-xs font-mono uppercase tracking-widest">
             <span className="w-1.5 h-1.5 rounded-full bg-white/40" />

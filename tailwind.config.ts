@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        "3xl": "1920px",
+        "4xl": "2560px",
+      },
       fontFamily: {
         sans: ["var(--font-sans)", "Inter", "sans-serif"],
         display: ["var(--font-display)", "Plus Jakarta Sans", "sans-serif"],

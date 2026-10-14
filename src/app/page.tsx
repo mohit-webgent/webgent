@@ -100,7 +100,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 lg:space-y-10 pb-8 sm:pb-12 max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 font-sans w-full">
+    <div className="space-y-8 sm:space-y-12 lg:space-y-16 pb-8 sm:pb-16 max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto px-3.5 sm:px-8 lg:px-12 2xl:px-16 3xl:px-24 font-sans w-full">
       <h1 className="sr-only">Webgent — Modern Web Development & Engineering Solutions</h1>
       {/* 1. HERO SECTION (Approved Product Visual preserved with choreographed entrance & scroll story) */}
       <HeroSection />

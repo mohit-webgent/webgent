@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -16,18 +16,13 @@ import {
   HeartPulse,
   User,
   Sparkles,
-  Home,
-  Utensils,
-  GraduationCap,
   Layers,
   CreditCard,
   MessageCircle,
-  Send,
   Calendar,
   Lock,
   LayoutDashboard,
   BookOpen,
-  Image as ImageIcon,
   Mail,
   Search,
   Globe,
@@ -40,400 +35,280 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  Info,
+  Sliders,
+  FileText,
+  HelpCircle,
+  SlidersHorizontal,
+  Package,
+  Wrench,
+  ShoppingCart,
 } from "lucide-react";
+
 import { BackendPricingData } from "@/lib/services/pricing";
 import {
-  WEBSITE_CATEGORIES,
-  WEBSITE_TYPES,
-  POPULAR_FEATURES,
-  PAGE_SETTINGS,
-  PRICING_SETTINGS,
-  normalizeFeatureId,
-  featureRequiresDynamic,
-  calculatePricing,
-  FeatureOption,
-  TRUST_BADGES,
-  LAUNCH_PRICING_CONFIG,
-  PRICING_TERMS,
-  PRICING_FAQS,
-} from "@/lib/pricing.config";
+  MASTER_PACKAGES,
+  MASTER_CATEGORIES,
+  MASTER_FEATURES,
+  MasterPackageTier,
+  MasterCategoryKey,
+  MatrixFeatureItem,
+  FeatureStatus,
+  formatCurrencyINR,
+} from "@/data/pricing-matrix-data";
 
-export function formatINR(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+// ---------------------------------------------------------------------------
+// Flow Mode Types
+// ---------------------------------------------------------------------------
+type PricingFlowMode = "package" | "package_plus_addons" | "custom_only";
 
-const FILTER_GROUPS: { id: string; label: string; count?: number; match: (f: FeatureOption) => boolean }[] = [
-  { id: "all", label: "All Features", match: () => true },
-  {
-    id: "communication",
-    label: "Lead Gen & Chat",
-    match: (f) =>
-      f.categoryTag === "Communication" ||
-      f.categoryTag === "Automation" ||
-      f.id.includes("whatsapp") ||
-      f.id.includes("form") ||
-      f.id.includes("email") ||
-      f.id.includes("chat") ||
-      f.id.includes("newsletter"),
-  },
-  {
-    id: "commerce",
-    label: "Payments & Store",
-    match: (f) =>
-      f.categoryTag === "Payments" ||
-      f.categoryTag === "E-Commerce" ||
-      f.id.includes("payment") ||
-      f.id.includes("cart") ||
-      f.id.includes("coupon") ||
-      f.id.includes("inventory") ||
-      f.id.includes("invoice"),
-  },
-  {
-    id: "portal",
-    label: "Booking & Portals",
-    match: (f) =>
-      f.categoryTag === "Functionality" ||
-      f.categoryTag === "Security" ||
-      f.categoryTag === "Management" ||
-      f.id.includes("booking") ||
-      f.id.includes("login") ||
-      f.id.includes("auth") ||
-      f.id.includes("dashboard") ||
-      f.id.includes("admin") ||
-      f.id.includes("calculator"),
-  },
-  {
-    id: "growth",
-    label: "SEO, Speed & Media",
-    match: (f) =>
-      f.categoryTag === "Growth" ||
-      f.categoryTag === "Performance" ||
-      f.categoryTag === "Design" ||
-      f.categoryTag === "Content" ||
-      f.id.includes("seo") ||
-      f.id.includes("speed") ||
-      f.id.includes("animation") ||
-      f.id.includes("gallery") ||
-      f.id.includes("blog") ||
-      f.id.includes("review") ||
-      f.id.includes("video") ||
-      f.id.includes("faq") ||
-      f.id.includes("pdf") ||
-      f.id.includes("analytics") ||
-      f.id.includes("schema") ||
-      f.id.includes("pwa") ||
-      f.id.includes("dark_mode"),
-  },
-  {
-    id: "advanced",
-    label: "AI & Multi-Language",
-    match: (f) =>
-      f.categoryTag === "AI Integration" ||
-      f.id.includes("ai") ||
-      f.id.includes("multilanguage"),
-  },
-];
-
-interface DependencyNotice {
-  type: "auto-switched" | "blocked-static";
-  title: string;
-  message: string;
-  featureName?: string;
-  costDiff?: number;
-}
-
-interface PricingViewProps {
+export interface PricingViewProps {
   initialData?: BackendPricingData;
 }
 
 export function PricingView({ initialData }: PricingViewProps) {
   const searchParams = useSearchParams();
 
-  // Backend data state (initialized from centralized config / SSR, revalidated via API if available)
-  const [backendData, setBackendData] = useState<BackendPricingData>(
-    initialData || {
-      categories: WEBSITE_CATEGORIES,
-      types: WEBSITE_TYPES,
-      features: POPULAR_FEATURES,
-      settings: {
-        basePagesIncluded: PAGE_SETTINGS.basePagesIncluded,
-        costPerExtraPage: PAGE_SETTINGS.costPerExtraPage,
-        discountForOnePage: PAGE_SETTINGS.discountForOnePage,
-        currency: PRICING_SETTINGS.currency,
-        currencySymbol: PRICING_SETTINGS.currencySymbol,
-      },
+  // Master data sources
+  const packages = initialData?.matrixPackages || MASTER_PACKAGES;
+  const categories = initialData?.matrixCategories || MASTER_CATEGORIES;
+  const features = initialData?.matrixFeatures || MASTER_FEATURES;
+
+  // ---------------------------------------------------------------------------
+  // URL Param Initialization
+  // ---------------------------------------------------------------------------
+  const initialTier: MasterPackageTier = useMemo(() => {
+    const raw = searchParams.get("pkg")?.toLowerCase();
+    if (raw === "starter" || raw === "business" || raw === "pro") {
+      return raw as MasterPackageTier;
     }
-  );
-
-  // Client-side background sync with /api/pricing to guarantee live sync
-  useEffect(() => {
-    let isMounted = true;
-    fetch("/api/pricing")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (isMounted && json && json.success && json.data) {
-          setBackendData(json.data);
-        }
-      })
-      .catch((err) => {
-        console.warn("Pricing live sync fallback to centralized data:", err);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const categories = backendData.categories;
-  const types = backendData.types;
-  const allFeatures = backendData.features;
-  const settings = backendData.settings;
-
-  // ---------------------------------------------------------------------------
-  // Initial State from URL params or defaults
-  // ---------------------------------------------------------------------------
-  const initialCategory = useMemo(() => {
     const cat = searchParams.get("cat");
-    return cat && categories.some((c) => c.id === cat) ? cat : "business";
-  }, [searchParams, categories]);
-
-  const initialDelivery = useMemo(() => {
-    const del = searchParams.get("delivery");
-    return del === "express" ? "express" : "standard";
+    if (cat === "enterprise" || cat === "ecommerce") return "pro";
+    if (cat === "starter" || cat === "portfolio") return "starter";
+    return "business";
   }, [searchParams]);
 
-  const initialPages = useMemo(() => {
-    const raw = searchParams.get("pages");
-    const p = parseInt(raw || "", 10);
-    if (!isNaN(p)) {
-      return Math.max(1, Math.min(30, p));
+  const initialFlow: PricingFlowMode = useMemo(() => {
+    const raw = searchParams.get("flow");
+    if (raw === "package" || raw === "package_plus_addons" || raw === "custom_only") {
+      return raw;
     }
-    const cat = categories.find((c) => c.id === initialCategory);
-    return cat ? cat.recommendedPages : 5;
-  }, [searchParams, initialCategory, categories]);
+    return "package";
+  }, [searchParams]);
 
-  const initialFeatures = useMemo(() => {
-    const raw = searchParams.get("feat");
-    if (raw !== null) {
-      if (!raw.trim()) return [];
-      return raw
-        .split(",")
-        .map((id) => normalizeFeatureId(id.trim()))
-        .filter((id) => allFeatures.some((f) => f.id === id));
-    }
-    const cat = categories.find((c) => c.id === initialCategory);
-    return cat
-      ? cat.defaultFeatures.map(normalizeFeatureId)
-      : ["contact_form", "whatsapp_chat", "seo_basic"];
-  }, [searchParams, initialCategory, categories, allFeatures]);
+  const initialAddons = useMemo(() => {
+    const raw = searchParams.get("addons") || searchParams.get("feat");
+    if (!raw) return [];
+    const list = raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter((id) => features.some((f) => f.id === id));
+    return list;
+  }, [searchParams, features]);
 
-  const initialType = useMemo(() => {
-    if (initialFeatures.some(featureRequiresDynamic)) {
-      return "dynamic";
-    }
-    const raw = searchParams.get("type");
-    return raw === "dynamic" ? "dynamic" : "static";
-  }, [searchParams, initialFeatures]);
+  const initialDelivery: "standard" | "express" = useMemo(() => {
+    return searchParams.get("speed") === "express" ? "express" : "standard";
+  }, [searchParams]);
 
-  // Component State
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(initialCategory);
-  const [selectedTypeId, setSelectedTypeId] = useState<"static" | "dynamic">(initialType);
-  const [pageCount, setPageCount] = useState<number>(initialPages);
+  // ---------------------------------------------------------------------------
+  // Interactive State
+  // ---------------------------------------------------------------------------
+  const [flowMode, setFlowMode] = useState<PricingFlowMode>(initialFlow);
+  const [selectedTier, setSelectedTier] = useState<MasterPackageTier>(initialTier);
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>(initialAddons);
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
+  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({
+    design_frontend_additional_website_pages: 1,
+    testing_maintenance_monthly_development_hours: 1,
+  });
   const [deliverySpeed, setDeliverySpeed] = useState<"standard" | "express">(initialDelivery);
-  const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>(initialFeatures);
-  const [dependencyNotice, setDependencyNotice] = useState<DependencyNotice | null>(null);
 
-  // Feature Catalog Filters & Search
-  const [featureCategoryFilter, setFeatureCategoryFilter] = useState<string>("all");
-  const [featureSearchQuery, setFeatureSearchQuery] = useState<string>("");
-  const [expandedFeatureIds, setExpandedFeatureIds] = useState<Record<string, boolean>>({});
+  // Search, Filters & View Options
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [activeCategoryKey, setActiveCategoryKey] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "included" | "addon" | "custom_quote">("all");
+
+  // Accordion Expand/Collapse State (Category groups)
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    categories.forEach((cat, idx) => {
+      initial[cat.key] = idx < 3;
+    });
+    return initial;
+  });
+
+  // Feature tooltip / detail expansion
+  const [expandedDetails, setExpandedDetails] = useState<Record<string, boolean>>({});
 
   const [customNotes, setCustomNotes] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Synchronize state changes to URL query string
+  // ---------------------------------------------------------------------------
+  // URL Synchronization
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     const params = new URLSearchParams();
-    if (selectedCategoryId) params.set("cat", selectedCategoryId);
-    if (selectedTypeId) params.set("type", selectedTypeId);
-    if (pageCount) params.set("pages", String(pageCount));
-    if (deliverySpeed) params.set("delivery", deliverySpeed);
-    if (selectedFeatureIds.length > 0) {
-      params.set("feat", selectedFeatureIds.join(","));
+    params.set("flow", flowMode);
+    if (flowMode !== "custom_only") {
+      params.set("pkg", selectedTier);
+    }
+    if (selectedAddonIds.length > 0) {
+      params.set("addons", selectedAddonIds.join(","));
+    }
+    if (selectedQuoteIds.length > 0) {
+      params.set("quotes", selectedQuoteIds.join(","));
+    }
+    if (deliverySpeed === "express") {
+      params.set("speed", "express");
+    }
+    if (activeCategoryKey !== "all") {
+      params.set("cat", activeCategoryKey);
+    }
+    const newQuery = params.toString();
+    const currentUrl = window.location.pathname + (newQuery ? `?${newQuery}` : "");
+    window.history.replaceState(null, "", currentUrl);
+  }, [flowMode, selectedTier, selectedAddonIds, selectedQuoteIds, deliverySpeed, activeCategoryKey]);
+
+  // When user changes flow mode, auto-clear addons if going to package-only
+  useEffect(() => {
+    if (flowMode === "package") {
+      setSelectedAddonIds([]);
+      setSelectedQuoteIds([]);
+    }
+  }, [flowMode]);
+
+  // ---------------------------------------------------------------------------
+  // Feature Search & Filtering Logic
+  // ---------------------------------------------------------------------------
+  const filteredFeatures = useMemo(() => {
+    let list = features;
+
+    if (activeCategoryKey !== "all") {
+      list = list.filter((f) => f.category === activeCategoryKey);
     }
 
-    const qs = params.toString();
-    const newPath = qs ? `/pricing?${qs}` : "/pricing";
-    if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname + window.location.search;
-      if (currentPath !== newPath) {
-        window.history.replaceState(null, "", newPath);
-      }
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          f.description.toLowerCase().includes(q) ||
+          f.category.toLowerCase().includes(q)
+      );
     }
-  }, [selectedCategoryId, selectedTypeId, pageCount, deliverySpeed, selectedFeatureIds]);
 
-  // Pure Calculation invocation from centralized config
-  const calculation = useMemo(() => {
-    return calculatePricing(
-      {
-        categoryId: selectedCategoryId,
-        typeId: selectedTypeId,
-        pageCount,
-        deliverySpeed,
-        selectedFeatureIds,
-      },
-      {
-        categories,
-        types,
-        features: allFeatures,
-        pageSettings: {
-          basePagesIncluded: settings.basePagesIncluded,
-          costPerExtraPage: settings.costPerExtraPage,
-          discountForOnePage: settings.discountForOnePage,
-        },
+    if (flowMode !== "custom_only" && statusFilter !== "all") {
+      list = list.filter((f) => {
+        const stat = f.availability[selectedTier];
+        if (statusFilter === "included") return stat === "included" || stat === "limited";
+        if (statusFilter === "addon") return stat === "addon";
+        if (statusFilter === "custom_quote") return stat === "custom_quote";
+        return true;
+      });
+    }
+
+    return list;
+  }, [features, activeCategoryKey, searchQuery, statusFilter, selectedTier, flowMode]);
+
+  // Auto-expand categories when search active
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      const allOpen: Record<string, boolean> = {};
+      categories.forEach((cat) => {
+        allOpen[cat.key] = true;
+      });
+      setExpandedCategories(allOpen);
+    }
+  }, [searchQuery, categories]);
+
+  // Group filtered features by category
+  const groupedFeatures = useMemo(() => {
+    const groups: { category: typeof categories[0]; items: MatrixFeatureItem[] }[] = [];
+    categories.forEach((cat) => {
+      const items = filteredFeatures.filter((f) => f.category === cat.key);
+      if (items.length > 0) {
+        groups.push({ category: cat, items });
       }
-    );
-  }, [
-    selectedCategoryId,
-    selectedTypeId,
-    pageCount,
-    deliverySpeed,
-    selectedFeatureIds,
-    categories,
-    types,
-    allFeatures,
-    settings,
-  ]);
+    });
+    return groups;
+  }, [categories, filteredFeatures]);
 
-  const {
-    category: currentCategory,
-    type: currentType,
-    baseCategoryPrice,
-    typePrice,
-    pagesPrice,
-    featuresCost,
-    expressPrice,
-    selectedFeaturesList,
-    grandTotal,
-    estimatedDays,
-  } = calculation;
+  // ---------------------------------------------------------------------------
+  // Addon & Quote Toggle Handlers
+  // ---------------------------------------------------------------------------
+  const toggleAddon = useCallback(
+    (featureId: string) => {
+      const feat = features.find((f) => f.id === featureId);
+      if (!feat) return;
 
-  // Toggle Feature Selection
-  const toggleFeature = useCallback(
-    (rawFeatId: string) => {
-      const featId = normalizeFeatureId(rawFeatId);
-      const feat = allFeatures.find((f) => f.id === featId || f.id === rawFeatId);
-      const isCurrentlySelected =
-        selectedFeatureIds.includes(featId) || selectedFeatureIds.includes(rawFeatId);
+      // In package & package_plus_addons mode, prevent adding features already included
+      if (flowMode !== "custom_only" && feat.availability[selectedTier] === "included") return;
 
-      if (isCurrentlySelected) {
-        // Deselecting feature
-        const updatedFeatures = selectedFeatureIds.filter(
-          (id) => id !== featId && id !== rawFeatId && normalizeFeatureId(id) !== featId
+      // Handle custom quote items
+      if (feat.isCustomQuote || (flowMode !== "custom_only" && feat.availability[selectedTier] === "custom_quote")) {
+        setSelectedQuoteIds((prev) =>
+          prev.includes(featureId) ? prev.filter((id) => id !== featureId) : [...prev, featureId]
         );
-        setSelectedFeatureIds(updatedFeatures);
-
-        if (dependencyNotice?.featureName === feat?.name) {
-          setDependencyNotice(null);
-        }
-      } else {
-        // Selecting feature
-        const updatedFeatures = [...selectedFeatureIds, featId];
-        setSelectedFeatureIds(updatedFeatures);
-
-        // Check if feature requires Dynamic and we are currently on Static
-        if (selectedTypeId === "static" && featureRequiresDynamic(featId)) {
-          setSelectedTypeId("dynamic");
-          const dynamicType = types.find((t) => t.id === "dynamic");
-          const dynamicCost = dynamicType?.additionalCost || 8000;
-          setDependencyNotice({
-            type: "auto-switched",
-            title: "Switched to Dynamic Website (+₹8,000)",
-            message: `"${feat?.name || "This feature"}" requires a backend & database to function. Architecture automatically updated to Dynamic Website (+${formatINR(dynamicCost)}).`,
-            featureName: feat?.name,
-            costDiff: dynamicCost,
-          });
-        }
+        return;
       }
+
+      setSelectedAddonIds((prev) =>
+        prev.includes(featureId) ? prev.filter((id) => id !== featureId) : [...prev, featureId]
+      );
     },
-    [selectedFeatureIds, selectedTypeId, allFeatures, types, dependencyNotice]
+    [features, selectedTier, flowMode]
   );
 
-  // Toggle Description Expansion
-  const toggleFeatureExpansion = (featId: string) => {
-    setExpandedFeatureIds((prev) => ({
+  const removeAddon = useCallback((featureId: string) => {
+    setSelectedAddonIds((prev) => prev.filter((id) => id !== featureId));
+    setSelectedQuoteIds((prev) => prev.filter((id) => id !== featureId));
+  }, []);
+
+  const updateQuantity = useCallback((featureId: string, delta: number) => {
+    setAddonQuantities((prev) => {
+      const current = prev[featureId] || 1;
+      const next = Math.max(1, Math.min(25, current + delta));
+      return { ...prev, [featureId]: next };
+    });
+  }, []);
+
+  const handleExpandAll = () => {
+    const allOpen: Record<string, boolean> = {};
+    categories.forEach((cat) => {
+      allOpen[cat.key] = true;
+    });
+    setExpandedCategories(allOpen);
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedCategories({});
+  };
+
+  const toggleCategory = (catKey: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [catKey]: !prev[catKey],
+    }));
+  };
+
+  const toggleFeatureDetail = (featId: string) => {
+    setExpandedDetails((prev) => ({
       ...prev,
       [featId]: !prev[featId],
     }));
   };
 
-  // Handle Category Change
-  const handleCategoryChange = (catId: string) => {
-    setSelectedCategoryId(catId);
-    const cat = categories.find((c) => c.id === catId);
-    if (cat) {
-      setPageCount(cat.recommendedPages);
-      const normalizedDefaults = cat.defaultFeatures.map(normalizeFeatureId);
-      setSelectedFeatureIds(normalizedDefaults);
-
-      if (normalizedDefaults.some(featureRequiresDynamic)) {
-        setSelectedTypeId("dynamic");
-      }
-    }
-  };
-
-  // Handle Architecture Change with Blocking Logic
-  const handleTypeChange = (typeId: "static" | "dynamic") => {
-    if (typeId === "static") {
-      const conflicting = selectedFeatureIds
-        .map((id) => allFeatures.find((f) => f.id === id || f.id === normalizeFeatureId(id)))
-        .filter((f): f is FeatureOption => Boolean(f && featureRequiresDynamic(f.id)));
-
-      if (conflicting.length > 0) {
-        const names = conflicting.map((f) => f.name).join(", ");
-        setDependencyNotice({
-          type: "blocked-static",
-          title: "Static Website Architecture Blocked",
-          message: `Cannot switch to Static Website because the following selected feature(s) require a backend & database: ${names}. Deselect them first to switch to Static.`,
-        });
-        return;
-      }
-    }
-
-    setSelectedTypeId(typeId);
-    setDependencyNotice(null);
-  };
-
-  const handlePagesChange = (newCount: number) => {
-    setPageCount(Math.max(1, Math.min(30, newCount)));
-  };
-
   const handleReset = () => {
-    setSelectedCategoryId("business");
-    setSelectedTypeId("static");
-    setPageCount(5);
+    setFlowMode("package");
+    setSelectedTier("business");
+    setSelectedAddonIds([]);
+    setSelectedQuoteIds([]);
     setDeliverySpeed("standard");
+    setSearchQuery("");
+    setActiveCategoryKey("all");
+    setStatusFilter("all");
     setCustomNotes("");
-    setDependencyNotice(null);
-    setSelectedFeatureIds(["contact_form", "whatsapp_chat", "seo_basic"]);
-  };
-
-  const handleSelectRecommended = () => {
-    if (currentCategory && currentCategory.defaultFeatures) {
-      const normalizedDefaults = currentCategory.defaultFeatures.map(normalizeFeatureId);
-      setSelectedFeatureIds(normalizedDefaults);
-      if (normalizedDefaults.some(featureRequiresDynamic)) {
-        setSelectedTypeId("dynamic");
-      }
-    }
-  };
-
-  const handleClearFeatures = () => {
-    setSelectedFeatureIds([]);
-    setDependencyNotice(null);
   };
 
   const handleCopyLink = () => {
@@ -444,174 +319,271 @@ export function PricingView({ initialData }: PricingViewProps) {
     }
   };
 
-  // Pre-filled URL for Contact Page
+  // ---------------------------------------------------------------------------
+  // Budget & Investment Calculations
+  // ---------------------------------------------------------------------------
+  const currentPackage = packages[selectedTier];
+  const basePackagePrice = flowMode === "custom_only" ? 0 : currentPackage.startingPrice;
+
+  // Active selected add-on objects
+  const activeSelectedAddons = useMemo(() => {
+    const list: MatrixFeatureItem[] = [];
+    for (const id of selectedAddonIds) {
+      const feat = features.find((f) => f.id === id);
+      if (feat) {
+        // In package modes, skip features already included
+        if (flowMode !== "custom_only" && feat.availability[selectedTier] === "included") {
+          continue;
+        }
+        list.push(feat);
+      }
+    }
+    return list;
+  }, [selectedAddonIds, features, selectedTier, flowMode]);
+
+  const activeSelectedQuotes = useMemo(() => {
+    const list: MatrixFeatureItem[] = [];
+    for (const id of selectedQuoteIds) {
+      const feat = features.find((f) => f.id === id);
+      if (feat) {
+        list.push(feat);
+      }
+    }
+    return list;
+  }, [selectedQuoteIds, features]);
+
+  // One-time addons vs Monthly ongoing services
+  const onetimeAddonsCost = useMemo(() => {
+    return activeSelectedAddons
+      .filter((f) => f.billingType === "onetime")
+      .reduce((sum, f) => {
+        const qty = f.hasQuantity ? addonQuantities[f.id] || 1 : 1;
+        return sum + (f.addonPrice || 0) * qty;
+      }, 0);
+  }, [activeSelectedAddons, addonQuantities]);
+
+  const monthlyServicesCost = useMemo(() => {
+    return activeSelectedAddons
+      .filter((f) => f.billingType === "monthly")
+      .reduce((sum, f) => {
+        const qty = f.hasQuantity ? addonQuantities[f.id] || 1 : 1;
+        return sum + (f.addonPrice || 0) * qty;
+      }, 0);
+  }, [activeSelectedAddons, addonQuantities]);
+
+  // Base + Onetime subtotal
+  const onetimeBaseSubtotal = basePackagePrice + onetimeAddonsCost;
+  const expressFee = deliverySpeed === "express" ? Math.round(onetimeBaseSubtotal * 0.2) : 0;
+  const grandTotalOnetime = onetimeBaseSubtotal + expressFee;
+
+  // Features included free in package count
+  const includedCountInTier = useMemo(() => {
+    return features.filter((f) => f.availability[selectedTier] === "included").length;
+  }, [features, selectedTier]);
+
+  // ---------------------------------------------------------------------------
+  // Quotation Link Construction for /contact
+  // ---------------------------------------------------------------------------
   const quotationUrl = useMemo(() => {
-    const featuresSummary = selectedFeaturesList
-      .map(
-        (f) =>
-          `• ${f.name} (${
-            f.includedInDynamic && selectedTypeId === "dynamic"
-              ? "Included Free"
-              : formatINR(f.price)
-          })`
-      )
+    const addonsSummary = activeSelectedAddons
+      .map((f) => {
+        const qty = f.hasQuantity ? ` (Qty: ${addonQuantities[f.id] || 1})` : "";
+        const billing = f.billingType === "monthly" ? "/mo" : "";
+        return `• ${f.name}${qty}: ${formatCurrencyINR((f.addonPrice || 0) * (addonQuantities[f.id] || 1))}${billing}`;
+      })
       .join("\n");
 
-    const message = `Website Requirements Specification:
-- Category: ${currentCategory.title} (${formatINR(currentCategory.startingPrice)})
-- Architecture: ${currentType.title} (${currentType.additionalCost > 0 ? `+${formatINR(currentType.additionalCost)}` : "Included"})
-- Pages: ${pageCount} Custom Pages (${pagesPrice > 0 ? `+${formatINR(pagesPrice)}` : pagesPrice < 0 ? `-₹2,000` : "Included in Base"})
-- Delivery SLA: ${deliverySpeed === "express" ? "Express Delivery (+20%)" : "Standard Timeline"}
-- Selected Features (${selectedFeaturesList.length} items, Total: ${formatINR(featuresCost)}):
-${featuresSummary || "• Standard contact form only"}
-${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
-- Total Estimated Investment: ${formatINR(grandTotal)}
-- Target Delivery Timeline: ${estimatedDays}
-- Note: Domain & hosting direct to client at actuals. 100% full source code ownership.`;
+    const quotesSummary = activeSelectedQuotes
+      .map((f) => `• ${f.name} [Custom Architecture Quote Required]`)
+      .join("\n");
+
+    const flowLabel =
+      flowMode === "package"
+        ? "Package Only"
+        : flowMode === "package_plus_addons"
+        ? "Package + Custom Add-ons"
+        : "Fully Custom Build (No Package)";
+
+    const message = `Webgent Project Configuration:
+- Build Mode: ${flowLabel}
+${flowMode !== "custom_only" ? `- Base Package: ${currentPackage.name} (${formatCurrencyINR(currentPackage.startingPrice)})` : "- Base Package: None (Custom Feature Selection)"}
+- Delivery SLA: ${deliverySpeed === "express" ? "Express Delivery (+20% SLA)" : "Standard Timeline"}
+- One-Time Estimated Development: ${formatCurrencyINR(grandTotalOnetime)}
+${monthlyServicesCost > 0 ? `- Monthly Support / Maintenance: ${formatCurrencyINR(monthlyServicesCost)}/mo\n` : ""}${flowMode !== "custom_only" ? `- Included Package Features: ${includedCountInTier} features bundled in base package\n` : ""}${activeSelectedAddons.length > 0 ? `\nSelected Add-ons (${activeSelectedAddons.length}):\n${addonsSummary}\n` : ""}${activeSelectedQuotes.length > 0 ? `\nCustom Quote Requirements (${activeSelectedQuotes.length}):\n${quotesSummary}\n` : ""}${customNotes.trim() ? `\nClient Notes / Reference Links:\n${customNotes.trim()}\n` : ""}
+Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, email service) are not included.
+100% full source code ownership. Zero vendor lock-in.`;
 
     const getBudgetBucket = (total: number): string => {
-      if (total < 25000) return "under_5k";
-      if (total <= 50000) return "5k_10k";
-      if (total <= 100000) return "10k_25k";
+      if (total < 15000) return "under_5k";
+      if (total <= 30000) return "5k_10k";
+      if (total <= 60000) return "10k_25k";
       return "25k_plus";
     };
 
     const params = new URLSearchParams({
-      service: currentCategory.title,
-      budget: getBudgetBucket(grandTotal),
+      service: flowMode === "custom_only" ? "Custom Build" : `${currentPackage.name} Package`,
+      budget: getBudgetBucket(grandTotalOnetime),
       message: message,
     });
 
     return `/contact?${params.toString()}`;
   }, [
-    currentCategory,
-    currentType,
-    pageCount,
-    pagesPrice,
+    flowMode,
+    currentPackage,
     deliverySpeed,
-    selectedFeaturesList,
-    featuresCost,
+    grandTotalOnetime,
+    monthlyServicesCost,
+    includedCountInTier,
+    activeSelectedAddons,
+    activeSelectedQuotes,
+    addonQuantities,
     customNotes,
-    grandTotal,
-    estimatedDays,
-    selectedTypeId,
   ]);
 
-  // Icon mapping helper
-  const renderIcon = (name: string, className: string = "w-4 h-4") => {
-    switch (name) {
-      case "Building2":
-        return <Building2 className={className} />;
+  // ---------------------------------------------------------------------------
+  // Category Icon Renderer Helper
+  // ---------------------------------------------------------------------------
+  const renderCategoryIcon = (iconName: string, className = "w-4 h-4") => {
+    switch (iconName) {
+      case "Layout":
+        return <LayoutDashboard className={className} />;
+      case "BookOpen":
+        return <BookOpen className={className} />;
       case "ShoppingBag":
         return <ShoppingBag className={className} />;
-      case "HeartPulse":
-        return <HeartPulse className={className} />;
-      case "User":
-        return <User className={className} />;
-      case "Sparkles":
-        return <Sparkles className={className} />;
-      case "Home":
-        return <Home className={className} />;
-      case "Utensils":
-        return <Utensils className={className} />;
-      case "GraduationCap":
-        return <GraduationCap className={className} />;
-      case "Layers":
-        return <Layers className={className} />;
-      case "CreditCard":
-        return <CreditCard className={className} />;
-      case "MessageCircle":
-        return <MessageCircle className={className} />;
-      case "Send":
-        return <Send className={className} />;
-      case "Calendar":
-        return <Calendar className={className} />;
       case "Lock":
         return <Lock className={className} />;
       case "LayoutDashboard":
         return <LayoutDashboard className={className} />;
-      case "BookOpen":
-        return <BookOpen className={className} />;
-      case "Image":
-        return <ImageIcon className={className} />;
+      case "Database":
+        return <Database className={className} />;
+      case "CreditCard":
+        return <CreditCard className={className} />;
+      case "MessageCircle":
+        return <MessageCircle className={className} />;
       case "Mail":
         return <Mail className={className} />;
+      case "Calendar":
+        return <Calendar className={className} />;
+      case "User":
+        return <User className={className} />;
+      case "Sparkles":
+        return <Sparkles className={className} />;
+      case "Layers":
+        return <Layers className={className} />;
       case "Search":
         return <Search className={className} />;
       case "Zap":
         return <Zap className={className} />;
+      case "Shield":
+        return <Shield className={className} />;
       case "Globe":
         return <Globe className={className} />;
+      case "CheckCircle2":
+        return <CheckCircle2 className={className} />;
       case "Bot":
         return <Bot className={className} />;
+      case "Building2":
+        return <Building2 className={className} />;
       default:
-        return <Check className={className} />;
+        return <Sparkles className={className} />;
     }
   };
 
-  // Category Tag badge styling helper to make sections visually rich
-  const getCategoryTagStyle = (tag: string) => {
-    switch (tag) {
-      case "Communication":
-        return "bg-sky-500/15 text-sky-300 border-sky-500/30";
-      case "Payments":
-      case "E-Commerce":
-        return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
-      case "Security":
-      case "Management":
-        return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
-      case "Content":
-      case "Design":
-        return "bg-rose-500/15 text-rose-300 border-rose-500/30";
-      case "Growth":
-      case "Performance":
-        return "bg-amber-500/15 text-amber-300 border-amber-500/30";
-      case "AI Integration":
-        return "bg-purple-500/15 text-purple-300 border-purple-500/30";
+  // Status Badge Renderer for Matrix Row
+  const renderStatusBadge = (status: FeatureStatus, note?: string) => {
+    switch (status) {
+      case "included":
+        return (
+          <span
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] sm:text-[11px] font-mono font-semibold whitespace-nowrap"
+            title={note || "Included in package base"}
+          >
+            <Check className="w-3 h-3 text-emerald-400 stroke-[3]" />
+            <span className="hidden sm:inline">Included</span>
+          </span>
+        );
+      case "limited":
+        return (
+          <span
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] sm:text-[11px] font-mono font-medium whitespace-nowrap"
+            title={note || "Included with scope limitation"}
+          >
+            <Info className="w-3 h-3 text-amber-400" />
+            <span className="truncate max-w-[80px]">{note || "Limited"}</span>
+          </span>
+        );
+      case "addon":
+        return (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/25 text-sky-300 text-[10px] sm:text-[11px] font-mono whitespace-nowrap">
+            <Plus className="w-3 h-3 text-sky-400" />
+            <span className="hidden sm:inline">Add-on</span>
+          </span>
+        );
+      case "custom_quote":
+        return (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[10px] sm:text-[11px] font-mono whitespace-nowrap">
+            <Sparkles className="w-3 h-3 text-purple-400" />
+            <span className="hidden sm:inline">Quote</span>
+          </span>
+        );
+      case "not_included":
       default:
-        return "bg-teal-500/15 text-teal-300 border-teal-500/30";
+        return (
+          <span className="text-[#555555] text-xs font-mono select-none px-1.5 py-0.5" title="Not available in this tier">
+            —
+          </span>
+        );
     }
   };
 
-  // Filtered features for the single catalog
-  const displayedFeatures = useMemo(() => {
-    let list = allFeatures;
-    const activeGroup = FILTER_GROUPS.find((g) => g.id === featureCategoryFilter);
-    if (activeGroup && activeGroup.id !== "all") {
-      list = list.filter(activeGroup.match);
-    }
-    if (featureSearchQuery.trim()) {
-      const q = featureSearchQuery.toLowerCase();
-      list = list.filter(
-        (f) =>
-          f.name.toLowerCase().includes(q) ||
-          f.simpleDescription.toLowerCase().includes(q) ||
-          f.categoryTag.toLowerCase().includes(q)
-      );
-    }
-    return list;
-  }, [allFeatures, featureCategoryFilter, featureSearchQuery]);
+  // ---------------------------------------------------------------------------
+  // Flow Mode Descriptions
+  // ---------------------------------------------------------------------------
+  const flowOptions: { mode: PricingFlowMode; icon: React.ReactNode; title: string; subtitle: string }[] = [
+    {
+      mode: "package",
+      icon: <Package className="w-5 h-5" />,
+      title: "Choose a Package",
+      subtitle: "Pick a ready-made package and get started right away",
+    },
+    {
+      mode: "package_plus_addons",
+      icon: <ShoppingCart className="w-5 h-5" />,
+      title: "Package + Add-ons",
+      subtitle: "Start with a package, then add extra features you need",
+    },
+    {
+      mode: "custom_only",
+      icon: <Wrench className="w-5 h-5" />,
+      title: "Fully Custom Build",
+      subtitle: "Skip packages — pick only the features you want",
+    },
+  ];
+
+  // Show addons section?
+  const showFeatureMatrix = flowMode === "package_plus_addons" || flowMode === "custom_only";
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-8 pb-36 lg:pb-20 px-3 sm:px-6 lg:px-10 font-sans selection:bg-white selection:text-black">
-      <div className="max-w-[1440px] mx-auto space-y-8 relative z-10">
+    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-6 pb-28 sm:pb-20 px-3 sm:px-6 lg:px-10 2xl:px-16 3xl:px-24 font-sans selection:bg-white selection:text-black">
+      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto space-y-6 sm:space-y-8 relative z-10">
         {/* ========================================================================= */}
-        {/* Page Top Header */}
+        {/* Top Header & Page Navigation                                              */}
         {/* ========================================================================= */}
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
-          <div className="space-y-1.5">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
               <span className="text-[11px] font-mono tracking-widest text-emerald-400 font-semibold uppercase flex items-center gap-1.5">
                 <Database className="w-3 h-3" />
-                Backend-Connected Studio Pricing
+                Webgent Pricing
               </span>
             </div>
-            <h1 className="text-xl sm:text-3xl lg:text-4xl font-light text-[#F5F5F3] tracking-tight break-words">
-              Website Cost & <span className="font-semibold text-white">Requirements Estimator</span>
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-light text-[#F5F5F3] tracking-tight">
+              Build Your Website, <span className="font-semibold text-white">Your Way</span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#A3A3A3] font-light max-w-2xl leading-relaxed">
-              Transparent, fixed studio rates. Customize your project parameters and select from 30 modular features. The sticky cost ledger on the right updates live.
+            <p className="text-xs sm:text-sm text-[#A3A3A3] font-light max-w-3xl leading-relaxed">
+              Choose a ready-made package, customize with add-ons, or handpick every feature for a fully custom build. All prices are for development only — third-party service charges are not included.
             </p>
           </div>
 
@@ -619,8 +591,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
             <button
               type="button"
               onClick={handleReset}
-              className="min-h-[44px] px-4 py-2 rounded-xl text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]"
-              aria-label="Reset estimator to defaults"
+              className="min-h-[40px] px-3.5 py-1.5 rounded-xl text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              aria-label="Reset estimate to defaults"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>
@@ -628,8 +600,8 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
             <button
               type="button"
               onClick={handleCopyLink}
-              className="min-h-[44px] px-4 py-2 rounded-xl text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]"
-              aria-label="Copy shareable link for this configuration"
+              className="min-h-[40px] px-3.5 py-1.5 rounded-xl text-[#D4D4D4] hover:text-white bg-[#141414] hover:bg-[#1E1E1E] border border-white/[0.08] transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              aria-label="Copy shareable link"
             >
               {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
               <span>{copiedLink ? "Link Copied" : "Share"}</span>
@@ -638,987 +610,889 @@ ${customNotes.trim() ? `- Notes / Reference: ${customNotes.trim()}` : ""}
         </header>
 
         {/* ========================================================================= */}
-        {/* Main 2-Column Grid: Configurator (Left) + Sticky Cost Ledger (Right)       */}
+        {/* HOW DO YOU WANT TO BUILD? — 3 Flow Mode Selector                          */}
         {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* ===================================================================== */}
-          {/* LEFT COLUMN: Distinct Step Sections + Vibrant Feature Marketplace    */}
-          {/* ===================================================================== */}
-          <div className="lg:col-span-7 xl:col-span-7 space-y-7">
-            {/* ----------------------------------------------------------------- */}
-            {/* SECTION 1: Website Industry / Category (Cyan / Electric Theme)     */}
-            {/* ----------------------------------------------------------------- */}
-            <div className="rounded-2xl p-5 sm:p-7 space-y-5 border border-sky-500/20 bg-gradient-to-b from-[#09111D] to-[#070B12] shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-sky-500/15 pb-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
-                      Step 1
-                    </span>
-                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                      Website Industry & Category
-                    </h2>
-                  </div>
-                  <p className="text-xs text-[#9CA3AF] font-light">
-                    Select your business model. Sets recommended page count and default baseline features.
-                  </p>
-                </div>
+        <section aria-label="Build Mode Selection" className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
+              Step 1: How do you want to build your website?
+            </span>
+          </div>
 
-                <span className="text-xs font-mono text-sky-400 font-bold tabular-nums shrink-0 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20">
-                  Base: {formatINR(currentCategory.startingPrice)}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {categories.map((cat) => {
-                  const isSelected = selectedCategoryId === cat.id;
-
-                  return (
-                    <div
-                      key={cat.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      onClick={() => handleCategoryChange(cat.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleCategoryChange(cat.id);
-                        }
-                      }}
-                      className={`min-h-[74px] p-3 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070B12] ${
-                        isSelected
-                          ? "bg-sky-950/40 border-sky-400 text-white shadow-lg ring-1 ring-sky-400/40"
-                          : "bg-[#0E1524]/70 border-white/[0.06] hover:border-sky-500/40 hover:bg-[#121C30] text-[#D4D4D4]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div
-                          className={`p-1.5 rounded-lg shrink-0 ${
-                            isSelected ? "bg-sky-400 text-black font-bold" : "bg-white/[0.06] text-sky-300"
-                          }`}
-                        >
-                          {renderIcon(cat.icon, "w-3.5 h-3.5")}
-                        </div>
-                        <span className="text-xs font-mono font-bold text-white tabular-nums">
-                          {formatINR(cat.startingPrice)}
-                        </span>
-                      </div>
-                      <h3 className="text-xs font-semibold text-white truncate">{cat.title}</h3>
-                      <p className="text-[11px] text-[#9CA3AF] truncate mt-0.5 font-mono">
-                        {cat.deliveryDays} • {cat.recommendedPages} Pages
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* ----------------------------------------------------------------- */}
-            {/* SECTION 2: Architecture & CMS (Indigo / Violet Theme)              */}
-            {/* ----------------------------------------------------------------- */}
-            <div className="rounded-2xl p-5 sm:p-7 space-y-5 border border-indigo-500/20 bg-gradient-to-b from-[#0E0F22] to-[#080914] shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-indigo-500/15 pb-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
-                      Step 2
-                    </span>
-                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                      Technical Architecture & CMS
-                    </h2>
-                  </div>
-                  <p className="text-xs text-[#9CA3AF] font-light">
-                    Static for zero-maintenance marketing sites. Dynamic for CMS, databases, portals, and e-commerce.
-                  </p>
-                </div>
-
-                <span className="text-xs font-mono text-indigo-400 font-bold tabular-nums shrink-0 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                  {selectedTypeId === "dynamic" ? "+₹8,000" : "Included"}
-                </span>
-              </div>
-
-              {/* Inline Dependency Notice (Auto-switched or Blocked) */}
-              {dependencyNotice && (
-                <div
-                  className={`p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-3 ${
-                    dependencyNotice.type === "auto-switched"
-                      ? "bg-blue-950/50 border-blue-400/50 text-blue-200"
-                      : "bg-amber-950/50 border-amber-400/50 text-amber-200"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {flowOptions.map((opt) => {
+              const isActive = flowMode === opt.mode;
+              return (
+                <button
+                  key={opt.mode}
+                  type="button"
+                  onClick={() => setFlowMode(opt.mode)}
+                  className={`relative p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 border flex items-start gap-3.5 select-none group ${
+                    isActive
+                      ? "bg-[#0E1520] border-emerald-400/90 ring-1 ring-emerald-400/50 shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_15px_rgba(16,185,129,0.12)]"
+                      : "bg-[#0D0D10] border-white/[0.08] hover:border-white/[0.22] hover:bg-[#121217]"
                   }`}
                 >
-                  <div className="flex items-start gap-2.5">
-                    {dependencyNotice.type === "auto-switched" ? (
-                      <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    )}
-                    <div className="space-y-1">
-                      <div className="font-semibold text-white flex items-center gap-2">
-                        <span>{dependencyNotice.title}</span>
-                        {dependencyNotice.costDiff ? (
-                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 tabular-nums">
-                            +{formatINR(dependencyNotice.costDiff)}
-                          </span>
-                        ) : null}
-                      </div>
-                      <p className="text-xs leading-relaxed text-[#DCDCDA]">
-                        {dependencyNotice.message}
-                      </p>
-                      {dependencyNotice.type === "blocked-static" && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedFeatureIds((prev) =>
-                              prev.filter((id) => !featureRequiresDynamic(id))
-                            );
-                            setSelectedTypeId("static");
-                            setDependencyNotice(null);
-                          }}
-                          className="mt-1.5 text-xs font-semibold text-amber-300 underline hover:text-white transition-colors block text-left min-h-[44px] flex items-center"
-                        >
-                          Deselect dynamic features and switch to Static
-                        </button>
+                  <span
+                    className={`p-2.5 rounded-xl shrink-0 transition-colors ${
+                      isActive
+                        ? "bg-emerald-400/20 text-emerald-300"
+                        : "bg-white/[0.04] text-[#888888] group-hover:text-white"
+                    }`}
+                  >
+                    {opt.icon}
+                  </span>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-white">{opt.title}</span>
+                      {isActive && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 uppercase tracking-wider font-bold">
+                          Active
+                        </span>
                       )}
                     </div>
+                    <p className="text-[11px] text-[#9E9E9C] leading-relaxed">{opt.subtitle}</p>
                   </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-                  <button
-                    type="button"
-                    onClick={() => setDependencyNotice(null)}
-                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-                    aria-label="Dismiss notice"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {types.map((type) => {
-                  const isSelected = selectedTypeId === type.id;
-                  return (
-                    <div
-                      key={type.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      onClick={() => handleTypeChange(type.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleTypeChange(type.id);
-                        }
-                      }}
-                      className={`min-h-[96px] p-4 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080914] ${
-                        isSelected
-                          ? "bg-indigo-950/40 border-indigo-400 text-white shadow-lg ring-1 ring-indigo-400/40"
-                          : "bg-[#14152A]/60 border-white/[0.06] hover:border-indigo-500/40 hover:bg-[#181A36] text-[#D4D4D4]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white">{type.title}</span>
-                        <span
-                          className={`text-xs font-mono font-bold tabular-nums ${
-                            type.additionalCost === 0 ? "text-emerald-400" : "text-indigo-300"
-                          }`}
-                        >
-                          {type.additionalCost === 0 ? "Included (₹0)" : `+${formatINR(type.additionalCost)}`}
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-mono text-[#A3A3A3] block mt-1">
-                        {type.subtitle}
-                      </span>
-                      <p className="text-xs text-[#A3A3A3] mt-2 leading-relaxed">
-                        {type.description}
-                      </p>
-                    </div>
-                  );
-                })}
+        {/* ========================================================================= */}
+        {/* PACKAGE SELECTION (shown when flow is "package" or "package_plus_addons")   */}
+        {/* ========================================================================= */}
+        {flowMode !== "custom_only" && (
+          <section aria-label="Core Engineering Packages" className="space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
+                  Step 2: Choose Your Base Package
+                </span>
+                <span className="text-xs text-[#555555]">/</span>
+                <span className="text-xs text-[#AAAAAA] font-mono">
+                  Active: <strong className="text-white uppercase">{packages[selectedTier].name}</strong> ({formatCurrencyINR(packages[selectedTier].startingPrice)})
+                </span>
               </div>
+              <span className="text-[11px] font-mono text-emerald-400 hidden sm:inline">
+                Third-party service charges not included
+              </span>
             </div>
 
-            {/* ----------------------------------------------------------------- */}
-            {/* SECTION 3 & 4: Pages & Delivery Speed SLA (Amber / Gold Theme)     */}
-            {/* ----------------------------------------------------------------- */}
-            <div className="rounded-2xl p-5 sm:p-7 space-y-6 border border-amber-500/20 bg-gradient-to-b from-[#141108] to-[#0A0905] shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-amber-500/15 pb-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                      Steps 3 & 4
-                    </span>
-                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                      Page Scope & Delivery Speed SLA
-                    </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+              {(["starter", "business", "pro"] as MasterPackageTier[]).map((tierKey) => {
+                const pkg = packages[tierKey];
+                const isSelected = selectedTier === tierKey;
+
+                return (
+                  <div
+                    key={tierKey}
+                    onClick={() => setSelectedTier(tierKey)}
+                    className={`relative p-5 sm:p-6 rounded-2xl cursor-pointer transition-all duration-200 border flex flex-col justify-between gap-4 text-left select-none ${
+                      isSelected
+                        ? "bg-[#0E1520] border-emerald-400/90 ring-1 ring-emerald-400/50 shadow-[0_15px_40px_rgba(0,0,0,0.8),0_0_20px_rgba(16,185,129,0.12)] -translate-y-0.5"
+                        : "bg-[#0D0D10] border-white/[0.08] hover:border-white/[0.22] hover:bg-[#121217]"
+                    }`}
+                  >
+                    {/* Top Badges */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                          isSelected
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                            : "bg-white/[0.04] text-[#A0A0A0] border-white/[0.08]"
+                        }`}
+                      >
+                        {pkg.name}
+                      </span>
+
+                      {pkg.badge && (
+                        <span className="text-[9.5px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold">
+                          {pkg.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title & Price */}
+                    <div className="space-y-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                          {formatCurrencyINR(pkg.startingPrice)}
+                        </span>
+                        <span className="text-xs font-mono text-[#888888]">starting</span>
+                      </div>
+                      <p className="text-xs font-medium text-[#DCDCDA]">{pkg.tagline}</p>
+                      <p className="text-[11px] text-[#8E8E8C] leading-relaxed line-clamp-2">{pkg.summary}</p>
+                    </div>
+
+                    {/* Highlights */}
+                    <ul className="space-y-1.5 pt-2 border-t border-white/[0.06] text-xs text-[#B5B5B3]">
+                      {pkg.keyHighlights.slice(0, 6).map((hl, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>{hl}</span>
+                        </li>
+                      ))}
+                      {pkg.keyHighlights.length > 6 && (
+                        <li className="text-[10px] text-[#777777] font-mono pl-5">
+                          +{pkg.keyHighlights.length - 6} more features included
+                        </li>
+                      )}
+                    </ul>
+
+                    {/* Delivery & Selection Button */}
+                    <div className="pt-2 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono text-[#888888] flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-[#666666]" />
+                        {pkg.deliveryTime}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTier(tierKey);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all ${
+                          isSelected
+                            ? "bg-emerald-400 text-black shadow-sm"
+                            : "bg-white/[0.06] text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {isSelected ? "Selected ✓" : "Select"}
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-[#9CA3AF] font-light">
-                    Adjust required custom pages and select your target deployment speed.
+                );
+              })}
+            </div>
+
+            {/* Package-Only CTA: if user just wants the package */}
+            {flowMode === "package" && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0A120E] to-[#050907] border border-emerald-400/30">
+                <div className="space-y-1 text-center sm:text-left">
+                  <p className="text-sm font-semibold text-white">
+                    Happy with the {currentPackage.name} package?
+                  </p>
+                  <p className="text-[11px] text-[#9E9E9C]">
+                    Total: <strong className="text-emerald-400 font-mono">{formatCurrencyINR(currentPackage.startingPrice)}</strong> • {currentPackage.deliveryTime} delivery • Third-party charges extra
                   </p>
                 </div>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={quotationUrl}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:shadow-[0_0_30px_rgba(52,211,153,0.5)] active:scale-[0.99]"
+                  >
+                    <span>Get Started</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setFlowMode("package_plus_addons")}
+                    className="px-4 py-2.5 rounded-xl bg-white/[0.06] text-white hover:bg-white/10 text-xs font-mono border border-white/[0.08] transition-colors"
+                  >
+                    + Add Extra Features
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
-                <span className="text-xs font-mono text-amber-400 font-bold tabular-nums shrink-0 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  {pageCount} Pages • {deliverySpeed === "express" ? "Express" : "Standard"}
+        {/* ========================================================================= */}
+        {/* CUSTOM BUILD HEADER (shown when flow is "custom_only")                     */}
+        {/* ========================================================================= */}
+        {flowMode === "custom_only" && (
+          <section className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0E1520] to-[#0A0F18] border border-sky-400/30 space-y-2">
+            <div className="flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-sky-400" />
+              <span className="text-sm font-semibold text-white">Fully Custom Build Mode</span>
+            </div>
+            <p className="text-[11px] text-[#9E9E9C] leading-relaxed max-w-3xl">
+              No base package selected. Browse the complete feature catalog below and select exactly the features you need.
+              Your total will be calculated based on individual feature prices. Third-party service charges (hosting, SMS, payment gateway fees, domain, email service) are not included.
+            </p>
+          </section>
+        )}
+
+        {/* ========================================================================= */}
+        {/* FEATURE MATRIX + COST LEDGER (shown for package_plus_addons & custom_only) */}
+        {/* ========================================================================= */}
+        {showFeatureMatrix && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 2xl:gap-8 items-start">
+            {/* ===================================================================== */}
+            {/* LEFT PANE: Scrollable Master Feature Matrix                           */}
+            {/* ===================================================================== */}
+            <div className="lg:col-span-8 xl:col-span-8 2xl:col-span-8 space-y-4 min-w-0">
+              {/* Step Label */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
+                  {flowMode === "package_plus_addons"
+                    ? "Step 3: Add Extra Features to Your Package"
+                    : "Step 2: Select Features for Your Custom Build"}
                 </span>
               </div>
 
-              {/* Pages Interactive Controls */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
-                    3. Total Custom Pages Required
-                  </label>
-                  <span className="text-xs font-mono text-amber-400 font-bold tabular-nums">
-                    {pageCount === 1
-                      ? "-₹2,000 (Landing Page)"
-                      : pageCount <= 5
-                      ? "5 Pages in Base Package"
-                      : `+${formatINR((pageCount - 5) * settings.costPerExtraPage)}`}
-                  </span>
+              {/* Control Bar: Search + Category Pills + View Toggles */}
+              <div className="rounded-2xl p-4 space-y-3 bg-[#0A0A0D] border border-white/[0.08] shadow-lg">
+                {/* Row 1: Search & Controls */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 text-[#777777] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search 660+ features (e.g., razorpay, dark theme, ocr, redis, blog, pdf)..."
+                      className="w-full pl-9 pr-8 py-2.5 rounded-xl text-xs bg-[#111116] border border-white/[0.08] text-white placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 transition-colors"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#777777] hover:text-white"
+                        aria-label="Clear search"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Status Filter + Expand/Collapse */}
+                  <div className="flex items-center gap-1.5 shrink-0 text-xs font-mono flex-wrap">
+                    {flowMode !== "custom_only" && (
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as "all" | "included" | "addon" | "custom_quote")}
+                        className="bg-[#111116] border border-white/[0.08] text-[#D4D4D4] px-2.5 py-1.5 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                        aria-label="Filter by package status"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="included">Included in {packages[selectedTier].name}</option>
+                        <option value="addon">Available as Add-on</option>
+                        <option value="custom_quote">Custom Quote Required</option>
+                      </select>
+                    )}
+
+                    <div className="flex items-center gap-1 bg-[#111116] p-0.5 rounded-lg border border-white/[0.08]">
+                      <button
+                        type="button"
+                        onClick={handleExpandAll}
+                        className="px-2 py-1 rounded text-[10px] font-mono text-[#A0A0A0] hover:text-white hover:bg-white/[0.04]"
+                        title="Expand all categories"
+                      >
+                        Expand All
+                      </button>
+                      <span className="text-[#333333]">|</span>
+                      <button
+                        type="button"
+                        onClick={handleCollapseAll}
+                        className="px-2 py-1 rounded text-[10px] font-mono text-[#A0A0A0] hover:text-white hover:bg-white/[0.04]"
+                        title="Collapse all categories"
+                      >
+                        Collapse All
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#1A160D]/80 border border-amber-500/20">
-                  <div className="space-y-0.5">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold font-mono text-white tabular-nums">{pageCount}</span>
-                      <span className="text-xs text-[#D4D4D4]">Pages Total</span>
-                    </div>
-                    <span className="text-[11px] font-mono text-[#A3A3A3] block">
-                      {pageCount === 1
-                        ? "Single-page landing (₹2,000 discount applied)"
-                        : pageCount <= 5
-                        ? "Standard 5 pages included in base package"
-                        : `5 Base Included + ${pageCount - 5} Extra Pages @ ₹${settings.costPerExtraPage}/page`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 w-full sm:w-auto">
-                    <button
-                      type="button"
-                      onClick={() => handlePagesChange(pageCount - 1)}
-                      disabled={pageCount <= 1}
-                      aria-label="Decrease page count"
-                      className="w-11 h-11 rounded-lg bg-[#252014] border border-amber-500/30 flex items-center justify-center text-white hover:bg-[#332C1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-
-                    <div className="flex items-center gap-1">
-                      {[1, 5, 8, 12].map((cnt) => (
-                        <button
-                          key={cnt}
-                          type="button"
-                          onClick={() => handlePagesChange(cnt)}
-                          className={`min-h-[44px] min-w-[36px] sm:min-w-[44px] px-2 sm:px-3 py-2 rounded-lg text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
-                            pageCount === cnt
-                              ? "bg-amber-400 text-black font-bold shadow-sm"
-                              : "bg-[#252014] text-[#D4D4D4] hover:text-white border border-amber-500/20 hover:bg-[#332C1B]"
-                          }`}
-                        >
-                          {cnt === 1 ? "1P" : `${cnt}P`}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handlePagesChange(pageCount + 1)}
-                      disabled={pageCount >= 30}
-                      aria-label="Increase page count"
-                      className="w-11 h-11 rounded-lg bg-[#252014] border border-amber-500/30 flex items-center justify-center text-white hover:bg-[#332C1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Delivery Speed SLA */}
-              <div className="space-y-3 pt-2 border-t border-amber-500/15">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold">
-                  4. Project Delivery Speed SLA
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={deliverySpeed === "standard"}
-                    onClick={() => setDeliverySpeed("standard")}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setDeliverySpeed("standard");
-                      }
-                    }}
-                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0905] ${
-                      deliverySpeed === "standard"
-                        ? "bg-amber-950/40 border-amber-400 text-white shadow-lg ring-1 ring-amber-400/40"
-                        : "bg-[#1A160D]/60 border-white/[0.06] text-[#D4D4D4] hover:border-amber-500/40 hover:bg-[#252014]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-white">Standard Delivery</span>
-                      <span className="text-xs font-mono text-emerald-400 font-bold">Included</span>
-                    </div>
-                    <span className="text-xs text-[#A3A3A3] block mt-1.5 font-mono">
-                      {currentCategory.deliveryDays} (Standard Timeline)
-                    </span>
-                  </div>
-
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={deliverySpeed === "express"}
-                    onClick={() => setDeliverySpeed("express")}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setDeliverySpeed("express");
-                      }
-                    }}
-                    className={`min-h-[76px] p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0905] ${
-                      deliverySpeed === "express"
-                        ? "bg-amber-950/40 border-amber-400 text-white shadow-lg ring-1 ring-amber-400/40"
-                        : "bg-[#1A160D]/60 border-white/[0.06] text-[#D4D4D4] hover:border-amber-500/40 hover:bg-[#252014]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-white">Express Delivery</span>
-                      <span className="text-xs font-mono text-amber-300 font-bold">+20%</span>
-                    </div>
-                    <span className="text-xs text-[#A3A3A3] block mt-1.5 font-mono">
-                      Fast-Track Priority (3–5 Days)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ----------------------------------------------------------------- */}
-            {/* SECTION 5: MODULAR FEATURE MARKETPLACE (Vibrant Emerald Showcase)  */}
-            {/* ----------------------------------------------------------------- */}
-            <div
-              id="features-catalog"
-              className="rounded-2xl p-5 sm:p-7 space-y-6 border border-emerald-500/30 bg-gradient-to-b from-[#091711] via-[#060F0B] to-[#040907] shadow-2xl relative"
-            >
-              {/* Studio Marketplace Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-5">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      Step 5 • Marketplace
-                    </span>
-                    <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                      <span>Modular Studio Features Catalog</span>
-                      <span className="text-xs font-mono font-normal text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30">
-                        {allFeatures.length} Add-ons
-                      </span>
-                    </h2>
-                  </div>
-                  <p className="text-xs text-[#A3A3A3] font-light max-w-xl">
-                    Every modern feature modularly priced. Click any card to select, or click &quot;Details&quot; to expand transparent technical specifications.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs font-mono shrink-0">
+                {/* Row 2: Horizontal Scrollable Category Filter Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 pt-0.5 text-xs">
                   <button
                     type="button"
-                    onClick={handleSelectRecommended}
-                    className="min-h-[44px] px-3.5 py-2 rounded-xl text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    onClick={() => setActiveCategoryKey("all")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-mono shrink-0 transition-all ${
+                      activeCategoryKey === "all"
+                        ? "bg-white text-black font-semibold shadow-sm"
+                        : "bg-[#121217] text-[#909090] hover:text-white border border-white/[0.06]"
+                    }`}
                   >
-                    Recommended
+                    All ({categories.length})
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleClearFeatures}
-                    className="min-h-[44px] px-3.5 py-2 rounded-xl text-[#A3A3A3] hover:text-white bg-black/40 hover:bg-white/10 border border-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
 
-              {/* Category Filter Pills & Search */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-mono">
-                  {FILTER_GROUPS.map((group) => {
-                    const isActive = featureCategoryFilter === group.id;
-                    const groupCount =
-                      group.id === "all"
-                        ? allFeatures.length
-                        : allFeatures.filter(group.match).length;
-
+                  {categories.map((cat) => {
+                    const isActive = activeCategoryKey === cat.key;
                     return (
                       <button
-                        key={group.id}
+                        key={cat.key}
                         type="button"
-                        onClick={() => setFeatureCategoryFilter(group.id)}
-                        className={`min-h-[44px] px-3.5 py-2 rounded-xl transition-all duration-150 whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                        onClick={() => setActiveCategoryKey(cat.key)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-mono shrink-0 flex items-center gap-1.5 transition-all ${
                           isActive
-                            ? "bg-emerald-400 text-black font-bold shadow-lg shadow-emerald-400/20"
-                            : "bg-[#0D1812] text-[#A3A3A3] hover:text-white border border-emerald-500/20 hover:bg-[#12221A]"
+                            ? "bg-emerald-400 text-black font-semibold shadow-sm"
+                            : "bg-[#121217] text-[#909090] hover:text-white border border-white/[0.06]"
                         }`}
                       >
-                        <span>{group.label}</span>
-                        <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                            isActive ? "bg-black/20 text-black" : "bg-white/10 text-emerald-400"
-                          }`}
-                        >
-                          {groupCount}
-                        </span>
+                        <span>{cat.shortLabel}</span>
+                        <span className="text-[10px] opacity-75 font-mono">({cat.featureCount})</span>
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="relative">
-                  <Search className="w-4 h-4 text-emerald-400/70 absolute left-3.5 top-3.5 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Search 30 features (e.g. payment, booking, whatsapp, blog, invoice, seo)..."
-                    value={featureSearchQuery}
-                    onChange={(e) => setFeatureSearchQuery(e.target.value)}
-                    className="w-full min-h-[44px] pl-10 pr-4 py-2.5 rounded-xl bg-[#0B1410] border border-emerald-500/25 text-xs text-[#F5F5F3] placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:border-transparent transition-colors"
-                  />
-                  {featureSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setFeatureSearchQuery("")}
-                      className="absolute right-3 top-2.5 text-[#A3A3A3] hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
-                      aria-label="Clear search"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                {/* Status info strip */}
+                <div className="flex items-center justify-between text-[11px] font-mono text-[#777777] pt-1 border-t border-white/[0.04] flex-wrap gap-1">
+                  <span>
+                    Showing <strong className="text-[#D4D4D4]">{filteredFeatures.length}</strong> of {features.length} features across {categories.length} categories
+                  </span>
+                  {flowMode !== "custom_only" && (
+                    <span className="text-emerald-400/90">
+                      {includedCountInTier} included free in {packages[selectedTier].name}
+                    </span>
                   )}
                 </div>
               </div>
 
-              {/* Status info bar */}
-              <div className="flex items-center justify-between text-xs font-mono text-[#A3A3A3] px-1">
-                <span>Showing {displayedFeatures.length} of {allFeatures.length} modular features</span>
-                <span className="text-emerald-400 font-bold tabular-nums">
-                  {selectedFeaturesList.length} Selected (+{formatINR(featuresCost)})
-                </span>
-              </div>
+              {/* =================================================================== */}
+              {/* SCROLLABLE COMPACT COMPARISON TABLE CONTAINER                        */}
+              {/* =================================================================== */}
+              <div
+                ref={scrollContainerRef}
+                className="rounded-2xl border border-white/[0.08] bg-[#0A0A0C] overflow-hidden shadow-2xl"
+              >
+                {/* Sticky Table Header */}
+                <div className="sticky top-0 z-20 bg-[#121318] border-b border-white/[0.12] shadow-md">
+                  <div className="px-3 sm:px-5 py-2.5 flex items-center text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#9E9E9C]">
+                    <div className="flex-1 min-w-0">
+                      Feature & Scope
+                    </div>
+                    {flowMode !== "custom_only" && (
+                      <>
+                        <div className="hidden md:block w-20 text-center shrink-0">
+                          <span className={selectedTier === "starter" ? "text-emerald-400 font-bold" : ""}>Starter</span>
+                        </div>
+                        <div className="hidden md:block w-20 text-center shrink-0">
+                          <span className={selectedTier === "business" ? "text-emerald-400 font-bold" : ""}>Business</span>
+                        </div>
+                        <div className="hidden md:block w-20 text-center shrink-0">
+                          <span className={selectedTier === "pro" ? "text-emerald-400 font-bold" : ""}>Pro</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="w-24 sm:w-28 text-right shrink-0">
+                      {flowMode === "custom_only" ? "Price" : "Add-on"}
+                    </div>
+                  </div>
+                </div>
 
-              {/* Grid of Modular Feature Cards (Responsive 2 to 3 Columns) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {displayedFeatures.map((feat) => {
-                  const isSelected =
-                    selectedFeatureIds.includes(feat.id) ||
-                    selectedFeatureIds.includes(normalizeFeatureId(feat.id));
-                  const isBundledInDynamic = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
-                  const isExpanded = Boolean(expandedFeatureIds[feat.id]);
+                {/* Scrollable Rows Container */}
+                <div className="max-h-[580px] sm:max-h-[640px] 2xl:max-h-[740px] overflow-y-auto divide-y divide-white/[0.04] scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                  {groupedFeatures.length === 0 ? (
+                    <div className="p-12 text-center space-y-2">
+                      <p className="text-sm text-[#A0A0A0]">No features match your search &ldquo;{searchQuery}&rdquo;</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setActiveCategoryKey("all");
+                          setStatusFilter("all");
+                        }}
+                        className="text-xs text-emerald-400 underline font-mono"
+                      >
+                        Clear search and show all categories
+                      </button>
+                    </div>
+                  ) : (
+                    groupedFeatures.map(({ category, items }) => {
+                      const isCategoryExpanded = Boolean(expandedCategories[category.key]);
 
-                  return (
-                    <div
-                      key={feat.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      onClick={() => toggleFeature(feat.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          toggleFeature(feat.id);
-                        }
-                      }}
-                      className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060F0B] ${
-                        isBundledInDynamic && isSelected
-                          ? "bg-emerald-950/35 border-emerald-400/90 ring-1 ring-emerald-400/50 text-white shadow-md"
-                          : isSelected
-                          ? "bg-emerald-950/30 border-emerald-400 ring-1 ring-emerald-400/50 text-white shadow-lg"
-                          : "bg-[#0C1510]/80 border-white/[0.07] hover:border-emerald-500/40 hover:bg-[#101D16] text-[#D4D4D4]"
-                      }`}
-                    >
-                      {/* Top Row: Category Tag Chip & Price */}
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${getCategoryTagStyle(
-                            feat.categoryTag
-                          )}`}
-                        >
-                          {feat.categoryTag}
-                        </span>
-
-                        <span
-                          className={`text-xs font-mono font-bold tabular-nums ${
-                            isBundledInDynamic && isSelected
-                              ? "text-emerald-400"
-                              : isSelected
-                              ? "text-emerald-400"
-                              : "text-white"
-                          }`}
-                        >
-                          {isBundledInDynamic && isSelected ? "Included Free" : `+${formatINR(feat.price)}`}
-                        </span>
-                      </div>
-
-                      {/* Middle: Icon, Title & Obvious Selected State */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2.5 min-w-0">
+                      return (
+                        <div key={category.key} className="bg-transparent">
+                          {/* Category Accordion Header */}
                           <div
-                            className={`p-2 rounded-lg shrink-0 transition-colors ${
-                              isBundledInDynamic && isSelected
-                                ? "bg-emerald-400 text-black font-bold"
-                                : isSelected
-                                ? "bg-emerald-400 text-black font-bold"
-                                : "bg-white/[0.06] text-emerald-400"
-                            }`}
+                            onClick={() => toggleCategory(category.key)}
+                            className="sticky top-0 z-10 bg-[#0E0F14]/95 backdrop-blur-md px-3 sm:px-5 py-2.5 flex items-center justify-between cursor-pointer border-y border-white/[0.06] hover:bg-[#13141C] transition-colors group"
                           >
-                            {renderIcon(feat.icon, "w-4 h-4")}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="p-1 rounded bg-white/[0.05] text-emerald-400 group-hover:bg-emerald-400 group-hover:text-black transition-colors shrink-0">
+                                {renderCategoryIcon(category.iconName, "w-3.5 h-3.5")}
+                              </span>
+                              <div className="flex items-center gap-2 truncate">
+                                <span className="text-[10px] sm:text-xs font-mono text-[#777777]">
+                                  {String(category.number).padStart(2, "0")}
+                                </span>
+                                <h3 className="text-xs sm:text-sm font-semibold text-white tracking-tight truncate">
+                                  {category.label}
+                                </h3>
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-white/[0.04] text-[#A0A0A0] shrink-0">
+                                  {items.length}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-xs font-mono text-[#888888] shrink-0">
+                              <span className="text-[10px] hidden lg:inline opacity-75 max-w-[200px] truncate">{category.description}</span>
+                              {isCategoryExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-[#A0A0A0]" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[#A0A0A0]" />
+                              )}
+                            </div>
                           </div>
 
-                          <div className="space-y-0.5 min-w-0">
-                            <h3 className="font-semibold text-xs text-white leading-snug">
-                              {feat.name}
-                            </h3>
-                            <p
-                              className={`text-xs text-[#A3A3A3] leading-relaxed ${
-                                isExpanded ? "" : "line-clamp-1"
-                              }`}
-                            >
-                              {feat.simpleDescription}
-                            </p>
-                          </div>
-                        </div>
+                          {/* Category Feature Rows */}
+                          {isCategoryExpanded && (
+                            <div className="divide-y divide-white/[0.03]">
+                              {items.map((feat) => {
+                                const isIncludedInCurrent = flowMode !== "custom_only" && feat.availability[selectedTier] === "included";
+                                const isSelectedAsAddon = selectedAddonIds.includes(feat.id);
+                                const isSelectedAsQuote = selectedQuoteIds.includes(feat.id);
+                                const isExpanded = Boolean(expandedDetails[feat.id]);
+                                const isMonthly = feat.billingType === "monthly";
+                                const isCustomQuote = feat.isCustomQuote || (flowMode !== "custom_only" && feat.availability[selectedTier] === "custom_quote");
 
-                        {/* Selected State Badge (Never relies on color alone) */}
-                        <div className="shrink-0 flex items-center">
-                          {isSelected ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-400 text-black text-[10px] font-bold font-mono shadow-sm">
-                              <Check className="w-3 h-3 stroke-[3]" />
-                              <span>Added</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.08] text-[#D4D4D4] text-[10px] font-mono hover:text-white border border-white/[0.08]">
-                              <Plus className="w-3 h-3" />
-                              <span>Add</span>
-                            </span>
+                                return (
+                                  <div
+                                    key={feat.id}
+                                    className={`px-3 sm:px-5 py-2 sm:py-2.5 flex items-center gap-2 text-xs transition-colors ${
+                                      isSelectedAsAddon || isSelectedAsQuote
+                                        ? "bg-emerald-950/20"
+                                        : "hover:bg-white/[0.02]"
+                                    }`}
+                                  >
+                                    {/* Feature Name, Description Toggle & Badge */}
+                                    <div className="flex-1 min-w-0 space-y-0.5 pr-2">
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="font-medium text-[#E5E5E3] hover:text-white transition-colors truncate">
+                                          {feat.name}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFeatureDetail(feat.id);
+                                          }}
+                                          className="text-[#666666] hover:text-[#D4D4D4] p-0.5 rounded transition-colors shrink-0"
+                                          title="Toggle details & scope"
+                                          aria-label={`Toggle description for ${feat.name}`}
+                                        >
+                                          <Info className="w-3 h-3" />
+                                        </button>
+                                        {isMonthly && (
+                                          <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">
+                                            Monthly
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Expandable description tooltip */}
+                                      {isExpanded && (
+                                        <div className="pt-1 text-[11px] text-[#9E9E9C] leading-relaxed bg-[#111217] p-2 rounded-lg border border-white/[0.06] mt-1 space-y-1">
+                                          <p>{feat.description}</p>
+                                          <div className="text-[10px] font-mono text-[#888888] flex flex-wrap gap-2">
+                                            <span>Starter: {feat.availability.starter}</span>
+                                            <span>•</span>
+                                            <span>Business: {feat.availability.business}</span>
+                                            <span>•</span>
+                                            <span>Pro: {feat.availability.pro}</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Package Availability Columns (hidden in custom_only mode) */}
+                                    {flowMode !== "custom_only" && (
+                                      <>
+                                        <div className="hidden md:flex w-20 justify-center items-center shrink-0">
+                                          {renderStatusBadge(feat.availability.starter, feat.availabilityNotes?.starter)}
+                                        </div>
+                                        <div className="hidden md:flex w-20 justify-center items-center shrink-0">
+                                          {renderStatusBadge(feat.availability.business, feat.availabilityNotes?.business)}
+                                        </div>
+                                        <div className="hidden md:flex w-20 justify-center items-center shrink-0">
+                                          {renderStatusBadge(feat.availability.pro, feat.availabilityNotes?.pro)}
+                                        </div>
+                                      </>
+                                    )}
+
+                                    {/* Addon Price & Add Button */}
+                                    <div className="w-24 sm:w-28 text-right flex items-center justify-end gap-1.5 shrink-0">
+                                      {isIncludedInCurrent ? (
+                                        <span
+                                          className="text-[10px] font-mono text-emerald-400 font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 truncate"
+                                          title="Included free in selected package"
+                                        >
+                                          Included ✓
+                                        </span>
+                                      ) : isCustomQuote ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleAddon(feat.id)}
+                                          className={`px-2 py-1 rounded text-[10px] font-mono font-medium transition-all ${
+                                            isSelectedAsQuote
+                                              ? "bg-purple-400 text-black font-semibold shadow-sm"
+                                              : "bg-purple-950/40 text-purple-300 border border-purple-500/30 hover:bg-purple-900/50"
+                                          }`}
+                                          title="Add to custom quote scope"
+                                        >
+                                          {isSelectedAsQuote ? "In Quote ✓" : "Quote"}
+                                        </button>
+                                      ) : feat.addonPrice ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleAddon(feat.id)}
+                                          className={`px-2 py-1 rounded text-[10px] font-mono font-medium tabular-nums transition-all flex items-center gap-1 ${
+                                            isSelectedAsAddon
+                                              ? "bg-emerald-400 text-black font-bold shadow-sm"
+                                              : "bg-[#14151B] text-[#D4D4D4] border border-white/[0.08] hover:border-emerald-500/40 hover:text-white"
+                                          }`}
+                                          title={`Add ${feat.name} to estimate`}
+                                        >
+                                          {isSelectedAsAddon ? (
+                                            <Check className="w-3 h-3 stroke-[3]" />
+                                          ) : (
+                                            <Plus className="w-3 h-3 text-emerald-400" />
+                                          )}
+                                          <span>+{formatCurrencyINR(feat.addonPrice)}</span>
+                                        </button>
+                                      ) : (
+                                        <span className="text-[#555555] text-xs font-mono">—</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
-                      </div>
-
-                      {/* Expandable Details Container */}
-                      {isExpanded && feat.costNote && (
-                        <div className="text-[11px] text-amber-200/90 font-mono bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 mt-1 leading-relaxed">
-                          Note: {feat.costNote}
-                        </div>
-                      )}
-
-                      {/* Bottom Toggle Button for Expandable Details */}
-                      <div className="pt-1 flex items-center justify-between border-t border-white/[0.06]">
-                        <button
-                          type="button"
-                          aria-expanded={isExpanded}
-                          aria-controls={`feature-desc-${feat.id}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFeatureExpansion(feat.id);
-                          }}
-                          className="min-h-[44px] inline-flex items-center gap-1 text-[11px] font-mono text-[#A3A3A3] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-md px-1"
-                        >
-                          <span>{isExpanded ? "Hide Details" : "View Details"}</span>
-                          {isExpanded ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-[#D4D4D4]" />
-                          ) : (
-                            <ChevronDown className="w-3.5 h-3.5 text-[#D4D4D4]" />
-                          )}
-                        </button>
-
-                        {feat.popularFor && feat.popularFor.includes(selectedCategoryId) && (
-                          <span className="text-[10px] font-mono text-emerald-400 font-semibold truncate max-w-[120px]">
-                            ★ {currentCategory.title.split(" ")[0]} Pick
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* ----------------------------------------------------------------- */}
-            {/* SECTION 6: Custom Notes & Competitor Reference (Minimal Zinc)      */}
-            {/* ----------------------------------------------------------------- */}
-            <div className="rounded-2xl p-5 sm:p-7 space-y-3 border border-zinc-700/40 bg-[#0C0C0E] shadow-xl">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-zinc-700/30 text-zinc-300 border border-zinc-700/40">
-                  Step 6
-                </span>
-                <label
-                  htmlFor="custom-notes"
-                  className="block text-xs font-mono uppercase tracking-wider text-[#D4D4D4] font-semibold"
-                >
-                  Custom Notes or Reference URL (Optional)
-                </label>
-              </div>
-              <textarea
-                id="custom-notes"
-                rows={3}
-                value={customNotes}
-                onChange={(e) => setCustomNotes(e.target.value)}
-                placeholder="Mention any specific feature, reference website URL, design link, or target launch deadline..."
-                className="w-full px-4 py-3 rounded-xl bg-[#141418] border border-white/[0.08] text-xs text-white placeholder-[#737373] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 resize-none transition-colors"
-              />
-            </div>
-          </div>
-
-          {/* ===================================================================== */}
-          {/* RIGHT COLUMN: STICKY Project Cost Breakdown Panel (5 Cols)           */}
-          {/* ===================================================================== */}
-          <aside className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 lg:self-start space-y-6">
-            <div className="rounded-2xl p-5 sm:p-7 space-y-6 border border-emerald-400/40 bg-gradient-to-b from-[#0A120E] to-[#050907] shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(16,185,129,0.10)] relative">
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-4">
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
-                    LIVE CALCULATION
-                  </span>
-                  <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                    Project Cost Breakdown
-                  </h3>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-[10px] font-mono text-[#A3A3A3] block">Target SLA</span>
-                  <span className="text-xs font-mono font-bold text-emerald-400 tabular-nums">
-                    {estimatedDays}
-                  </span>
-                </div>
-              </div>
-
-              {/* Dynamic Line-Items Ledger */}
-              <div className="space-y-3 text-xs divide-y divide-white/[0.06]">
-                {/* 1. Category */}
-                <div className="flex items-start justify-between gap-3 pt-1">
-                  <div>
-                    <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
-                      1. Website Category
+            {/* ===================================================================== */}
+            {/* RIGHT PANE: STICKY LIVE COST LEDGER & ESTIMATOR                       */}
+            {/* ===================================================================== */}
+            <aside className="lg:col-span-4 xl:col-span-4 2xl:col-span-4 lg:sticky lg:top-20 lg:self-start space-y-4">
+              <div className="rounded-2xl p-5 sm:p-6 space-y-5 border border-emerald-400/40 bg-gradient-to-b from-[#0A120E] to-[#050907] shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(16,185,129,0.10)] relative">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3.5">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
+                      Live Engineering Estimate
                     </span>
-                    <span className="font-semibold text-white">{currentCategory.title}</span>
+                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                      Project Cost Breakdown
+                    </h2>
                   </div>
-                  <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
-                    {formatINR(baseCategoryPrice)}
-                  </span>
+
+                  <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Real-Time</span>
+                  </div>
                 </div>
 
-                {/* 2. Architecture */}
-                <div className="flex items-start justify-between gap-3 pt-3">
-                  <div>
-                    <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
-                      2. Architecture
-                    </span>
-                    <span className="font-semibold text-white">{currentType.title}</span>
-                  </div>
-                  <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
-                    {typePrice === 0 ? "Included" : `+${formatINR(typePrice)}`}
-                  </span>
-                </div>
-
-                {/* 3. Pages */}
-                <div className="flex items-start justify-between gap-3 pt-3">
-                  <div>
-                    <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
-                      3. Pages ({pageCount})
-                    </span>
-                    <span className="font-semibold text-white">{pageCount} Custom Pages</span>
-                  </div>
-                  <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
-                    {pagesPrice > 0 ? `+${formatINR(pagesPrice)}` : pagesPrice < 0 ? `-₹2,000` : "Included in Base"}
-                  </span>
-                </div>
-
-                {/* 4. Delivery SLA */}
-                {deliverySpeed === "express" && (
-                  <div className="flex items-start justify-between gap-3 pt-3">
-                    <div>
-                      <span className="text-[10px] font-mono text-[#A3A3A3] uppercase block">
-                        4. Delivery Speed
+                {/* Package Base Summary (only shown in package modes) */}
+                {flowMode !== "custom_only" && (
+                  <div className="space-y-2 p-3.5 rounded-xl bg-[#0F1D16]/70 border border-emerald-500/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider block">
+                          Base Package
+                        </span>
+                        <span className="text-sm font-bold text-white uppercase">{currentPackage.name}</span>
+                      </div>
+                      <span className="text-sm font-mono font-bold text-white">
+                        {formatCurrencyINR(currentPackage.startingPrice)}
                       </span>
-                      <span className="font-semibold text-white">Express Priority (+20%)</span>
                     </div>
-                    <span className="font-mono font-semibold text-white shrink-0 tabular-nums">
-                      +{formatINR(expressPrice)}
-                    </span>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-[#8E8E8C] pt-1.5 border-t border-emerald-500/15">
+                      <span>Scope timeline:</span>
+                      <span className="text-white">{currentPackage.deliveryTime}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400/90">
+                      <span>Bundled features:</span>
+                      <span>{includedCountInTier} features included</span>
+                    </div>
                   </div>
                 )}
 
-                {/* 5. Selected Features List */}
-                <div className="pt-3 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#A3A3A3] uppercase">
-                    <span>Selected Features ({selectedFeaturesList.length})</span>
-                    <span className="text-emerald-400 font-bold tabular-nums">
-                      +{formatINR(featuresCost)}
-                    </span>
+                {/* Custom Build label (custom_only mode) */}
+                {flowMode === "custom_only" && (
+                  <div className="space-y-1 p-3.5 rounded-xl bg-sky-950/30 border border-sky-500/20">
+                    <div className="flex items-center gap-2 text-xs font-mono text-sky-300">
+                      <Wrench className="w-3.5 h-3.5" />
+                      <span className="font-semibold">Custom Build — No Base Package</span>
+                    </div>
+                    <p className="text-[10px] text-[#9E9E9C] leading-relaxed">
+                      Your total is the sum of individually selected features only.
+                    </p>
+                  </div>
+                )}
+
+                {/* Delivery SLA Switcher */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-mono uppercase text-[#888888] tracking-wider block">
+                    Delivery SLA
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <button
+                      type="button"
+                      onClick={() => setDeliverySpeed("standard")}
+                      className={`p-2 rounded-xl border text-center transition-all ${
+                        deliverySpeed === "standard"
+                          ? "bg-white/[0.08] text-white border-white/20 font-bold"
+                          : "bg-[#0A0D10] text-[#888888] border-white/[0.05] hover:text-white"
+                      }`}
+                    >
+                      <span>Standard</span>
+                      <span className="block text-[9px] opacity-75">Included</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDeliverySpeed("express")}
+                      className={`p-2 rounded-xl border text-center transition-all ${
+                        deliverySpeed === "express"
+                          ? "bg-amber-500/20 text-amber-300 border-amber-400/40 font-bold"
+                          : "bg-[#0A0D10] text-[#888888] border-white/[0.05] hover:text-white"
+                      }`}
+                    >
+                      <span>Express</span>
+                      <span className="block text-[9px] opacity-75">+20% Speedup</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Selected Add-ons List (Scrollable if many) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-[#888888]">
+                    <span>Selected Add-ons ({activeSelectedAddons.length})</span>
+                    {activeSelectedAddons.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAddonIds([])}
+                        className="text-[10px] text-rose-400 hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    )}
                   </div>
 
-                  {selectedFeaturesList.length === 0 ? (
-                    <p className="text-xs text-[#A3A3A3] italic py-1">
-                      No additional features selected (Standard contact form included).
+                  {activeSelectedAddons.length === 0 ? (
+                    <p className="text-[11px] text-[#777777] italic p-3 rounded-lg bg-[#0C120F] border border-white/[0.04]">
+                      {flowMode === "custom_only"
+                        ? "Select features from the catalog to build your custom project."
+                        : "No extra add-ons selected. Choose from the catalog to add features."}
                     </p>
                   ) : (
-                    <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
-                      {selectedFeaturesList.map((feat) => {
-                        const isBundled = Boolean(feat.includedInDynamic && selectedTypeId === "dynamic");
+                    <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                      {activeSelectedAddons.map((addon) => {
+                        const qty = addon.hasQuantity ? addonQuantities[addon.id] || 1 : 1;
+                        const linePrice = (addon.addonPrice || 0) * qty;
+
                         return (
                           <div
-                            key={feat.id}
-                            className="flex items-center justify-between text-xs text-[#D4D4D4] hover:text-white group py-0.5"
+                            key={addon.id}
+                            className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#0E1712] border border-white/[0.05] text-xs"
                           >
-                            <div className="flex items-center gap-1.5 truncate pr-2">
+                            <div className="space-y-0.5 min-w-0">
+                              <span className="font-medium text-white truncate block">{addon.name}</span>
+                              <span className="text-[10px] font-mono text-[#888888]">
+                                {addon.billingType === "monthly" ? "Monthly ongoing" : "One-time build"}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {addon.hasQuantity && (
+                                <div className="flex items-center gap-1 bg-[#16221B] px-1.5 py-0.5 rounded border border-white/[0.08] text-[10px] font-mono">
+                                  <button
+                                    type="button"
+                                    onClick={() => updateQuantity(addon.id, -1)}
+                                    className="text-[#888888] hover:text-white"
+                                    title="Decrease quantity"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="font-bold text-white px-1">{qty}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateQuantity(addon.id, 1)}
+                                    className="text-[#888888] hover:text-white"
+                                    title="Increase quantity"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )}
+
+                              <span className="font-mono text-emerald-400 font-bold tabular-nums">
+                                {formatCurrencyINR(linePrice)}
+                                {addon.billingType === "monthly" && "/mo"}
+                              </span>
+
                               <button
                                 type="button"
-                                onClick={() => toggleFeature(feat.id)}
-                                className="min-w-[32px] min-h-[32px] flex items-center justify-center text-[#A3A3A3] hover:text-red-400 transition-colors rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
-                                aria-label={`Remove ${feat.name}`}
+                                onClick={() => removeAddon(addon.id)}
+                                className="text-[#666666] hover:text-rose-400 p-0.5"
+                                title="Remove add-on"
+                                aria-label={`Remove ${addon.name}`}
                               >
                                 <X className="w-3.5 h-3.5" />
                               </button>
-                              <span className="truncate">{feat.name}</span>
                             </div>
-                            <span className="font-mono text-white shrink-0 tabular-nums">
-                              {isBundled ? "Included Free" : `+${formatINR(feat.price)}`}
-                            </span>
                           </div>
                         );
                       })}
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* Grand Total Live Counter */}
-              <div className="pt-4 border-t border-emerald-500/20 space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-[#A3A3A3] block">
-                        Total Investment Estimate
+                {/* Custom Quote Scope Items */}
+                {activeSelectedQuotes.length > 0 && (
+                  <div className="space-y-1.5 p-3 rounded-xl bg-purple-950/20 border border-purple-500/30">
+                    <div className="flex items-center justify-between text-xs font-mono text-purple-300">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                        Custom Scope ({activeSelectedQuotes.length})
                       </span>
-                      {LAUNCH_PRICING_CONFIG.enabled && (
-                        <span
-                          title={LAUNCH_PRICING_CONFIG.description}
-                          className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-mono font-medium tracking-wide"
-                        >
-                          {LAUNCH_PRICING_CONFIG.label}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuoteIds([])}
+                        className="text-[10px] text-rose-400 hover:underline"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-[#A0A0A0] leading-relaxed">
+                      These modules are scoped individually during consultation:
+                    </p>
+                    <ul className="space-y-1 text-xs text-[#DCDCDA] pt-1">
+                      {activeSelectedQuotes.map((q) => (
+                        <li key={q.id} className="flex items-center justify-between gap-1.5 text-[11px]">
+                          <span className="truncate">• {q.name}</span>
+                          <span className="text-[10px] font-mono text-purple-400 shrink-0">Custom Quote</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Cost Summary Breakdown */}
+                <div className="space-y-2 pt-3 border-t border-emerald-500/20 text-xs font-mono">
+                  {flowMode !== "custom_only" && (
+                    <div className="flex items-center justify-between text-[#8E8E8C]">
+                      <span>Base Package:</span>
+                      <span className="text-white">{formatCurrencyINR(currentPackage.startingPrice)}</span>
+                    </div>
+                  )}
+
+                  {onetimeAddonsCost > 0 && (
+                    <div className="flex items-center justify-between text-[#8E8E8C]">
+                      <span>{flowMode === "custom_only" ? "Selected Features:" : "One-Time Add-ons:"}</span>
+                      <span className="text-white">+{formatCurrencyINR(onetimeAddonsCost)}</span>
+                    </div>
+                  )}
+
+                  {expressFee > 0 && (
+                    <div className="flex items-center justify-between text-amber-300">
+                      <span>Express SLA (+20%):</span>
+                      <span>+{formatCurrencyINR(expressFee)}</span>
+                    </div>
+                  )}
+
+                  {monthlyServicesCost > 0 && (
+                    <div className="flex items-center justify-between text-sky-300 pt-1 border-t border-white/[0.04]">
+                      <span>Monthly Recurring:</span>
+                      <span>{formatCurrencyINR(monthlyServicesCost)}/month</span>
+                    </div>
+                  )}
+
+                  {/* Grand Total Highlight */}
+                  <div className="pt-3 border-t border-emerald-500/30 flex items-baseline justify-between">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-[#A0A0A0] block">
+                        Estimated One-Time Total
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
+                        {formatCurrencyINR(grandTotalOnetime)}
+                      </span>
+                    </div>
+
+                    {monthlyServicesCost > 0 && (
+                      <div className="text-right">
+                        <span className="text-[10px] font-mono uppercase text-sky-400 block">+ Monthly</span>
+                        <span className="text-sm font-mono font-bold text-sky-300">
+                          {formatCurrencyINR(monthlyServicesCost)}/mo
                         </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-[#A3A3A3]">
-                      Includes design, engineering, QA & launch
-                    </span>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight tabular-nums">
-                      {formatINR(grandTotal)}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <p className="text-[11px] font-mono text-[#A3A3A3] pt-1 leading-relaxed">
-                  *Transparent rates. 100% full source code ownership. Domain & hosting direct to client at actuals. Third-party provider usage fees billed at actuals.
-                </p>
-              </div>
-
-              {/* CTA Action */}
-              <div className="space-y-2.5">
-                <Link
-                  href={quotationUrl}
-                  className="min-h-[48px] inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl bg-white hover:bg-[#E8E8E6] text-black font-semibold text-xs tracking-wide transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]"
-                >
-                  <span>Request This Quote</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-
-                <p className="text-xs text-[#A3A3A3] text-center font-normal leading-relaxed">
-                  This sends your requirements to us. Final quote is confirmed after discussion.
-                </p>
-              </div>
-
-              {/* Trust Badges */}
-              {TRUST_BADGES.filter((b) => b.enabled).length > 0 && (
-                <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-emerald-500/20 text-[11px] font-mono text-[#D4D4D4]">
-                  {TRUST_BADGES.filter((b) => b.enabled).map((badge) => (
-                    <div key={badge.id} className="flex items-center gap-2">
-                      {badge.iconName === "CheckCircle2" ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      ) : (
-                        <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
-                      )}
-                      <span>{badge.label}</span>
-                    </div>
-                  ))}
+                {/* Third-party disclaimer */}
+                <div className="text-[10px] font-mono text-[#666666] leading-relaxed p-2.5 rounded-lg bg-[#0A0D0A] border border-white/[0.04]">
+                  <AlertCircle className="w-3 h-3 inline mr-1 text-amber-500/70" />
+                  Third-party service charges (hosting, SMS gateway, payment gateway fees, domain, email service) are not included in these prices.
                 </div>
-              )}
-            </div>
-          </aside>
-        </div>
 
-        {/* ========================================================================= */}
-        {/* Full-Width Bottom Section: Terms of Engagement & FAQ                     */}
-        {/* ========================================================================= */}
-        <section id="terms-and-faq" className="pt-12 border-t border-white/[0.08] space-y-10">
-          <div className="space-y-2 text-left">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-[11px] font-mono uppercase tracking-widest text-[#A3A3A3]">
-                POLICIES & TRANSPARENCY
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F5F5F3]">
-              Terms of Engagement & FAQ
-            </h2>
-            <p className="text-xs sm:text-sm text-[#A3A3A3] max-w-2xl leading-relaxed">
-              Clear payment milestones, revisions, bug-fix guarantees, and honest answers to common questions.
-            </p>
-          </div>
+                {/* Client Notes / Requirements input */}
+                <div className="space-y-1">
+                  <label htmlFor="custom-notes" className="text-[10px] font-mono text-[#888888] uppercase">
+                    Project Notes (Optional)
+                  </label>
+                  <textarea
+                    id="custom-notes"
+                    value={customNotes}
+                    onChange={(e) => setCustomNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Paste reference websites, special workflows, or deadline requirements..."
+                    className="w-full p-2 rounded-xl text-xs bg-[#090C0A] border border-white/[0.08] text-white placeholder-[#555555] focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  />
+                </div>
 
-          {/* Key Engagement Terms Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
-                <CreditCard className="w-4 h-4" />
-                <span>Payment Milestones</span>
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                {PRICING_TERMS.advancePercentage}% Advance / {PRICING_TERMS.deliveryPercentage}% on Delivery
-              </h3>
-              <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                Initial deposit begins UI/UX design and architecture. Final balance is payable only after your review and final staging approval.
-              </p>
-            </div>
+                {/* Primary Action Button */}
+                <div className="space-y-2 pt-1">
+                  <Link
+                    href={quotationUrl}
+                    className="w-full min-h-[46px] px-5 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(52,211,153,0.35)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.99]"
+                  >
+                    <span>Get Quote & Consult Engineers</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
 
-            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
-                <RotateCcw className="w-4 h-4" />
-                <span>Included Revisions</span>
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                {PRICING_TERMS.revisionRounds} Comprehensive Review Rounds
-              </h3>
-              <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                Feedback iterations during the Figma design phase and functional staging preview to ensure every detail matches your brand.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
-                <Shield className="w-4 h-4" />
-                <span>Post-Launch Warranty</span>
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                {PRICING_TERMS.freeSupportDays} Days Free Bug-Fix Support
-              </h3>
-              <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                Complimentary post-deployment stabilization covering technical bugs, browser compatibility, and minor layout adjustments.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
-                <Building2 className="w-4 h-4" />
-                <span>Taxes & GST</span>
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                {PRICING_TERMS.gst.enabled ? "Tax Invoice (GST Applicable)" : "Tax Exempt"}
-              </h3>
-              <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                {PRICING_TERMS.gst.statement}
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
-                <Clock className="w-4 h-4" />
-                <span>Timeline Kickoff</span>
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                Content-Ready Start
-              </h3>
-              <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                {PRICING_TERMS.timelineNote}
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-[#0D0D0D] border border-white/[0.08] space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
-                <Layers className="w-4 h-4" />
-                <span>Extra Page Definition</span>
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                Clear Page Boundaries
-              </h3>
-              <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                {PRICING_TERMS.extraPageDefinition} Standard pricing includes 5 base pages.
-              </p>
-            </div>
-          </div>
-
-          {/* Frequently Asked Questions */}
-          <div className="space-y-4 pt-4">
-            <h3 className="text-lg font-semibold text-white">Frequently Asked Questions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {PRICING_FAQS.map((faq) => (
-                <div
-                  key={faq.id}
-                  className="p-5 rounded-xl bg-[#0C0C0C] border border-white/[0.08] space-y-2 text-left"
-                >
-                  <h4 className="text-xs sm:text-sm font-semibold text-[#F5F5F3]">
-                    {faq.question}
-                  </h4>
-                  <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                    {faq.answer}
+                  <p className="text-[10px] font-mono text-[#777777] text-center">
+                    Direct consultation with technical leads • 100% full source code ownership
                   </p>
                 </div>
-              ))}
+              </div>
+            </aside>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TRANSPARENCY & QUALITY ASSURANCE DISCLAIMERS                               */}
+        {/* ========================================================================= */}
+        <section aria-label="Pricing Standards" className="rounded-2xl p-5 sm:p-6 bg-[#0D0D10] border border-white/[0.08] space-y-4">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-sm font-semibold text-white tracking-tight uppercase">
+              Webgent Engineering Standards &amp; Guarantees
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs text-[#9E9E9C] leading-relaxed">
+            <div className="space-y-1">
+              <strong className="text-[#F0F0EE] block">100% Code Ownership</strong>
+              <p>Full GitHub repository transfer on launch. You own all design files, source code, and assets. Zero vendor lock-in.</p>
+            </div>
+            <div className="space-y-1">
+              <strong className="text-[#F0F0EE] block">Strict Zero Double-Charging</strong>
+              <p>Any feature included in your base package is never billed as an add-on. Add-ons only cover items outside your selected tier.</p>
+            </div>
+            <div className="space-y-1">
+              <strong className="text-[#F0F0EE] block">Third-Party Services at Actuals</strong>
+              <p>Hosting, SMS, payment gateways, and email services are set up in your own accounts at zero studio markup. Their charges are not included in our prices.</p>
+            </div>
+            <div className="space-y-1">
+              <strong className="text-[#F0F0EE] block">Guaranteed Warranty Period</strong>
+              <p>Every deployment includes post-launch bug-fix warranty support (14 days for Starter, 30 days for Business, 60 days for Pro).</p>
             </div>
           </div>
         </section>
-
-        {/* Mobile Spacer to guarantee sticky bar never covers content or footer */}
-        <div className="h-28 lg:hidden pointer-events-none" aria-hidden="true" />
       </div>
-
-      {/* ========================================================================= */}
-      {/* Mobile Floating Sticky Bottom Bar (lg:hidden)                             */}
-      {/* ========================================================================= */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0C0C0C]/95 backdrop-blur-md border-t border-white/[0.14] px-4 py-3 shadow-2xl">
-        <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
-          <div className="space-y-0.5 min-w-0">
-            <span className="text-[11px] font-mono text-[#A3A3A3] block truncate">
-              {currentCategory.title.split(" ")[0]} • {pageCount}P • {selectedFeaturesList.length} Feat
-            </span>
-            <div className="text-xl font-bold text-white font-mono tabular-nums">
-              {formatINR(grandTotal)}
-            </div>
-          </div>
-
-          <Link
-            href={quotationUrl}
-            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-white hover:bg-[#E8E8E6] text-black font-semibold text-xs tracking-wide transition-colors shrink-0 whitespace-nowrap flex items-center gap-1.5 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-          >
-            <span>Request Quote</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Lift site-wide chat widget above mobile sticky bottom bar on mobile viewports */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            @media (max-width: 1023px) {
-              div:has(> #webgent-chat-widget-button),
-              #webgent-chat-widget-button {
-                bottom: 5.5rem !important;
-              }
-            }
-          `,
-        }}
-      />
     </div>
   );
 }

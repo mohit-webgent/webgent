@@ -170,7 +170,7 @@ export function HeroSection() {
             aria-level={2}
             ref={headlineRef}
             aria-label="YOU IMAGINE WE ENGINEER REALITY."
-            className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
+            className="text-4xl sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] 2xl:text-[5.2rem] 3xl:text-[6rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
           >
             <span aria-hidden="true">
               <span className="block overflow-hidden">
@@ -188,7 +188,7 @@ export function HeroSection() {
           {/* Supporting paragraph */}
           <p
             ref={paragraphRef}
-            className="text-sm sm:text-base lg:text-[15px] text-[#8A8A8A] max-w-[520px] leading-[1.6] font-normal"
+            className="text-sm sm:text-base lg:text-[15px] xl:text-base 2xl:text-lg text-[#8A8A8A] max-w-[520px] 2xl:max-w-[640px] leading-[1.6] font-normal"
           >
             We design and build digital products for ambitious businesses.
           </p>

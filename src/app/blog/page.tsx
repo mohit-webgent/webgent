@@ -103,8 +103,8 @@ export default async function BlogPage() {
   const remainingPosts = dbPosts.slice(4);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E0E0DE] pt-10 pb-24 sm:pt-14 sm:pb-32 px-5 sm:px-8 lg:px-14 font-sans">
-      <div className="max-w-7xl mx-auto space-y-10 sm:space-y-12">
+    <div className="min-h-screen bg-[#080808] text-[#E0E0DE] pt-10 pb-24 sm:pt-14 sm:pb-32 px-5 sm:px-8 lg:px-14 2xl:px-24 font-sans">
+      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto space-y-10 sm:space-y-12">
         {/* Top Header */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold text-[#F5F5F3] tracking-tight">
@@ -237,7 +237,7 @@ export default async function BlogPage() {
             <h2 className="text-xl font-semibold text-[#F5F5F3]">
               All publications
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
               {remainingPosts.map((post) => (
                 <Link
                   key={post.id}

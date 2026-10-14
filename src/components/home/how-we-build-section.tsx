@@ -287,7 +287,7 @@ export function HowWeBuildSection() {
       {/* Pinned Scroll Container */}
       <div
         ref={triggerRef}
-        className="relative w-full h-screen max-h-[920px] flex flex-col justify-between py-2 sm:py-3 px-2 sm:px-6 max-w-6xl mx-auto"
+        className="relative w-full h-screen max-h-[920px] 2xl:max-h-[1080px] flex flex-col justify-between py-2 sm:py-3 px-2 sm:px-6 2xl:px-10 max-w-7xl 2xl:max-w-[1760px] 3xl:max-w-[2040px] mx-auto"
       >
         {/* ===================================================================== */}
         {/* TOP STATUS HEADER BAR: Clean & Professional without flying elements    */}
@@ -367,7 +367,7 @@ export function HowWeBuildSection() {
             /* ================================================================= */
             /* 1. DESKTOP MONITOR MOCKUP                                         */
             /* ================================================================= */
-            <div className="relative w-full max-w-4xl lg:max-w-[940px] rounded-xl sm:rounded-2xl border border-white/[0.14] bg-[#0A0B0E] shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.12)] overflow-hidden transition-all duration-300">
+            <div className="relative w-full max-w-4xl lg:max-w-[940px] xl:max-w-[1100px] 2xl:max-w-[1360px] 3xl:max-w-[1520px] rounded-xl sm:rounded-2xl border border-white/[0.14] bg-[#0A0B0E] shadow-[0_25px_80px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.12)] overflow-hidden transition-all duration-300">
               {/* Browser Chrome Header */}
               <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-[#121317] border-b border-white/[0.08] z-30 relative">
                 {/* Traffic Lights */}
@@ -413,7 +413,7 @@ export function HowWeBuildSection() {
               {/* Viewport Screen with Internal Scroll */}
               <div
                 ref={desktopViewportRef}
-                className="relative h-[320px] sm:h-[390px] lg:h-[430px] bg-[#0E1015] overflow-hidden font-sans"
+                className="relative h-[320px] sm:h-[390px] lg:h-[430px] xl:h-[470px] 2xl:h-[530px] bg-[#0E1015] overflow-hidden font-sans"
               >
                 {/* Blueprint Background Grid for empty state */}
                 <div

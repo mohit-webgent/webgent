@@ -160,10 +160,10 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
     : [];
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 2xl:px-20 relative overflow-hidden font-sans">
       <BlogReadTracker slug={post.slug} title={post.title} readTime={post.readTime} />
 
-      <div className="max-w-4xl mx-auto space-y-12 relative z-10 text-left">
+      <div className="max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl mx-auto space-y-12 relative z-10 text-left">
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors group"

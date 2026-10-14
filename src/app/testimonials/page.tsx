@@ -72,13 +72,13 @@ export default async function TestimonialsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-12 pb-24 px-5 sm:px-8 max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-12 pb-24 px-5 sm:px-8 2xl:px-20 w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto space-y-8">
       <div className="space-y-2 text-left">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Client Testimonials</h1>
-        <p className="text-sm text-[#888888]">Verified feedback from our partners and clients.</p>
+        <h1 className="text-3xl sm:text-4xl 2xl:text-5xl font-bold text-white tracking-tight">Client Testimonials</h1>
+        <p className="text-sm 2xl:text-base text-[#888888]">Verified feedback from our partners and clients.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 text-left">
         {testimonials.map((t) => (
           <div
             key={t.id}

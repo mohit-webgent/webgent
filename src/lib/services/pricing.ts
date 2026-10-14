@@ -10,11 +10,23 @@ import {
   WebsiteTypeOption,
   FeatureOption,
 } from "@/lib/pricing.config";
+import {
+  MASTER_PACKAGES,
+  MASTER_CATEGORIES,
+  MASTER_FEATURES,
+  PackageDetails,
+  MasterCategoryMeta,
+  MatrixFeatureItem,
+  MasterPackageTier,
+} from "@/data/pricing-matrix-data";
 
 export interface BackendPricingData {
   categories: WebsiteCategory[];
   types: WebsiteTypeOption[];
   features: FeatureOption[];
+  matrixPackages: Record<MasterPackageTier, PackageDetails>;
+  matrixCategories: MasterCategoryMeta[];
+  matrixFeatures: MatrixFeatureItem[];
   settings: {
     basePagesIncluded: number;
     costPerExtraPage: number;
@@ -28,6 +40,9 @@ export async function getPricingData(): Promise<BackendPricingData> {
   let categories = WEBSITE_CATEGORIES;
   let types = WEBSITE_TYPES;
   let features = POPULAR_FEATURES;
+  let matrixPackages = MASTER_PACKAGES;
+  let matrixCategories = MASTER_CATEGORIES;
+  let matrixFeatures = MASTER_FEATURES;
 
   try {
     // Check if custom price overrides are stored in prisma.siteSetting
@@ -40,6 +55,8 @@ export async function getPricingData(): Promise<BackendPricingData> {
       if (overrides.categories) categories = overrides.categories;
       if (overrides.types) types = overrides.types;
       if (overrides.features) features = overrides.features;
+      if (overrides.matrixPackages) matrixPackages = overrides.matrixPackages;
+      if (overrides.matrixFeatures) matrixFeatures = overrides.matrixFeatures;
     }
   } catch (error) {
     // Graceful fallback to default configurator data if DB is unavailable
@@ -50,6 +67,9 @@ export async function getPricingData(): Promise<BackendPricingData> {
     categories,
     types,
     features,
+    matrixPackages,
+    matrixCategories,
+    matrixFeatures,
     settings: {
       basePagesIncluded: BASE_PAGES_INCLUDED,
       costPerExtraPage: COST_PER_EXTRA_PAGE,

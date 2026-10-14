@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPricingData } from "@/lib/services/pricing";
 import { prisma } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await getAuthSession();
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Admin privileges required to update pricing rates." },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await req.json();
 

@@ -1,6 +1,6 @@
 export default function GlobalLoading() {
   return (
-    <div className="min-h-[75vh] max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-16 space-y-16 animate-pulse font-sans bg-[#080808]">
+    <div className="min-h-[75vh] w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto px-5 sm:px-8 lg:px-12 2xl:px-20 py-16 space-y-16 animate-pulse font-sans bg-[#080808]">
       <div className="max-w-3xl mx-auto text-center space-y-6">
         <div className="h-6 w-48 bg-white/[0.04] border border-white/[0.08] rounded-md mx-auto" />
         <div className="h-12 sm:h-14 w-3/4 bg-white/[0.06] border border-white/[0.07] rounded-xl mx-auto" />
