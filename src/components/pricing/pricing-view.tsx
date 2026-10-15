@@ -36,7 +36,6 @@ import {
   Info,
   Package,
   Wrench,
-  ShoppingCart,
 } from "lucide-react";
 
 import { BackendPricingData } from "@/lib/services/pricing";
@@ -48,6 +47,7 @@ import {
   MatrixFeatureItem,
   FeatureStatus,
   formatCurrencyINR,
+  normalizeMatrixFeatureId,
 } from "@/data/pricing-matrix-data";
 
 // ---------------------------------------------------------------------------
@@ -95,8 +95,9 @@ export function PricingView({ initialData }: PricingViewProps) {
     const list = raw
       .split(",")
       .map((s) => s.trim())
+      .map((id) => normalizeMatrixFeatureId(id))
       .filter((id) => features.some((f) => f.id === id));
-    return list;
+    return Array.from(new Set(list));
   }, [searchParams, features]);
 
   const initialDelivery: "standard" | "express" = useMemo(() => {
@@ -111,6 +112,8 @@ export function PricingView({ initialData }: PricingViewProps) {
   const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>(initialAddons);
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
   const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({
+    website_pages_additional_pages: 1,
+    deployment_maintenance_monthly_hours: 1,
     design_frontend_additional_website_pages: 1,
     testing_maintenance_monthly_development_hours: 1,
   });
@@ -125,7 +128,7 @@ export function PricingView({ initialData }: PricingViewProps) {
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     categories.forEach((cat, idx) => {
-      initial[cat.key] = idx < 3;
+      initial[cat.key] = idx < 4;
     });
     return initial;
   });
@@ -163,13 +166,7 @@ export function PricingView({ initialData }: PricingViewProps) {
     window.history.replaceState(null, "", currentUrl);
   }, [flowMode, selectedTier, selectedAddonIds, selectedQuoteIds, deliverySpeed, activeCategoryKey]);
 
-  // When user changes flow mode, auto-clear addons if going to package-only
-  useEffect(() => {
-    if (flowMode === "package") {
-      setSelectedAddonIds([]);
-      setSelectedQuoteIds([]);
-    }
-  }, [flowMode]);
+  // Addons remain preserved across flow mode transitions
 
   // ---------------------------------------------------------------------------
   // Feature Search & Filtering Logic
@@ -537,25 +534,19 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
     {
       mode: "package",
       icon: <Package className="w-5 h-5" />,
-      title: "Choose a Package",
-      subtitle: "Pick a ready-made package and get started right away",
-    },
-    {
-      mode: "package_plus_addons",
-      icon: <ShoppingCart className="w-5 h-5" />,
-      title: "Package + Add-ons",
-      subtitle: "Start with a package, then add extra features you need",
+      title: "Package + Extra Features",
+      subtitle: "Start with a curated base package, then review and customize with add-ons",
     },
     {
       mode: "custom_only",
       icon: <Wrench className="w-5 h-5" />,
       title: "Fully Custom Build",
-      subtitle: "Skip packages — pick only the features you want",
+      subtitle: "Skip base packages — handpick every individual feature from scratch",
     },
   ];
 
-  // Show addons section?
-  const showFeatureMatrix = flowMode === "package_plus_addons" || flowMode === "custom_only";
+  // Feature matrix is always visible so users can review, explore, and add features
+  const showFeatureMatrix = true;
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-6 pb-28 sm:pb-20 px-3 sm:px-6 lg:px-10 2xl:px-16 3xl:px-24 font-sans selection:bg-white selection:text-black">
@@ -612,9 +603,12 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {flowOptions.map((opt) => {
-              const isActive = flowMode === opt.mode;
+              const isActive =
+                opt.mode === "package"
+                  ? flowMode === "package" || flowMode === "package_plus_addons"
+                  : flowMode === opt.mode;
               return (
                 <button
                   key={opt.mode}
@@ -732,7 +726,15 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                           What&apos;s Included ({pkg.keyHighlights.length} Features):
                         </span>
                       </div>
-                      <ul className="space-y-2 text-xs sm:text-[13px] text-[#D4D4D4]">
+                      <ul
+                        className="space-y-2 text-xs sm:text-[13px] text-[#D4D4D4] max-h-56 overflow-y-auto pr-1"
+                        style={{
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
+                          WebkitOverflowScrolling: "touch",
+                          touchAction: "pan-y",
+                        }}
+                      >
                         {pkg.keyHighlights.map((hl, i) => (
                           <li key={i} className="flex items-start gap-2.5">
                             <span className="p-0.5 rounded bg-emerald-400/10 text-emerald-400 shrink-0 mt-0.5">
@@ -771,35 +773,35 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
               })}
             </div>
 
-            {/* Package-Only CTA: if user just wants the package */}
-            {flowMode === "package" && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0A120E] to-[#050907] border border-emerald-400/30">
-                <div className="space-y-1 text-center sm:text-left">
+            {/* Package Navigation Banner: Directs user to Extra Features section (Get Started button removed) */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0A120E] to-[#050907] border border-emerald-400/30 shadow-lg">
+              <div className="space-y-1 text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <p className="text-sm font-semibold text-white">
-                    Happy with the {currentPackage.name} package?
-                  </p>
-                  <p className="text-[11px] text-[#9E9E9C]">
-                    Total: <strong className="text-emerald-400 font-mono">{formatCurrencyINR(currentPackage.startingPrice)}</strong> • {currentPackage.deliveryTime} delivery • Third-party charges extra
+                    Selected Base Package: <strong className="text-emerald-400 font-mono uppercase">{currentPackage.name}</strong> ({formatCurrencyINR(currentPackage.startingPrice)})
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Link
-                    href={quotationUrl}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:shadow-[0_0_30px_rgba(52,211,153,0.5)] active:scale-[0.99]"
-                  >
-                    <span>Get Started</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setFlowMode("package_plus_addons")}
-                    className="px-4 py-2.5 rounded-xl bg-white/[0.06] text-white hover:bg-white/10 text-xs font-mono border border-white/[0.08] transition-colors"
-                  >
-                    + Add Extra Features
-                  </button>
-                </div>
+                <p className="text-[11px] text-[#9E9E9C]">
+                  Next Step: Review or customize with extra features below. If no extra features are needed, you can move forward from the estimate.
+                </p>
               </div>
-            )}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("extra-features-section");
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:shadow-[0_0_30px_rgba(52,211,153,0.5)] active:scale-[0.99] shrink-0"
+                >
+                  <span>Add Extra Features</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </section>
         )}
 
@@ -827,14 +829,33 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
             {/* ===================================================================== */}
             {/* LEFT PANE: Scrollable Master Feature Matrix                           */}
             {/* ===================================================================== */}
-            <div className="lg:col-span-8 xl:col-span-8 2xl:col-span-8 space-y-4 min-w-0">
-              {/* Step Label */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-                  {flowMode === "package_plus_addons"
-                    ? "Step 3: Add Extra Features to Your Package"
-                    : "Step 2: Select Features for Your Custom Build"}
-                </span>
+            <div id="extra-features-section" className="lg:col-span-8 xl:col-span-8 2xl:col-span-8 space-y-4 min-w-0">
+              {/* Step Label & Quick Move Forward bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
+                    {flowMode !== "custom_only"
+                      ? "Step 3: Add Extra Features to Your Package (Optional)"
+                      : "Step 2: Select Features for Your Custom Build"}
+                  </span>
+                </div>
+
+                {flowMode !== "custom_only" && (
+                  <div className="flex items-center gap-2 bg-[#0E1712] border border-emerald-500/20 px-3 py-1.5 rounded-xl text-xs">
+                    <span className="text-[#A3A3A3] text-[11px]">
+                      {activeSelectedAddons.length === 0
+                        ? "Don't want extra features?"
+                        : `${activeSelectedAddons.length} extra feature${activeSelectedAddons.length > 1 ? "s" : ""} added`}
+                    </span>
+                    <Link
+                      href={quotationUrl}
+                      className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline font-mono flex items-center gap-1 ml-1"
+                    >
+                      <span>Move Forward {activeSelectedAddons.length === 0 ? `with ${currentPackage.name}` : ""}</span>
+                      <ArrowRight className="w-3.5 h-3.5 inline" />
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Control Bar: Search + Category Pills + View Toggles */}
@@ -847,7 +868,7 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search 660+ features (e.g., razorpay, dark theme, ocr, redis, blog, pdf)..."
+                      placeholder="Search client features (e.g., razorpay, blog, appointment calendar, whatsapp, dark mode)..."
                       className="w-full pl-9 pr-8 py-2.5 rounded-xl text-xs bg-[#111116] border border-white/[0.08] text-white placeholder-[#666666] focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 transition-colors"
                     />
                     {searchQuery && (
@@ -980,7 +1001,15 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                 </div>
 
                 {/* Scrollable Rows Container */}
-                <div className="max-h-[580px] sm:max-h-[640px] 2xl:max-h-[740px] overflow-y-auto divide-y divide-white/[0.04] scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                <div
+                  className="max-h-[600px] sm:max-h-[660px] 2xl:max-h-[760px] overflow-y-auto divide-y divide-white/[0.04] scrollbar-thin select-text"
+                  style={{
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "rgba(52, 211, 153, 0.4) rgba(255, 255, 255, 0.04)",
+                    WebkitOverflowScrolling: "touch",
+                    touchAction: "pan-y",
+                  }}
+                >
                   {groupedFeatures.length === 0 ? (
                     <div className="p-12 text-center space-y-2">
                       <p className="text-sm text-[#A0A0A0]">No features match your search &ldquo;{searchQuery}&rdquo;</p>
@@ -1163,6 +1192,28 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                     })
                   )}
                 </div>
+
+                {/* Table Bottom Move-Forward Footer Bar */}
+                {flowMode !== "custom_only" && (
+                  <div className="p-3 bg-[#0D1210] border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono">
+                    <span className="text-[#888888] text-[11px] text-center sm:text-left">
+                      {activeSelectedAddons.length === 0
+                        ? `Happy with the ${currentPackage.name} base package without extra features?`
+                        : `${activeSelectedAddons.length} add-on${activeSelectedAddons.length > 1 ? "s" : ""} selected for your project.`}
+                    </span>
+                    <Link
+                      href={quotationUrl}
+                      className="px-4 py-1.5 rounded-lg bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-400 hover:text-black font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0"
+                    >
+                      <span>
+                        {activeSelectedAddons.length === 0
+                          ? `Move Forward with ${currentPackage.name} (${formatCurrencyINR(currentPackage.startingPrice)})`
+                          : "Move Forward to Final Quote"}
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1282,7 +1333,15 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                         : "No extra add-ons selected. Choose from the catalog to add features."}
                     </p>
                   ) : (
-                    <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                    <div
+                      className="max-h-44 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin"
+                      style={{
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(52, 211, 153, 0.35) transparent",
+                        WebkitOverflowScrolling: "touch",
+                        touchAction: "pan-y",
+                      }}
+                    >
                       {activeSelectedAddons.map((addon) => {
                         const qty = addon.hasQuantity ? addonQuantities[addon.id] || 1 : 1;
                         const linePrice = (addon.addonPrice || 0) * qty;
@@ -1453,12 +1512,20 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                     href={quotationUrl}
                     className="w-full min-h-[46px] px-5 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(52,211,153,0.35)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.99]"
                   >
-                    <span>Get Quote & Consult Engineers</span>
+                    <span>
+                      {flowMode === "custom_only"
+                        ? "Get Quote & Consult Engineers"
+                        : activeSelectedAddons.length > 0 || activeSelectedQuotes.length > 0
+                          ? "Get Quote & Consult Engineers"
+                          : `Move Forward with ${currentPackage.name} (${formatCurrencyINR(grandTotalOnetime)})`}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
                   <p className="text-[10px] font-mono text-[#777777] text-center">
-                    Direct consultation with technical leads • 100% full source code ownership
+                    {flowMode !== "custom_only" && activeSelectedAddons.length === 0 && activeSelectedQuotes.length === 0
+                      ? `Zero extra features added • Proceed directly with ${currentPackage.name} package`
+                      : "Direct consultation with technical leads • 100% full source code ownership"}
                   </p>
                 </div>
               </div>

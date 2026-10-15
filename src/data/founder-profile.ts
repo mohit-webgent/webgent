@@ -1,3 +1,4 @@
+
 export interface ProjectItem {
   id: string;
   name: string;
@@ -57,6 +58,7 @@ export const FOUNDER_PROFILE = {
   headline: "The Developer Behind the Work.",
   roleTitle: "Software Developer · Webgent",
   subTitle: "Founder of Webgent | Software Developer at DBA Lounge",
+  avatarUrl: "/images/mohit-verma.jpg", // or fallback / external URL
   identities: [
     "Founder of Webgent",
     "Software Developer at DBA Lounge",
@@ -133,7 +135,6 @@ export const FOUNDER_PROFILE = {
       institution: "HIMT College, Noida",
       university: "Dr. A.P.J. Abdul Kalam Technical University (AKTU)",
       period: "2022 – 2024",
-      achievement: "Secured 1st Rank in MCA batch",
     },
     {
       degree: "Bachelor of Science — Computer Science",

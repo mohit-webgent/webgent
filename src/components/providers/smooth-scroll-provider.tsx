@@ -68,6 +68,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       anchors: true, // Handle hash / anchor link transitions smoothly
       respectReducedMotion: true,
       stopInertiaOnNavigate: true,
+      allowNestedScroll: true,
     });
 
     lenisRef.current = lenis;

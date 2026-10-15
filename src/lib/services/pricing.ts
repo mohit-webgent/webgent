@@ -18,6 +18,7 @@ import {
   MasterCategoryMeta,
   MatrixFeatureItem,
   MasterPackageTier,
+  normalizeMatrixFeatureId,
 } from "@/data/pricing-matrix-data";
 
 export interface BackendPricingData {
@@ -56,7 +57,12 @@ export async function getPricingData(): Promise<BackendPricingData> {
       if (overrides.types) types = overrides.types;
       if (overrides.features) features = overrides.features;
       if (overrides.matrixPackages) matrixPackages = overrides.matrixPackages;
-      if (overrides.matrixFeatures) matrixFeatures = overrides.matrixFeatures;
+      if (overrides.matrixFeatures && Array.isArray(overrides.matrixFeatures)) {
+        matrixFeatures = overrides.matrixFeatures.map((f: MatrixFeatureItem) => ({
+          ...f,
+          id: normalizeMatrixFeatureId(f.id),
+        }));
+      }
     }
   } catch (error) {
     // Graceful fallback to default configurator data if DB is unavailable

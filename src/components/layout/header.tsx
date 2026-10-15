@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { CtaLink } from "@/components/ui/cta-link";
 import { Menu, X, ArrowRight } from "lucide-react";
-import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const navContainerRef = useRef<HTMLElement | null>(null);
-  const indicatorRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,46 +20,6 @@ export function Header() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Smooth active indicator movement using GSAP
-  const updateIndicator = useCallback(() => {
-    if (!navContainerRef.current || !indicatorRef.current) return;
-
-    const activeEl = navContainerRef.current.querySelector<HTMLElement>("[data-active='true']");
-    if (!activeEl) {
-      if (isReducedMotion()) {
-        indicatorRef.current.style.opacity = "0";
-      } else {
-        gsap.to(indicatorRef.current, { opacity: 0, duration: 0.2 });
-      }
-      return;
-    }
-
-    const { offsetLeft, offsetWidth } = activeEl;
-
-    if (isReducedMotion()) {
-      indicatorRef.current.style.transform = `translateX(${offsetLeft}px)`;
-      indicatorRef.current.style.width = `${offsetWidth}px`;
-      indicatorRef.current.style.opacity = "1";
-      return;
-    }
-
-    gsap.to(indicatorRef.current, {
-      x: offsetLeft,
-      width: offsetWidth,
-      opacity: 1,
-      duration: 0.35,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
-  }, []);
-
-  useEffect(() => {
-    updateIndicator();
-    const handleResize = () => updateIndicator();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [pathname, updateIndicator]);
 
   return (
     <header
@@ -77,7 +34,7 @@ export function Header() {
           isScrolled ? "h-14" : "h-16 sm:h-20"
         }`}
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-10">
           {/* Logo */}
           <Link
             href="/"
@@ -91,20 +48,11 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Nav - Borderless minimal matte */}
+          {/* Desktop Nav - Pure minimal text links (zero background) */}
           <nav
-            ref={navContainerRef}
             aria-label="Main Navigation"
-            className="relative hidden md:flex items-center gap-1 text-sm font-medium p-1 rounded-xl bg-white/[0.03]"
+            className="hidden md:flex items-center gap-7 lg:gap-8 text-xs font-medium"
           >
-            {/* Smooth animated active pill indicator (borderless matte) */}
-            <div
-              ref={indicatorRef}
-              className="absolute h-[calc(100%-8px)] rounded-lg bg-white/[0.08] pointer-events-none opacity-0 transition-opacity"
-              style={{ top: "4px", left: "0px" }}
-              aria-hidden="true"
-            />
-
             {siteConfig.mainNav.map((item) => {
               const isActive =
                 item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
@@ -113,11 +61,10 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  data-active={isActive ? "true" : "false"}
-                  className={`relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`transition-colors py-1 ${
                     isActive
-                      ? "text-[#F0F0EE] font-semibold"
-                      : "text-[#8A8A8A] hover:text-[#F0F0EE] hover:bg-white/[0.03]"
+                      ? "text-white font-semibold"
+                      : "text-[#8A8A8A] hover:text-white"
                   }`}
                 >
                   {item.title}
@@ -149,10 +96,10 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu - Borderless minimal matte */}
+      {/* Mobile Menu - Minimal text links (zero background on items) */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0A0A0A]/95 backdrop-blur-xl px-5 py-4 space-y-3 shadow-2xl">
-          <nav aria-label="Mobile Navigation" className="flex flex-col space-y-1">
+        <div className="md:hidden bg-[#0A0A0A]/95 backdrop-blur-xl px-6 py-5 space-y-4 shadow-2xl border-b border-white/[0.08]">
+          <nav aria-label="Mobile Navigation" className="flex flex-col space-y-2">
             {siteConfig.mainNav.map((item) => {
               const isActive =
                 item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
@@ -162,10 +109,10 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`py-1.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "text-[#F0F0EE] bg-white/[0.06] font-semibold"
-                      : "text-[#8A8A8A] hover:text-[#F0F0EE]"
+                      ? "text-white font-semibold"
+                      : "text-[#8A8A8A] hover:text-white"
                   }`}
                 >
                   {item.title}

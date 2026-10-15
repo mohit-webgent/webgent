@@ -91,8 +91,38 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+.lenis.lenis-smooth [data-lenis-prevent],
+.lenis.lenis-smooth .scrollbar-thin {
+  overscroll-behavior: auto;
+}
+
+[data-lenis-prevent],
+.scrollbar-thin {
+  overscroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-lenis-prevent]::-webkit-scrollbar,
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-lenis-prevent]::-webkit-scrollbar-track,
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 9999px;
+}
+
+[data-lenis-prevent]::-webkit-scrollbar-thumb,
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(52, 211, 153, 0.35);
+  border-radius: 9999px;
+}
+
+[data-lenis-prevent]::-webkit-scrollbar-thumb:hover,
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 211, 153, 0.65);
 }
 
 .lenis.lenis-scrolling iframe {

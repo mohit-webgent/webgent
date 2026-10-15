@@ -1,369 +1,494 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
-  Briefcase,
   GraduationCap,
-  Award,
-  Sparkles,
-  ExternalLink,
   Github,
   Linkedin,
   Mail,
-  Compass,
-  Check,
-  Building2,
   MapPin,
   Calendar,
-  ShieldCheck,
+  Check,
+  Copy,
+  CheckCheck,
+  Terminal,
+  Building2,
+  Code2,
+  Sparkles,
 } from "lucide-react";
 import {
   FOUNDER_PROFILE,
   ProjectItem,
-  ExperienceItem,
   EducationItem,
   SkillCategory,
-  ApproachStep,
-  WorkingPrinciple,
 } from "@/data/founder-profile";
+import { useGSAP } from "@gsap/react";
+import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 
 export function AboutView() {
   const {
     name,
     badge,
-    headline,
     roleTitle,
+    location,
+    email,
+    portfolioUrl,
+    githubUrl,
+    linkedinUrl,
     introParagraphs,
     currentRole,
     previousExperience,
     education,
     skills,
     projects,
-    developmentApproach,
-    servicesOffered,
-    workingPrinciples,
-    portfolioUrl,
-    githubUrl,
-    linkedinUrl,
-    email,
   } = FOUNDER_PROFILE;
 
+  const [activeExpTab, setActiveExpTab] = useState<number>(0);
+  const [copied, setCopied] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const allExperiences = [
+    {
+      company: currentRole.company,
+      role: currentRole.role,
+      type: "Full-Time",
+      period: currentRole.period,
+      location: currentRole.location,
+      isCurrent: true,
+      description: currentRole.description,
+      note: currentRole.note,
+      highlights: [
+        "Architecting responsive frontend interfaces and design systems using React.js.",
+        "Engineering scalable, production-ready web interfaces with modern component patterns.",
+        "Collaborating across agile sprints and production deployments.",
+        "Focusing on high-performance render cycles and accessible web standards.",
+      ],
+      techStack: ["React.js", "TypeScript", "Next.js", "Tailwind CSS", "REST APIs", "Git"],
+    },
+    ...previousExperience.map((exp) => ({
+      ...exp,
+      isCurrent: false,
+      description: `${exp.role} at ${exp.company} (${exp.location}). Focused on production web application development.`,
+      note: "Production internship milestone.",
+      techStack: exp.company.includes("Diamond")
+        ? ["React.js", "Tailwind CSS", "Strapi CMS", "REST APIs", "JavaScript"]
+        : ["React.js", "Node.js", "Express.js", "MySQL", "Jira", "REST APIs"],
+    })),
+  ];
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  useGSAP(
+    () => {
+      if (!containerRef.current || isReducedMotion()) return;
+
+      gsap.from(".about-fade-in", {
+        opacity: 0,
+        y: 20,
+        stagger: 0.1,
+        duration: 0.65,
+        ease: "power2.out",
+      });
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-8 pb-28 sm:pb-24 px-4 sm:px-6 lg:px-12 2xl:px-16 3xl:px-24 font-sans selection:bg-white selection:text-black">
-      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto space-y-16 sm:space-y-24 relative z-10">
+    <div
+      ref={containerRef}
+      className="min-h-screen bg-[#080808] text-[#EDEDED] pt-8 pb-24 sm:pt-12 sm:pb-32 px-4 sm:px-8 lg:px-12 font-sans selection:bg-white selection:text-black"
+    >
+      <div className="w-full max-w-6xl mx-auto space-y-20 sm:space-y-28">
 
         {/* =================================================================== */}
-        {/* SECTION 1: HERO (TWO-COLUMN EDITORIAL LAYOUT)                       */}
+        {/* 1. HERO: SHARP ARCHITECTURAL DEVELOPER PROFILE (NON-ROUNDED)        */}
         {/* =================================================================== */}
-        <section aria-label="Founder Introduction" className="pt-4 sm:pt-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <section aria-label="Developer Introduction" className="pt-2 sm:pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
             
-            {/* Left Column: Introduction & Primary CTAs */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-[#A3A3A3]">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
-                <span className="tracking-widest uppercase font-semibold text-emerald-400">{badge}</span>
-              </div>
-
-              <div className="space-y-3">
-                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-light text-[#F5F5F3] tracking-tight leading-[1.12]">
-                  {headline}
-                </h1>
-                <p className="text-base sm:text-lg text-emerald-400/90 font-mono">
-                  {name} — {roleTitle}
-                </p>
-              </div>
-
-              <div className="space-y-4 text-sm sm:text-base text-[#A3A3A3] font-light leading-relaxed max-w-2xl">
-                {introParagraphs.map((para, idx) => (
-                  <p key={idx}>{para}</p>
-                ))}
-              </div>
-
-              {/* Verified Key Pillars */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-mono text-[#D4D4D4]">
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#0D0D10] border border-white/[0.06]">
-                  <Building2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Currently at DBA Lounge</span>
+            {/* Left Column: Developer Narrative & Direct Links */}
+            <div className="lg:col-span-7 space-y-6 flex flex-col justify-between about-fade-in">
+              <div className="space-y-5">
+                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-[#A3A3A3] backdrop-blur-md">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 motion-safe:animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                  <span className="tracking-widest uppercase font-semibold text-emerald-400">{badge}</span>
+                  <span className="text-white/20">|</span>
+                  <span className="text-[#888888]">Software Developer</span>
                 </div>
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#0D0D10] border border-white/[0.06]">
-                  <GraduationCap className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>1st Rank in MCA (AKTU)</span>
+
+                <div className="space-y-2.5">
+                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-white leading-[1.1]">
+                    {name}
+                  </h1>
+                  <p className="text-base sm:text-lg text-emerald-400 font-mono">
+                    {roleTitle} · Founder of <span className="text-white font-medium">Webgent</span>
+                  </p>
+                </div>
+
+                <div className="space-y-3 text-sm sm:text-base text-[#A3A3A3] font-light leading-relaxed">
+                  {introParagraphs.map((para, idx) => (
+                    <p key={idx}>{para}</p>
+                  ))}
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-3">
-                <Link
-                  href="/contact"
-                  className="px-6 py-3.5 rounded-xl bg-white hover:bg-[#EAEAEA] text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.15)] hover:shadow-[0_0_35px_rgba(255,255,255,0.25)] active:scale-[0.99]"
-                >
-                  <span>Discuss Your Project</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              {/* Direct Actions & Quick Links */}
+              <div className="space-y-4 pt-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/contact"
+                    className="px-6 py-3 bg-white hover:bg-[#EAEAEA] text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.18)] active:scale-[0.99]"
+                  >
+                    <span>Discuss Your Project</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
 
-                <Link
-                  href="#projects"
-                  className="px-5 py-3.5 rounded-xl bg-[#141418] hover:bg-[#1C1C24] text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] flex items-center gap-2"
-                >
-                  <span>Explore My Work</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#888888]" />
-                </Link>
+                  <Link
+                    href="#projects"
+                    className="px-5 py-3 bg-[#141418] hover:bg-[#1C1C24] text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] flex items-center gap-2"
+                  >
+                    <span>View Projects</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#888888]" />
+                  </Link>
 
-                <a
-                  href={portfolioUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/[0.04] text-[#A3A3A3] hover:text-white text-xs font-mono tracking-wide transition-colors flex items-center gap-1.5"
-                >
-                  <span>vermamohit.in</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
+                  <button
+                    onClick={handleCopyEmail}
+                    className="flex items-center gap-1.5 px-3.5 py-3 bg-[#141418] hover:bg-[#1C1C24] border border-white/[0.1] hover:border-emerald-500/40 text-xs font-mono text-[#D4D4D4] hover:text-white transition-all cursor-pointer"
+                    title="Click to copy email"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>{email}</span>
+                    {copied ? (
+                      <CheckCheck className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-[#666666]" />
+                    )}
+                  </button>
+                </div>
 
-            {/* Right Column: Architectural Portrait / Identity Area */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-md">
-                
-                {/* Decorative border frame with architectural accents */}
-                <div className="relative p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#141418] to-[#0A0A0C] border border-white/[0.1] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
-                  
-                  {/* Subtle corner grid lines */}
-                  <div className="absolute top-0 right-0 w-28 h-28 border-l border-b border-white/[0.04] pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-28 h-28 border-r border-t border-white/[0.04] pointer-events-none" />
-
-                  {/* Portrait Placeholder Container */}
-                  <div className="relative aspect-[4/5] rounded-2xl bg-[#09090C] border border-white/[0.08] flex flex-col items-center justify-between p-6 overflow-hidden group">
-                    
-                    {/* Background subtle radial glow */}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_70%)] pointer-events-none" />
-
-                    {/* Top Identity Tag */}
-                    <div className="w-full flex items-center justify-between text-[11px] font-mono text-[#888888] z-10">
-                      <span className="uppercase tracking-widest text-emerald-400/90 font-semibold">Founder Profile</span>
-                      <span>India</span>
-                    </div>
-
-                    {/* Monogram / Portrait Visual Area */}
-                    <div className="flex flex-col items-center justify-center space-y-4 my-auto z-10 text-center">
-                      <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-[#16161C] to-[#22222C] border border-white/[0.12] flex items-center justify-center text-4xl font-light text-white tracking-wider shadow-inner group-hover:border-emerald-400/40 transition-colors">
-                        MV
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-lg font-medium text-white">{name}</p>
-                        <p className="text-xs font-mono text-[#A0A0A0]">React &amp; MERN Stack Developer</p>
-                      </div>
-                    </div>
-
-                    {/* Bottom Status Ribbon */}
-                    <div className="w-full pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono z-10">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        <span className="text-[#B5B5B3] text-[11px]">Building Webgent</span>
-                      </div>
-                      <span className="text-[11px] text-[#777777]">Production Ready</span>
-                    </div>
-                  </div>
-
-                  {/* Professional Identity Panel below portrait */}
-                  <div className="mt-5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-white">{name}</span>
-                      <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                        Verified Identity
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-[#888888] leading-relaxed">
-                      Software Developer at DBA Lounge &amp; Founder of Webgent Studio. Focused on clean React architecture and scalable web products.
-                    </p>
-                  </div>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-[#888888] pt-1">
+                  <span className="flex items-center gap-1 text-[#B5B5B3]">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{location}</span>
+                  </span>
+                  <span>·</span>
+                  <a
+                    href={portfolioUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <span>vermamohit.in</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </a>
+                  <span>·</span>
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <Github className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>GitHub</span>
+                  </a>
+                  <span>·</span>
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <Linkedin className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>LinkedIn</span>
+                  </a>
                 </div>
               </div>
             </div>
 
-          </div>
-        </section>
+            {/* Right Column: Sharp Verified Telemetry Bento Card (Non-Rounded) */}
+            <div className="lg:col-span-5 p-6 sm:p-7 bg-gradient-to-b from-[#111116] via-[#0D0D11] to-[#0A0A0D] border border-white/[0.1] shadow-2xl flex flex-col justify-between gap-6 about-fade-in relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-3xl pointer-events-none" />
 
-        {/* =================================================================== */}
-        {/* SECTION 2: CURRENT PROFESSIONAL EXPERIENCE — DBA LOUNGE              */}
-        {/* =================================================================== */}
-        <section aria-label="Current Professional Role" className="space-y-6">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-              01 / Current Role
-            </span>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#0C1410] via-[#090D0B] to-[#070908] border border-emerald-500/30 relative overflow-hidden">
-            {/* Background Accent */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="space-y-6 relative z-10">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 uppercase tracking-wider">
-                      {currentRole.period}
-                    </span>
-                    <span className="text-xs font-mono text-[#888888]">Full-Time Employment</span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight pt-1">
-                    Currently Building at <span className="font-semibold text-emerald-300">{currentRole.company}</span>
-                  </h2>
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-emerald-400" />
+                    Verified Credentials
+                  </span>
+                  <span className="text-[11px] font-mono text-[#666666]">India</span>
                 </div>
 
-                <div className="text-left md:text-right font-mono text-xs text-[#A0A0A0] space-y-1">
-                  <p className="flex items-center md:justify-end gap-1.5 text-white">
-                    <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Role: {currentRole.role}</span>
-                  </p>
-                  <p className="flex items-center md:justify-end gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#666666]" />
-                    <span>Location: {currentRole.location}</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 max-w-4xl text-sm sm:text-base text-[#B5B5B3] leading-relaxed font-light">
-                <p>{currentRole.description}</p>
-                
-                <div className="p-4 rounded-xl bg-black/40 border border-white/[0.06] text-xs font-mono text-[#8E8E8C] space-y-1.5">
-                  <p className="text-[#AAAAAA] font-semibold flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Professional Disclosure Note</span>
-                  </p>
-                  <p>{currentRole.note}</p>
-                  <p className="text-[11px] text-[#666666] italic pt-1">{currentRole.editablePlaceholder}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =================================================================== */}
-        {/* SECTION 3: PREVIOUS PROFESSIONAL EXPERIENCE (INTERNSHIPS TIMELINE)  */}
-        {/* =================================================================== */}
-        <section aria-label="Previous Professional Experience" className="space-y-6">
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-              02 / Work History
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-              Previous Professional Experience
-            </h2>
-            <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-              Hands-on engineering contributions across frontend development, headless CMS integrations, and database design.
-            </p>
-          </div>
-
-          <div className="relative border-l border-white/[0.1] pl-6 sm:pl-8 ml-3 sm:ml-4 space-y-10">
-            {previousExperience.map((exp: ExperienceItem, idx: number) => (
-              <div key={idx} className="relative group">
-                {/* Timeline Dot */}
-                <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 rounded-full bg-[#161616] border-2 border-emerald-400 group-hover:scale-125 transition-transform" />
-
-                <div className="p-6 sm:p-7 rounded-2xl bg-[#0D0D10] border border-white/[0.08] hover:border-white/[0.18] transition-all space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+                <div className="space-y-3 text-xs">
+                  {/* Current Employment Card */}
+                  <div className="p-3.5 bg-white/[0.02] border border-white/[0.06] flex items-center gap-3">
+                    <div className="w-9 h-9 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-emerald-400" />
+                    </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-white tracking-tight">
-                          {exp.company}
-                        </h3>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.05] text-[#A0A0A0] border border-white/[0.08]">
-                          {exp.type}
-                        </span>
-                      </div>
-                      <p className="text-xs font-mono text-emerald-400">{exp.role}</p>
-                    </div>
-
-                    <div className="text-xs font-mono text-[#888888] flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-[#666666]" />
-                        {exp.period}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-[#666666]" />
-                        {exp.location}
-                      </span>
+                      <p className="font-semibold text-white">Software Developer</p>
+                      <p className="text-[11px] text-[#888888] font-mono">DBA Lounge · Gurugram (Present)</p>
                     </div>
                   </div>
 
-                  <ul className="space-y-2 text-xs sm:text-sm text-[#B5B5B3]">
-                    {exp.highlights.map((item, hIdx) => (
+                  {/* Academic Degree Card */}
+                  <div className="p-3.5 bg-white/[0.02] border border-white/[0.06] flex items-center gap-3">
+                    <div className="w-9 h-9 bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-4 h-4 text-sky-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white">Master of Computer Applications</p>
+                      <p className="text-[11px] text-[#888888] font-mono">AKTU (2022 – 2024)</p>
+                    </div>
+                  </div>
+
+                  {/* Engineering Stack Card */}
+                  <div className="p-3.5 bg-white/[0.02] border border-white/[0.06] flex items-center gap-3">
+                    <div className="w-9 h-9 bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
+                      <Code2 className="w-4 h-4 text-violet-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white">Core Development Stack</p>
+                      <p className="text-[11px] text-[#888888] font-mono">React, Next.js, Node.js, Express, MySQL</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Ribbon */}
+              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
+                  <span className="text-[#D0D0CE] text-[11px]">Building at Webgent</span>
+                </div>
+                <span className="text-[11px] text-[#777777]">Production Ready</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* =================================================================== */}
+        {/* 2. INTERACTIVE EXPERIENCE CONSOLE (SHARP NON-ROUNDED TABS)          */}
+        {/* =================================================================== */}
+        <section aria-label="Work Experience Console" className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-white/[0.08] pb-3">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold">
+                01 / Professional Track Record
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
+                Work Experience &amp; Engineering Roles
+              </h2>
+            </div>
+            <span className="text-xs font-mono text-[#777777]">
+              Interactive Role Selector
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* Left Role Tabs Switcher */}
+            <div className="lg:col-span-4 space-y-2">
+              {allExperiences.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveExpTab(idx)}
+                  className={`w-full p-4 text-left transition-all duration-200 border flex flex-col gap-1 cursor-pointer ${
+                    activeExpTab === idx
+                      ? "bg-[#141816] border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/30"
+                      : "bg-[#0D0D12] border-white/[0.06] hover:bg-[#121218] hover:border-white/[0.14]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-white">
+                      {item.company}
+                    </span>
+                    {item.isCurrent ? (
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium flex items-center gap-1">
+                        <span className="w-1 h-1 bg-emerald-400 animate-pulse" />
+                        Current
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-[#777777]">
+                        {item.type}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs font-mono text-emerald-400/90">{item.role}</span>
+                  <span className="text-[11px] font-mono text-[#666666]">{item.period}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Role Detail Console */}
+            <div className="lg:col-span-8 p-6 sm:p-7 bg-[#0D0D12] border border-white/[0.08] space-y-5 relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-white">
+                    {allExperiences[activeExpTab].role}
+                  </h3>
+                  <p className="text-xs font-mono text-emerald-400">
+                    {allExperiences[activeExpTab].company} · {allExperiences[activeExpTab].location}
+                  </p>
+                </div>
+
+                <div className="text-xs font-mono text-[#888888] flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{allExperiences[activeExpTab].period}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-xs sm:text-sm text-[#B5B5B3] leading-relaxed">
+                <p>{allExperiences[activeExpTab].description}</p>
+
+                <div className="space-y-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400/90 font-semibold block">
+                    Key Technical Contributions:
+                  </span>
+                  <ul className="space-y-2">
+                    {allExperiences[activeExpTab].highlights.map((h, hIdx) => (
                       <li key={hIdx} className="flex items-start gap-2.5">
-                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-1" />
-                        <span className="leading-relaxed">{item}</span>
+                        <span className="w-3.5 h-3.5 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        </span>
+                        <span className="text-[#D0D0CE]">{h}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
-            ))}
+
+              {/* Tech Stack Chips for this role */}
+              <div className="pt-4 border-t border-white/[0.06] space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#666666] block">
+                  Technologies Utilized:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {allExperiences[activeExpTab].techStack.map((tech, tIdx) => (
+                    <span
+                      key={tIdx}
+                      className="text-xs font-mono px-2.5 py-1 bg-white/[0.04] text-[#D4D4D4] border border-white/[0.06]"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
           </div>
         </section>
 
         {/* =================================================================== */}
-        {/* SECTION 4: EDUCATION AND ACADEMIC ACHIEVEMENTS                      */}
+        {/* 3. SELECTED PRODUCTION PROJECTS (SHARP ARCHITECTURAL CARDS)         */}
         {/* =================================================================== */}
-        <section aria-label="Education and Academic Background" className="space-y-6">
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-              03 / Academic Background
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-              Education &amp; Academic Achievements
-            </h2>
-            <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-              Solid theoretical and practical foundations in computer science and application engineering.
-            </p>
+        <section id="projects" aria-label="Selected Projects" className="space-y-6 scroll-mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-white/[0.08] pb-3">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold">
+                02 / Real Deployments
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
+                Selected Production Projects
+              </h2>
+            </div>
+
+            <Link
+              href="/work"
+              className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
+            >
+              <span>Explore All Studio Work</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {education.map((edu: EducationItem, idx: number) => {
-              const isFirstRank = Boolean(edu.achievement);
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {projects.map((proj: ProjectItem) => {
+              const borderTheme = proj.isLive
+                ? "border-emerald-500/30 hover:border-emerald-500/60"
+                : "border-white/[0.08] hover:border-white/[0.2]";
+
               return (
                 <div
-                  key={idx}
-                  className={`p-6 sm:p-7 rounded-2xl text-left transition-all border flex flex-col justify-between gap-5 ${
-                    isFirstRank
-                      ? "bg-gradient-to-b from-[#13130E] to-[#0D0D0A] border-amber-500/40 ring-1 ring-amber-500/20 shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
-                      : "bg-[#0D0D10] border-white/[0.08]"
-                  }`}
+                  key={proj.id}
+                  className={`p-6 sm:p-7 bg-gradient-to-b from-[#111116] to-[#0A0A0D] border ${borderTheme} transition-all duration-300 flex flex-col justify-between gap-5 group shadow-xl hover:-translate-y-1`}
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/[0.04] text-[#A0A0A0] border border-white/[0.08]">
-                        {edu.period}
+                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 bg-white/[0.04] text-[#888888] border border-white/[0.06]">
+                        {proj.category}
                       </span>
-
-                      {isFirstRank && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                          <Award className="w-3 h-3 text-amber-400" />
-                          Academic First Rank
-                        </span>
-                      )}
+                      <span
+                        className={`text-[10px] font-mono px-2 py-0.5 border flex items-center gap-1.5 ${
+                          proj.isLive
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                            : "bg-white/[0.04] text-[#888888] border-white/[0.06]"
+                        }`}
+                      >
+                        {proj.isLive && (
+                          <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
+                        )}
+                        <span>{proj.statusLabel}</span>
+                      </span>
                     </div>
 
-                    <div className="space-y-1">
-                      <h3 className="text-lg sm:text-xl font-semibold text-white tracking-tight">
-                        {edu.degree}
+                    <div className="space-y-1.5">
+                      <h3 className="text-lg font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                        {proj.name}
                       </h3>
-                      <p className="text-xs sm:text-sm text-[#B5B5B3]">{edu.institution}</p>
-                      <p className="text-xs font-mono text-[#888888]">{edu.university}</p>
+                      <p className="text-xs text-[#9E9E9C] leading-relaxed">
+                        {proj.description}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
+                      <span className="text-[10px] font-mono uppercase text-[#777777] block">
+                        My Contributions:
+                      </span>
+                      <ul className="space-y-1 text-xs text-[#B5B5B3]">
+                        {proj.myContribution.slice(0, 3).map((point, pIdx) => (
+                          <li key={pIdx} className="flex items-start gap-2">
+                            <span className="text-emerald-400 mt-0.5">›</span>
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
 
-                  {isFirstRank && (
-                    <div className="pt-3 border-t border-amber-500/20 flex items-center gap-2 text-xs font-mono text-amber-300/90">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>{edu.achievement}</span>
+                  <div className="pt-3 border-t border-white/[0.06] space-y-3">
+                    <div className="flex flex-wrap gap-1">
+                      {proj.techStack.map((tech, tIdx) => (
+                        <span
+                          key={tIdx}
+                          className="text-[10px] font-mono px-2 py-0.5 bg-white/[0.02] text-[#A0A0A0] border border-white/[0.04]"
+                        >
+                          {tech}
+                        </span>
+                      ))}
                     </div>
-                  )}
+
+                    <a
+                      href={proj.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 px-3 bg-white/[0.03] hover:bg-emerald-500/10 text-xs font-mono text-white hover:text-emerald-300 border border-white/[0.06] hover:border-emerald-500/30 transition-all flex items-center justify-between"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Visit Project</span>
+                      </span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-[#666666]" />
+                    </a>
+                  </div>
                 </div>
               );
             })}
@@ -371,55 +496,52 @@ export function AboutView() {
         </section>
 
         {/* =================================================================== */}
-        {/* SECTION 5: TECHNICAL EXPERTISE                                      */}
+        {/* 4. TECHNICAL EXPERTISE & CORE CAPABILITIES                          */}
         {/* =================================================================== */}
-        <section aria-label="Technical Expertise" className="space-y-6">
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-              04 / Core Capabilities
+        <section aria-label="Technical Skills Matrix" className="space-y-6">
+          <div className="border-b border-white/[0.08] pb-3">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold">
+              03 / Technical Stack
             </span>
-            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-              Technical Expertise
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
+              Skills &amp; Technical Capabilities
             </h2>
-            <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-              Organized into practical engineering domains focused on delivering reliable, responsive web products.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {skills.map((cat: SkillCategory, idx: number) => {
               const isLearning = cat.categoryKey === "learning";
               return (
                 <div
                   key={idx}
-                  className={`p-6 rounded-2xl border transition-all flex flex-col justify-between gap-4 ${
+                  className={`p-6 border transition-all flex flex-col justify-between gap-4 ${
                     isLearning
                       ? "bg-gradient-to-b from-[#0E1520] to-[#0A0E15] border-sky-500/30"
-                      : "bg-[#0D0D10] border-white/[0.08] hover:border-white/[0.18]"
+                      : "bg-[#0D0D12] border-white/[0.06] hover:border-white/[0.16]"
                   }`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-white tracking-tight">
+                      <h3 className="text-sm font-semibold text-white">
                         {cat.title}
                       </h3>
                       {isLearning && (
-                        <span className="text-[9.5px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">
-                          Active Focus
+                        <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 bg-sky-500/20 text-sky-300 font-semibold">
+                          Learning
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#8E8E8C] leading-relaxed">{cat.description}</p>
+                    <p className="text-xs text-[#8E8E8C]">{cat.description}</p>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5 pt-2 border-t border-white/[0.06]">
+                  <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/[0.04]">
                     {cat.skills.map((skill, sIdx) => (
                       <span
                         key={sIdx}
-                        className={`text-xs font-mono px-2.5 py-1 rounded-lg border transition-colors ${
+                        className={`text-xs font-mono px-2 py-0.5 border ${
                           isLearning
                             ? "bg-sky-500/10 text-sky-200 border-sky-500/20"
-                            : "bg-white/[0.03] text-[#D4D4D4] border-white/[0.06] hover:bg-white/[0.07] hover:text-white"
+                            : "bg-white/[0.03] text-[#D4D4D4] border-white/[0.06]"
                         }`}
                       >
                         {skill}
@@ -433,246 +555,60 @@ export function AboutView() {
         </section>
 
         {/* =================================================================== */}
-        {/* SECTION 6: SELECTED PROJECTS                                        */}
+        {/* 5. ACADEMIC QUALIFICATIONS                                          */}
         {/* =================================================================== */}
-        <section id="projects" aria-label="Selected Projects" className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-                05 / Production Work
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-                Selected Projects
-              </h2>
-              <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-                Real-world web platforms, digital storefronts, and business interfaces built with modern web technologies.
-              </p>
-            </div>
-
-            <Link
-              href="/work"
-              className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors self-start sm:self-auto"
-            >
-              <span>View All Studio Work</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {projects.map((proj: ProjectItem) => (
-              <div
-                key={proj.id}
-                className="p-6 sm:p-7 rounded-2xl bg-[#0D0D10] border border-white/[0.08] hover:border-white/[0.2] transition-all flex flex-col justify-between gap-6 group"
-              >
-                <div className="space-y-4">
-                  {/* Category & Status */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/[0.04] text-[#A0A0A0] border border-white/[0.08]">
-                      {proj.category}
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-                        proj.isLive
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                          : "bg-white/[0.04] text-[#888888] border-white/[0.08]"
-                      }`}
-                    >
-                      {proj.statusLabel}
-                    </span>
-                  </div>
-
-                  {/* Title & Description */}
-                  <div className="space-y-1.5">
-                    <h3 className="text-lg font-semibold text-white tracking-tight group-hover:text-emerald-300 transition-colors">
-                      {proj.name}
-                    </h3>
-                    <p className="text-xs text-[#9E9E9C] leading-relaxed">{proj.description}</p>
-                  </div>
-
-                  {/* My Contribution */}
-                  <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-                    <span className="text-[10px] font-mono uppercase text-[#777777] tracking-wider block">
-                      My Contributions:
-                    </span>
-                    <ul className="space-y-1.5 text-xs text-[#B5B5B3]">
-                      {proj.myContribution.map((point, pIdx) => (
-                        <li key={pIdx} className="flex items-start gap-2">
-                          <Check className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
-                          <span className="leading-snug">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Tech Stack & External Link */}
-                <div className="space-y-3 pt-3 border-t border-white/[0.06]">
-                  <div className="flex flex-wrap gap-1">
-                    {proj.techStack.map((tech, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.03] text-[#A3A3A3] border border-white/[0.06]"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  <a
-                    href={proj.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-mono text-white hover:text-emerald-300 transition-colors pt-1"
-                  >
-                    <span>Visit Project URL</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* =================================================================== */}
-        {/* SECTION 7: DEVELOPMENT APPROACH                                     */}
-        {/* =================================================================== */}
-        <section aria-label="Development Approach" className="space-y-6">
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-              06 / Methodology
+        <section aria-label="Education" className="space-y-6">
+          <div className="border-b border-white/[0.08] pb-3">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold">
+              04 / Academic Qualifications
             </span>
-            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-              How I Approach Every Project
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
+              Education &amp; Degrees
             </h2>
-            <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-              A disciplined, step-by-step workflow designed to transform ambiguous business goals into solid digital products.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {developmentApproach.map((step: ApproachStep, idx: number) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {education.map((edu: EducationItem, idx: number) => (
               <div
                 key={idx}
-                className="p-6 rounded-2xl bg-[#0D0D10] border border-white/[0.08] space-y-3 relative overflow-hidden"
+                className="p-6 bg-[#0D0D12] border border-white/[0.06] hover:border-white/[0.14] transition-all space-y-3"
               >
-                <div className="text-2xl font-light font-mono text-emerald-400">
-                  {step.step}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 bg-white/[0.04] text-[#A0A0A0] border border-white/[0.08]">
+                    {edu.period}
+                  </span>
+                  <GraduationCap className="w-4 h-4 text-emerald-400" />
                 </div>
-                <h3 className="text-base font-semibold text-white tracking-tight">
-                  {step.title}
-                </h3>
-                <p className="text-xs text-[#9E9E9C] leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-[11px] font-mono text-[#777777] text-center pt-1">
-            Delivery timelines and milestone commitments are established transparently once project scope is defined.
-          </p>
-        </section>
-
-        {/* =================================================================== */}
-        {/* SECTION 8: WHAT I CAN HELP CLIENTS BUILD                            */}
-        {/* =================================================================== */}
-        <section aria-label="Services Offered" className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-                07 / Solutions &amp; Scope
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-                What I Can Help Clients Build
-              </h2>
-              <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-                Direct developer collaboration through Webgent, backed by production engineering experience.
-              </p>
-            </div>
-
-            <Link
-              href="/pricing"
-              className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors self-start sm:self-auto"
-            >
-              <span>Explore Services &amp; Pricing</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {servicesOffered.map((srv, idx) => (
-              <Link
-                key={idx}
-                href={srv.href}
-                className="p-4 rounded-xl bg-[#0D0D10] border border-white/[0.06] hover:border-emerald-500/40 hover:bg-[#121217] transition-all flex items-center justify-between text-xs font-medium text-[#DCDCDA] hover:text-white group"
-              >
-                <span>{srv.title}</span>
-                <ArrowRight className="w-3 h-3 text-[#555555] group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* =================================================================== */}
-        {/* SECTION 9: PERSONAL WORKING PRINCIPLES                              */}
-        {/* =================================================================== */}
-        <section aria-label="Working Principles" className="space-y-6">
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
-              08 / Values &amp; Discipline
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-              Personal Working Principles
-            </h2>
-            <p className="text-xs sm:text-sm text-[#888888] font-light max-w-2xl">
-              Professional standards that guide communication, codebase hygiene, and client relationships.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workingPrinciples.map((principle: WorkingPrinciple, idx: number) => (
-              <div
-                key={idx}
-                className="p-5 sm:p-6 rounded-2xl bg-[#0D0D10] border border-white/[0.08] space-y-2 text-left"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <h3 className="text-sm font-semibold text-white tracking-tight">
-                    {principle.title}
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-white">
+                    {edu.degree}
                   </h3>
+                  <p className="text-xs text-[#B5B5B3]">{edu.institution}</p>
+                  <p className="text-xs font-mono text-emerald-400/90">{edu.university}</p>
                 </div>
-                <p className="text-xs text-[#9E9E9C] leading-relaxed">
-                  {principle.description}
-                </p>
               </div>
             ))}
           </div>
         </section>
 
         {/* =================================================================== */}
-        {/* SECTION 10: CONTACT, CALL TO ACTION & SOCIAL LINKS                  */}
+        {/* 6. CALL TO ACTION & DIRECT CONTACT BAR                              */}
         {/* =================================================================== */}
-        <section aria-label="Contact Call to Action" className="space-y-8">
-          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-b from-[#111613] via-[#0B0F0C] to-[#070908] border border-emerald-500/30 text-center space-y-6 relative overflow-hidden">
-            {/* Subtle glow background */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.1),_transparent_70%)] pointer-events-none" />
-
-            <div className="space-y-3 max-w-2xl mx-auto relative z-10">
-              <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold">
-                Direct Developer Contact
-              </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white tracking-tight">
-                Have a project in mind?
+        <section aria-label="Direct Contact" className="pt-4 border-t border-white/[0.08]">
+          <div className="p-8 bg-gradient-to-r from-[#0C1510] via-[#090D0B] to-[#070908] border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-2xl">
+            <div className="space-y-1.5">
+              <h2 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+                Looking to build a website or web application?
               </h2>
-              <p className="text-xs sm:text-sm text-[#A0A0A0] leading-relaxed font-light">
-                Tell me what you want to build. I&apos;ll help you understand the possible approach, scope, and next steps.
+              <p className="text-xs sm:text-sm text-[#A0A0A0] max-w-lg leading-relaxed">
+                Work directly with Mohit Verma through Webgent Studio. Transparent milestone estimates, production code quality, and responsive delivery.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2 relative z-10">
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
               <Link
                 href="/contact"
-                className="px-6 py-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_25px_rgba(52,211,153,0.35)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.99]"
+                className="px-6 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)] flex items-center gap-2"
               >
                 <span>Discuss Your Project</span>
                 <ArrowRight className="w-4 h-4" />
@@ -680,59 +616,10 @@ export function AboutView() {
 
               <Link
                 href="/pricing"
-                className="px-5 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/10 text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] flex items-center gap-2"
+                className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1]"
               >
-                <span>View Pricing</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#888888]" />
+                View Pricing
               </Link>
-
-              <Link
-                href="/work"
-                className="px-5 py-3.5 rounded-xl bg-transparent hover:bg-white/[0.04] text-[#A0A0A0] hover:text-white font-mono text-xs tracking-wide transition-colors"
-              >
-                Explore Projects
-              </Link>
-            </div>
-
-            {/* Verified External Profile Links */}
-            <div className="pt-8 border-t border-white/[0.08] flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-[#888888] relative z-10">
-              <a
-                href={portfolioUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white transition-colors flex items-center gap-1.5"
-              >
-                <Compass className="w-3.5 h-3.5 text-emerald-400" />
-                <span>vermamohit.in</span>
-              </a>
-
-              <a
-                href={githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white transition-colors flex items-center gap-1.5"
-              >
-                <Github className="w-3.5 h-3.5 text-emerald-400" />
-                <span>GitHub</span>
-              </a>
-
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white transition-colors flex items-center gap-1.5"
-              >
-                <Linkedin className="w-3.5 h-3.5 text-emerald-400" />
-                <span>LinkedIn</span>
-              </a>
-
-              <a
-                href={`mailto:${email}`}
-                className="hover:text-white transition-colors flex items-center gap-1.5"
-              >
-                <Mail className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{email}</span>
-              </a>
             </div>
           </div>
         </section>
