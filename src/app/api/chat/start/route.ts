@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { notificationService } from "@/lib/services/notifications";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 import { z } from "zod";
 import crypto from "crypto";
 
@@ -12,6 +13,7 @@ const startChatSchema = z.object({
   email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
   initialMessage: z.string().trim().max(1000).optional(),
   metadata: z.record(z.unknown()).optional(),
+  turnstileToken: z.string().optional().or(z.literal("")),
 });
 
 export async function POST(req: NextRequest) {
@@ -45,7 +47,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { visitorId, name, email, initialMessage, metadata } = validated.data;
+    const { visitorId, name, email, initialMessage, metadata, turnstileToken } = validated.data;
+
+    const turnstileResult = await verifyTurnstileToken(turnstileToken, ip);
+    if (!turnstileResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: turnstileResult.error || "Turnstile security check failed.",
+        },
+        { status: 400 },
+      );
+    }
+
     const finalVisitorId = visitorId?.trim() || `visitor_${crypto.randomUUID().slice(0, 12)}`;
 
     const sessionMetadata: Record<string, unknown> = {

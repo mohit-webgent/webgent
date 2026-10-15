@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Loader2, ArrowRight, Check } from "lucide-react";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
+import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
 
 interface NewsletterFormProps {
   variant?: "inline" | "card" | "footer";
@@ -16,10 +17,12 @@ export function NewsletterForm({
   description = "A private fortnightly monograph on distributed architecture, system design, and high-scale engineering.",
 }: NewsletterFormProps) {
   const [email, setEmail] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const hasStartedRef = useRef(false);
+  const turnstileRef = useRef<TurnstileRef>(null);
 
   const handleFocus = () => {
     if (!hasStartedRef.current) {
@@ -49,13 +52,18 @@ export function NewsletterForm({
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailTrimmed }),
+        body: JSON.stringify({
+          email: emailTrimmed,
+          turnstileToken: turnstileToken || undefined,
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.error?.message || "Failed to process subscription. Please try again.");
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
         return;
       }
 
@@ -65,8 +73,12 @@ export function NewsletterForm({
           "Subscription registered. Please check your inbox to confirm opt-in.",
       );
       setEmail("");
+      setTurnstileToken("");
+      turnstileRef.current?.reset();
     } catch {
       setError("An unexpected network error occurred. Please try again.");
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
     } finally {
       setLoading(false);
     }
@@ -111,6 +123,16 @@ export function NewsletterForm({
                   <ArrowRight className="w-3.5 h-3.5" />
                 )}
               </button>
+            </div>
+            <div className="pt-1">
+              <Turnstile
+                id="newsletter-footer-turnstile"
+                ref={turnstileRef}
+                size="compact"
+                onVerify={setTurnstileToken}
+                onExpire={() => setTurnstileToken("")}
+                onError={() => setTurnstileToken("")}
+              />
             </div>
             {error && (
               <p className="text-[11px] text-[#D0D0CE] flex items-center gap-1 font-mono">
@@ -215,6 +237,18 @@ export function NewsletterForm({
                     </>
                   )}
                 </button>
+              </div>
+
+              {/* Cloudflare Turnstile */}
+              <div className="pt-1">
+                <Turnstile
+                  id="newsletter-card-turnstile"
+                  ref={turnstileRef}
+                  size="compact"
+                  onVerify={setTurnstileToken}
+                  onExpire={() => setTurnstileToken("")}
+                  onError={() => setTurnstileToken("")}
+                />
               </div>
 
               {/* Error or Disclaimer */}

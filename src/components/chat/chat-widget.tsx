@@ -17,6 +17,7 @@ import {
   Copy,
   CheckCheck,
 } from "lucide-react";
+import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
 
 interface Message {
   id: string;
@@ -56,6 +57,8 @@ export function ChatWidget() {
   const [showDetailsForm, setShowDetailsForm] = useState(false);
   const [visitorDetails, setVisitorDetails] = useState<VisitorDetails>({ name: "", email: "" });
   const [savedDetails, setSavedDetails] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileRef>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -97,9 +100,10 @@ export function ChatWidget() {
   }, []);
 
   const initSession = useCallback(
-    async (initialMsg?: string) => {
+    async (initialMsg?: string, tokenOverride?: string) => {
       setInitializing(true);
       setError(null);
+      const activeToken = tokenOverride || turnstileToken;
       try {
         const res = await fetch("/api/chat/start", {
           method: "POST",
@@ -109,16 +113,22 @@ export function ChatWidget() {
             name: visitorDetails.name || undefined,
             email: visitorDetails.email || undefined,
             initialMessage: initialMsg,
+            turnstileToken: activeToken || undefined,
           }),
         });
 
         if (!res.ok) {
-          throw new Error("Could not initialize chat session");
+          const errData = await res.json().catch(() => ({}));
+          turnstileRef.current?.reset();
+          setTurnstileToken("");
+          throw new Error(errData.error || "Could not initialize chat session");
         }
 
         const data = await res.json();
         setSessionId(data.sessionId);
         setVisitorId(data.visitorId);
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
 
         try {
           localStorage.setItem(STORAGE_SESSION_KEY, data.sessionId);
@@ -129,12 +139,14 @@ export function ChatWidget() {
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Connection failed";
         setError(msg);
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
         return null;
       } finally {
         setInitializing(false);
       }
     },
-    [visitorId, visitorDetails],
+    [visitorId, visitorDetails, turnstileToken],
   );
 
   const handleToggleOpen = async () => {
@@ -155,7 +167,7 @@ export function ChatWidget() {
     await initSession();
   };
 
-  const handleSaveDetails = (e?: React.FormEvent) => {
+  const handleSaveDetails = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!visitorDetails.name && !visitorDetails.email) return;
 
@@ -163,6 +175,10 @@ export function ChatWidget() {
       localStorage.setItem(STORAGE_DETAILS_KEY, JSON.stringify(visitorDetails));
     } catch {}
     setSavedDetails(true);
+
+    if (!sessionId) {
+      await initSession(undefined, turnstileToken);
+    }
     setShowDetailsForm(false);
   };
 
@@ -405,6 +421,16 @@ export function ChatWidget() {
                     }
                     placeholder="Your email"
                     className="px-2.5 py-1.5 rounded-lg bg-[#07080A] border border-white/[0.12] text-[#F5F5F3] placeholder-[#666666] focus:outline-none focus:border-white/30 text-xs"
+                  />
+                </div>
+                <div className="pt-1">
+                  <Turnstile
+                    id="chat-details-turnstile"
+                    ref={turnstileRef}
+                    size="compact"
+                    onVerify={setTurnstileToken}
+                    onExpire={() => setTurnstileToken("")}
+                    onError={() => setTurnstileToken("")}
                   />
                 </div>
                 <div className="flex justify-end gap-2">

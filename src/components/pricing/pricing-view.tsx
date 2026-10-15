@@ -38,6 +38,7 @@ import {
   Wrench,
   Loader2,
 } from "lucide-react";
+import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
 
 import { BackendPricingData } from "@/lib/services/pricing";
 import {
@@ -150,6 +151,8 @@ export function PricingView({ initialData }: PricingViewProps) {
   const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
   const [submitPlanSuccess, setSubmitPlanSuccess] = useState(false);
   const [submitPlanError, setSubmitPlanError] = useState<string | null>(null);
+  const [planTurnstileToken, setPlanTurnstileToken] = useState("");
+  const planTurnstileRef = useRef<TurnstileRef>(null);
 
   // ---------------------------------------------------------------------------
   // URL Synchronization
@@ -496,19 +499,26 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
               ? "₹75,000 – ₹1,50,000"
               : "₹1,50,000+",
           message: formattedMessage,
+          turnstileToken: planTurnstileToken || undefined,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
         setSubmitPlanError(data.error?.message || "Failed to submit plan. Please try again.");
+        planTurnstileRef.current?.reset();
+        setPlanTurnstileToken("");
         setIsSubmittingPlan(false);
         return;
       }
 
       setSubmitPlanSuccess(true);
+      planTurnstileRef.current?.reset();
+      setPlanTurnstileToken("");
     } catch {
       setSubmitPlanError("A network error occurred. Please try again or reach out directly on WhatsApp.");
+      planTurnstileRef.current?.reset();
+      setPlanTurnstileToken("");
     } finally {
       setIsSubmittingPlan(false);
     }
@@ -1801,6 +1811,18 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                       onChange={(e) => setModalNotes(e.target.value)}
                       placeholder="Reference links, deadline expectations, or specific features..."
                       className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors resize-none"
+                    />
+                  </div>
+
+                  {/* Cloudflare Turnstile */}
+                  <div className="pt-1">
+                    <Turnstile
+                      id="pricing-plan-turnstile"
+                      ref={planTurnstileRef}
+                      size="compact"
+                      onVerify={(token) => setPlanTurnstileToken(token)}
+                      onExpire={() => setPlanTurnstileToken("")}
+                      onError={() => setPlanTurnstileToken("")}
                     />
                   </div>
 

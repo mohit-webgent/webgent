@@ -9,11 +9,35 @@ import { newsletterSubscribeSchema } from "@/lib/validations/newsletter";
 import { emailService } from "@/lib/services/email";
 import { SubscriberStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 const TOKEN_EXPIRY_HOURS = 24;
 
+function getClientIp(req: NextRequest): string {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp.trim();
+  }
+  return "127.0.0.1";
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const ipAddress = getClientIp(req);
+
+    const rateLimit = await checkRateLimit(`newsletter:${ipAddress}`, 5, 10 * 60 * 1000);
+    if (!rateLimit.success) {
+      logger.warn("Newsletter subscription rate limit exceeded", { ipAddress });
+      return ApiResponse.tooManyRequests(
+        "Subscription limit reached. Please wait a few minutes before trying again.",
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const validation = newsletterSubscribeSchema.safeParse(body);
 
@@ -24,7 +48,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, name } = validation.data;
+    const { email, name, turnstileToken } = validation.data;
+
+    const turnstileResult = await verifyTurnstileToken(turnstileToken, ipAddress);
+    if (!turnstileResult.success) {
+      return ApiResponse.badRequest(
+        turnstileResult.error || "Turnstile security check failed.",
+        "TURNSTILE_FAILED",
+      );
+    }
 
     const existing = await prisma.subscriber.findUnique({
       where: { email },

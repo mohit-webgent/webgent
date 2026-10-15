@@ -9,6 +9,7 @@ export const newsletterSubscribeSchema = z.object({
     .email("Please provide a valid email address")
     .toLowerCase(),
   name: z.string().trim().max(100, "Name cannot exceed 100 characters").optional().nullable(),
+  turnstileToken: z.string().optional().or(z.literal("")),
 });
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;

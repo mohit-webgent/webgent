@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 import { FOUNDER_PROFILE } from "@/data/founder-profile";
+import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
 
 export function ContactForm() {
   const searchParams = useSearchParams();
@@ -16,12 +17,14 @@ export function ContactForm() {
   const [message, setMessage] = useState("");
   const [prefilledService, setPrefilledService] = useState<string | null>(null);
   const [prefilledBudget, setPrefilledBudget] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const hasStartedRef = useRef(false);
+  const turnstileRef = useRef<TurnstileRef>(null);
 
   const contactEmail = FOUNDER_PROFILE.email || "mohitvermag75@gmail.com";
   const contactPhone = "+91 98765 43210";
@@ -64,6 +67,7 @@ export function ContactForm() {
       service: prefilledService || undefined,
       budget: prefilledBudget || undefined,
       message: message.trim(),
+      turnstileToken: turnstileToken || undefined,
     });
 
     if (!validation.success) {
@@ -85,6 +89,7 @@ export function ContactForm() {
           service: prefilledService || undefined,
           budget: prefilledBudget || undefined,
           message: message.trim(),
+          turnstileToken: turnstileToken || undefined,
         }),
       });
 
@@ -92,6 +97,8 @@ export function ContactForm() {
 
       if (!res.ok) {
         setError(data.error?.message || "Something went wrong. Please try again.");
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
         setLoading(false);
         return;
       }
@@ -102,8 +109,12 @@ export function ContactForm() {
       setEmail("");
       setPhone("");
       setMessage("");
+      setTurnstileToken("");
+      turnstileRef.current?.reset();
     } catch {
       setError("An unexpected network error occurred. Please try again.");
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
     } finally {
       setLoading(false);
     }
@@ -312,6 +323,17 @@ export function ContactForm() {
               <span className={`block text-[11px] font-mono ${message.length >= 20 ? "text-neutral-500" : "text-neutral-600"}`}>
                 {message.length}/20 characters minimum
               </span>
+            </div>
+
+            {/* Cloudflare Turnstile Verification */}
+            <div className="pt-1">
+              <Turnstile
+                id="contact-turnstile"
+                ref={turnstileRef}
+                onVerify={(token) => setTurnstileToken(token)}
+                onExpire={() => setTurnstileToken("")}
+                onError={() => setTurnstileToken("")}
+              />
             </div>
 
             {/* Submit Button (Vibrant Orange Theme) */}
