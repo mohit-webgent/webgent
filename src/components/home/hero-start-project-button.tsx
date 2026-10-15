@@ -194,7 +194,7 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="group relative z-10 inline-flex items-center justify-between gap-3 px-7 py-3.5 sm:py-4 rounded-xl overflow-hidden cursor-pointer will-change-transform bg-[#EDEDEA] hover:bg-[#FFFFFF] text-[#09090B] font-medium transition-colors duration-300 shadow-[0_1px_2px_rgba(0,0,0,0.3),0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(0,0,0,0.12)] border border-white/60"
+        className="group relative z-10 w-full inline-flex items-center justify-center sm:justify-between gap-1.5 sm:gap-3 px-3 sm:px-7 py-3 sm:py-4 rounded-xl overflow-hidden cursor-pointer will-change-transform bg-[#EDEDEA] hover:bg-[#FFFFFF] text-[#09090B] font-medium transition-colors duration-300 shadow-[0_1px_2px_rgba(0,0,0,0.3),0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(0,0,0,0.12)] border border-white/60"
       >
         {/* Subtle Specular Sheen (follows cursor) */}
         <div
@@ -212,7 +212,7 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
         {/* Kinetic Staggered Characters (Decorative animated letters hidden from screen readers) */}
         <span
           aria-hidden="true"
-          className="relative z-[3] font-mono text-xs sm:text-[13px] font-semibold tracking-[0.14em] uppercase text-[#09090B] inline-flex items-center overflow-hidden"
+          className="relative z-[3] font-mono text-[10.5px] sm:text-[13px] font-semibold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[#09090B] inline-flex items-center overflow-hidden whitespace-nowrap"
         >
           {textLabel.split("").map((char, index) => (
             <span
@@ -236,9 +236,9 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
         <span
           ref={arrowRef}
           aria-hidden="true"
-          className="relative z-[3] inline-flex items-center justify-center w-5 h-5 text-[#09090B] will-change-transform"
+          className="relative z-[3] inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[#09090B] will-change-transform shrink-0"
         >
-          <ArrowRight className="w-4 h-4 stroke-[2.2]" />
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
         </span>
       </Link>
     </div>

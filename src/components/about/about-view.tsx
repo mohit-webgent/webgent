@@ -141,26 +141,29 @@ export function AboutView() {
 
               {/* Direct Actions & Quick Links */}
               <div className="space-y-4 pt-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/contact"
-                    className="px-6 py-3 bg-white hover:bg-[#EAEAEA] text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.18)] active:scale-[0.99]"
-                  >
-                    <span>Discuss Your Project</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                  {/* Single row on small screen for primary actions */}
+                  <div className="flex flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Link
+                      href="/contact"
+                      className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-6 py-3 bg-white hover:bg-[#EAEAEA] text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-1.5 sm:gap-2 shadow-[0_0_25px_rgba(255,255,255,0.18)] active:scale-[0.99] text-center whitespace-nowrap"
+                    >
+                      <span>Discuss Your Project</span>
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    </Link>
 
-                  <Link
-                    href="#projects"
-                    className="px-5 py-3 bg-[#141418] hover:bg-[#1C1C24] text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] flex items-center gap-2"
-                  >
-                    <span>View Projects</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#888888]" />
-                  </Link>
+                    <Link
+                      href="#projects"
+                      className="flex-1 sm:flex-initial justify-center px-3 sm:px-5 py-3 bg-[#141418] hover:bg-[#1C1C24] text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] flex items-center gap-1.5 sm:gap-2 text-center whitespace-nowrap"
+                    >
+                      <span>View Projects</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-[#888888] shrink-0" />
+                    </Link>
+                  </div>
 
                   <button
                     onClick={handleCopyEmail}
-                    className="flex items-center gap-1.5 px-3.5 py-3 bg-[#141418] hover:bg-[#1C1C24] border border-white/[0.1] hover:border-emerald-500/40 text-xs font-mono text-[#D4D4D4] hover:text-white transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-3 bg-[#141418] hover:bg-[#1C1C24] border border-white/[0.1] hover:border-emerald-500/40 text-xs font-mono text-[#D4D4D4] hover:text-white transition-all cursor-pointer w-full sm:w-auto justify-center sm:justify-start"
                     title="Click to copy email"
                   >
                     <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -605,18 +608,18 @@ export function AboutView() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <div className="flex flex-row items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="px-6 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)] flex items-center gap-2"
+                className="flex-1 sm:flex-initial justify-center px-4 sm:px-6 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)] flex items-center gap-2 whitespace-nowrap text-center"
               >
                 <span>Discuss Your Project</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </Link>
 
               <Link
                 href="/pricing"
-                className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1]"
+                className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] whitespace-nowrap text-center"
               >
                 View Pricing
               </Link>

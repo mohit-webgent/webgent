@@ -153,7 +153,7 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
   };
 
   return (
-    <section className="relative w-full py-5 sm:py-7 lg:py-9 overflow-hidden text-left bg-[#07080A] border-y border-white/[0.06] select-none">
+    <section className="relative w-full py-5 sm:py-7 lg:py-9 overflow-hidden text-left bg-[#07080A] border-y border-white/[0.06]">
       {/* Subtle Background Radial Ambient Glow */}
       <div
         aria-hidden="true"
@@ -223,11 +223,13 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
 
         {/* =================================================================== */}
         {/* CAROUSEL TRACK: Tightly Fitted, Sleek & Ultra-Premium Cards         */}
+        {/* Vertical scrolling is completely unblocked (touch-auto / pan-y)     */}
         {/* =================================================================== */}
         <div
           ref={scrollContainerRef}
           onScroll={updateScrollState}
-          className="flex gap-3.5 sm:gap-4 lg:gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1.5 -mx-4 sm:-mx-6 lg:-mx-8 2xl:-mx-16 px-4 sm:px-6 lg:px-8 2xl:px-16 touch-pan-x scroll-smooth"
+          style={{ touchAction: "pan-y pinch-zoom" }}
+          className="flex gap-3.5 sm:gap-4 lg:gap-6 overflow-x-auto scrollbar-none snap-x snap-proximity py-1.5 -mx-4 sm:-mx-6 lg:-mx-8 2xl:-mx-16 px-4 sm:px-6 lg:px-8 2xl:px-16 scroll-smooth overscroll-x-contain"
         >
           {displayProjects.map((project, idx) => (
             <div

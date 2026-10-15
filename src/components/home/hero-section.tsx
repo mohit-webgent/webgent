@@ -193,20 +193,20 @@ export function HeroSection() {
             We design and build digital products for ambitious businesses.
           </p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Single row on mobile with balanced responsive sizing */}
           <div
             ref={ctaRef}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-3"
+            className="flex flex-row items-center gap-2 sm:gap-4 pt-2 sm:pt-3 w-full sm:w-auto"
           >
-            <HeroStartProjectButton />
+            <HeroStartProjectButton className="flex-1 sm:flex-initial" />
 
             <CtaLink
               href="/work"
               label="Hero Browse Work"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-[#E5E5E3] hover:text-white border border-white/[0.12] hover:border-white/[0.24] font-medium text-xs sm:text-[13px] tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(0,0,0,0.3)] backdrop-blur-md"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-7 py-3 sm:py-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-[#E5E5E3] hover:text-white border border-white/[0.12] hover:border-white/[0.24] font-medium text-[11px] sm:text-[13px] tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(0,0,0,0.3)] backdrop-blur-md whitespace-nowrap text-center"
             >
               <span>EXPLORE PORTFOLIO</span>
-              <ArrowRight className="w-4 h-4 opacity-50 transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-50 transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
             </CtaLink>
           </div>
         </div>

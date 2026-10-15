@@ -36,6 +36,7 @@ import {
   Info,
   Package,
   Wrench,
+  Loader2,
 } from "lucide-react";
 
 import { BackendPricingData } from "@/lib/services/pricing";
@@ -139,6 +140,16 @@ export function PricingView({ initialData }: PricingViewProps) {
   const [customNotes, setCustomNotes] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Direct Plan Submit Modal State
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [modalName, setModalName] = useState("");
+  const [modalEmail, setModalEmail] = useState("");
+  const [modalPhone, setModalPhone] = useState("");
+  const [modalNotes, setModalNotes] = useState("");
+  const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
+  const [submitPlanSuccess, setSubmitPlanSuccess] = useState(false);
+  const [submitPlanError, setSubmitPlanError] = useState<string | null>(null);
 
   // ---------------------------------------------------------------------------
   // URL Synchronization
@@ -429,6 +440,79 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
     addonQuantities,
     customNotes,
   ]);
+
+  // ---------------------------------------------------------------------------
+  // Direct Plan Submit Handler (submits inquiry & triggers email immediately)
+  // ---------------------------------------------------------------------------
+  const handleSubmitPlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitPlanError(null);
+
+    if (!modalName.trim() || !modalEmail.trim()) {
+      setSubmitPlanError("Please enter your name and email address.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(modalEmail.trim())) {
+      setSubmitPlanError("Please enter a valid email address.");
+      return;
+    }
+
+    setIsSubmittingPlan(true);
+
+    const formattedMessage = [
+      `[PROJECT PLAN INQUIRY FROM PRICING CALCULATOR]`,
+      `• Selected Build Mode: ${flowMode === "custom_only" ? "Custom Feature Selection" : currentPackage.name + " Package"}`,
+      `• Estimated One-Time Total: ${formatCurrencyINR(grandTotalOnetime)}`,
+      monthlyServicesCost > 0 ? `• Monthly Ongoing Maintenance: ${formatCurrencyINR(monthlyServicesCost)}/mo` : null,
+      `• Delivery SLA: ${deliverySpeed === "express" ? "Express Delivery (+20% SLA)" : "Standard Timeline"}`,
+      activeSelectedAddons.length > 0
+        ? `• Selected Add-ons (${activeSelectedAddons.length}): ${activeSelectedAddons.map((a) => a.name).join(", ")}`
+        : null,
+      activeSelectedQuotes.length > 0
+        ? `• Custom Quote Modules: ${activeSelectedQuotes.map((q) => q.name).join(", ")}`
+        : null,
+      modalNotes.trim() ? `\n[CLIENT NOTES]\n${modalNotes.trim()}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: modalName.trim(),
+          email: modalEmail.trim().toLowerCase(),
+          phone: modalPhone.trim() || undefined,
+          service: flowMode === "custom_only" ? "Custom Build" : `${currentPackage.name} Package`,
+          budget:
+            grandTotalOnetime < 30000
+              ? "< ₹30,000"
+              : grandTotalOnetime < 75000
+              ? "₹30,000 – ₹75,000"
+              : grandTotalOnetime < 150000
+              ? "₹75,000 – ₹1,50,000"
+              : "₹1,50,000+",
+          message: formattedMessage,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setSubmitPlanError(data.error?.message || "Failed to submit plan. Please try again.");
+        setIsSubmittingPlan(false);
+        return;
+      }
+
+      setSubmitPlanSuccess(true);
+    } catch {
+      setSubmitPlanError("A network error occurred. Please try again or reach out directly on WhatsApp.");
+    } finally {
+      setIsSubmittingPlan(false);
+    }
+  };
 
   // ---------------------------------------------------------------------------
   // Category Icon Renderer Helper
@@ -1201,17 +1285,23 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                         ? `Happy with the ${currentPackage.name} base package without extra features?`
                         : `${activeSelectedAddons.length} add-on${activeSelectedAddons.length > 1 ? "s" : ""} selected for your project.`}
                     </span>
-                    <Link
-                      href={quotationUrl}
-                      className="px-4 py-1.5 rounded-lg bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-400 hover:text-black font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalNotes(customNotes);
+                        setIsSubmitModalOpen(true);
+                        setSubmitPlanSuccess(false);
+                        setSubmitPlanError(null);
+                      }}
+                      className="px-4 py-1.5 rounded-lg bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-400 hover:text-black font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
                     >
                       <span>
                         {activeSelectedAddons.length === 0
-                          ? `Move Forward with ${currentPackage.name} (${formatCurrencyINR(currentPackage.startingPrice)})`
-                          : "Move Forward to Final Quote"}
+                          ? `Proceed with ${currentPackage.name} (${formatCurrencyINR(currentPackage.startingPrice)})`
+                          : "Proceed with Final Quote"}
                       </span>
                       <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -1508,19 +1598,25 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
 
                 {/* Primary Action Button */}
                 <div className="space-y-2 pt-1">
-                  <Link
-                    href={quotationUrl}
-                    className="w-full min-h-[46px] px-5 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(52,211,153,0.35)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.99]"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalNotes(customNotes);
+                      setIsSubmitModalOpen(true);
+                      setSubmitPlanSuccess(false);
+                      setSubmitPlanError(null);
+                    }}
+                    className="w-full min-h-[46px] px-5 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 active:scale-[0.99] text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(52,211,153,0.35)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] cursor-pointer"
                   >
                     <span>
                       {flowMode === "custom_only"
-                        ? "Get Quote & Consult Engineers"
+                        ? "Submit Plan & Request Quote"
                         : activeSelectedAddons.length > 0 || activeSelectedQuotes.length > 0
-                          ? "Get Quote & Consult Engineers"
-                          : `Move Forward with ${currentPackage.name} (${formatCurrencyINR(grandTotalOnetime)})`}
+                          ? "Submit Plan & Request Quote"
+                          : `Proceed with ${currentPackage.name} (${formatCurrencyINR(grandTotalOnetime)})`}
                     </span>
                     <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
 
                   <p className="text-[10px] font-mono text-[#777777] text-center">
                     {flowMode !== "custom_only" && activeSelectedAddons.length === 0 && activeSelectedQuotes.length === 0
@@ -1563,6 +1659,187 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
             </div>
           </div>
         </section>
+
+        {/* ========================================================================= */}
+        {/* DIRECT PROJECT PLAN SUBMISSION MODAL (Submits request & fires email)        */}
+        {/* ========================================================================= */}
+        {isSubmitModalOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          >
+            <div className="w-full max-w-lg rounded-2xl bg-[#0F1116] border border-white/15 p-6 sm:p-8 shadow-2xl relative text-left space-y-5 animate-in zoom-in-95 duration-200">
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsSubmitModalOpen(false)}
+                className="absolute top-5 right-5 p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {submitPlanSuccess ? (
+                <div className="text-center py-4 space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-lg">
+                    <CheckCircle2 className="w-7 h-7" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      Request Submitted Successfully!
+                    </h3>
+                    <p className="text-xs sm:text-sm text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                      We have received your configured project plan. A confirmation has been logged and our engineering team will get in touch via email within 24 hours.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[#08090C] border border-white/10 text-xs font-mono text-left space-y-1 text-neutral-300">
+                    <div className="text-emerald-400 font-semibold">
+                      Plan: {flowMode === "custom_only" ? "Custom Feature Build" : `${currentPackage.name} Package`}
+                    </div>
+                    <div>Estimated Development: {formatCurrencyINR(grandTotalOnetime)}</div>
+                    <div>Delivery Speed: {deliverySpeed === "express" ? "Express SLA (+20%)" : "Standard Timeline"}</div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsSubmitModalOpen(false)}
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors cursor-pointer"
+                    >
+                      Done
+                    </button>
+                    <a
+                      href={`https://api.whatsapp.com/send?phone=919876543210&text=Hi%20Mohit,%20I%20just%20submitted%20a%20project%20plan%20from%20the%20pricing%20page%20(${flowMode === "custom_only" ? "Custom" : currentPackage.name}%20Package%20-%20${formatCurrencyINR(grandTotalOnetime)}).`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#1A1E26] hover:bg-[#252B37] text-white border border-white/15 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Chat on WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitPlan} className="space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                      Submit Your Project Plan
+                    </h3>
+                    <p className="text-xs text-neutral-400">
+                      Enter your details below to submit your configuration and dispatch the inquiry directly.
+                    </p>
+                  </div>
+
+                  {/* Config Snapshot */}
+                  <div className="p-3 rounded-xl bg-[#08090C] border border-white/10 flex items-center justify-between text-xs font-mono">
+                    <div>
+                      <span className="text-[10px] uppercase text-neutral-500 block">Plan Selection:</span>
+                      <span className="text-white font-bold">
+                        {flowMode === "custom_only" ? "Custom Build" : `${currentPackage.name} Package`}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase text-neutral-500 block">Estimated Cost:</span>
+                      <span className="text-emerald-400 font-bold">{formatCurrencyINR(grandTotalOnetime)}</span>
+                    </div>
+                  </div>
+
+                  {submitPlanError && (
+                    <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/40 text-red-200 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>{submitPlanError}</span>
+                    </div>
+                  )}
+
+                  {/* Name */}
+                  <div className="space-y-1">
+                    <label className="block text-xs font-medium text-neutral-300">Your Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={modalName}
+                      onChange={(e) => setModalName(e.target.value)}
+                      placeholder="e.g. Rahul Sharma"
+                      className="w-full px-3.5 py-2.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors"
+                    />
+                  </div>
+
+                  {/* Email & Phone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-xs font-medium text-neutral-300">Email Address *</label>
+                      <input
+                        type="email"
+                        required
+                        value={modalEmail}
+                        onChange={(e) => setModalEmail(e.target.value)}
+                        placeholder="name@company.com"
+                        className="w-full px-3.5 py-2.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-xs font-medium text-neutral-300">Phone (Optional)</label>
+                      <input
+                        type="tel"
+                        value={modalPhone}
+                        onChange={(e) => setModalPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        className="w-full px-3.5 py-2.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Project Notes */}
+                  <div className="space-y-1">
+                    <label className="block text-xs font-medium text-neutral-300">Project Notes (Optional)</label>
+                    <textarea
+                      rows={2}
+                      value={modalNotes}
+                      onChange={(e) => setModalNotes(e.target.value)}
+                      placeholder="Reference links, deadline expectations, or specific features..."
+                      className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors resize-none"
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-2 space-y-2">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingPlan}
+                      className="w-full py-3 px-5 rounded-xl bg-emerald-400 hover:bg-emerald-300 active:scale-[0.99] text-black font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-40"
+                    >
+                      {isSubmittingPlan ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Submitting Plan...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Plan & Send Request</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 pt-1">
+                      <span>Response SLA &lt; 24h</span>
+                      <Link
+                        href={quotationUrl}
+                        className="text-neutral-400 hover:text-white underline transition-colors"
+                        onClick={() => setIsSubmitModalOpen(false)}
+                      >
+                        Review on Full Contact Page →
+                      </Link>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

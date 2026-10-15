@@ -50,18 +50,8 @@ export function Footer() {
       className="relative border-t border-white/[0.08] bg-[#070707] text-[#909090] overflow-hidden select-none"
     >
       <div className="max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] w-full mx-auto px-5 sm:px-8 lg:px-12 2xl:px-16 3xl:px-24 pt-12 sm:pt-16 pb-6 relative z-10 text-left">
-        {/* Top Status Ribbon */}
-        <div className="border-b border-white/[0.08] pb-6 mb-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5 text-xs font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            <span className="text-[#A0A0A0] text-[11px] font-medium uppercase tracking-wider">
-              All Systems Operational
-            </span>
-          </div>
-
+        {/* Top Action Ribbon */}
+        <div className="border-b border-white/[0.08] pb-6 mb-12 flex items-center justify-end">
           <Link
             href="/contact"
             className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#A0A0A0] hover:text-white transition-colors"

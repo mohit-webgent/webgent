@@ -2,26 +2,24 @@ import { Suspense } from "react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
-import { ClipReveal } from "@/components/animations/clip-reveal";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Contact Us & Project Inquiries",
+  title: "Contact Us — Webgent",
   description:
-    "Get in touch with Webgent for custom web engineering, mobile app development, and cloud software solutions. Discuss your project directly with our technical team.",
+    "Get in touch! I'll respond within 24 hours. Have questions or need assistance? Contact us at Webgent for support or to discuss your project.",
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Contact Us & Project Inquiries | Webgent",
-    description:
-      "Discuss your software architecture, web development, or custom product requirements with Webgent engineers.",
+    title: "Contact Us — Webgent",
+    description: "Get in touch! I'll respond within 24 hours.",
     url: `${siteConfig.url}/contact`,
     siteName: siteConfig.name,
     images: [
       {
-        url: `${siteConfig.url}/api/og?title=Start+Your+Project+With+Webgent&badge=Direct+Consultation`,
+        url: `${siteConfig.url}/api/og?title=Have+a+Project+in+Mind%3F+Let's+Talk!&badge=Contact+Webgent`,
         width: 1200,
         height: 630,
         alt: "Contact Webgent",
@@ -31,35 +29,36 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contact Us & Project Inquiries | Webgent",
-    description:
-      "Discuss your software architecture, web development, or custom product requirements with Webgent engineers.",
-    images: [`${siteConfig.url}/api/og?title=Start+Your+Project+With+Webgent&badge=Direct+Consultation`],
+    title: "Contact Us — Webgent",
+    description: "Get in touch! I'll respond within 24 hours.",
+    images: [`${siteConfig.url}/api/og?title=Have+a+Project+in+Mind%3F+Let's+Talk!&badge=Contact+Webgent`],
     creator: "@webgent",
   },
 };
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 2xl:px-20 relative overflow-hidden font-sans">
-      <div className="max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl mx-auto relative z-10 space-y-12">
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.02] border border-white/10 text-[#A0A0A0] text-xs font-mono uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-            <span>DIRECT ENGAGEMENT / ARCHITECT CONSULTATION</span>
-          </div>
-          <ClipReveal>
-            <h1 className="text-4xl sm:text-6xl font-bold text-[#F5F5F3] tracking-tight uppercase">
-              Work With Webgent
-            </h1>
-          </ClipReveal>
-          <p className="text-sm sm:text-base text-[#909090] max-w-2xl mx-auto leading-relaxed">
-            Ready to turn your vision into high-performance digital software? Reach out directly to
-            our engineering leads.
+    <div className="min-h-[85vh] w-full bg-[#000000] text-white py-12 sm:py-20 lg:py-24 px-4 sm:px-8 lg:px-12 relative overflow-hidden font-sans flex flex-col justify-center items-center">
+      {/* Subtle Ambient Radial Glows at Top (like the screenshot) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[220px] bg-gradient-to-b from-blue-900/10 via-amber-500/5 to-transparent blur-3xl opacity-60"
+      />
+
+      <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-12 relative z-10">
+        {/* Top Centered Catchphrase from Reference Image */}
+        <div className="text-center">
+          <p className="text-sm sm:text-base text-neutral-400 font-normal tracking-wide">
+            Get in touch! I&apos;ll respond within 24 hours.
           </p>
         </div>
 
-        <Suspense fallback={<div className="min-h-[400px] bg-[#0D0D0D] rounded-2xl animate-pulse" />}>
+        {/* Main 2-Column Split: Contact Info Card (Left) & Form (Right) */}
+        <Suspense
+          fallback={
+            <div className="min-h-[480px] w-full bg-[#0F1014] rounded-[24px] animate-pulse border border-white/[0.08]" />
+          }
+        >
           <ContactForm />
         </Suspense>
       </div>
