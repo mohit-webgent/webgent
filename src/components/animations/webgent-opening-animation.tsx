@@ -398,9 +398,9 @@ export function WebgentOpeningAnimation() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [finishAnimation]);
 
-  // Canvas Particle System: renders live energy filaments & impact bursts
+  // Canvas Particle System: renders live energy filaments & impact bursts (Desktop only)
   useEffect(() => {
-    if (!shouldRender) return;
+    if (!shouldRender || typeof window === "undefined" || window.innerWidth < 768) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -546,10 +546,73 @@ export function WebgentOpeningAnimation() {
     });
     timelineRef.current = tl;
 
-    // Calculate dynamic responsive radius for technology positions around WEBGENT
     const isMobile = window.innerWidth < 768;
-    const radiusX = isMobile ? window.innerWidth * 0.4 : Math.min(window.innerWidth * 0.44, 490);
-    const radiusY = isMobile ? window.innerHeight * 0.38 : Math.min(window.innerHeight * 0.38, 290);
+
+    if (isMobile) {
+      // ----------------------------------------------------------------------
+      // FAST PUNCHY MOBILE WEBGENT FLASH ANIMATION (< 1.0s)
+      // Clean, lightweight brand flash that reveals the main dashboard immediately
+      // ----------------------------------------------------------------------
+      gsap.set(validNodes, { opacity: 0, display: "none" });
+      gsap.set(webgentOutline, { opacity: 0, display: "none" });
+      if (shockwave) gsap.set(shockwave, { opacity: 0, display: "none" });
+
+      gsap.set(webgentFilled, {
+        opacity: 0,
+        scale: 0.9,
+        filter: "blur(8px)",
+      });
+
+      // 1. Quick bright flash-in of WEBGENT
+      tl.to(webgentFilled, {
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 0.35,
+        ease: "power2.out",
+      });
+
+      // 2. Crisp shimmer sweep across WEBGENT letters
+      tl.fromTo(
+        ".intro-shimmer-sweep",
+        { xPercent: -150 },
+        { xPercent: 150, duration: 0.35, ease: "power1.inOut" },
+        "-=0.1"
+      );
+
+      // 3. Quick hold (0.15s)
+      tl.to({}, { duration: 0.15 });
+
+      // 4. Quick flash exit revealing dashboard
+      tl.to(webgentWord, {
+        scale: 1.05,
+        opacity: 0,
+        filter: "blur(6px)",
+        duration: 0.28,
+        ease: "power2.in",
+      });
+
+      tl.to(
+        overlay,
+        {
+          yPercent: -100,
+          duration: 0.45,
+          ease: "power4.inOut",
+        },
+        "-=0.18"
+      );
+
+      return () => {
+        document.body.style.overflow = "";
+        tl.kill();
+      };
+    }
+
+    // ------------------------------------------------------------------------
+    // DESKTOP: FULL 16-TECHNOLOGY CINEMATIC FUSION SEQUENCE (PRESERVED)
+    // ------------------------------------------------------------------------
+    const radiusX = Math.min(window.innerWidth * 0.44, 490);
+    const radiusY = Math.min(window.innerHeight * 0.38, 290);
 
     // Initial state:
     // 1. WEBGENT word is visible in center from the very start, in faint glowing outline/wireframe!
@@ -779,20 +842,20 @@ export function WebgentOpeningAnimation() {
       {/* 3. 60FPS High-Precision Canvas Layer (filaments & colored impact bursts) */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none z-10"
+        className="hidden sm:block absolute inset-0 w-full h-full pointer-events-none z-10"
       />
 
       {/* 4. Shockwave Expansion Ring */}
       <div
         ref={shockwaveRef}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-white/60 pointer-events-none z-20 opacity-0 will-change-transform"
+        className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-white/60 pointer-events-none z-20 opacity-0 will-change-transform"
         style={{
           boxShadow: "0 0 50px rgba(255, 255, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.4)",
         }}
       />
 
-      {/* 5. Minimal Top HUD & Skip Button */}
-      <div className="absolute top-6 inset-x-6 sm:inset-x-10 flex items-center justify-between pointer-events-none z-40 font-mono text-[10px] text-white/50 uppercase tracking-widest">
+      {/* 5. Minimal Top HUD & Skip Button (Desktop) */}
+      <div className="hidden sm:flex absolute top-6 inset-x-6 sm:inset-x-10 items-center justify-between pointer-events-none z-40 font-mono text-[10px] text-white/50 uppercase tracking-widest">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
           <span className="text-white/80 font-medium">FULL_STACK_FUSION</span>
@@ -827,7 +890,7 @@ export function WebgentOpeningAnimation() {
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
           <h1
-            className="text-6xl sm:text-8xl md:text-9xl lg:text-[135px] font-black font-display tracking-[0.16em] sm:tracking-[0.22em] uppercase leading-none select-none text-transparent"
+            className="text-4xl xs:text-5xl sm:text-8xl md:text-9xl lg:text-[135px] font-black font-display tracking-[0.14em] sm:tracking-[0.22em] uppercase leading-none select-none text-transparent"
             style={{
               WebkitTextStroke: "1.5px rgba(255, 255, 255, 0.45)",
               textShadow: "0 0 35px rgba(255, 255, 255, 0.2)",
@@ -842,7 +905,7 @@ export function WebgentOpeningAnimation() {
           ref={webgentFilledRef}
           className="relative flex items-center justify-center overflow-hidden"
         >
-          <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[135px] font-black font-display tracking-[0.16em] sm:tracking-[0.22em] uppercase leading-none select-none text-transparent bg-clip-text bg-gradient-to-b from-white via-[#F5F5F3] to-[#707070] drop-shadow-[0_20px_50px_rgba(255,255,255,0.35)] relative">
+          <h1 className="text-4xl xs:text-5xl sm:text-8xl md:text-9xl lg:text-[135px] font-black font-display tracking-[0.14em] sm:tracking-[0.22em] uppercase leading-none select-none text-transparent bg-clip-text bg-gradient-to-b from-white via-[#F5F5F3] to-[#707070] drop-shadow-[0_20px_50px_rgba(255,255,255,0.35)] relative">
             WEBGENT
           </h1>
 
@@ -855,8 +918,15 @@ export function WebgentOpeningAnimation() {
           />
         </div>
 
-        {/* Bottom Subtitle & Merged Counter */}
-        <div className="intro-footer-info mt-6 flex flex-col items-center gap-2">
+        {/* Minimal Mobile Tagline during flash */}
+        <div className="sm:hidden mt-3 text-center pointer-events-none">
+          <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-white/50">
+            DIGITAL STUDIO
+          </span>
+        </div>
+
+        {/* Bottom Subtitle & Merged Counter (Desktop Only) */}
+        <div className="intro-footer-info mt-6 hidden sm:flex flex-col items-center gap-2">
           {/* Status Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] border border-white/20 shadow-lg backdrop-blur-md">
             <span
@@ -878,11 +948,11 @@ export function WebgentOpeningAnimation() {
       </div>
 
       {/* ==================================================================== */}
-      {/* 7. THE 16 TECHNOLOGY ICONS THAT FLY IN & MERGE INTO WEBGENT         */}
+      {/* 7. THE 16 TECHNOLOGY ICONS THAT FLY IN & MERGE INTO WEBGENT (Desktop) */}
       {/* ==================================================================== */}
       <div
         ref={nodesContainerRef}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 z-30 pointer-events-none"
+        className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 z-30 pointer-events-none"
       >
         {TECH_LIST.map((tech) => {
           const LogoComponent = tech.Logo;
