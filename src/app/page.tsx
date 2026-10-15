@@ -6,6 +6,7 @@ import { ArcTestimonials } from "@/components/home/arc-testimonials";
 import { EngineeringBlogSection } from "@/components/home/engineering-blog-section";
 import { ScrollReveal } from "@/components/animations";
 import { prisma } from "@/lib/db";
+import { cacheGet, cacheSet } from "@/lib/redis";
 import { CtaLink } from "@/components/ui/cta-link";
 import type { Metadata } from "next";
 import { logger } from "@/lib/logger";
@@ -62,41 +63,56 @@ export default async function HomePage() {
   let testimonials: Awaited<ReturnType<typeof prisma.testimonial.findMany>> = [];
   let latestPosts: HomePost[] = [];
 
-  try {
-    const results = await Promise.all([
-      prisma.project.findMany({
-        where: { published: true, featured: true },
-        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-        take: 4,
-      }),
-      prisma.testimonial.findMany({
-        where: { status: "APPROVED", deletedAt: null },
-        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-        take: 3,
-      }),
-      prisma.blogPost.findMany({
-        where: { status: "PUBLISHED", deletedAt: null },
-        orderBy: { publishedAt: "desc" },
-        take: 3,
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          category: true,
-          readTime: true,
-          publishedAt: true,
-        },
-      }),
-    ]);
-    featuredProjects = results[0];
-    testimonials = results[1];
-    latestPosts = results[2];
-  } catch (error) {
-    logger.warn(
-      "Could not fetch dynamic database content for HomePage, using empty state fallback",
-      { error },
-    );
+  const cacheKey = "cache:home:composite_data_v1";
+  const cachedData = await cacheGet<{
+    featuredProjects: typeof featuredProjects;
+    testimonials: typeof testimonials;
+    latestPosts: HomePost[];
+  }>(cacheKey);
+
+  if (cachedData) {
+    featuredProjects = cachedData.featuredProjects;
+    testimonials = cachedData.testimonials;
+    latestPosts = cachedData.latestPosts;
+  } else {
+    try {
+      const results = await Promise.all([
+        prisma.project.findMany({
+          where: { published: true, featured: true },
+          orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+          take: 4,
+        }),
+        prisma.testimonial.findMany({
+          where: { status: "APPROVED", deletedAt: null },
+          orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+          take: 3,
+        }),
+        prisma.blogPost.findMany({
+          where: { status: "PUBLISHED", deletedAt: null },
+          orderBy: { publishedAt: "desc" },
+          take: 3,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            category: true,
+            readTime: true,
+            publishedAt: true,
+          },
+        }),
+      ]);
+      featuredProjects = results[0];
+      testimonials = results[1];
+      latestPosts = results[2];
+
+      await cacheSet(cacheKey, { featuredProjects, testimonials, latestPosts }, 60);
+    } catch (error) {
+      logger.warn(
+        "Could not fetch dynamic database content for HomePage, using empty state fallback",
+        { error },
+      );
+    }
   }
 
   return (

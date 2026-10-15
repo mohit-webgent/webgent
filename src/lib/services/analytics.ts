@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import crypto from "crypto";
 import { KNOWN_EVENTS, PageViewInput, EventInput, ValidPeriod } from "@/lib/validations/analytics";
+import { logger } from "@/lib/logger";
+import { getRedisClient } from "@/lib/redis";
 
 export interface AnalyticsContext {
   sessionId: string;
@@ -79,37 +81,124 @@ export class AnalyticsService {
     const context = extractAnalyticsContext(req, input.sessionId, input.device);
     const userAgent = req.headers.get("user-agent")?.substring(0, 255) || null;
 
-    const pageView = await prisma.pageView.create({
-      data: {
-        path: input.path,
-        referrer: input.referrer || null,
-        userAgent,
-        ipHash: context.ipHash,
-        country: context.country,
-        device: context.device,
-        sessionId: context.sessionId,
-      },
-    });
+    try {
+      const pageView = await prisma.pageView.create({
+        data: {
+          path: input.path,
+          referrer: input.referrer || null,
+          userAgent,
+          ipHash: context.ipHash,
+          country: context.country,
+          device: context.device,
+          sessionId: context.sessionId,
+        },
+      });
 
-    return { pageView, context };
+      return { pageView, context };
+    } catch (dbError) {
+      logger.warn("Direct database write for pageview failed, buffering to Redis if available", {
+        error: String(dbError),
+        path: input.path,
+      });
+
+      const client = getRedisClient();
+      if (client) {
+        try {
+          await client.lpush(
+            "webgent:buffer:pageviews",
+            JSON.stringify({
+              path: input.path,
+              referrer: input.referrer || null,
+              userAgent,
+              ipHash: context.ipHash,
+              country: context.country,
+              device: context.device,
+              sessionId: context.sessionId,
+              createdAt: new Date().toISOString(),
+            }),
+          );
+        } catch (redisErr) {
+          logger.warn("Failed to buffer pageview to Redis", { error: String(redisErr) });
+        }
+      }
+
+      // Return synthetic pageView record to prevent 500 errors on client while retaining analytics
+      return {
+        pageView: {
+          id: `buffered_${Date.now()}`,
+          path: input.path,
+          referrer: input.referrer || null,
+          userAgent,
+          ipHash: context.ipHash,
+          country: context.country,
+          device: context.device,
+          sessionId: context.sessionId,
+          createdAt: new Date(),
+        },
+        context,
+      };
+    }
   }
 
   async recordEvent(req: NextRequest, input: EventInput) {
     const context = extractAnalyticsContext(req, input.sessionId, input.device);
 
-    const event = await prisma.event.create({
-      data: {
-        name: input.name,
-        category: input.category || null,
-        path: input.path || null,
-        metadata: input.metadata || null,
-        sessionId: context.sessionId,
-        country: context.country,
-        device: context.device,
-      },
-    });
+    try {
+      const event = await prisma.event.create({
+        data: {
+          name: input.name,
+          category: input.category || null,
+          path: input.path || null,
+          metadata: input.metadata || null,
+          sessionId: context.sessionId,
+          country: context.country,
+          device: context.device,
+        },
+      });
 
-    return { event, context };
+      return { event, context };
+    } catch (dbError) {
+      logger.warn("Direct database write for event failed, buffering to Redis if available", {
+        error: String(dbError),
+        name: input.name,
+      });
+
+      const client = getRedisClient();
+      if (client) {
+        try {
+          await client.lpush(
+            "webgent:buffer:events",
+            JSON.stringify({
+              name: input.name,
+              category: input.category || null,
+              path: input.path || null,
+              metadata: input.metadata || null,
+              sessionId: context.sessionId,
+              country: context.country,
+              device: context.device,
+              createdAt: new Date().toISOString(),
+            }),
+          );
+        } catch (redisErr) {
+          logger.warn("Failed to buffer event to Redis", { error: String(redisErr) });
+        }
+      }
+
+      return {
+        event: {
+          id: `buffered_${Date.now()}`,
+          name: input.name,
+          category: input.category || null,
+          path: input.path || null,
+          metadata: input.metadata || null,
+          sessionId: context.sessionId,
+          country: context.country,
+          device: context.device,
+          createdAt: new Date(),
+        },
+        context,
+      };
+    }
   }
 
   async getAdminAnalytics(period: ValidPeriod = "30d") {

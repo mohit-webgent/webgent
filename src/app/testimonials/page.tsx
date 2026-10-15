@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { cacheGet, cacheSet } from "@/lib/redis";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -48,22 +49,33 @@ export default async function TestimonialsPage() {
     createdAt: Date;
   }> = [];
 
-  try {
-    testimonials = await prisma.testimonial.findMany({
-      where: { status: "APPROVED", deletedAt: null },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      select: {
-        id: true,
-        clientName: true,
-        clientTitle: true,
-        company: true,
-        content: true,
-        rating: true,
-        createdAt: true,
-      },
-    });
-  } catch (err) {
-    console.warn("Could not fetch testimonials:", err);
+  const cacheKey = "cache:testimonials:approved_list_v1";
+  const cachedTestimonials = await cacheGet<typeof testimonials>(cacheKey);
+
+  if (cachedTestimonials) {
+    testimonials = cachedTestimonials;
+  } else {
+    try {
+      testimonials = await prisma.testimonial.findMany({
+        where: { status: "APPROVED", deletedAt: null },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+        select: {
+          id: true,
+          clientName: true,
+          clientTitle: true,
+          company: true,
+          content: true,
+          rating: true,
+          createdAt: true,
+        },
+      });
+
+      if (testimonials.length > 0) {
+        await cacheSet(cacheKey, testimonials, 60);
+      }
+    } catch (err) {
+      console.warn("Could not fetch testimonials:", err);
+    }
   }
 
   // Gracefully redirect to /work if no genuine testimonials exist yet

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { cacheGet, cacheSet } from "@/lib/redis";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
@@ -53,49 +54,60 @@ interface BlogPostItem {
 export default async function BlogPage() {
   let dbPosts: BlogPostItem[] = [];
 
-  try {
-    const posts = await prisma.blogPost.findMany({
-      where: {
-        status: "PUBLISHED",
-        deletedAt: null,
-      },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      include: {
-        author: { select: { name: true } },
-      },
-    });
+  const cacheKey = "cache:blog:published_posts_v1";
+  const cachedPosts = await cacheGet<BlogPostItem[]>(cacheKey);
 
-    dbPosts = posts.map((p) => {
-      const tagList = p.tags
-        ? p.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean)
-        : [p.category || "Engineering"];
+  if (cachedPosts) {
+    dbPosts = cachedPosts;
+  } else {
+    try {
+      const posts = await prisma.blogPost.findMany({
+        where: {
+          status: "PUBLISHED",
+          deletedAt: null,
+        },
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+        include: {
+          author: { select: { name: true } },
+        },
+      });
 
-      const dateStr = p.publishedAt
-        ? new Date(p.publishedAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
-        : "Recent";
+      dbPosts = posts.map((p) => {
+        const tagList = p.tags
+          ? p.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [p.category || "Engineering"];
 
-      return {
-        id: p.id,
-        title: p.title,
-        slug: p.slug,
-        excerpt: p.excerpt || p.content.slice(0, 160) + "...",
-        authorName: p.author?.name || "Webgent Team",
-        dateStr,
-        tags: tagList.slice(0, 3),
-        coverImage:
-          p.coverImage ||
-          "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=85",
-      };
-    });
-  } catch (error) {
-    console.error("Failed to load blog posts from DB:", error);
+        const dateStr = p.publishedAt
+          ? new Date(p.publishedAt).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : "Recent";
+
+        return {
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          excerpt: p.excerpt || p.content.slice(0, 160) + "...",
+          authorName: p.author?.name || "Webgent Team",
+          dateStr,
+          tags: tagList.slice(0, 3),
+          coverImage:
+            p.coverImage ||
+            "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=85",
+        };
+      });
+
+      if (dbPosts.length > 0) {
+        await cacheSet(cacheKey, dbPosts, 60);
+      }
+    } catch (error) {
+      console.error("Failed to load blog posts from DB:", error);
+    }
   }
 
   const featuredPost = dbPosts[0];

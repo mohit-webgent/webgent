@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { cacheGet, cacheSet } from "@/lib/redis";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
@@ -87,13 +88,24 @@ export default async function WorkPage({
     imageUrl: string | null;
   }> = [];
 
-  try {
-    projects = await prisma.project.findMany({
-      where: { published: true },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    });
-  } catch (error) {
-    console.error("Failed to load projects from DB:", error);
+  const cacheKey = "cache:work:published_projects_v1";
+  const cachedProjects = await cacheGet<typeof projects>(cacheKey);
+
+  if (cachedProjects) {
+    projects = cachedProjects;
+  } else {
+    try {
+      projects = await prisma.project.findMany({
+        where: { published: true },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      });
+
+      if (projects.length > 0) {
+        await cacheSet(cacheKey, projects, 60);
+      }
+    } catch (error) {
+      console.error("Failed to load projects from DB:", error);
+    }
   }
 
   const categoryFilter = typeof searchParams?.category === "string" ? searchParams.category : undefined;
