@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { CheckCircle2, AlertCircle, Loader2, Mail, Phone, MapPin, Copy, Check } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Mail, Phone, MapPin, Check } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
