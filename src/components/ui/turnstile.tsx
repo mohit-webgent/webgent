@@ -115,7 +115,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
     const widgetIdRef = useRef<string | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
 
-    const activeSiteKey = siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    const activeSiteKey = siteKey || process.env.TURNSTILE_SITE_KEY;
     const isProduction = process.env.NODE_ENV === "production";
 
     // Stable callback refs to avoid re-rendering widget when callbacks change
@@ -178,7 +178,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
           if (widgetIdRef.current) {
             try {
               window.turnstile.remove(widgetIdRef.current);
-            } catch {}
+            } catch { }
             widgetIdRef.current = null;
           }
 
@@ -227,7 +227,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
         if (widgetIdRef.current && window.turnstile) {
           try {
             window.turnstile.remove(widgetIdRef.current);
-          } catch {}
+          } catch { }
           widgetIdRef.current = null;
         }
       };
