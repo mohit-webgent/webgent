@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 import {
   CheckCircle2,
   AlertCircle,
@@ -14,9 +13,6 @@ import {
   Sparkles,
   Wallet,
   Building2,
-  BadgeCheck,
-  Zap,
-  ShieldCheck,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { contactFormSchema } from "@/lib/validations/contact";
@@ -177,127 +173,81 @@ export function ContactForm() {
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
       {/* =================================================================== */}
-      {/* LEFT SIDE: BALANCED & HIGH-TRUST AGENCY INFO CARD                   */}
+      {/* LEFT SIDE: CLEAN & AUTHENTIC AGENCY CONTACT CARD                   */}
       {/* =================================================================== */}
-      <div className="lg:col-span-5 lg:sticky lg:top-28 bg-[#0F1014] border border-white/[0.08] rounded-[24px] p-6 sm:p-8 space-y-6 shadow-2xl text-left relative overflow-hidden">
+      <div className="lg:col-span-5 bg-[#0F1014] border border-white/[0.08] rounded-[24px] p-7 sm:p-9 md:p-10 shadow-2xl text-left relative overflow-hidden space-y-8">
         {/* Subtle Ambient Light Corner */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -top-20 -left-20 w-44 h-44 bg-white/[0.03] rounded-full blur-3xl"
         />
 
-        {/* Live Availability Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium w-fit">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Accepting new client projects</span>
-        </div>
-
-        {/* Header Text */}
-        <div className="space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-[1.2]">
+        <div className="space-y-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-white tracking-tight leading-[1.15]">
             Have a Project in Mind? Let&apos;s Talk!
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
-            Tell us about your requirements, timeline, or scope. Our engineering team reviews inquiries promptly with actionable architecture insights.
+          <p className="text-sm sm:text-base text-neutral-400 leading-relaxed font-normal">
+            Have questions or need assistance? Contact us at Webgent for support or to discuss your project.
           </p>
         </div>
 
-        {/* Direct Founder Profile Snippet */}
-        <div className="p-3.5 rounded-2xl bg-[#14161F] border border-white/[0.08] flex items-center gap-3 shadow-sm">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-emerald-500/40 shrink-0 bg-[#1C1E2A]">
-            <Image
-              src="/images/mohit-verma.jpg"
-              alt="Mohit Verma"
-              fill
-              sizes="44px"
-              className="object-cover"
-            />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs sm:text-sm font-bold text-white truncate">Mohit Verma</span>
-              <BadgeCheck className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20 shrink-0" />
-            </div>
-            <span className="text-[11px] text-neutral-400 block truncate">Founder & Lead Engineer</span>
-            <span className="text-[10px] text-emerald-400 font-medium">Direct Engineering Consultation</span>
-          </div>
-        </div>
-
-        {/* Contact Info List */}
-        <div className="space-y-4 pt-1">
+        {/* Contact Info List with Dark Squircle Badges */}
+        <div className="space-y-6 pt-4 border-t border-white/[0.06]">
           {/* Email */}
-          <div className="flex items-center gap-3.5 group">
+          <div className="flex items-center gap-4 group">
             <button
               type="button"
               onClick={handleCopyEmail}
               title="Click to copy email"
-              className="w-10 h-10 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all cursor-pointer shadow-sm"
+              className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all cursor-pointer shadow-sm"
             >
-              {copiedEmail ? <Check className="w-4 h-4 text-emerald-400" /> : <Mail className="w-4 h-4 text-white" />}
+              {copiedEmail ? <Check className="w-5 h-5 text-emerald-400" /> : <Mail className="w-5 h-5 text-white" />}
             </button>
             <div className="min-w-0">
-              <span className="block text-[11px] text-neutral-400 font-medium">Email</span>
+              <span className="block text-xs text-neutral-400 font-medium">Email</span>
               <a
                 href={`mailto:${contactEmail}`}
-                className="block text-xs sm:text-sm text-white hover:text-neutral-200 font-medium truncate transition-colors"
+                className="block text-sm sm:text-base text-white hover:text-neutral-200 font-medium truncate transition-colors"
               >
                 {contactEmail}
               </a>
             </div>
           </div>
 
-          {/* Phone / WhatsApp */}
-          <div className="flex items-center gap-3.5 group">
+          {/* Phone */}
+          <div className="flex items-center gap-4 group">
             <a
               href="https://api.whatsapp.com/send?phone=919876543210&text=Hi%20Mohit,%20I%20would%20like%20to%20discuss%20a%20project%20with%20Webgent."
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
+              className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
             >
-              <Phone className="w-4 h-4 text-white" />
+              <Phone className="w-5 h-5 text-white" />
             </a>
             <div className="min-w-0">
-              <span className="block text-[11px] text-neutral-400 font-medium">WhatsApp / Phone</span>
+              <span className="block text-xs text-neutral-400 font-medium">Phone</span>
               <a
                 href="https://api.whatsapp.com/send?phone=919876543210&text=Hi%20Mohit,%20I%20would%20like%20to%20discuss%20a%20project%20with%20Webgent."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-xs sm:text-sm text-white hover:text-neutral-200 font-medium transition-colors"
+                className="block text-sm sm:text-base text-white hover:text-neutral-200 font-medium transition-colors"
               >
                 {contactPhone}
               </a>
             </div>
           </div>
 
-          {/* Location */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#1A1C24] border border-white/[0.08] flex items-center justify-center text-white shrink-0 shadow-sm">
-              <MapPin className="w-4 h-4 text-white" />
+          {/* Address */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] flex items-center justify-center text-white shrink-0 shadow-sm">
+              <MapPin className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <span className="block text-[11px] text-neutral-400 font-medium">Location</span>
-              <span className="block text-xs sm:text-sm text-white font-medium truncate">
+              <span className="block text-xs text-neutral-400 font-medium">Address</span>
+              <span className="block text-sm sm:text-base text-white font-medium">
                 {contactAddress}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Value Pillars */}
-        <div className="pt-3 border-t border-white/[0.08] grid grid-cols-2 gap-2.5 text-left">
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
-              <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>&lt; 24h Response</span>
-            </div>
-            <p className="text-[10px] text-neutral-400 leading-snug">Quick feedback & scope estimate</p>
-          </div>
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>100% Code IP</span>
-            </div>
-            <p className="text-[10px] text-neutral-400 leading-snug">Full repository & source ownership</p>
           </div>
         </div>
       </div>
@@ -305,7 +255,7 @@ export function ContactForm() {
       {/* =================================================================== */}
       {/* RIGHT SIDE: THE ENHANCED CONTACT FORM                               */}
       {/* =================================================================== */}
-      <div className="lg:col-span-7 flex flex-col justify-center text-left">
+      <div className="lg:col-span-7 flex flex-col justify-start text-left">
         {success ? (
           <div
             id="contact-form-success"

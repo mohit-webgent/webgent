@@ -38,14 +38,14 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-[85vh] w-full bg-[#000000] text-white py-12 sm:py-20 lg:py-24 px-4 sm:px-8 lg:px-12 relative overflow-hidden font-sans flex flex-col justify-center items-center">
-      {/* Subtle Ambient Radial Glows at Top (like the screenshot) */}
+    <div className="min-h-[85vh] w-full bg-[#000000] text-white pt-8 pb-16 sm:pt-14 sm:pb-24 px-4 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
+      {/* Subtle Ambient Radial Glows at Top */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[220px] bg-gradient-to-b from-blue-900/10 via-amber-500/5 to-transparent blur-3xl opacity-60"
       />
 
-      <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-12 relative z-10">
+      <div className="w-full max-w-6xl mx-auto relative z-10">
         {/* Main 2-Column Split: Contact Info Card (Left) & Form (Right) */}
         <Suspense
           fallback={
