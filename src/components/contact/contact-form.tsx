@@ -1,12 +1,34 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { CheckCircle2, AlertCircle, Loader2, Mail, Phone, MapPin, Check } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Mail, Phone, MapPin, Check, Layers, Sparkles, Wallet, Building2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 import { FOUNDER_PROFILE } from "@/data/founder-profile";
 import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
+
+const PROJECT_TYPES = [
+  "Web Application",
+  "Corporate Website",
+  "Landing Page",
+  "E-Commerce Store",
+  "Custom Software",
+] as const;
+
+const ARCHITECTURES = [
+  { id: "Dynamic", label: "Dynamic", desc: "Full-Stack, CMS & Database" },
+  { id: "Static", label: "Static", desc: "Ultra-Fast Jamstack & Landing" },
+  { id: "Consult", label: "Not Sure / Consult", desc: "Help me pick architecture" },
+] as const;
+
+const BUDGET_OPTIONS = [
+  "< ₹25,000",
+  "₹25,000 - ₹50,000",
+  "₹50,000 - ₹1,50,000",
+  "₹1,50,000+",
+  "Flexible",
+] as const;
 
 export function ContactForm() {
   const searchParams = useSearchParams();
@@ -14,6 +36,10 @@ export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState("");
+  const [projectType, setProjectType] = useState<string>("Web Application");
+  const [architecture, setArchitecture] = useState<string>("Dynamic");
+  const [budget, setBudget] = useState<string>("₹50,000 - ₹1,50,000");
   const [message, setMessage] = useState("");
   const [prefilledService, setPrefilledService] = useState<string | null>(null);
   const [prefilledBudget, setPrefilledBudget] = useState<string | null>(null);
@@ -37,8 +63,14 @@ export function ContactForm() {
     const prefillBudget = searchParams.get("budget");
 
     if (prefillMsg) setMessage(prefillMsg);
-    if (prefillService) setPrefilledService(prefillService);
-    if (prefillBudget) setPrefilledBudget(prefillBudget);
+    if (prefillService) {
+      setPrefilledService(prefillService);
+      setProjectType(prefillService);
+    }
+    if (prefillBudget) {
+      setPrefilledBudget(prefillBudget);
+      setBudget(prefillBudget);
+    }
   }, [searchParams]);
 
   const handleFieldFocus = () => {
@@ -60,12 +92,16 @@ export function ContactForm() {
     e.preventDefault();
     setError(null);
 
+    const finalService = prefilledService || `${projectType} [${architecture}]`;
+    const finalBudget = budget || prefilledBudget || undefined;
+
     const validation = contactFormSchema.safeParse({
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim() || undefined,
-      service: prefilledService || undefined,
-      budget: prefilledBudget || undefined,
+      company: company.trim() || undefined,
+      service: finalService,
+      budget: finalBudget,
       message: message.trim(),
       turnstileToken: turnstileToken || undefined,
     });
@@ -86,8 +122,9 @@ export function ContactForm() {
           name: name.trim(),
           email: email.trim(),
           phone: phone.trim() || undefined,
-          service: prefilledService || undefined,
-          budget: prefilledBudget || undefined,
+          company: company.trim() || undefined,
+          service: finalService,
+          budget: finalBudget,
           message: message.trim(),
           turnstileToken: turnstileToken || undefined,
         }),
@@ -104,10 +141,11 @@ export function ContactForm() {
       }
 
       setSuccess(true);
-      trackFormSubmit("contact", { service: prefilledService || undefined, budget: prefilledBudget || undefined });
+      trackFormSubmit("contact", { service: finalService, budget: finalBudget });
       setName("");
       setEmail("");
       setPhone("");
+      setCompany("");
       setMessage("");
       setTurnstileToken("");
       turnstileRef.current?.reset();
@@ -203,7 +241,7 @@ export function ContactForm() {
       </div>
 
       {/* =================================================================== */}
-      {/* RIGHT SIDE: THE CLEAN CONTACT FORM                                  */}
+      {/* RIGHT SIDE: THE ENHANCED CONTACT FORM                               */}
       {/* =================================================================== */}
       <div className="lg:col-span-7 flex flex-col justify-center text-left">
         {success ? (
@@ -220,7 +258,7 @@ export function ContactForm() {
                 Thank You for Reaching Out!
               </h3>
               <p className="text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
-                Your message has been sent successfully. We will review your project details and respond within 24 hours.
+                Your inquiry has been received successfully. We will review your project requirements and get back to you promptly.
               </p>
             </div>
 
@@ -244,56 +282,6 @@ export function ContactForm() {
               </div>
             )}
 
-            {/* Your Name */}
-            <div className="space-y-2">
-              <label htmlFor="contact-name" className="block text-sm font-medium text-white">
-                Your Name
-              </label>
-              <input
-                id="contact-name"
-                type="text"
-                required
-                value={name}
-                onFocus={handleFieldFocus}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Davit Smith"
-                className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
-              />
-            </div>
-
-            {/* Email & Phone (optional) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              <div className="space-y-2">
-                <label htmlFor="contact-email" className="block text-sm font-medium text-white">
-                  Email
-                </label>
-                <input
-                  id="contact-email"
-                  type="email"
-                  required
-                  value={email}
-                  onFocus={handleFieldFocus}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="example@domin.com"
-                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="contact-phone" className="block text-sm font-medium text-white">
-                  Phone (optional)
-                </label>
-                <input
-                  id="contact-phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 332 245 666"
-                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
-                />
-              </div>
-            </div>
-
             {/* If coming from Pricing Matrix, show configured plan tag */}
             {prefilledService && (
               <div className="p-3 rounded-xl bg-[#1A1C24] border border-white/10 flex items-center justify-between text-xs">
@@ -302,23 +290,176 @@ export function ContactForm() {
                   <span className="text-neutral-400">Configured Plan:</span>
                   <span className="text-white font-semibold">{prefilledService}</span>
                 </div>
-                <span className="text-neutral-400 text-[11px] font-mono">Plan details pre-filled below</span>
+                <span className="text-neutral-400 text-[11px] font-mono">Plan details attached</span>
               </div>
             )}
+
+            {/* Name & Email */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-2">
+                <label htmlFor="contact-name" className="block text-sm font-medium text-white">
+                  Your Name *
+                </label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  required
+                  value={name}
+                  onFocus={handleFieldFocus}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Rahul Sharma"
+                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="contact-email" className="block text-sm font-medium text-white">
+                  Email Address *
+                </label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  required
+                  value={email}
+                  onFocus={handleFieldFocus}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="rahul@company.com"
+                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            {/* Phone & Company */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-2">
+                <label htmlFor="contact-phone" className="block text-sm font-medium text-white">
+                  Phone (Optional)
+                </label>
+                <input
+                  id="contact-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="contact-company" className="block text-sm font-medium text-white flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Company / Brand (Optional)</span>
+                </label>
+                <input
+                  id="contact-company"
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="Acme Corp or Personal"
+                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            {/* Project Type Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-white flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-[#F27A1A]" />
+                <span>Project Type</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PROJECT_TYPES.map((type) => {
+                  const isSelected = projectType === type;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setProjectType(type)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-[#F27A1A]/15 text-[#F27A1A] border border-[#F27A1A] shadow-[0_0_12px_rgba(242,122,26,0.25)]"
+                          : "bg-[#0F1014] text-neutral-300 border border-white/[0.08] hover:border-white/20 hover:text-white"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Architecture: Static vs Dynamic */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-white flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#F27A1A]" />
+                <span>Website Architecture</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {ARCHITECTURES.map((arch) => {
+                  const isSelected = architecture === arch.id;
+                  return (
+                    <button
+                      key={arch.id}
+                      type="button"
+                      onClick={() => setArchitecture(arch.id)}
+                      className={`p-3 rounded-xl text-left border transition-all cursor-pointer flex flex-col gap-1 ${
+                        isSelected
+                          ? "bg-[#F27A1A]/10 border-[#F27A1A] text-white shadow-[0_0_12px_rgba(242,122,26,0.2)]"
+                          : "bg-[#0F1014] border-white/[0.08] hover:border-white/20 text-neutral-300"
+                      }`}
+                    >
+                      <span className={`text-xs font-bold ${isSelected ? "text-[#F27A1A]" : "text-white"}`}>
+                        {arch.label}
+                      </span>
+                      <span className="text-[11px] text-neutral-400 leading-tight">
+                        {arch.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Budget Range */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-white flex items-center gap-1.5">
+                <Wallet className="w-4 h-4 text-[#F27A1A]" />
+                <span>Estimated Budget</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {BUDGET_OPTIONS.map((opt) => {
+                  const isSelected = budget === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setBudget(opt)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-[#F27A1A]/15 text-[#F27A1A] border border-[#F27A1A] shadow-[0_0_12px_rgba(242,122,26,0.25)]"
+                          : "bg-[#0F1014] text-neutral-300 border border-white/[0.08] hover:border-white/20 hover:text-white"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* About Project */}
             <div className="space-y-2">
               <label htmlFor="contact-message" className="block text-sm font-medium text-white">
-                About Project
+                About Project *
               </label>
               <textarea
                 id="contact-message"
                 required
-                rows={5}
+                rows={4}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us about your project, timeline, and goals..."
-                className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200 resize-none min-h-[140px]"
+                placeholder="Tell us about your project, timeline, target audience, and goals..."
+                className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200 resize-none min-h-[120px]"
               />
               <span className={`block text-[11px] font-mono ${message.length >= 20 ? "text-neutral-500" : "text-neutral-600"}`}>
                 {message.length}/20 characters minimum
@@ -350,7 +491,7 @@ export function ContactForm() {
                     <span>Submitting...</span>
                   </>
                 ) : (
-                  <span>Submit Now</span>
+                  <span>Submit Inquiry</span>
                 )}
               </button>
             </div>

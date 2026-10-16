@@ -46,13 +46,6 @@ export default function ContactPage() {
       />
 
       <div className="w-full max-w-6xl mx-auto space-y-8 sm:space-y-12 relative z-10">
-        {/* Top Centered Catchphrase from Reference Image */}
-        <div className="text-center">
-          <p className="text-sm sm:text-base text-neutral-400 font-normal tracking-wide">
-            Get in touch! I&apos;ll respond within 24 hours.
-          </p>
-        </div>
-
         {/* Main 2-Column Split: Contact Info Card (Left) & Form (Right) */}
         <Suspense
           fallback={
