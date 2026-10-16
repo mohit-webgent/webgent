@@ -4,11 +4,12 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { notificationService } from "@/lib/services/notifications";
 import {
-  callClaudeChat,
-  detectPromptAbuse,
+  processConsultantMessage,
   ChatHistoryMessage,
   VisitorInfo,
-} from "@/lib/services/claude";
+  ProjectState,
+} from "@/lib/services/ai-consultant/orchestrator";
+import { detectPromptAbuse } from "@/lib/services/gemini";
 import { z } from "zod";
 
 const postMessageSchema = z.object({
@@ -24,6 +25,7 @@ const postMessageSchema = z.object({
       email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
     })
     .optional(),
+  turnstileToken: z.string().optional().or(z.literal("")),
 });
 
 export async function POST(req: NextRequest) {
@@ -127,55 +129,12 @@ export async function POST(req: NextRequest) {
     }
 
     const hadPriorEmail = Boolean(currentMetadata.email);
-    let updatedMetadata = false;
-
     if (visitorInfo?.name && visitorInfo.name.trim()) {
       currentMetadata.name = visitorInfo.name.trim();
-      updatedMetadata = true;
     }
 
     if (visitorInfo?.email && visitorInfo.email.trim()) {
       currentMetadata.email = visitorInfo.email.trim();
-      updatedMetadata = true;
-    }
-
-    if (!hadPriorEmail && visitorInfo?.email && visitorInfo.email.trim()) {
-      const visitorName = (visitorInfo.name ||
-        currentMetadata.name ||
-        "Webgent Chat Visitor") as string;
-      const visitorEmail = visitorInfo.email.trim();
-
-      try {
-        await notificationService.sendNewLeadNotification({
-          id: `chat_${chatSession.id}`,
-          name: visitorName,
-          email: visitorEmail,
-          service: "AI Chat Inbound Lead",
-          message: `Visitor shared contact info during AI chat.\nLatest message: "${message}"`,
-        });
-
-        await prisma.lead
-          .create({
-            data: {
-              name: visitorName,
-              email: visitorEmail,
-              service: "AI Chat Inbound",
-              message: `Captured via AI chat. Latest inquiry: "${message}"`,
-              ipAddress: ip,
-              status: "NEW",
-              score: 60,
-            },
-          })
-          .catch((err) => {
-            logger.warn("[Chat:Message] Could not save lead record", {
-              error: err,
-            });
-          });
-      } catch (notifyErr) {
-        logger.error("[Chat:Message] Admin notification error", {
-          error: notifyErr,
-        });
-      }
     }
 
     const visitorMessage = await prisma.chatMessage.create({
@@ -185,16 +144,6 @@ export async function POST(req: NextRequest) {
         content: message.trim(),
       },
     });
-
-    if (updatedMetadata) {
-      await prisma.chatSession.update({
-        where: { id: chatSession.id },
-        data: {
-          metadata: JSON.stringify(currentMetadata),
-          updatedAt: new Date(),
-        },
-      });
-    }
 
     const history: ChatHistoryMessage[] = chatSession.messages.map((m) => ({
       role:
@@ -212,10 +161,116 @@ export async function POST(req: NextRequest) {
       email: (currentMetadata.email as string) || undefined,
     };
 
-    const assistantReply = await callClaudeChat({
+    const consultantResult = await processConsultantMessage({
       messages: history,
       visitorInfo: parsedVisitorInfo,
+      priorProjectState: currentMetadata.projectState as ProjectState | undefined,
     });
+
+    const assistantReply = consultantResult.messageText;
+
+    if (consultantResult.updatedProjectState) {
+      currentMetadata.projectState = consultantResult.updatedProjectState;
+    }
+
+    if (consultantResult.estimate) {
+      currentMetadata.latestEstimate = consultantResult.estimate;
+    }
+
+    // Lead Capture & Quotation Handoff: Sync lead details when email is present
+    if (visitorInfo?.email && visitorInfo.email.trim()) {
+      const visitorName = (visitorInfo.name ||
+        currentMetadata.name ||
+        "Webgent Chat Visitor") as string;
+      const visitorEmail = visitorInfo.email.trim();
+      const activeEstimate =
+        consultantResult.estimate ||
+        (currentMetadata.latestEstimate as import("@/lib/services/ai-consultant/calculator").ProjectEstimateResult | undefined);
+
+      const leadService = activeEstimate?.categoryDisplayName
+        ? `${activeEstimate.categoryDisplayName} Development`
+        : "AI Website Consultant Inquiry";
+
+      const leadBudget = activeEstimate?.budgetAnalysis?.userBudgetINR
+        ? `₹${activeEstimate.budgetAnalysis.userBudgetINR.toLocaleString("en-IN")}`
+        : activeEstimate?.cost?.oneTimeTotalINR
+          ? `₹${activeEstimate.cost.oneTimeTotalINR.toLocaleString("en-IN")} (Estimate)`
+          : undefined;
+
+      const leadNotes = activeEstimate
+        ? JSON.stringify(
+            {
+              category: activeEstimate.categoryDisplayName,
+              architecture: activeEstimate.architecture,
+              timeline: activeEstimate.estimatedTimeline,
+              estimatedOneTimeINR: activeEstimate.cost.oneTimeTotalINR,
+              estimatedRecurringINR: activeEstimate.cost.recurringMonthlyTotalINR,
+              pagesCount: activeEstimate.pages.count,
+              pages: activeEstimate.pages.list.map((p) => `${p.name} (${p.slug})`),
+              essentialFeatures: activeEstimate.features.essential.map((f) => f.name),
+              recommendedFeatures: activeEstimate.features.recommended.map((f) => f.name),
+              marketBenchmark: activeEstimate.marketBenchmark
+                ? `₹${activeEstimate.marketBenchmark.marketRangeMinINR} - ₹${activeEstimate.marketBenchmark.marketRangeMaxINR} (${activeEstimate.marketBenchmark.sourceName})`
+                : "None",
+              assumptions: activeEstimate.assumptions,
+            },
+            null,
+            2,
+          )
+        : undefined;
+
+      try {
+        const existingLead = await prisma.lead.findFirst({
+          where: {
+            email: visitorEmail,
+            createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (existingLead) {
+          await prisma.lead.update({
+            where: { id: existingLead.id },
+            data: {
+              name: visitorName || existingLead.name,
+              service: leadService,
+              budget: leadBudget || existingLead.budget,
+              notes: leadNotes || existingLead.notes,
+              message: `${existingLead.message}\n---\nLatest Inquiry: "${message}"`,
+              updatedAt: new Date(),
+            },
+          });
+        } else {
+          await prisma.lead.create({
+            data: {
+              name: visitorName,
+              email: visitorEmail,
+              service: leadService,
+              budget: leadBudget,
+              notes: leadNotes,
+              message: `Captured via AI Consultant chat. Latest inquiry: "${message}"`,
+              ipAddress: ip,
+              status: "NEW",
+              score: activeEstimate ? 75 : 60,
+            },
+          });
+
+          if (!hadPriorEmail) {
+            await notificationService.sendNewLeadNotification({
+              id: `chat_${chatSession.id}`,
+              name: visitorName,
+              email: visitorEmail,
+              service: leadService,
+              message: `Visitor shared contact info during AI consultation.\nLatest message: "${message}"\nEstimated Total: ${
+                activeEstimate ? `₹${activeEstimate.cost.oneTimeTotalINR.toLocaleString("en-IN")}` : "N/A"
+              }`,
+            });
+          }
+        }
+      } catch (leadErr) {
+        logger.warn("[Chat:Message] Lead sync error", { error: leadErr });
+      }
+    }
 
     await prisma.$transaction([
       prisma.chatMessage.create({
@@ -228,6 +283,7 @@ export async function POST(req: NextRequest) {
       prisma.chatSession.update({
         where: { id: chatSession.id },
         data: {
+          metadata: JSON.stringify(currentMetadata),
           updatedAt: new Date(),
         },
       }),
@@ -238,6 +294,9 @@ export async function POST(req: NextRequest) {
       sessionId: chatSession.id,
       message: assistantReply,
       visitorMessageId: visitorMessage.id,
+      estimate: consultantResult.estimate,
+      followUpSuggestions: consultantResult.followUpSuggestions,
+      categoryKey: consultantResult.categoryKey,
     });
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);

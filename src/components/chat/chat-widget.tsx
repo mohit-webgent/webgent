@@ -16,14 +16,20 @@ import {
   Copy,
   CheckCheck,
   BadgeCheck,
+  Sparkles,
 } from "lucide-react";
 import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
+import { EstimateCard } from "./estimate-card";
+import { FormattedMessage } from "./formatted-message";
+import type { ProjectEstimateResult } from "@/lib/services/ai-consultant/calculator";
 
 interface Message {
   id: string;
   sender: "visitor" | "assistant";
   content: string;
   createdAt: string;
+  estimate?: ProjectEstimateResult;
+  followUpSuggestions?: string[];
 }
 
 interface VisitorDetails {
@@ -34,12 +40,13 @@ interface VisitorDetails {
 const STORAGE_SESSION_KEY = "webgent_chat_session_id";
 const STORAGE_VISITOR_KEY = "webgent_visitor_id";
 const STORAGE_DETAILS_KEY = "webgent_visitor_details";
+const STORAGE_MESSAGES_KEY = "webgent_chat_messages";
 
 const QUICK_STARTERS = [
-  "What services does Webgent offer?",
-  "How does Webgent calculate project pricing?",
-  "What is your recommended tech stack for modern web apps?",
-  "How can I book a technical discovery call?",
+  "I want a website for my gym. What features & pages do I need, and how much will it cost?",
+  "How much does a custom e-commerce store cost with Razorpay & cart?",
+  "Can you build an employee management portal with attendance & logins?",
+  "Can you recommend a project scope within a ₹20,000 budget?",
 ];
 
 export function ChatWidget() {
@@ -53,11 +60,14 @@ export function ChatWidget() {
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeSuggestions, setActiveSuggestions] = useState<string[]>([]);
 
   const [showDetailsForm, setShowDetailsForm] = useState(false);
   const [visitorDetails, setVisitorDetails] = useState<VisitorDetails>({ name: "", email: "" });
   const [savedDetails, setSavedDetails] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState(
+    process.env.NODE_ENV !== "production" ? "dev-mock-turnstile-token" : "",
+  );
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileRef>(null);
 
@@ -89,6 +99,7 @@ export function ChatWidget() {
       const storedSession = localStorage.getItem(STORAGE_SESSION_KEY);
       const storedVisitor = localStorage.getItem(STORAGE_VISITOR_KEY);
       const storedDetails = localStorage.getItem(STORAGE_DETAILS_KEY);
+      const storedMessages = localStorage.getItem(STORAGE_MESSAGES_KEY);
 
       if (storedSession) setSessionId(storedSession);
       if (storedVisitor) setVisitorId(storedVisitor);
@@ -97,8 +108,22 @@ export function ChatWidget() {
         setVisitorDetails(parsed);
         if (parsed.email) setSavedDetails(true);
       }
+      if (storedMessages) {
+        const parsedMsgs = JSON.parse(storedMessages);
+        if (Array.isArray(parsedMsgs) && parsedMsgs.length > 0) {
+          setMessages(parsedMsgs);
+        }
+      }
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        localStorage.setItem(STORAGE_MESSAGES_KEY, JSON.stringify(messages));
+      } catch {}
+    }
+  }, [messages]);
 
   const initSession = useCallback(
     async (initialMsg?: string, tokenOverride?: string) => {
@@ -121,7 +146,7 @@ export function ChatWidget() {
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           turnstileRef.current?.reset();
-          setTurnstileToken("");
+          if (process.env.NODE_ENV === "production") setTurnstileToken("");
           throw new Error(errData.error || "Could not initialize chat session");
         }
 
@@ -129,7 +154,7 @@ export function ChatWidget() {
         setSessionId(data.sessionId);
         setVisitorId(data.visitorId);
         turnstileRef.current?.reset();
-        setTurnstileToken("");
+        if (process.env.NODE_ENV === "production") setTurnstileToken("");
 
         try {
           localStorage.setItem(STORAGE_SESSION_KEY, data.sessionId);
@@ -141,7 +166,7 @@ export function ChatWidget() {
         const msg = err instanceof Error ? err.message : "Connection failed";
         setError(msg);
         turnstileRef.current?.reset();
-        setTurnstileToken("");
+        if (process.env.NODE_ENV === "production") setTurnstileToken("");
         return null;
       } finally {
         setInitializing(false);
@@ -151,24 +176,22 @@ export function ChatWidget() {
   );
 
   const handleToggleOpen = () => {
-    const nextOpen = !isOpen;
-    setIsOpen(nextOpen);
-    if (nextOpen && !sessionId && !savedDetails) {
-      setShowDetailsForm(true);
-    }
+    setIsOpen((prev) => !prev);
   };
 
   const handleResetSession = () => {
     try {
       localStorage.removeItem(STORAGE_SESSION_KEY);
+      localStorage.removeItem(STORAGE_MESSAGES_KEY);
     } catch {}
     setSessionId(null);
     setMessages([]);
     setError(null);
-    setTurnstileToken("");
+    setTurnstileToken(process.env.NODE_ENV !== "production" ? "dev-mock-turnstile-token" : "");
     setTurnstileError(null);
+    setActiveSuggestions([]);
     turnstileRef.current?.reset();
-    setShowDetailsForm(true);
+    setShowDetailsForm(false);
   };
 
   const handleSaveDetails = async (e?: React.FormEvent) => {
@@ -200,6 +223,11 @@ export function ChatWidget() {
       if (!newSessionId) {
         return;
       }
+    } else {
+      await handleSendMessage(
+        "I'd like to prepare a project inquiry with the scope and estimate we discussed.",
+        visitorDetails,
+      );
     }
     setShowDetailsForm(false);
   };
@@ -212,11 +240,17 @@ export function ChatWidget() {
     }
   };
 
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, infoOverride?: VisitorDetails) => {
     const content = (textToSend || inputText).trim();
     if (!content || loading || initializing) return;
 
-    if (!sessionId && !turnstileToken) {
+    let activeToken = turnstileToken;
+    if (!sessionId && !activeToken && process.env.NODE_ENV !== "production") {
+      activeToken = "dev-mock-turnstile-token";
+      setTurnstileToken("dev-mock-turnstile-token");
+    }
+
+    if (!sessionId && !activeToken) {
       setShowDetailsForm(true);
       setError("Please complete the security verification challenge in Project Lead Details to start chatting.");
       return;
@@ -237,12 +271,13 @@ export function ChatWidget() {
     try {
       let activeSessionId = sessionId;
       if (!activeSessionId) {
-        activeSessionId = await initSession(undefined, turnstileToken);
+        activeSessionId = await initSession(undefined, activeToken);
         if (!activeSessionId) {
           throw new Error("Unable to establish chat connection");
         }
       }
 
+      const activeInfo = infoOverride || visitorDetails;
       const res = await fetch("/api/chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -250,10 +285,10 @@ export function ChatWidget() {
           sessionId: activeSessionId,
           message: content,
           visitorInfo:
-            visitorDetails.name || visitorDetails.email
+            activeInfo.name || activeInfo.email
               ? {
-                  name: visitorDetails.name || undefined,
-                  email: visitorDetails.email || undefined,
+                  name: activeInfo.name || undefined,
+                  email: activeInfo.email || undefined,
                 }
               : undefined,
         }),
@@ -270,9 +305,17 @@ export function ChatWidget() {
         sender: "assistant",
         content: json.message,
         createdAt: new Date().toISOString(),
+        estimate: json.estimate,
+        followUpSuggestions: json.followUpSuggestions,
       };
 
-      setMessages((prev) => [...prev, replyMsg]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === replyMsg.id)) return prev;
+        return [...prev, replyMsg];
+      });
+      if (json.followUpSuggestions && Array.isArray(json.followUpSuggestions)) {
+        setActiveSuggestions(json.followUpSuggestions);
+      }
       if (!isOpen) {
         setUnreadCount((c) => c + 1);
       }
@@ -640,9 +683,17 @@ export function ChatWidget() {
                         : "bg-[#161722] border border-white/[0.08] text-[#E8E8E6] rounded-2xl rounded-tl-xs"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap break-words text-[12.5px] leading-relaxed">
-                      {msg.content}
-                    </p>
+                    <FormattedMessage content={msg.content} isUser={isUser} />
+
+                    {/* Rich Interactive Estimate Card if present */}
+                    {msg.estimate && (
+                      <EstimateCard
+                        estimate={msg.estimate}
+                        onInquireNow={() => {
+                          setShowDetailsForm(true);
+                        }}
+                      />
+                    )}
 
                     {/* WhatsApp-style Timestamp & Read Receipts */}
                     <div
@@ -717,7 +768,25 @@ export function ChatWidget() {
           </div>
 
           {/* Quick Context Story Pills (Visible when in conversation) */}
-          {messages.length > 0 && (
+          {/* Interactive Follow-Up Chips / Quick Story Pills */}
+          {activeSuggestions.length > 0 ? (
+            <div className="px-3 py-1.5 bg-[#0D0E15] border-t border-white/[0.06] flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[10.5px] shrink-0">
+              <span className="text-[10px] text-emerald-400 font-bold shrink-0 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span>Next:</span>
+              </span>
+              {activeSuggestions.map((suggestion, sIdx) => (
+                <button
+                  key={sIdx}
+                  type="button"
+                  onClick={() => handleSendMessage(suggestion)}
+                  className="px-2.5 py-1 rounded-full bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 hover:text-white border border-emerald-500/30 whitespace-nowrap transition-all cursor-pointer shadow-sm active:scale-95"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          ) : messages.length > 0 ? (
             <div className="px-3 py-1 bg-[#0D0E15] border-t border-white/[0.06] flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[10.5px] shrink-0">
               <button
                 type="button"
@@ -741,7 +810,7 @@ export function ChatWidget() {
                 🚀 Hire Mohit
               </button>
             </div>
-          )}
+          ) : null}
 
           {/* WhatsApp / Instagram Pill Input Bar */}
           <div className="p-2.5 bg-[#0D0E15] border-t border-white/[0.08] shrink-0">

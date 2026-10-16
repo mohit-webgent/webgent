@@ -109,8 +109,27 @@ export async function POST(req: NextRequest) {
             "Visitor initiated AI chat session and shared contact details.",
         });
 
-        await prisma.lead
-          .create({
+        const existingLead = await prisma.lead.findFirst({
+          where: {
+            email: email.trim(),
+            createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (existingLead) {
+          await prisma.lead.update({
+            where: { id: existingLead.id },
+            data: {
+              name: name.trim(),
+              message: initialMessage?.trim()
+                ? `${existingLead.message}\n---\nFollow-up Chat Start: "${initialMessage.trim()}"`
+                : existingLead.message,
+              updatedAt: new Date(),
+            },
+          });
+        } else {
+          await prisma.lead.create({
             data: {
               name: name.trim(),
               email: email.trim(),
@@ -121,12 +140,8 @@ export async function POST(req: NextRequest) {
               status: "NEW",
               score: 50,
             },
-          })
-          .catch((err) => {
-            logger.warn("[Chat:Start] Failed to record lead from chat info", {
-              error: err,
-            });
           });
+        }
       } catch (notifyErr) {
         logger.error("[Chat:Start] Admin notification error on chat start", {
           error: notifyErr,

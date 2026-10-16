@@ -157,7 +157,12 @@ export const FEATURE_ID_ALIASES: Record<string, string> = {
   appointment_booking: "booking_calendar",
   user_auth: "user_login",
   admin_panel: "admin_dashboard",
+  custom_admin_portal: "admin_dashboard",
   blog_cms: "blog",
+  payment_gateway_integration: "payment_gateway",
+  whatsapp_chat_widget: "whatsapp_chat",
+  lead_capture_form: "contact_form",
+  interactive_contact_form: "contact_form",
 };
 
 /**
