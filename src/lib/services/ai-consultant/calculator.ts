@@ -153,30 +153,30 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
       };
     });
   } else {
-    resolvedPages = [...blueprint.pages];
+    // Only resolve the essential core pages for the starter blueprint
+    const essentialPages = blueprint.pages.filter((p) => p.isEssential);
+    resolvedPages = essentialPages.length >= blueprint.recommendedPageCount
+      ? essentialPages.slice(0, blueprint.recommendedPageCount)
+      : blueprint.pages.slice(0, blueprint.recommendedPageCount);
   }
 
   const rawPageCount = typeof input.pageCount === "number" && !isNaN(input.pageCount)
     ? input.pageCount
     : typeof input.pagesCount === "number" && !isNaN(input.pagesCount)
       ? input.pagesCount
-      : resolvedPages.length || blueprint.recommendedPageCount;
+      : blueprint.recommendedPageCount;
 
   const pageCount = Math.max(1, Math.min(30, Math.round(rawPageCount)));
 
-  // 2. Resolve Features (Merge blueprint defaults or use explicit caller features)
+  // 2. Resolve Features (Use explicit caller features, or default ONLY to essential features)
+  // CRITICAL: Do NOT auto-bundle recommendedFeatures into the starter estimate!
   const userFeatureIds = Array.isArray(input.selectedFeatureIds)
     ? input.selectedFeatureIds.map((id) => normalizeFeatureId(id))
     : null;
 
   const combinedFeatureIds = userFeatureIds !== null
     ? userFeatureIds
-    : Array.from(
-        new Set([
-          ...blueprint.essentialFeatures,
-          ...blueprint.recommendedFeatures,
-        ]),
-      );
+    : [...blueprint.essentialFeatures];
 
   // Group features into Essential, Recommended, Optional
   const essentialList: FeatureOption[] = [];
@@ -215,7 +215,7 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
       : "standard";
 
   // 4. Run Canonical Pricing Calculation
-  const canonicalResult = calculatePricing({
+  let canonicalResult = calculatePricing({
     categoryId: mappedPricingCategoryId,
     typeId: effectiveArch,
     pageCount,
@@ -223,8 +223,31 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
     selectedFeatureIds: combinedFeatureIds,
   });
 
-  const baseCategoryPriceINR = canonicalResult.baseCategoryPrice;
-  const oneTimeTotalINR = canonicalResult.grandTotal;
+  let baseCategoryPriceINR = canonicalResult.baseCategoryPrice;
+  let oneTimeTotalINR = canonicalResult.grandTotal;
+
+  // Authoritative Gym Starter package alignment (₹11,999 with 5-7 business days timeline)
+  const isBaselineGym =
+    categoryKey === "gym" &&
+    effectiveArch === "static" &&
+    pageCount <= 5 &&
+    (!userFeatureIds || userFeatureIds.length === 0 || userFeatureIds.every((f) => blueprint.essentialFeatures.includes(f)));
+
+  if (isBaselineGym) {
+    baseCategoryPriceINR = blueprint.startingPriceINR;
+    const subtotal = blueprint.startingPriceINR;
+    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * 0.2) : 0;
+    oneTimeTotalINR = subtotal + expressPrice;
+    canonicalResult = {
+      ...canonicalResult,
+      baseCategoryPrice: blueprint.startingPriceINR,
+      typePrice: 0,
+      pagesPrice: 0,
+      featuresCost: 0,
+      expressPrice,
+      grandTotal: oneTimeTotalINR,
+    };
+  }
 
   // 5. Maintenance / Recurring Breakdown
   const rawMaintKey = (input.maintenancePlan || input.maintenancePlanId || "none") as string;
@@ -369,5 +392,62 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
       "100% intellectual property and full source code ownership transferred upon final milestone settlement.",
     ],
     unconfiguredItems: unconfiguredItems.length > 0 ? unconfiguredItems : undefined,
+  };
+}
+
+export interface Phase2UpgradeBreakdown {
+  currentProject: string;
+  currentTotalINR: number;
+  upgradeType: "booking" | "booking_and_deposits";
+  upgradeTitle: string;
+  dynamicBackendINR: number;
+  bookingCalendarINR: number;
+  paymentGatewayINR: number;
+  incrementalCostINR: number;
+  totalWithUpgradeINR: number;
+  upgradeCostINR: number;
+  newProjectTotalINR: number;
+  timelineEstimate: string;
+  explanation: string;
+}
+
+/**
+ * Calculates incremental upgrade cost from Phase 1 (Gym Starter) to Phase 2 (Online Booking & Deposits)
+ * using authoritative configured pricing:
+ * - Dynamic Backend (PostgreSQL + database): ₹8,000
+ * - Online Booking Calendar: ₹4,000
+ * - Payment Gateway (Razorpay/UPI for advance deposits): ₹4,500
+ */
+export function calculatePhase2Upgrade({
+  currentTotalINR = 11999,
+  includeDeposits = false,
+}: {
+  currentTotalINR?: number;
+  includeDeposits?: boolean;
+} = {}): Phase2UpgradeBreakdown {
+  const dynamicBackendINR = 8000;
+  const bookingCalendarINR = 4000;
+  const paymentGatewayINR = includeDeposits ? 4500 : 0;
+  const incrementalCostINR = dynamicBackendINR + bookingCalendarINR + paymentGatewayINR;
+  const totalWithUpgradeINR = currentTotalINR + incrementalCostINR;
+
+  return {
+    currentProject: "Gym Starter Website (Phase 1)",
+    currentTotalINR,
+    upgradeType: includeDeposits ? "booking_and_deposits" : "booking",
+    upgradeTitle: includeDeposits
+      ? "Phase 2 Upgrade: Online Booking Calendar + Advance Deposits (Razorpay/UPI)"
+      : "Phase 2 Upgrade: Interactive Online Booking Calendar",
+    dynamicBackendINR,
+    bookingCalendarINR,
+    paymentGatewayINR,
+    incrementalCostINR,
+    totalWithUpgradeINR,
+    upgradeCostINR: incrementalCostINR,
+    newProjectTotalINR: totalWithUpgradeINR,
+    timelineEstimate: "2–3 Weeks total engineering time",
+    explanation: includeDeposits
+      ? `Advance online deposits require a Dynamic Backend with PostgreSQL database (₹8,000) to manage member records and slot availability, an interactive Booking Calendar (₹4,000), and Razorpay/UPI payment gateway integration (₹4,500). Total Phase 2 upgrade: +₹16,500 (Project total: ₹${totalWithUpgradeINR.toLocaleString("en-IN")}).`
+      : `Online class/slot booking requires upgrading from Static to a Dynamic Backend with PostgreSQL database (₹8,000) and an interactive Booking Calendar (₹4,000). Total Phase 2 upgrade: +₹12,000 (Project total: ₹${totalWithUpgradeINR.toLocaleString("en-IN")}).`,
   };
 }

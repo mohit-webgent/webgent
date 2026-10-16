@@ -7,6 +7,7 @@
 import { logger } from "@/lib/logger";
 import {
   calculateProjectEstimate,
+  calculatePhase2Upgrade,
   resolveCategoryKey,
   ProjectEstimateResult,
   CalculatorInput,
@@ -101,6 +102,11 @@ export const AI_CONSULTANT_SYSTEM_PROMPT = `You are the Webgent AI Consultant, a
 export function detectCategoryFromText(text: string): string | null {
   const lower = text.toLowerCase();
 
+  // Guard against false positives when asking about adding booking features or Phase 2 upgrades
+  const isFeatureOrAddonQuery =
+    /\b(can|could|later|baad\s+mein|future|add|upgrade|deposit|advance|kya|option|possible|supported|integrate)\b/i.test(lower) &&
+    /\b(booking|appointment|book|deposit)\b/i.test(lower);
+
   if (/\b(gym|fitness|crossfit|workout|trainer|bodybuilding|powerlifting)\b/i.test(lower)) {
     return "gym";
   }
@@ -113,7 +119,7 @@ export function detectCategoryFromText(text: string): string | null {
   if (/\b(employee|staff|attendance|payroll|internal tool|hr portal)\b/i.test(lower)) {
     return "employee_management";
   }
-  if (/\b(book|booking|appointment|salon|clinic|doctor|dentist|schedul)\b/i.test(lower)) {
+  if (!isFeatureOrAddonQuery && /\b(book|booking|appointment|salon|clinic|doctor|dentist|schedul)\b/i.test(lower)) {
     return "booking_platform";
   }
   if (/\b(portfolio|resume|personal brand|freelancer|photographer)\b/i.test(lower)) {
@@ -218,21 +224,53 @@ export function isComparisonQuery(text: string): boolean {
 }
 
 /**
- * Checks whether user message is asking for founder Mohit Verma's biography, education, or credentials.
+ * Checks whether user message is asking for founder Mohit Verma's biography, education, expertise, or credentials.
  */
 export function isBiographyQuery(text: string): boolean {
   const lower = text.toLowerCase().trim();
   const patterns = [
-    /mohit.*(education|degree|college|university|qualification|study|padhai|kahan se)/i,
-    /(education|degree|qualification|college|padhai).*(mohit|founder|developer)/i,
+    /mohit.*(education|degree|college|university|qualification|study|padhai|kahan se|skills?|expertise|tech|background|experience|career|job|company|kaam|work|dba\s*lounge)/i,
+    /(education|degree|qualification|college|padhai|expertise|skills?|experience|background|career).*(mohit|founder|developer)/i,
     /who\s+is\s+mohit/i,
     /about\s+mohit/i,
     /mohit\s+verma/i,
-    /mohit.*(experience|background|career|job|company|kaam|work|dba\s*lounge)/i,
-    /(experience|background|career|qualification).*(mohit|founder)/i,
-    /founder.*(kaun|who|education|degree|padhai)/i,
+    /founder.*(kaun|who|education|degree|padhai|background|experience|qualification|skills?)/i,
   ];
   return patterns.some((p) => p.test(lower));
+}
+
+/**
+ * Checks whether user message is asking about adding features later, Phase 2, or payment/deposit capability.
+ */
+export function isFeatureInquiry(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  if (isGreetingQuery(lower) || isGeneralCompanyQuery(lower) || isComparisonQuery(lower) || isBiographyQuery(lower)) {
+    return false;
+  }
+
+  // Feature inquiries asking about adding features later or in Phase 2
+  const isDeferredFeature =
+    /\b(phase\s*2|baad\s+mein|later|future|deferred)\b/i.test(lower) &&
+    /\b(booking|appointment|deposit|payment|add|include)\b/i.test(lower);
+
+  const isDepositInquiry =
+    /\b(advance\s+deposit|pay\s+advance|deposit\s+bhi|advance\s+payment|advance\s+fees?)\b/i.test(lower);
+
+  const isBookingLaterInquiry =
+    /\b(online\s+booking.*(later|baad\s+mein|add)|(add|include).*online\s+booking.*(later|baad\s+mein))\b/i.test(lower) ||
+    /\b(kya\s+booking.*(baad\s+mein|add\s+ho\s+sakta))\b/i.test(lower);
+
+  return isDeferredFeature || isDepositInquiry || isBookingLaterInquiry;
+}
+
+/**
+ * Checks whether user message is accepting the existing proposal/quote.
+ */
+export function isProposalAcceptance(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return (
+    /\b(final\s+karo|final\s+karte|let's\s+go\s+with|accept|i\s+accept|agree|proceed\s+with|proposal\s+final|11,?999\s+wala|starter\s+final|deal\s+done)\b/i.test(lower)
+  );
 }
 
 /**
@@ -324,17 +362,28 @@ export function extractConsultantParams(
   const latestMessage = messages[messages.length - 1]?.content || "";
   const latestLower = latestMessage.toLowerCase();
 
+  const isBiography = isBiographyQuery(latestMessage);
+  const isFeatureQuery = isFeatureInquiry(latestMessage);
+  const isAcceptance = isProposalAcceptance(latestMessage);
+
   // 1. Detect Category: check latest message first
   const detectedCategoryInLatest = detectCategoryFromText(latestMessage);
 
   let isProjectSwitch = false;
   let categoryKey: string | undefined = undefined;
 
-  if (detectedCategoryInLatest) {
+  // An explicit project switch ONLY occurs if the user explicitly mentions switching/changing projects
+  const isExplicitProjectSwitch =
+    /\b(change\s+to|switch\s+to|instead|nahi|rather\s+than|new\s+project|different\s+project)\b/i.test(latestLower) ||
+    (/\b(mujhe\s+.*(banwani|banwana|chahiye|need|want))\b/i.test(latestLower) && Boolean(detectedCategoryInLatest));
+
+  if (detectedCategoryInLatest && (!priorState?.categoryKey || isExplicitProjectSwitch)) {
     if (priorState?.categoryKey && priorState.categoryKey !== detectedCategoryInLatest) {
       isProjectSwitch = true;
     }
     categoryKey = detectedCategoryInLatest;
+  } else if (priorState?.categoryKey) {
+    categoryKey = priorState.categoryKey;
   } else {
     // If not in latest message, check recent user messages in reverse
     const userMessages = messages.filter((m) => m.role === "user").reverse();
@@ -346,7 +395,7 @@ export function extractConsultantParams(
       }
     }
     if (!categoryKey) {
-      categoryKey = priorState?.categoryKey || "business";
+      categoryKey = "business";
     }
   }
 
@@ -355,50 +404,53 @@ export function extractConsultantParams(
     isProjectSwitch ? [] : priorState?.selectedFeatureIds || [],
   );
 
-  // Scan text for feature additions (MUST only scan user messages, never assistant replies)
-  const userTextForFeatures = isProjectSwitch
-    ? latestLower
-    : messages
-        .filter((m) => m.role === "user")
-        .map((m) => m.content)
-        .join(" ")
-        .toLowerCase();
+  // CRITICAL: Only scan for feature additions if this is NOT a deferred/hypothetical inquiry or acceptance!
+  // Asking "can booking be added later" or "can clients pay advance deposits" must NOT mutate active Phase 1 features!
+  if (!isFeatureQuery && !isAcceptance && !isBiography) {
+    const userTextForFeatures = isProjectSwitch
+      ? latestLower
+      : messages
+          .filter((m) => m.role === "user" && !isFeatureInquiry(m.content) && !isProposalAcceptance(m.content))
+          .map((m) => m.content)
+          .join(" ")
+          .toLowerCase();
 
-  if (/\b(payment|razorpay|stripe|upi gateway|checkout|pay online)\b/i.test(userTextForFeatures)) {
-    featureSet.add("payment_gateway");
-  }
-  if (/\b(online booking|appointment booking|booking calendar|book appointments|slot booking)\b/i.test(userTextForFeatures)) {
-    featureSet.add("booking_calendar");
-  }
-  if (/\b(whatsapp alert|sms alert|instant notification)\b/i.test(userTextForFeatures)) {
-    featureSet.add("whatsapp_alerts");
-  }
-  if (/\b(whatsapp|chat button)\b/i.test(userTextForFeatures)) {
-    featureSet.add("whatsapp_chat");
-  }
-  if (/\b(user login|member portal|client portal|user account|signup|auth)\b/i.test(userTextForFeatures)) {
-    featureSet.add("user_login");
-  }
-  if (/\b(admin dashboard|custom admin|leads portal)\b/i.test(userTextForFeatures)) {
-    featureSet.add("admin_dashboard");
-  }
-  if (/\b(inventory|stock counter|low stock)\b/i.test(userTextForFeatures)) {
-    featureSet.add("inventory_stock");
-  }
-  if (/\b(invoice|gst bill|pdf invoice)\b/i.test(userTextForFeatures)) {
-    featureSet.add("invoice_generation");
-  }
-  if (/\b(blog|articles|news section)\b/i.test(userTextForFeatures)) {
-    featureSet.add("blog");
-  }
-  if (/\b(photo gallery|gallery showcase|photos|lightbox)\b/i.test(userTextForFeatures)) {
-    featureSet.add("gallery_showcase");
-  }
-  if (/\b(seo|google ranking|search console)\b/i.test(userTextForFeatures)) {
-    featureSet.add("seo_basic");
-  }
-  if (/\b(smooth animations|gsap|kinetic)\b/i.test(userTextForFeatures)) {
-    featureSet.add("animations_smooth");
+    if (/\b(add\s+payment|include\s+payment|razorpay|stripe|upi gateway|checkout|pay online)\b/i.test(userTextForFeatures)) {
+      featureSet.add("payment_gateway");
+    }
+    if (/\b(add\s+booking|include\s+booking|appointment booking|booking calendar|slot booking)\b/i.test(userTextForFeatures)) {
+      featureSet.add("booking_calendar");
+    }
+    if (/\b(whatsapp alert|sms alert|instant notification)\b/i.test(userTextForFeatures)) {
+      featureSet.add("whatsapp_alerts");
+    }
+    if (/\b(whatsapp|chat button)\b/i.test(userTextForFeatures)) {
+      featureSet.add("whatsapp_chat");
+    }
+    if (/\b(user login|member portal|client portal|user account|signup|auth)\b/i.test(userTextForFeatures)) {
+      featureSet.add("user_login");
+    }
+    if (/\b(admin dashboard|custom admin|leads portal)\b/i.test(userTextForFeatures)) {
+      featureSet.add("admin_dashboard");
+    }
+    if (/\b(inventory|stock counter|low stock)\b/i.test(userTextForFeatures)) {
+      featureSet.add("inventory_stock");
+    }
+    if (/\b(invoice|gst bill|pdf invoice)\b/i.test(userTextForFeatures)) {
+      featureSet.add("invoice_generation");
+    }
+    if (/\b(blog|articles|news section)\b/i.test(userTextForFeatures)) {
+      featureSet.add("blog");
+    }
+    if (/\b(photo gallery|gallery showcase|photos|lightbox)\b/i.test(userTextForFeatures)) {
+      featureSet.add("gallery_showcase");
+    }
+    if (/\b(seo|google ranking|search console)\b/i.test(userTextForFeatures)) {
+      featureSet.add("seo_basic");
+    }
+    if (/\b(smooth animations|gsap|kinetic)\b/i.test(userTextForFeatures)) {
+      featureSet.add("animations_smooth");
+    }
   }
 
   // 3. Page Count: if project switch, reset to category default unless explicitly given in latest message
@@ -582,23 +634,27 @@ export async function processConsultantMessage({
     };
   }
 
-  // 2. Classify intent: Greeting vs. General Company vs. Market Comparison vs. Biography vs. Project Scoping
+  // 2. Classify intent: Greeting vs. General Company vs. Market Comparison vs. Biography vs. Proposal Acceptance vs. Feature Inquiry vs. Project Scoping
   const isGreeting = isGreetingQuery(lastUserMessage);
   const isGeneralCompany = isGeneralCompanyQuery(lastUserMessage);
   const isComparison = isComparisonQuery(lastUserMessage);
   const isBiography = isBiographyQuery(lastUserMessage);
-  const isScoping = isScopingOrBudgetQuery(lastUserMessage);
+  const isAcceptance = isProposalAcceptance(lastUserMessage);
+  const isFeatureQuery = isFeatureInquiry(lastUserMessage);
+  const isScoping = isScopingOrBudgetQuery(lastUserMessage) && !isFeatureQuery && !isAcceptance;
   const detectedCategoryInLatest = detectCategoryFromText(lastUserMessage);
 
   // 3. Extract and accumulate project parameters across conversation turns
   const extractedParams = extractConsultantParams(messages, priorProjectState);
 
-  // Only quote if actively scoping/asking for a project, not on greetings, general company Q&A, biography, or comparisons
+  // Only quote if actively scoping/asking for a new project, not on greetings, company Q&A, biography, comparisons, acceptances, or feature inquiries
   const shouldQuote =
     !isGreeting &&
     !isGeneralCompany &&
     !isComparison &&
     !isBiography &&
+    !isAcceptance &&
+    !isFeatureQuery &&
     (Boolean(detectedCategoryInLatest) || isScoping || (Boolean(priorProjectState?.isActivelyQuoting) && Boolean(extractedParams.userBudgetINR)));
 
   let estimate: ProjectEstimateResult | undefined = undefined;
@@ -612,12 +668,12 @@ export async function processConsultantMessage({
 
   const updatedProjectState: ProjectState = {
     categoryKey,
-    pageCount: (extractedParams.pageCount ?? estimate?.pages.count) || undefined,
-    userBudgetINR: extractedParams.userBudgetINR ?? undefined,
-    deliverySpeed: extractedParams.deliverySpeed ?? undefined,
-    selectedFeatureIds: extractedParams.selectedFeatureIds ?? undefined,
-    architecture: estimate?.architecture,
-    isActivelyQuoting: shouldQuote,
+    pageCount: (extractedParams.pageCount ?? estimate?.pages.count) || priorProjectState?.pageCount || 5,
+    userBudgetINR: extractedParams.userBudgetINR ?? priorProjectState?.userBudgetINR,
+    deliverySpeed: extractedParams.deliverySpeed ?? priorProjectState?.deliverySpeed ?? "standard",
+    selectedFeatureIds: extractedParams.selectedFeatureIds ?? priorProjectState?.selectedFeatureIds,
+    architecture: estimate?.architecture ?? priorProjectState?.architecture ?? "static",
+    isActivelyQuoting: shouldQuote || Boolean(priorProjectState?.isActivelyQuoting),
   };
 
   // 4. Retrieve authoritative Webgent ground truth for the user's specific query
@@ -639,6 +695,50 @@ export async function processConsultantMessage({
         messageText: buildDeterministicConsultantResponse(estimate, visitorInfo),
         estimate,
         followUpSuggestions,
+        categoryKey,
+        updatedProjectState,
+      };
+    }
+
+    if (isAcceptance) {
+      return {
+        messageText:
+          visitorLanguage === "hinglish"
+            ? "Bohot badhiya! Gym Starter Website ka ₹11,999 wala proposal final ho gaya hai. Isme 5 custom pages, WhatsApp quick chat, schedule table, inquiry form aur complete Google SEO setup included hai (5–7 business days delivery SLA).\n\n**Next Steps:**\n1. Aap gym ka logo, basic program list aur facility photos share kar sakte hain.\n2. Milestone: 50% advance (₹5,999) par hum engineering sprint start karenge, aur baki 50% final staging review par.\n\nKya aapke paas logo aur photos ready hain?"
+            : "Fantastic! Your Gym Starter Website proposal is confirmed at ₹11,999. This covers 5 custom pages, WhatsApp quick chat, class schedule, inquiry form, and Google SEO setup with a 5–7 business days delivery SLA.\n\n**Next Steps:**\n1. Share your gym logo, photos, and class schedule.\n2. 50% milestone advance (₹5,999) to begin the engineering sprint, with the remaining 50% upon final staging review.\n\nDo you have your gym logo and photos ready?",
+        followUpSuggestions: [
+          "What photos or details do you need?",
+          "Can online booking be added later?",
+          "How do milestone payments work?",
+        ],
+        categoryKey,
+        updatedProjectState,
+      };
+    }
+
+    if (isFeatureQuery) {
+      const isDepositQuery = /\b(deposit|advance|payment|pay)\b/i.test(lastUserMessage);
+      const upgrade = calculatePhase2Upgrade({
+        currentTotalINR: 11999,
+        includeDeposits: isDepositQuery,
+      });
+      const upgradeCostStr = `+₹${upgrade.upgradeCostINR.toLocaleString("en-IN")}`;
+      const totalCostStr = `₹${upgrade.newProjectTotalINR.toLocaleString("en-IN")}`;
+
+      return {
+        messageText:
+          visitorLanguage === "hinglish"
+            ? isDepositQuery
+              ? `Haan bilkul! Phase 1 mein aapka Gym Starter Website (₹11,999, 5–7 business days) launch hoga jo aapke ₹15,000 ke budget mein aaram se fit hota hai.\n\nAdvance deposits accept karne ke liye ek interactive booking flow aur payment gateway chahiye hota hai, jise hum Phase 2 mein seamlessly add kar sakte hain:\n* **Dynamic Backend & Database**: +₹8,000 (member records aur slot availability manage karne ke liye)\n* **Interactive Booking Calendar**: +₹4,000 (date & slot selector)\n* **Razorpay/UPI Payment Gateway**: +₹4,500 (direct advance fees lene ke liye)\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Project total: ${totalCostStr}, 2–3 weeks)\n\nBest strategy ye hai ki pehle Phase 1 launch karein aur members aane ke baad Phase 2 advance deposits activate karein. Kya aap Phase 1 se start karna chahenge?`
+              : `Haan bilkul! Online booking ko hum Phase 2 mein seamlessly add kar sakte hain. Aapka Phase 1 Gym Starter Website (₹11,999, 5–7 business days) aapke ₹15,000 ke budget mein aaram se fit rehta hai.\n\nPhase 2 mein online booking add karne ke liye:\n* **Dynamic Backend & Database**: +₹8,000\n* **Interactive Booking Calendar**: +₹4,000\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Project total: ${totalCostStr}, 2–3 weeks)\n\nIsse aap Phase 1 mein bina delay ke live ja sakte hain aur baad mein booking feature add kar sakte hain!`
+            : isDepositQuery
+              ? `Yes, absolutely! Your Phase 1 Gym Starter Website (₹11,999, 5–7 business days) remains unchanged and fits comfortably within your ₹15,000 budget.\n\nAccepting advance deposits requires a dynamic booking flow and payment integration, which can be added in Phase 2:\n* **Dynamic Backend & Database**: +₹8,000 (to manage member records and slot tracking)\n* **Interactive Booking Calendar**: +₹4,000 (date and session slot selector)\n* **Razorpay/UPI Payment Gateway**: +₹4,500 (for direct advance fee collection)\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Total project with deposits: ${totalCostStr}, 2–3 weeks)\n\nThe recommended strategy is to launch Phase 1 first to capture local gym traffic immediately, then activate Phase 2 advance deposits as your member base expands.`
+              : `Yes, definitely! Online booking can be seamlessly integrated in Phase 2. Your Phase 1 Gym Starter Website (₹11,999, 5–7 business days) remains completely unchanged within your ₹15,000 budget.\n\nAdding online booking in Phase 2 involves:\n* **Dynamic Backend & Database**: +₹8,000\n* **Interactive Booking Calendar**: +₹4,000\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Project total: ${totalCostStr}, 2–3 weeks)\n\nThis allows you to go live quickly with Phase 1 and upgrade to automated scheduling whenever you are ready!`,
+        followUpSuggestions: [
+          "Let's finalize Phase 1 at ₹11,999",
+          "What details do you need for Phase 1?",
+          "How do milestone payments work?",
+        ],
         categoryKey,
         updatedProjectState,
       };
@@ -735,13 +835,61 @@ End with one simple follow-up question.
 DO NOT repeat an entire project proposal or dump pricing cards.`;
   } else if (isBiography) {
     contextualSystemPrompt += `\n\n### CONTEXT NOTE:
-The visitor is asking about founder Mohit Verma's education, experience, or background ("${lastUserMessage}").
-- State directly that Mohit Verma is the founder of Webgent.
-- Cite his verified education: MCA (2022–2024) from AKTU (Dr. A.P.J. Abdul Kalam Technical University) and B.Sc in Computer Science (2019–2022) from CCSU.
-- Mention his current role: Software Developer at DBA Lounge (Gurugram).
+The visitor is asking about founder Mohit Verma's education, experience, skills, or background ("${lastUserMessage}").
+- State directly that Mohit Verma is the founder and lead software developer of Webgent.
+- Cite his verified education: MCA (2022–2024) from AKTU (Dr. A.P.J. Abdul Kalam Technical University) / HIMT College and B.Sc in Computer Science (2019–2022) from CCSU / IIMT College.
+- Cite his verified role: Software Developer at DBA Lounge (Gurugram).
+- Cite verified live projects: Bird Outsourcing (birdoutsourcing.com, Live), Institutional Management Platform (studies.mentorworld.in), Edayaa Jewellery Store (edayaajewellery.com).
+- Answer the exact question first. Do not reply with Webgent service descriptions or pricing.
+- If a fact is missing from the verified profile, say honestly that it is not on record rather than inventing credentials.
 - Do NOT pretend that you (the AI assistant) attended college or worked at a job as a human. Clearly distinguish yourself as the AI consultant.
 - Answer in ${visitorLanguage === "hinglish" ? "clean, natural Hinglish" : "clear English"}.
 - DO NOT attach a project estimate card. Keep it concise (1–2 paragraphs).`;
+  } else if (isAcceptance) {
+    contextualSystemPrompt += `\n\n### CONTEXT NOTE:
+The visitor is accepting the proposed project quote / proposal ("${lastUserMessage}").
+Active Project: Gym Starter Website (Phase 1) at ₹11,999 (5–7 Business Days, 5 Pages, Static Architecture, fits comfortably in ₹15,000 budget with ₹3,001 surplus).
+- Acknowledge and confirm the proposal enthusiastically in ${visitorLanguage === "hinglish" ? "natural Hinglish" : "natural English"}.
+- Confirm the agreed Phase 1 scope:
+  * Package: Gym Starter Website (Home, About & Facilities, Programs, Class Schedule, Contact & Google Map)
+  * Investment: ₹11,999 (Milestone: 50% upfront to start, 50% upon final staging review)
+  * Delivery: 5–7 Business Days
+  * Included: WhatsApp quick chat, lead inquiry form, client reviews, on-page Google SEO, 100% source code ownership.
+- Outline clear next steps to get started:
+  1. Share gym logo, facility photos, and membership details.
+  2. Complete milestone payment (₹5,999) to begin development sprint.
+  3. Staging link delivery within 5–7 business days for feedback.
+- End with one brief question asking if they have their logo and photos ready.
+- DO NOT attach an estimate card. Keep Phase 1 firmly locked.`;
+  } else if (isFeatureQuery) {
+    const isDepositQuery = /\b(deposit|advance|payment|pay)\b/i.test(lastUserMessage);
+    contextualSystemPrompt += `\n\n### CONTEXT NOTE:
+The visitor is asking whether online booking and/or advance deposits can be added later/deferred to Phase 2 ("${lastUserMessage}").
+Active Project: Gym Starter Website (Phase 1) at ₹11,999 (5–7 Business Days, Static Architecture, fits in ₹15,000 budget).
+
+CRITICAL CONVERSATIONAL & SCOPING RULES:
+1. Answer the exact question first directly and positively in ${visitorLanguage === "hinglish" ? "natural Hinglish" : "natural English"}.
+2. Confirm that Phase 1 remains completely UNCHANGED at ₹11,999 and will launch on schedule in 5–7 business days.
+3. Explain Phase 2 upgrade requirements honestly:
+   ${
+     isDepositQuery
+       ? `- To accept advance deposits online, the website requires a Dynamic Backend with database (₹8,000) to securely track slot bookings and transaction statuses, an interactive Booking Calendar (₹4,000), and Razorpay/UPI Payment Gateway integration (₹4,500).
+   - Exact Authoritative Configured Upgrade Pricing:
+     * Phase 1: Gym Starter Website = ₹11,999 (5–7 business days, within ₹15,000 budget).
+     * Phase 2 Upgrade (Booking + Advance Deposits): +₹16,500 (Project total: ₹28,499, 2–3 weeks).
+     * (Or Phase 2 with booking calendar only without payment gateway: +₹12,000).`
+       : `- Yes, online booking can be seamlessly integrated in Phase 2!
+   - It requires upgrading from Static to a Dynamic Backend with database (₹8,000) and an interactive Booking Calendar (₹4,000).
+   - Exact Authoritative Configured Upgrade Pricing:
+     * Phase 1: Gym Starter Website = ₹11,999 (5–7 business days, within ₹15,000 budget).
+     * Phase 2 Upgrade (Interactive Booking Calendar): +₹12,000 (Project total: ₹23,999, 2–3 weeks).`
+   }
+4. Provide the practical strategic recommendation:
+   - Launch Phase 1 first at ₹11,999 to start capturing gym members and trial passes via WhatsApp and lead forms immediately.
+   - Upgrade to Phase 2 online booking/deposits once membership volume grows and requires automated scheduling.
+5. DO NOT switch the project category to a full booking platform.
+6. DO NOT attach an unrelated ₹26,999 booking platform estimate card. Keep Phase 1 firmly locked.
+7. Do not claim payment gateways or advance deposits are currently active in Phase 1.`;
   } else if (estimate && shouldQuote) {
     contextualSystemPrompt += `\n\n### SERVER-CALCULATED PROJECT ESTIMATE (STRICT AUTHORITATIVE GROUND TRUTH - DO NOT ALTER NUMBERS):
 - Category: ${estimate.categoryDisplayName}
@@ -873,6 +1021,50 @@ Ask at most ONE relevant follow-up question.`;
       messageText: buildDeterministicConsultantResponse(estimate, visitorInfo),
       estimate,
       followUpSuggestions,
+      categoryKey,
+      updatedProjectState,
+    };
+  }
+
+  if (isAcceptance) {
+    return {
+      messageText:
+        visitorLanguage === "hinglish"
+          ? "Bohot badhiya! Gym Starter Website ka ₹11,999 wala proposal final ho gaya hai. Isme 5 custom pages, WhatsApp quick chat, schedule table, inquiry form aur complete Google SEO setup included hai (5–7 business days delivery SLA).\n\n**Next Steps:**\n1. Aap gym ka logo, basic program list aur facility photos share kar sakte hain.\n2. Milestone: 50% advance (₹5,999) par hum engineering sprint start karenge, aur baki 50% final staging review par.\n\nKya aapke paas logo aur photos ready hain?"
+          : "Fantastic! Your Gym Starter Website proposal is confirmed at ₹11,999. This covers 5 custom pages, WhatsApp quick chat, class schedule, inquiry form, and Google SEO setup with a 5–7 business days delivery SLA.\n\n**Next Steps:**\n1. Share your gym logo, photos, and class schedule.\n2. 50% milestone advance (₹5,999) to begin the engineering sprint, with the remaining 50% upon final staging review.\n\nDo you have your gym logo and photos ready?",
+      followUpSuggestions: [
+        "What photos or details do you need?",
+        "Can online booking be added later?",
+        "How do milestone payments work?",
+      ],
+      categoryKey,
+      updatedProjectState,
+    };
+  }
+
+  if (isFeatureQuery) {
+    const isDepositQuery = /\b(deposit|advance|payment|pay)\b/i.test(lastUserMessage);
+    const upgrade = calculatePhase2Upgrade({
+      currentTotalINR: 11999,
+      includeDeposits: isDepositQuery,
+    });
+    const upgradeCostStr = `+₹${upgrade.upgradeCostINR.toLocaleString("en-IN")}`;
+    const totalCostStr = `₹${upgrade.newProjectTotalINR.toLocaleString("en-IN")}`;
+
+    return {
+      messageText:
+        visitorLanguage === "hinglish"
+          ? isDepositQuery
+            ? `Haan bilkul! Phase 1 mein aapka Gym Starter Website (₹11,999, 5–7 business days) launch hoga jo aapke ₹15,000 ke budget mein aaram se fit hota hai.\n\nAdvance deposits accept karne ke liye ek interactive booking flow aur payment gateway chahiye hota hai, jise hum Phase 2 mein seamlessly add kar sakte hain:\n* **Dynamic Backend & Database**: +₹8,000 (member records aur slot availability manage karne ke liye)\n* **Interactive Booking Calendar**: +₹4,000 (date & slot selector)\n* **Razorpay/UPI Payment Gateway**: +₹4,500 (direct advance fees lene ke liye)\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Project total: ${totalCostStr}, 2–3 weeks)\n\nBest strategy ye hai ki pehle Phase 1 launch karein aur members aane ke baad Phase 2 advance deposits activate karein. Kya aap Phase 1 se start karna chahenge?`
+            : `Haan bilkul! Online booking ko hum Phase 2 mein seamlessly add kar sakte hain. Aapka Phase 1 Gym Starter Website (₹11,999, 5–7 business days) aapke ₹15,000 ke budget mein aaram se fit rehta hai.\n\nPhase 2 mein online booking add karne ke liye:\n* **Dynamic Backend & Database**: +₹8,000\n* **Interactive Booking Calendar**: +₹4,000\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Project total: ${totalCostStr}, 2–3 weeks)\n\nIsse aap Phase 1 mein bina delay ke live ja sakte hain aur baad mein booking feature add kar sakte hain!`
+          : isDepositQuery
+            ? `Yes, absolutely! Your Phase 1 Gym Starter Website (₹11,999, 5–7 business days) remains unchanged and fits comfortably within your ₹15,000 budget.\n\nAccepting advance deposits requires a dynamic booking flow and payment integration, which can be added in Phase 2:\n* **Dynamic Backend & Database**: +₹8,000 (to manage member records and slot tracking)\n* **Interactive Booking Calendar**: +₹4,000 (date and session slot selector)\n* **Razorpay/UPI Payment Gateway**: +₹4,500 (for direct advance fee collection)\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Total project with deposits: ${totalCostStr}, 2–3 weeks)\n\nThe recommended strategy is to launch Phase 1 first to capture local gym traffic immediately, then activate Phase 2 advance deposits as your member base expands.`
+            : `Yes, definitely! Online booking can be seamlessly integrated in Phase 2. Your Phase 1 Gym Starter Website (₹11,999, 5–7 business days) remains completely unchanged within your ₹15,000 budget.\n\nAdding online booking in Phase 2 involves:\n* **Dynamic Backend & Database**: +₹8,000\n* **Interactive Booking Calendar**: +₹4,000\n* **Total Phase 2 Upgrade**: ${upgradeCostStr} (Project total: ${totalCostStr}, 2–3 weeks)\n\nThis allows you to go live quickly with Phase 1 and upgrade to automated scheduling whenever you are ready!`,
+      followUpSuggestions: [
+        "Let's finalize Phase 1 at ₹11,999",
+        "What details do you need for Phase 1?",
+        "How do milestone payments work?",
+      ],
       categoryKey,
       updatedProjectState,
     };

@@ -58,7 +58,7 @@ export const FOUNDER_PROFILE = {
   headline: "The Developer Behind the Work.",
   roleTitle: "Software Developer · Webgent",
   subTitle: "Founder of Webgent | Software Developer at DBA Lounge",
-  avatarUrl: "/images/mohit-verma.jpg", // or fallback / external URL
+  avatarUrl: "/images/mohit-verma.jpeg", // or fallback / external URL
   identities: [
     "Founder of Webgent",
     "Software Developer at DBA Lounge",

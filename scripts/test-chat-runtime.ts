@@ -25,12 +25,53 @@ async function run() {
     { prompt: "Hi", expectEstimate: false, desc: "Normal English greeting" },
     { prompt: "Kaise ho?", expectEstimate: false, desc: "Hinglish greeting" },
     { prompt: "Webgent ke baare mein batao", expectEstimate: false, desc: "General company overview" },
-    { prompt: "Mujhe gym website banwani hai kam budget mein", expectEstimate: true, expectedCategory: "gym", desc: "Gym project scoping" },
-    { prompt: "Mera budget ₹15,000 hai", expectEstimate: true, expectedCategory: "gym", desc: "Budget constraint specification" },
-    { prompt: "Tumhare price aur market price mein kya difference hai?", expectEstimate: false, desc: "Market comparison question" },
-    { prompt: "Mohit ki education kya hai?", expectEstimate: false, desc: "Founder biography inquiry without resetting project" },
-    { prompt: "Mujhe jewellery store banwani hai", expectEstimate: true, expectedCategory: "ecommerce", desc: "Clean project switch from Gym to Jewellery Store" },
-    { prompt: "Iska budget ₹25,000 hai", expectEstimate: true, expectedCategory: "ecommerce", desc: "Budget update for new jewellery project" },
+    { 
+      prompt: "Mujhe gym website banwani hai, budget ₹15,000 hai", 
+      expectEstimate: true, 
+      expectedCategory: "gym", 
+      expectedCost: 11999, 
+      expectedTimeline: "5–7 Business Days",
+      desc: "Gym Starter project scoping with ₹15,000 budget" 
+    },
+    { 
+      prompt: "Ok, ₹11,999 wala proposal final karte hain", 
+      expectEstimate: false, 
+      desc: "Accepting Phase 1 proposal without re-pitching card" 
+    },
+    { 
+      prompt: "Can online booking be added later?", 
+      expectEstimate: false, 
+      desc: "Feature inquiry: online booking in Phase 2 without switching category or overwriting Phase 1" 
+    },
+    { 
+      prompt: "Kya clients advance deposit bhi pay kar sakte hain?", 
+      expectEstimate: false, 
+      desc: "Feature inquiry: advance deposits with payment gateway without overwriting Phase 1" 
+    },
+    { 
+      prompt: "Tumhare price aur market price mein kya difference hai?", 
+      expectEstimate: false, 
+      desc: "Market comparison question" 
+    },
+    { 
+      prompt: "Mohit ki education aur skills kya hain?", 
+      expectEstimate: false, 
+      desc: "Founder biography inquiry from verified profile" 
+    },
+    { 
+      prompt: "Mujhe jewellery store banwani hai", 
+      expectEstimate: true, 
+      expectedCategory: "ecommerce", 
+      expectedCost: 28999,
+      desc: "Explicit project switch from Gym to Jewellery Store" 
+    },
+    { 
+      prompt: "Iska budget ₹25,000 hai", 
+      expectEstimate: true, 
+      expectedCategory: "ecommerce", 
+      expectedCost: 28999,
+      desc: "Budget update for new jewellery project" 
+    },
   ];
 
   for (let i = 0; i < testPrompts.length; i++) {
@@ -61,8 +102,18 @@ async function run() {
       }
       console.log(`Estimate Category: "${msgData.estimate.categoryDisplayName}" (${msgData.estimate.categoryKey})`);
       console.log(`Calculated Cost: ₹${msgData.estimate.cost.oneTimeTotalINR}`);
+      console.log(`Timeline: "${msgData.estimate.estimatedTimeline}"`);
+
       if (item.expectedCategory && msgData.estimate.categoryKey !== item.expectedCategory) {
         console.error(`❌ FAILED: Expected category "${item.expectedCategory}", got "${msgData.estimate.categoryKey}"`);
+        process.exit(1);
+      }
+      if (item.expectedCost && msgData.estimate.cost.oneTimeTotalINR !== item.expectedCost) {
+        console.error(`❌ FAILED: Expected cost ₹${item.expectedCost}, got ₹${msgData.estimate.cost.oneTimeTotalINR}`);
+        process.exit(1);
+      }
+      if (item.expectedTimeline && msgData.estimate.estimatedTimeline !== item.expectedTimeline) {
+        console.error(`❌ FAILED: Expected timeline "${item.expectedTimeline}", got "${msgData.estimate.estimatedTimeline}"`);
         process.exit(1);
       }
       if (msgData.estimate.budgetAnalysis) {

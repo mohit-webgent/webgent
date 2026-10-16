@@ -114,14 +114,14 @@ export function ChatWidget() {
           setMessages(parsedMsgs);
         }
       }
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
       try {
         localStorage.setItem(STORAGE_MESSAGES_KEY, JSON.stringify(messages));
-      } catch {}
+      } catch { }
     }
   }, [messages]);
 
@@ -159,7 +159,7 @@ export function ChatWidget() {
         try {
           localStorage.setItem(STORAGE_SESSION_KEY, data.sessionId);
           localStorage.setItem(STORAGE_VISITOR_KEY, data.visitorId);
-        } catch {}
+        } catch { }
 
         return data.sessionId as string;
       } catch (err: unknown) {
@@ -183,7 +183,7 @@ export function ChatWidget() {
     try {
       localStorage.removeItem(STORAGE_SESSION_KEY);
       localStorage.removeItem(STORAGE_MESSAGES_KEY);
-    } catch {}
+    } catch { }
     setSessionId(null);
     setMessages([]);
     setError(null);
@@ -214,7 +214,7 @@ export function ChatWidget() {
 
     try {
       localStorage.setItem(STORAGE_DETAILS_KEY, JSON.stringify(visitorDetails));
-    } catch {}
+    } catch { }
     setSavedDetails(true);
     setTurnstileError(null);
 
@@ -287,9 +287,9 @@ export function ChatWidget() {
           visitorInfo:
             activeInfo.name || activeInfo.email
               ? {
-                  name: activeInfo.name || undefined,
-                  email: activeInfo.email || undefined,
-                }
+                name: activeInfo.name || undefined,
+                email: activeInfo.email || undefined,
+              }
               : undefined,
         }),
       });
@@ -339,7 +339,7 @@ export function ChatWidget() {
       {/* =================================================================== */}
       {/* FLOATING LAUNCHER BUTTON (WhatsApp / Instagram Direct Message Style)*/}
       {/* =================================================================== */}
-      <div className="fixed bottom-4 sm:bottom-6 right-3 sm:right-6 z-50 flex items-center gap-2.5 sm:gap-3">
+      <div className={`fixed bottom-4 sm:bottom-6 right-3 sm:right-6 z-50 flex items-center gap-2.5 sm:gap-3 ${isOpen ? "hidden sm:flex" : ""}`}>
         {!isOpen && (
           <button
             type="button"
@@ -348,7 +348,7 @@ export function ChatWidget() {
           >
             <div className="relative w-6 h-6 rounded-full overflow-hidden border border-emerald-500/50 shrink-0">
               <Image
-                src="/images/mohit-verma.jpg"
+                src="/images/mohit-verma.jpeg"
                 alt="Mohit Verma"
                 fill
                 sizes="24px"
@@ -373,11 +373,10 @@ export function ChatWidget() {
           id="webgent-chat-widget-button"
           onClick={handleToggleOpen}
           aria-label={isOpen ? "Close chat" : "Open direct chat with Mohit Verma"}
-          className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-2xl transition-all duration-300 flex items-center justify-center border shadow-2xl cursor-pointer ${
-            isOpen
+          className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-2xl transition-all duration-300 flex items-center justify-center border shadow-2xl cursor-pointer ${isOpen
               ? "bg-[#14151B] text-[#F5F5F3] hover:bg-[#1E2028] border-white/[0.2] rotate-90"
               : "bg-gradient-to-br from-[#161824] via-[#0E1017] to-[#0A0B0E] text-white hover:border-emerald-500/40 border-white/[0.15] hover:scale-105 active:scale-95 shadow-[0_10px_35px_rgba(0,0,0,0.6)]"
-          }`}
+            }`}
         >
           {isOpen ? (
             <X className="w-5 h-5 transition-transform duration-200" />
@@ -385,7 +384,7 @@ export function ChatWidget() {
             <>
               <div className="relative w-8 h-8 rounded-full overflow-hidden border border-emerald-500/50 shadow-inner">
                 <Image
-                  src="/images/mohit-verma.jpg"
+                  src="/images/mohit-verma.jpeg"
                   alt="Mohit Verma"
                   fill
                   sizes="32px"
@@ -412,7 +411,7 @@ export function ChatWidget() {
           id="webgent-chat-window"
           role="dialog"
           aria-label="Webgent AI Website Consultant"
-          className="fixed inset-x-3 bottom-20 sm:inset-x-auto sm:right-6 sm:bottom-22 z-50 w-auto sm:w-[400px] max-w-[420px] h-[520px] max-h-[82vh] rounded-[26px] bg-[#0A0B10]/95 border border-white/[0.14] shadow-[0_24px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300"
+          className="fixed inset-0 sm:inset-auto sm:right-6 sm:bottom-22 z-50 w-full h-full sm:w-[400px] sm:max-w-[420px] sm:h-[520px] sm:max-h-[82vh] rounded-none sm:rounded-[26px] bg-[#0A0B10]/95 sm:border sm:border-white/[0.14] shadow-[0_24px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300"
         >
           {/* Header (Instagram / WhatsApp Profile Bar) */}
           <div className="px-3.5 py-2.5 bg-[#111219]/90 border-b border-white/[0.08] flex items-center justify-between gap-3 shrink-0 backdrop-blur-md">
@@ -420,7 +419,7 @@ export function ChatWidget() {
               <div className="relative shrink-0">
                 <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-500/40 relative shadow-md bg-[#1C1E2A]">
                   <Image
-                    src="/images/mohit-verma.jpg"
+                    src="/images/mohit-verma.jpeg"
                     alt="Webgent"
                     fill
                     sizes="36px"
@@ -464,11 +463,10 @@ export function ChatWidget() {
                 type="button"
                 onClick={() => setShowDetailsForm((prev) => !prev)}
                 title={savedDetails ? "Contact info attached" : "Attach your contact details"}
-                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                  savedDetails
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${savedDetails
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     : "text-[#8E8E8C] hover:text-[#F5F5F3] hover:bg-white/[0.08]"
-                }`}
+                  }`}
               >
                 {savedDetails ? <Check className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
               </button>
@@ -610,7 +608,7 @@ export function ChatWidget() {
               <div className="py-2 space-y-3 text-center">
                 <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500/40 mx-auto relative shadow-xl bg-[#1A1C28]">
                   <Image
-                    src="/images/mohit-verma.jpg"
+                    src="/images/mohit-verma.jpeg"
                     alt="Mohit Verma"
                     fill
                     sizes="56px"
@@ -667,7 +665,7 @@ export function ChatWidget() {
                   {!isUser && (
                     <div className="w-6 h-6 rounded-full overflow-hidden border border-emerald-500/30 shrink-0 relative bg-[#1A1C28] mb-0.5">
                       <Image
-                        src="/images/mohit-verma.jpg"
+                        src="/images/mohit-verma.jpeg"
                         alt="Mohit"
                         fill
                         sizes="24px"
@@ -677,11 +675,10 @@ export function ChatWidget() {
                   )}
 
                   <div
-                    className={`group/msg relative max-w-[82%] px-3.5 py-2.5 shadow-md ${
-                      isUser
+                    className={`group/msg relative max-w-[82%] px-3.5 py-2.5 shadow-md ${isUser
                         ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 text-white rounded-2xl rounded-tr-xs"
                         : "bg-[#161722] border border-white/[0.08] text-[#E8E8E6] rounded-2xl rounded-tl-xs"
-                    }`}
+                      }`}
                   >
                     <FormattedMessage content={msg.content} isUser={isUser} />
 
@@ -697,9 +694,8 @@ export function ChatWidget() {
 
                     {/* WhatsApp-style Timestamp & Read Receipts */}
                     <div
-                      className={`flex items-center justify-end gap-1.5 mt-1 text-[9px] select-none ${
-                        isUser ? "text-white/75" : "text-[#7A7A78]"
-                      }`}
+                      className={`flex items-center justify-end gap-1.5 mt-1 text-[9px] select-none ${isUser ? "text-white/75" : "text-[#7A7A78]"
+                        }`}
                     >
                       <span>{timeString}</span>
                       {isUser && (
@@ -732,7 +728,7 @@ export function ChatWidget() {
               <div className="flex items-end gap-2 text-left">
                 <div className="w-6 h-6 rounded-full overflow-hidden border border-emerald-500/30 shrink-0 relative bg-[#1A1C28] mb-0.5">
                   <Image
-                    src="/images/mohit-verma.jpg"
+                    src="/images/mohit-verma.jpeg"
                     alt="Mohit"
                     fill
                     sizes="24px"
@@ -838,11 +834,10 @@ export function ChatWidget() {
               <button
                 type="submit"
                 disabled={!inputText.trim() || loading || initializing}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer ${
-                  inputText.trim() && !loading && !initializing
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer ${inputText.trim() && !loading && !initializing
                     ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_12px_rgba(16,185,129,0.35)] scale-100"
                     : "bg-white/[0.06] text-white/30 cursor-not-allowed scale-95"
-                }`}
+                  }`}
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
