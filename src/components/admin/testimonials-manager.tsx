@@ -472,9 +472,15 @@ export function TestimonialsManager() {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 z-50 bg-transparent backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full max-h-[min(88vh,740px)] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+          >
+            <div className="flex items-center justify-between border-b border-slate-800 p-6 pb-4 shrink-0">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <MessageSquareQuote className="w-5 h-5 text-pink-400" />
                 <span>{editingItem ? "Edit Testimonial" : "Create Testimonial"}</span>
@@ -487,7 +493,8 @@ export function TestimonialsManager() {
               </button>
             </div>
 
-            {formError && (
+            <div className="overflow-y-auto modal-scrollbar p-6 pt-4 space-y-5 flex-1 min-h-0">
+              {formError && (
               <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl text-xs">
                 {formError}
               </div>
@@ -636,6 +643,7 @@ export function TestimonialsManager() {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

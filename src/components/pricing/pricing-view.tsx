@@ -1677,20 +1677,25 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
           <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+            onClick={() => setIsSubmitModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-transparent backdrop-blur-md animate-in fade-in duration-200"
           >
-            <div className="w-full max-w-lg rounded-2xl bg-[#0F1116] border border-white/15 p-6 sm:p-8 shadow-2xl relative text-left space-y-5 animate-in zoom-in-95 duration-200">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg max-h-[min(88vh,720px)] rounded-2xl bg-[#0F1116] border border-white/15 shadow-2xl relative text-left overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+            >
               {/* Close Button */}
               <button
                 type="button"
                 onClick={() => setIsSubmitModalOpen(false)}
-                className="absolute top-5 right-5 p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 z-20 p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              {submitPlanSuccess ? (
+              <div className="overflow-y-auto modal-scrollbar p-6 sm:p-8 space-y-5 flex-1 min-h-0">
+                {submitPlanSuccess ? (
                 <div className="text-center py-4 space-y-4">
                   <div className="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-lg">
                     <CheckCircle2 className="w-7 h-7" />
@@ -1859,6 +1864,7 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                   </div>
                 </form>
               )}
+              </div>
             </div>
           </div>
         )}

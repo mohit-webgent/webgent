@@ -52,11 +52,13 @@ export function ConfirmDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
-      aria-describedby="confirm-dialog-desc"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={() => {
+        if (!isLoading) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200"
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-100 shadow-2xl animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-md max-h-[min(88vh,560px)] flex flex-col rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto modal-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">

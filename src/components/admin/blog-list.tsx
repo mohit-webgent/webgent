@@ -343,8 +343,17 @@ export function BlogList() {
       </div>
 
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl">
+        <div
+          onClick={() => {
+            if (!deleting) setDeleteTarget(null);
+          }}
+          className="fixed inset-0 z-50 bg-transparent backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full max-h-[min(88vh,640px)] overflow-hidden flex flex-col shadow-2xl"
+          >
+            <div className="overflow-y-auto modal-scrollbar p-6 sm:p-8 space-y-6 flex-1 min-h-0">
             <div className="flex items-center gap-3 text-red-400">
               <div className="p-3 bg-red-500/10 rounded-2xl border border-red-500/20">
                 <AlertTriangle className="w-6 h-6" />
@@ -418,6 +427,7 @@ export function BlogList() {
                   <span>{isPermanentDelete ? "Permanently Delete" : "Soft Delete"}</span>
                 )}
               </button>
+            </div>
             </div>
           </div>
         </div>

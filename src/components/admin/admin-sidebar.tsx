@@ -112,7 +112,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         <div
           role="presentation"
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-transparent backdrop-blur-md lg:hidden transition-opacity"
         />
       )}
 
