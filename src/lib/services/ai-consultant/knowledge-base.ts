@@ -611,14 +611,17 @@ export function getDomainBlueprint(categoryKey: string): DomainBlueprint {
   return DOMAIN_BLUEPRINTS[categoryKey] || DOMAIN_BLUEPRINTS.business;
 }
 
-export function detectCategoryFromText(text: string): string {
+export function detectCategoryFromText(text: string): string | undefined {
   const lower = text.toLowerCase();
-  if (lower.includes("gym") || lower.includes("fitness") || lower.includes("workout")) return "gym";
-  if (lower.includes("restaurant") || lower.includes("cafe") || lower.includes("dining") || lower.includes("food")) return "restaurant";
-  if (lower.includes("ecom") || lower.includes("store") || lower.includes("shop") || lower.includes("cart")) return "ecommerce";
-  if (lower.includes("employee") || lower.includes("staff") || lower.includes("hr") || lower.includes("portal")) return "employee_management";
-  if (lower.includes("book") || lower.includes("appointment") || lower.includes("salon")) return "booking_platform";
-  if (lower.includes("portfolio") || lower.includes("resume") || lower.includes("personal brand")) return "portfolio";
-  if (lower.includes("saas") || lower.includes("mvp") || lower.includes("software")) return "saas";
-  return "business";
+  if (/\b(gym|fitness|crossfit|workout|trainer|bodybuilding|powerlifting)\b/i.test(lower)) return "gym";
+  if (/\b(jewel|jewellery|jewelry|ecom|ecommerce|e-commerce|online store|shopping cart|clothing|fashion|d2c)\b/i.test(lower)) return "ecommerce";
+  if (/\b(restaurant|cafe|dining|food|menu|cloud kitchen|bakery|diner)\b/i.test(lower)) return "restaurant";
+  if (/\b(employee|staff|attendance|payroll|internal tool|hr portal)\b/i.test(lower)) return "employee_management";
+  if (/\b(book|booking|appointment|salon|clinic|doctor|dentist|schedul)\b/i.test(lower)) return "booking_platform";
+  if (/\b(portfolio|resume|personal brand|freelancer|photographer)\b/i.test(lower)) return "portfolio";
+  if (/\b(saas|software app|web app|cloud tool|mvp)\b/i.test(lower)) return "saas";
+  if (/\b(real estate|realestate|property|builder|broker|architect)\b/i.test(lower)) return "realestate";
+  if (/\b(coaching|academy|education|institute|course|school|tutor)\b/i.test(lower)) return "education";
+  if (/\b(corporate|agency|consulting firm|b2b business)\b/i.test(lower)) return "business";
+  return undefined;
 }

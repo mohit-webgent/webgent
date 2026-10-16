@@ -28,6 +28,9 @@ async function run() {
     { prompt: "Mujhe gym website banwani hai kam budget mein", expectEstimate: true, expectedCategory: "gym", desc: "Gym project scoping" },
     { prompt: "Mera budget ₹15,000 hai", expectEstimate: true, expectedCategory: "gym", desc: "Budget constraint specification" },
     { prompt: "Tumhare price aur market price mein kya difference hai?", expectEstimate: false, desc: "Market comparison question" },
+    { prompt: "Mohit ki education kya hai?", expectEstimate: false, desc: "Founder biography inquiry without resetting project" },
+    { prompt: "Mujhe jewellery store banwani hai", expectEstimate: true, expectedCategory: "ecommerce", desc: "Clean project switch from Gym to Jewellery Store" },
+    { prompt: "Iska budget ₹25,000 hai", expectEstimate: true, expectedCategory: "ecommerce", desc: "Budget update for new jewellery project" },
   ];
 
   for (let i = 0; i < testPrompts.length; i++) {
@@ -78,7 +81,7 @@ async function run() {
   await prisma.chatSession.delete({ where: { id: sessionId } });
 
   console.log(`\n==================================================`);
-  console.log(`🎉 ALL 6 TURNS PASSED PERFECTLY!`);
+  console.log(`🎉 ALL ${testPrompts.length} TURNS PASSED PERFECTLY!`);
   console.log(`==================================================`);
 }
 

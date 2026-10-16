@@ -90,24 +90,54 @@ Core philosophy: Milestone-based payments (50% upfront, 50% upon final launch re
     category: "about",
     url: "/about",
     summary:
-      "Mohit Verma is the founder and lead software developer behind Webgent, specializing in full-stack Next.js, React, and modern web architectures.",
-    content: `Mohit Verma is the Founder & Lead Web Architect at Webgent.
-Professional background: Software Developer at DBA Lounge, specialized in React, Next.js 14, TypeScript, Tailwind CSS, Node.js, PostgreSQL, and Prisma.
-Education & Experience: Hands-on production engineering across e-commerce, cloud dashboards, SaaS platforms, and digital client experiences.
-Profiles: Portfolio (${FOUNDER_PROFILE.portfolioUrl}), GitHub (${FOUNDER_PROFILE.githubUrl}), LinkedIn (${FOUNDER_PROFILE.linkedinUrl}).
-Direct Email: ${FOUNDER_PROFILE.email}.
-Role in Projects: Mohit personally architectures, leads, and reviews every web engineering project at Webgent, ensuring sub-second load times, clean codebases, and production-grade security.`,
+      "Mohit Verma is the founder and lead software developer behind Webgent. Verified education: MCA from AKTU (2022–2024), B.Sc CS from CCSU (2019–2022). Currently Software Developer at DBA Lounge.",
+    content: `Mohit Verma is the Founder & Lead Web Architect of Webgent.
+Identity & Distinction: Mohit Verma is the human software developer and founder behind Webgent. The AI assistant in this chat is a technical consultant for Webgent, not a human, and does not possess human degrees or personal employment history.
+
+Verified Education:
+- Master of Computer Applications (MCA): Dr. A.P.J. Abdul Kalam Technical University (AKTU) / HIMT College, Greater Noida (2022 – 2024).
+- Bachelor of Science — Computer Science (B.Sc CS): Chaudhary Charan Singh University (CCSU) / IIMT College, Greater Noida (2019 – 2022).
+
+Current Professional Role:
+- Software Developer at DBA Lounge (Gurugram, India, Present) — full-time production engineering focused on scalable frontend systems, component architectures, and responsive web applications.
+
+Previous Professional Experience (Internships):
+- Diamond Ore Consulting, Noida — MERN Stack Developer (Internship, September 2025 – April 2026): Responsive React.js and Tailwind CSS interfaces, Strapi CMS headless solution, reusable UI components.
+- TrayiStats AI Technologies, Noida — Full Stack Developer (Internship, January 2025 – July 2025): React.js frontends, Node.js and Express.js REST APIs, MySQL query optimization.
+
+Verified Genuine Client & Production Work:
+1. Bird Outsourcing (https://birdoutsourcing.com/) — Live Production Site: Corporate business solutions platform communicating global enterprise services.
+2. Institutional Management Platform (https://studies.mentorworld.in/) — Past Production Deployment: Education platform with role-specific dashboards, JWT RBAC, student records, and Razorpay.
+3. Edayaa Jewellery Store (https://edayaajewellery.com/) — E-Commerce Deployment: Artisan silver jewelry storefront with product filtering, Redux Toolkit cart, and checkout.
+
+Verified Profiles & Contact:
+- Portfolio: ${FOUNDER_PROFILE.portfolioUrl}
+- GitHub: ${FOUNDER_PROFILE.githubUrl}
+- LinkedIn: ${FOUNDER_PROFILE.linkedinUrl}
+- Direct Email: ${FOUNDER_PROFILE.email}
+- Location: Gurugram / Noida, India.`,
     keywords: [
       "mohit",
       "verma",
       "founder",
       "developer",
-      "architect",
-      "lead",
-      "who built webgent",
-      "team",
+      "education",
+      "degree",
+      "college",
+      "university",
+      "aktu",
+      "ccsu",
+      "mca",
+      "bsc",
+      "b.sc",
+      "padhai",
+      "qualification",
+      "study",
       "dba lounge",
       "experience",
+      "background",
+      "who built webgent",
+      "who is mohit",
     ],
   });
 

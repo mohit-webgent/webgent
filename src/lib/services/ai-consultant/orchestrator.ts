@@ -49,17 +49,26 @@ export interface ConsultantResponse {
   updatedProjectState?: ProjectState;
 }
 
-export const AI_CONSULTANT_SYSTEM_PROMPT = `You are Mohit Verma, Founder & Lead Web Architect at Webgent (webgent.com), an elite next-generation digital engineering agency.
+export const AI_CONSULTANT_SYSTEM_PROMPT = `You are the Webgent AI Consultant, an expert technical and architectural AI assistant for Webgent (webgent.com).
 
-### MISSION & ROLE
-You act as an expert technical consultant, smart cost estimator, and trusted advisor to visitors and prospective clients.
+### CORE IDENTITY & FOUNDER DISTINCTION
+- **Agency Name**: Webgent
+- **Tagline**: Next-Gen Web Solutions & Engineering
+- **Founder & Lead Developer**: Mohit Verma (Software Developer at DBA Lounge, Gurugram/Noida, India)
+- **Role Boundary**: You are an AI consultant representing Webgent. Clearly distinguish yourself from human founder Mohit Verma. NEVER describe yourself as a human and NEVER imply that you personally attended college, worked at an employer, or delivered projects as a human.
+- **Verified Founder Credentials**:
+  - Master of Computer Applications (MCA): Dr. A.P.J. Abdul Kalam Technical University (AKTU) / HIMT College, Greater Noida (2022–2024).
+  - Bachelor of Science — Computer Science (B.Sc CS): Chaudhary Charan Singh University (CCSU) / IIMT College, Greater Noida (2019–2022).
+  - Current Employment: Software Developer at DBA Lounge, Gurugram (Present).
+  - Genuine Projects: Bird Outsourcing (birdoutsourcing.com, Live Production Site), Institutional Management Platform (studies.mentorworld.in, Past Production Deployment), Edayaa Jewellery Store (edayaajewellery.com, E-Commerce Deployment).
+- **Mission**: Webgent designs, builds, and scales high-performance web applications, cloud infrastructure, and modern digital platforms for ambitious brands and fast-growing companies.
+- **Core Technology Stack**: Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS, PostgreSQL, Prisma ORM, Node.js, Vercel, Cloudflare, Razorpay, Stripe.
 
 ### CONVERSATIONAL RULES & GUIDELINES:
 1. **NATURAL TONE & CONCISENESS**:
    - Keep answers concise by default (2–4 punchy paragraphs or clean bullet points). Only expand when the user asks for deep technical details.
    - Avoid unnecessary headings, excessive bold formatting, and repetitive introductions.
-   - NEVER start every message with "I am Mohit Verma, Founder & Lead Web Architect at Webgent...". The chat header already displays your name, photo, and verified badge.
-   - Greetings must be brief, friendly, and natural:
+   - NEVER introduce yourself repeatedly. Keep greetings brief, friendly, and natural:
      * English ("Hi", "Hello") -> A short, warm greeting (e.g., "Hey! How can I help you today?").
      * Hindi/Hinglish ("Kaise ho?", "Kya haal hai") -> A natural response in Hinglish (e.g., "Main badhiya hoon! Aap bataiye, aaj kaise madad kar sakta hoon aapki?").
 2. **MATCH THE VISITOR'S LANGUAGE NATURALLY**:
@@ -70,14 +79,19 @@ You act as an expert technical consultant, smart cost estimator, and trusted adv
    - For market comparison questions (e.g. "Tumhare price aur market price mein kya difference hai?"):
      * Explain clearly: Webgent provides transparent milestone pricing (50% advance / 50% upon launch review) with clean custom Next.js code, sub-second speeds, zero hidden renewal fees, 100% source code ownership, and 15 days free post-launch support. Traditional agencies often charge ₹30,000–₹60,000+ for slow, off-the-shelf WordPress templates with recurring lock-ins.
      * DO NOT repeat a full website proposal or re-pitch when answering comparison questions.
-4. **PROJECT SCOPING & BUDGET HANDLING**:
+4. **FOUNDER BIOGRAPHY & EDUCATION**:
+   - When asked about founder Mohit Verma's education or work history, answer directly using verified facts (MCA from AKTU, B.Sc CS from CCSU, Software Developer at DBA Lounge).
+   - Clarify that you are Webgent's AI consultant answering on behalf of the agency.
+   - Do NOT force an estimate card onto biography questions.
+   - If a biography question is asked in the middle of a project conversation, answer the question gracefully without erasing or altering their active project scope.
+5. **PROJECT SCOPING & BUDGET HANDLING**:
    - When a user asks about building a specific website (e.g. Gym):
      * Recommend essential pages (Home, About & Facilities, Programs, Class Schedule, Plans, Contact) and key features (WhatsApp integration, schedule table, SEO).
      * If they mention a budget (e.g. ₹15,000 for a gym website):
        - If the project fits within the budget (Gym starter website starts at ₹9,999 under our Starter tier), reassure them that it easily fits! Explain what features they get and how the remaining budget can be used.
        - If the project exceeds budget (e.g. ₹15,000 for an e-commerce platform that costs ₹39,999+), explain transparently what is feasible (Phase 1 MVP with WhatsApp ordering under Starter tier at ₹9,999–₹14,999) and what can be deferred.
        - Never invent fake discounts or alter server-calculated numbers.
-5. **FOLLOW-UP QUESTIONS**:
+6. **FOLLOW-UP QUESTIONS**:
    - Ask at most ONE relevant, natural follow-up question that helps clarify requirements or advance the discussion, instead of ending with a generic sales pitch.
 `;
 
@@ -204,11 +218,29 @@ export function isComparisonQuery(text: string): boolean {
 }
 
 /**
+ * Checks whether user message is asking for founder Mohit Verma's biography, education, or credentials.
+ */
+export function isBiographyQuery(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const patterns = [
+    /mohit.*(education|degree|college|university|qualification|study|padhai|kahan se)/i,
+    /(education|degree|qualification|college|padhai).*(mohit|founder|developer)/i,
+    /who\s+is\s+mohit/i,
+    /about\s+mohit/i,
+    /mohit\s+verma/i,
+    /mohit.*(experience|background|career|job|company|kaam|work|dba\s*lounge)/i,
+    /(experience|background|career|qualification).*(mohit|founder)/i,
+    /founder.*(kaun|who|education|degree|padhai)/i,
+  ];
+  return patterns.some((p) => p.test(lower));
+}
+
+/**
  * Checks whether user message is seeking consultation, features, scope, or cost estimation.
  */
 export function isConsultationQuery(text: string): boolean {
   const lower = text.toLowerCase();
-  if (isGreetingQuery(lower) || isGeneralCompanyQuery(lower) || isComparisonQuery(lower)) {
+  if (isGreetingQuery(lower) || isGeneralCompanyQuery(lower) || isComparisonQuery(lower) || isBiographyQuery(lower)) {
     return false;
   }
 
@@ -256,7 +288,7 @@ export function isConsultationQuery(text: string): boolean {
  */
 export function isScopingOrBudgetQuery(text: string): boolean {
   const lower = text.toLowerCase().trim();
-  if (isGreetingQuery(lower) || isGeneralCompanyQuery(lower) || isComparisonQuery(lower)) {
+  if (isGreetingQuery(lower) || isGeneralCompanyQuery(lower) || isComparisonQuery(lower) || isBiographyQuery(lower)) {
     return false;
   }
 
@@ -550,21 +582,23 @@ export async function processConsultantMessage({
     };
   }
 
-  // 2. Classify intent: Greeting vs. General Company vs. Market Comparison vs. Project Scoping
+  // 2. Classify intent: Greeting vs. General Company vs. Market Comparison vs. Biography vs. Project Scoping
   const isGreeting = isGreetingQuery(lastUserMessage);
   const isGeneralCompany = isGeneralCompanyQuery(lastUserMessage);
   const isComparison = isComparisonQuery(lastUserMessage);
+  const isBiography = isBiographyQuery(lastUserMessage);
   const isScoping = isScopingOrBudgetQuery(lastUserMessage);
   const detectedCategoryInLatest = detectCategoryFromText(lastUserMessage);
 
   // 3. Extract and accumulate project parameters across conversation turns
   const extractedParams = extractConsultantParams(messages, priorProjectState);
 
-  // Only quote if actively scoping/asking for a project, not on greetings, general company Q&A, or comparisons
+  // Only quote if actively scoping/asking for a project, not on greetings, general company Q&A, biography, or comparisons
   const shouldQuote =
     !isGreeting &&
     !isGeneralCompany &&
     !isComparison &&
+    !isBiography &&
     (Boolean(detectedCategoryInLatest) || isScoping || (Boolean(priorProjectState?.isActivelyQuoting) && Boolean(extractedParams.userBudgetINR)));
 
   let estimate: ProjectEstimateResult | undefined = undefined;
@@ -634,6 +668,18 @@ export async function processConsultantMessage({
       };
     }
 
+    if (isBiography) {
+      return {
+        messageText:
+          visitorLanguage === "hinglish"
+            ? "Webgent ke founder Mohit Verma hain. Unhone AKTU (Dr. A.P.J. Abdul Kalam Technical University) se MCA (Master of Computer Applications, 2022–2024) aur CCSU se B.Sc Computer Science (2019–2022) kiya hai. Currently wo DBA Lounge mein Software Developer hain aur Webgent ke zariye high-performance web applications engineer karte hain. Kya aap apne web project ke requirements discuss karna chahte hain?"
+            : "Webgent was founded by Mohit Verma. He holds a Master of Computer Applications (MCA, 2022–2024) from Dr. A.P.J. Abdul Kalam Technical University (AKTU) and a B.Sc in Computer Science (2019–2022) from CCSU. He currently works as a Software Developer at DBA Lounge, engineering high-performance Next.js and full-stack web platforms. How can we assist with your web project?",
+        followUpSuggestions,
+        categoryKey,
+        updatedProjectState,
+      };
+    }
+
     if (isComparison) {
       return {
         messageText:
@@ -687,6 +733,15 @@ Explain the genuine differences clearly in 3 concise bullet points:
 3. 100% complete source code and IP ownership transferred to the client, plus 15-day free post-launch bug warranty.
 End with one simple follow-up question.
 DO NOT repeat an entire project proposal or dump pricing cards.`;
+  } else if (isBiography) {
+    contextualSystemPrompt += `\n\n### CONTEXT NOTE:
+The visitor is asking about founder Mohit Verma's education, experience, or background ("${lastUserMessage}").
+- State directly that Mohit Verma is the founder of Webgent.
+- Cite his verified education: MCA (2022–2024) from AKTU (Dr. A.P.J. Abdul Kalam Technical University) and B.Sc in Computer Science (2019–2022) from CCSU.
+- Mention his current role: Software Developer at DBA Lounge (Gurugram).
+- Do NOT pretend that you (the AI assistant) attended college or worked at a job as a human. Clearly distinguish yourself as the AI consultant.
+- Answer in ${visitorLanguage === "hinglish" ? "clean, natural Hinglish" : "clear English"}.
+- DO NOT attach a project estimate card. Keep it concise (1–2 paragraphs).`;
   } else if (estimate && shouldQuote) {
     contextualSystemPrompt += `\n\n### SERVER-CALCULATED PROJECT ESTIMATE (STRICT AUTHORITATIVE GROUND TRUTH - DO NOT ALTER NUMBERS):
 - Category: ${estimate.categoryDisplayName}
@@ -842,6 +897,22 @@ Ask at most ONE relevant follow-up question.`;
           ? "Webgent ek next-generation digital engineering agency hai. Hum high-performance web applications, dynamic business websites aur modern digital products banate hain using Next.js 14, React aur PostgreSQL. Hum sub-second speed aur 100% source code ownership provide karte hain with milestone pricing starting from ₹9,999. Aap kis type ka website plan kar rahe hain?"
           : "Webgent is a next-generation web engineering agency building high-performance web applications, dynamic business platforms, and SaaS MVPs using Next.js 14, React, Node.js, and PostgreSQL. We focus on sub-second page speed, conversion-focused UI/UX, and 100% source code ownership. What kind of project are you looking to create?",
       followUpSuggestions,
+      categoryKey,
+      updatedProjectState,
+    };
+  }
+
+  if (isBiography) {
+    return {
+      messageText:
+        visitorLanguage === "hinglish"
+          ? "Webgent ke founder Mohit Verma hain. Unhone AKTU (Dr. A.P.J. Abdul Kalam Technical University) se MCA (Master of Computer Applications, 2022–2024) aur CCSU se B.Sc Computer Science (2019–2022) kiya hai. Currently wo DBA Lounge mein Software Developer hain aur Webgent ke zariye production web applications deliver karte hain. Kya aap apne web project ke baare mein kuch discuss karna chahte hain?"
+          : "Webgent was founded by Mohit Verma. He holds a Master of Computer Applications (MCA, 2022–2024) from AKTU and a B.Sc in Computer Science (2019–2022) from CCSU. He currently works as a Software Developer at DBA Lounge, engineering high-performance Next.js and full-stack web platforms. How can we assist with your web project?",
+      followUpSuggestions: [
+        "What services does Webgent offer?",
+        "Can you show Mohit's verified projects?",
+        "How do we start a website project?",
+      ],
       categoryKey,
       updatedProjectState,
     };

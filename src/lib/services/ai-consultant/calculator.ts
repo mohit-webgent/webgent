@@ -101,7 +101,7 @@ export function resolveCategoryKey(rawKey?: string | null): string {
   if (lower.includes("gym") || lower.includes("fitness") || lower.includes("crossfit") || lower.includes("workout")) {
     return "gym";
   }
-  if (lower.includes("ecom") || lower.includes("store") || lower.includes("shop") || lower.includes("cart") || lower.includes("clothing") || lower.includes("d2c")) {
+  if (lower.includes("ecom") || lower.includes("store") || lower.includes("shop") || lower.includes("cart") || lower.includes("clothing") || lower.includes("d2c") || lower.includes("jewel")) {
     return "ecommerce";
   }
   if (lower.includes("book") || lower.includes("salon") || lower.includes("appointment") || lower.includes("schedul") || lower.includes("clinic")) {

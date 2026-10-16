@@ -39,6 +39,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="min-h-[85vh] w-full bg-[#000000] text-white pt-8 pb-16 sm:pt-14 sm:pb-24 px-4 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
+      <h1 className="sr-only">Contact Webgent — Web Architecture &amp; Development Consultation</h1>
       {/* Subtle Ambient Radial Glows at Top */}
       <div
         aria-hidden="true"

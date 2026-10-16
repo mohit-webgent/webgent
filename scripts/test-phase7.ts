@@ -309,14 +309,14 @@ async function runTests() {
   console.log("\n▶ [4/5] Testing Email Service Abstraction...");
 
   const confirmationResult = await emailService.sendNewsletterConfirmation(
-    "test@example.com",
+    "delivered@resend.dev",
     "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
     "Alex",
   );
   assert(confirmationResult === true, "sendNewsletterConfirmation completes without error");
 
   const welcomeResult = await emailService.sendNewsletterWelcome(
-    "test@example.com",
+    "delivered@resend.dev",
     "Alex",
     "unsub-token-xyz",
   );

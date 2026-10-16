@@ -207,7 +207,7 @@ async function runTests() {
 
   const resContact = await emailService.sendContactConfirmation({
     name: "Test Client",
-    email: "mohitvermag75@gmail.com",
+    email: "mohitvermag755@gmail.com",
     service: "Cloud Architecture",
     budget: "$25k+",
     message: "Test message body",
@@ -217,32 +217,32 @@ async function runTests() {
   const resAdmin = await emailService.sendAdminNewLeadNotification({
     leadId: "lead-test-1",
     name: "Test Client",
-    email: "mohitvermag75@gmail.com",
+    email: "mohitvermag755@gmail.com",
     message: "Test message body",
     score: 85,
   });
   assert(resAdmin === true, "sendAdminNewLeadNotification returns true");
 
   const resOptIn = await emailService.sendNewsletterConfirmation(
-    "mohitvermag75@gmail.com",
+    "mohitvermag755@gmail.com",
     tokenSample,
     "Test User",
   );
   assert(resOptIn === true, "sendNewsletterConfirmation returns true");
 
   const resWelcome = await emailService.sendNewsletterWelcome(
-    "mohitvermag75@gmail.com",
+    "mohitvermag755@gmail.com",
     "Test User",
     "unsub-123",
   );
   assert(resWelcome === true, "sendNewsletterWelcome returns true");
 
   const resUnsub = await emailService.sendNewsletterUnsubscribed({
-    email: "mohitvermag75@gmail.com",
+    email: "mohitvermag755@gmail.com",
   });
   assert(resUnsub === true, "sendNewsletterUnsubscribed returns true");
 
-  const resDigest = await emailService.sendNewsletterDigest("mohitvermag75@gmail.com", {
+  const resDigest = await emailService.sendNewsletterDigest("mohitvermag755@gmail.com", {
     editionTitle: "Engineering Update",
     featuredArticle: {
       title: "Architecture Principles",

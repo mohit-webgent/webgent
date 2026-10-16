@@ -26,6 +26,11 @@ import {
 import { POST as messageRoute } from "../src/app/api/chat/message/route";
 import { POST as startRoute } from "../src/app/api/chat/start/route";
 import { prisma } from "../src/lib/db";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { FormattedMessage } from "../src/components/chat/formatted-message";
+import { retrieveRelevantKnowledge } from "../src/lib/services/ai-consultant/knowledge-retrieval";
+import { FOUNDER_PROFILE } from "../src/data/founder-profile";
 
 describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
   const originalEnv = { ...process.env };
@@ -478,6 +483,93 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
 
       // Clean up test lead and sessions
       await prisma.lead.deleteMany({ where: { email: testEmail } });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 13. Markdown Rendering & Safe Content Presentation
+  // ---------------------------------------------------------------------------
+  describe("Markdown Rendering & Safe Content Presentation", () => {
+    it("renders bold text, headings, unordered lists, inline code, and links to semantic HTML without leaking raw markers", () => {
+      const sampleMarkdown = `**Webgent** is an elite digital engineering agency.
+
+### Core Services
+- High-performance web applications with \`Next.js 14\`
+- Fast stores with [Edayaa Case Study](/work/edayaa)
+
+1. Milestone 50/50
+2. 100% Code ownership`;
+
+      const html = renderToStaticMarkup(
+        React.createElement(FormattedMessage, { content: sampleMarkdown }),
+      );
+
+      // Verify semantic HTML elements
+      assert.ok(html.includes("<strong"), "Should render <strong> for bold markdown");
+      assert.ok(html.includes("Webgent</strong>"), "Should enclose bold text correctly");
+      assert.ok(html.includes("<h4"), "Should render <h4> for ### headers");
+      assert.ok(html.includes("<ul"), "Should render <ul> for list items");
+      assert.ok(html.includes("<li"), "Should render <li> tags");
+      assert.ok(html.includes("<code"), "Should render <code> for inline code snippets");
+      assert.ok(html.includes("<a"), "Should render <a> for links");
+      assert.ok(html.includes('href="/work/edayaa"'), "Link should contain valid href");
+
+      // Verify raw markdown characters are not left unparsed
+      assert.ok(!html.includes("**Webgent**"), "Raw bold double-asterisks must not leak into HTML");
+      assert.ok(!html.includes("### Core Services"), "Raw markdown hashes must not leak into HTML");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 14. Founder Profile Accuracy & Verified Truth Grounding
+  // ---------------------------------------------------------------------------
+  describe("Founder Profile Accuracy & Truth Grounding", () => {
+    it("retrieves verified education and professional credentials from authoritative source", async () => {
+      // 1. Verify founder-profile.ts data integrity
+      assert.equal(FOUNDER_PROFILE.name, "Mohit Verma");
+      assert.ok(
+        FOUNDER_PROFILE.education.some(
+          (e) => e.degree.includes("MCA") && (e.institution.includes("HIMT") || e.university.includes("AKTU")),
+        ),
+      );
+      assert.ok(
+        FOUNDER_PROFILE.education.some(
+          (e) => e.degree.includes("Computer Science") && (e.institution.includes("IIMT") || e.university.includes("CCSU")),
+        ),
+      );
+      assert.ok(FOUNDER_PROFILE.currentRole.company.includes("DBA Lounge"));
+
+      // 2. Verify knowledge retrieval includes verified founder profile
+      const docs = await retrieveRelevantKnowledge("Mohit Verma education qualification degrees college", 3);
+      assert.ok(docs.length > 0, "Should retrieve founder knowledge documents");
+      const founderDoc = docs.find((d) => d.doc.id === "founder_mohit_verma");
+      assert.ok(founderDoc, "Should retrieve founder_mohit_verma document");
+      assert.ok(founderDoc.doc.content.includes("MCA"), "Knowledge document must document MCA degree");
+      assert.ok(founderDoc.doc.content.includes("AKTU"), "Knowledge document must document AKTU");
+      assert.ok(founderDoc.doc.content.includes("B.Sc"), "Knowledge document must document B.Sc degree");
+      assert.ok(founderDoc.doc.content.includes("DBA Lounge"), "Knowledge document must document DBA Lounge experience");
+
+      // 3. Verify AI Consultant role boundaries in knowledge document
+      assert.ok(
+        founderDoc.doc.content.includes("AI Consultant") || founderDoc.doc.content.includes("AI assistant"),
+        "Must specify AI Consultant role boundaries distinguishing AI from human founder",
+      );
+    });
+
+    it("references genuine verified client projects with accurate status labels", async () => {
+      const docs = await retrieveRelevantKnowledge("Bird Outsourcing Institutional Management Edayaa Jewellery Mohit", 3);
+      const founderDoc = docs.find((d) => d.doc.id === "founder_mohit_verma");
+      assert.ok(founderDoc, "Should retrieve founder_mohit_verma document containing verified projects");
+
+      // Check verified projects
+      assert.ok(founderDoc.doc.content.includes("Bird Outsourcing"), "Must document Bird Outsourcing");
+      assert.ok(founderDoc.doc.content.includes("Institutional Management Platform"), "Must document Institutional Management Platform");
+      assert.ok(founderDoc.doc.content.includes("Edayaa Jewellery Store"), "Must document Edayaa Jewellery Store");
+
+      // Check genuine status labels
+      assert.ok(founderDoc.doc.content.includes("Live Production Site"), "Must label live site accurately");
+      assert.ok(founderDoc.doc.content.includes("Past Production Deployment"), "Must label past deployment accurately");
+      assert.ok(founderDoc.doc.content.includes("E-Commerce Deployment"), "Must label e-commerce deployment accurately");
     });
   });
 });

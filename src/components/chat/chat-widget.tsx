@@ -411,7 +411,7 @@ export function ChatWidget() {
         <div
           id="webgent-chat-window"
           role="dialog"
-          aria-label="Direct Chat with Mohit Verma"
+          aria-label="Webgent AI Website Consultant"
           className="fixed inset-x-3 bottom-20 sm:inset-x-auto sm:right-6 sm:bottom-22 z-50 w-auto sm:w-[400px] max-w-[420px] h-[520px] max-h-[82vh] rounded-[26px] bg-[#0A0B10]/95 border border-white/[0.14] shadow-[0_24px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300"
         >
           {/* Header (Instagram / WhatsApp Profile Bar) */}
@@ -421,7 +421,7 @@ export function ChatWidget() {
                 <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-500/40 relative shadow-md bg-[#1C1E2A]">
                   <Image
                     src="/images/mohit-verma.jpg"
-                    alt="Mohit Verma"
+                    alt="Webgent"
                     fill
                     sizes="36px"
                     className="object-cover"
@@ -433,7 +433,7 @@ export function ChatWidget() {
               <div className="min-w-0 text-left">
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-xs sm:text-sm font-bold text-[#F5F5F3] truncate tracking-tight">
-                    Mohit Verma
+                    Webgent AI Consultant
                   </h3>
                   <BadgeCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 fill-emerald-400/20" />
                 </div>
@@ -450,8 +450,8 @@ export function ChatWidget() {
                   ) : (
                     <span className="text-[#969694] flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 inline-block" />
-                      <span className="text-emerald-400 font-medium">Active now</span>
-                      <span className="text-[#666666]">· Webgent</span>
+                      <span className="text-emerald-400 font-medium">Active</span>
+                      <span className="text-[#666666]">· Founded by Mohit Verma</span>
                     </span>
                   )}
                 </div>
@@ -619,18 +619,18 @@ export function ChatWidget() {
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-white flex items-center justify-center gap-1">
-                    <span>Mohit Verma</span>
+                    <span>Webgent AI Consultant</span>
                     <BadgeCheck className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
                   </h4>
-                  <p className="text-[11px] text-[#8E8E8C]">Founder & Lead Developer @ Webgent</p>
+                  <p className="text-[11px] text-[#8E8E8C]">Technical & Cost Scoping · Founded by Mohit Verma</p>
                 </div>
 
                 <div className="p-3 rounded-2xl bg-[#14151F] border border-white/[0.08] text-left space-y-1.5 text-xs text-[#DFDFDC] leading-relaxed shadow-sm">
                   <p>
-                    Hey! 👋 I&apos;m here to answer questions on project pricing, MVPs, technical architectures, or scoping your modern web application.
+                    Hey! 👋 I&apos;m Webgent&apos;s AI Consultant. I can help you scope modern web applications, calculate costs with transparent milestone pricing, and answer questions about Webgent&apos;s services, tech stack, and founder Mohit Verma&apos;s verified work.
                   </p>
                   <p className="text-[11px] text-[#8E8E8C]">
-                    Tap an inquiry below or type directly to chat!
+                    Tap a question below or ask anything to get started!
                   </p>
                 </div>
 
