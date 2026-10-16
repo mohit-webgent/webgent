@@ -151,7 +151,7 @@ export function HeroSection() {
   return (
     <section
       ref={heroSectionRef}
-      className="relative w-full min-h-[58vh] lg:min-h-[64vh] flex items-center justify-center pt-6 pb-2 sm:pt-8 sm:pb-4 lg:pt-2 lg:pb-4 overflow-x-clip lg:overflow-visible"
+      className="relative w-full min-h-[58vh] lg:min-h-[64vh] flex items-center justify-center pb-2 sm:pb-4 lg:pb-4 overflow-x-clip lg:overflow-visible"
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-10 xl:gap-16 items-center w-full">
         {/* Left Column: Text & CTA */}
