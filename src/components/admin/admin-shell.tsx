@@ -24,7 +24,11 @@ export function AdminShell({ children, user }: AdminShellProps) {
   return (
     <ToastProvider>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
-        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          userRole={user.role}
+        />
 
         <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
           <header className="sticky top-0 z-30 h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between gap-4">

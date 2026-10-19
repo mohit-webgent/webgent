@@ -31,6 +31,16 @@ export async function requireAdmin() {
   return session;
 }
 
+export async function requireStrictAdmin() {
+  const session = await requireAuth();
+
+  if (session.user.role !== UserRole.ADMIN) {
+    redirect("/admin?error=Unauthorized");
+  }
+
+  return session;
+}
+
 export async function verifyAdminApiAccess() {
   const session = await getAuthSession();
 

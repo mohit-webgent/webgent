@@ -16,6 +16,15 @@ import {
   UserCheck,
   X,
   ExternalLink,
+  LayoutTemplate,
+  Tags,
+  HelpCircle,
+  Image as ImageIcon,
+  Sparkles,
+  Compass,
+  Search,
+  UserCog,
+  ScrollText,
 } from "lucide-react";
 
 export interface NavItem {
@@ -25,78 +34,172 @@ export interface NavItem {
   exact?: boolean;
   colorClass: string;
   badge?: string | number;
+  adminOnly?: boolean;
 }
 
-export const ADMIN_NAV_ITEMS: NavItem[] = [
+export interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
-    label: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-    exact: true,
-    colorClass: "text-indigo-400 group-hover:text-indigo-300",
+    title: "Overview",
+    items: [
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+        exact: true,
+        colorClass: "text-indigo-400 group-hover:text-indigo-300",
+      },
+    ],
   },
   {
-    label: "Leads",
-    href: "/admin/leads",
-    icon: Users,
-    colorClass: "text-blue-400 group-hover:text-blue-300",
+    title: "Content",
+    items: [
+      {
+        label: "Pages & CMS",
+        href: "/admin/pages",
+        icon: LayoutTemplate,
+        colorClass: "text-violet-400 group-hover:text-violet-300",
+      },
+      {
+        label: "Projects",
+        href: "/admin/projects",
+        icon: Briefcase,
+        colorClass: "text-emerald-400 group-hover:text-emerald-300",
+      },
+      {
+        label: "Blog",
+        href: "/admin/blog",
+        icon: FileText,
+        colorClass: "text-amber-400 group-hover:text-amber-300",
+      },
+      {
+        label: "Testimonials",
+        href: "/admin/testimonials",
+        icon: MessageSquareQuote,
+        colorClass: "text-pink-400 group-hover:text-pink-300",
+      },
+      {
+        label: "FAQs",
+        href: "/admin/faqs",
+        icon: HelpCircle,
+        colorClass: "text-cyan-400 group-hover:text-cyan-300",
+      },
+      {
+        label: "Media Library",
+        href: "/admin/media",
+        icon: ImageIcon,
+        colorClass: "text-teal-400 group-hover:text-teal-300",
+      },
+    ],
   },
   {
-    label: "Projects",
-    href: "/admin/projects",
-    icon: Briefcase,
-    colorClass: "text-emerald-400 group-hover:text-emerald-300",
+    title: "Business",
+    items: [
+      {
+        label: "Leads",
+        href: "/admin/leads",
+        icon: Users,
+        colorClass: "text-blue-400 group-hover:text-blue-300",
+      },
+      {
+        label: "Pricing & Packages",
+        href: "/admin/pricing",
+        icon: Tags,
+        colorClass: "text-emerald-400 group-hover:text-emerald-300",
+      },
+      {
+        label: "Newsletter",
+        href: "/admin/newsletter",
+        icon: Mail,
+        colorClass: "text-violet-400 group-hover:text-violet-300",
+      },
+      {
+        label: "Analytics",
+        href: "/admin/analytics",
+        icon: BarChart3,
+        colorClass: "text-sky-400 group-hover:text-sky-300",
+      },
+    ],
   },
   {
-    label: "Blog",
-    href: "/admin/blog",
-    icon: FileText,
-    colorClass: "text-amber-400 group-hover:text-amber-300",
+    title: "AI Consultant",
+    items: [
+      {
+        label: "Chat Sessions",
+        href: "/admin/chat",
+        icon: MessageCircle,
+        colorClass: "text-teal-400 group-hover:text-teal-300",
+      },
+      {
+        label: "Knowledge Base",
+        href: "/admin/knowledge",
+        icon: Sparkles,
+        colorClass: "text-amber-400 group-hover:text-amber-300",
+      },
+    ],
   },
   {
-    label: "Testimonials",
-    href: "/admin/testimonials",
-    icon: MessageSquareQuote,
-    colorClass: "text-pink-400 group-hover:text-pink-300",
-  },
-  {
-    label: "Newsletter",
-    href: "/admin/newsletter",
-    icon: Mail,
-    colorClass: "text-violet-400 group-hover:text-violet-300",
-  },
-  {
-    label: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-    colorClass: "text-sky-400 group-hover:text-sky-300",
-  },
-  {
-    label: "Chat Sessions",
-    href: "/admin/chat",
-    icon: MessageCircle,
-    colorClass: "text-teal-400 group-hover:text-teal-300",
-  },
-  {
-    label: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-    colorClass: "text-slate-400 group-hover:text-slate-300",
-  },
-  {
-    label: "Profile & Security",
-    href: "/admin/profile",
-    icon: UserCheck,
-    colorClass: "text-cyan-400 group-hover:text-cyan-300",
+    title: "System",
+    items: [
+      {
+        label: "Navigation & Menus",
+        href: "/admin/navigation",
+        icon: Compass,
+        colorClass: "text-indigo-400 group-hover:text-indigo-300",
+      },
+      {
+        label: "SEO & Meta Tags",
+        href: "/admin/seo",
+        icon: Search,
+        colorClass: "text-blue-400 group-hover:text-blue-300",
+      },
+      {
+        label: "Settings",
+        href: "/admin/settings",
+        icon: Settings,
+        colorClass: "text-slate-400 group-hover:text-slate-300",
+        adminOnly: true,
+      },
+      {
+        label: "Users & Roles",
+        href: "/admin/users",
+        icon: UserCog,
+        colorClass: "text-rose-400 group-hover:text-rose-300",
+        adminOnly: true,
+      },
+      {
+        label: "Audit Logs",
+        href: "/admin/audit-logs",
+        icon: ScrollText,
+        colorClass: "text-orange-400 group-hover:text-orange-300",
+        adminOnly: true,
+      },
+      {
+        label: "Profile & Security",
+        href: "/admin/profile",
+        icon: UserCheck,
+        colorClass: "text-cyan-400 group-hover:text-cyan-300",
+      },
+    ],
   },
 ];
+
+/**
+ * Flat list of all admin nav items preserved for compatibility with existing tests and scripts
+ */
+export const ADMIN_NAV_ITEMS: NavItem[] = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
 
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  userRole?: string | null;
 }
 
-export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
+export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const isItemActive = (item: NavItem) => {
@@ -105,6 +208,8 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     }
     return pathname.startsWith(item.href);
   };
+
+  const isSuperAdmin = userRole === "ADMIN";
 
   return (
     <>
@@ -146,43 +251,61 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className="px-3 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Management & Content
-          </div>
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          {ADMIN_NAV_GROUPS.map((group) => {
+            // Filter items based on user role authorization
+            const visibleItems = group.items.filter((item) => {
+              if (item.adminOnly && !isSuperAdmin) {
+                return false;
+              }
+              return true;
+            });
 
-          {ADMIN_NAV_ITEMS.map((item) => {
-            const active = isItemActive(item);
-            const Icon = item.icon;
+            if (visibleItems.length === 0) return null;
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                  active
-                    ? "bg-indigo-600/15 text-white border border-indigo-500/30 shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/60"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-1.5 rounded-lg transition-colors ${
-                      active ? "bg-indigo-600 text-white" : "bg-slate-800/80 " + item.colorClass
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span>{item.label}</span>
+              <div key={group.title} className="space-y-1">
+                <div className="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  {group.title}
                 </div>
 
-                {item.badge !== undefined && (
-                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
+                {visibleItems.map((item) => {
+                  const active = isItemActive(item);
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                        active
+                          ? "bg-indigo-600/15 text-white border border-indigo-500/30 shadow-sm"
+                          : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            active
+                              ? "bg-indigo-600 text-white"
+                              : "bg-slate-800/80 " + item.colorClass
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="truncate">{item.label}</span>
+                      </div>
+
+                      {item.badge !== undefined && (
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             );
           })}
         </div>

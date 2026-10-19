@@ -674,7 +674,6 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
                   "ecommerce",
                   calculateProjectEstimate({ categoryKey: "ecommerce", userBudgetINR: 15000 }),
                   { categoryKey: "ecommerce", userBudgetINR: 15000 },
-                  "english",
                 ),
               };
             }

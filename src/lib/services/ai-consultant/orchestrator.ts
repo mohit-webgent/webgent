@@ -645,7 +645,6 @@ export function buildDeterministicInquiryResponse(
   categoryKey: string,
   estimate: ProjectEstimateResult | undefined,
   extractedParams: CalculatorInput,
-  visitorLanguage: "english" | "hinglish",
 ): string {
   if (categoryKey === "ecommerce") {
     const fullScopePages = [
@@ -814,7 +813,7 @@ export async function processConsultantMessage({
 
     if (isInquiry) {
       return {
-        messageText: buildDeterministicInquiryResponse(categoryKey, estimate, extractedParams, visitorLanguage),
+        messageText: buildDeterministicInquiryResponse(categoryKey, estimate, extractedParams),
         followUpSuggestions,
         categoryKey,
         updatedProjectState,
@@ -1241,7 +1240,7 @@ Ask at most ONE relevant follow-up question.`;
 
   if (isInquiry) {
     return {
-      messageText: buildDeterministicInquiryResponse(categoryKey, estimate, extractedParams, visitorLanguage),
+      messageText: buildDeterministicInquiryResponse(categoryKey, estimate, extractedParams),
       followUpSuggestions,
       categoryKey,
       updatedProjectState,
