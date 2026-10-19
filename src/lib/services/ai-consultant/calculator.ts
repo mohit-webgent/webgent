@@ -14,6 +14,9 @@ import {
   normalizeFeatureId,
   POPULAR_FEATURES,
   FeatureOption,
+  BASE_PAGES_INCLUDED,
+  COST_PER_EXTRA_PAGE,
+  WEBSITE_TYPES,
 } from "@/lib/pricing.config";
 import {
   DOMAIN_BLUEPRINTS,
@@ -249,6 +252,33 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
     };
   }
 
+  // Authoritative E-Commerce Starter package alignment (₹28,999: ₹19,999 base + ₹8,000 dynamic + ₹1,000 extra page)
+  const isBaselineEcommerce =
+    categoryKey === "ecommerce" &&
+    effectiveArch === "dynamic" &&
+    pageCount <= 6 &&
+    (!userFeatureIds || userFeatureIds.length === 0 || userFeatureIds.every((f) => blueprint.essentialFeatures.includes(f)));
+
+  if (isBaselineEcommerce) {
+    const baseEcommercePrice = blueprint.startingPriceINR;
+    const dynamicType = WEBSITE_TYPES.find((t) => t.id === "dynamic");
+    const typePrice = dynamicType ? dynamicType.additionalCost : 8000;
+    const pagesPrice = Math.max(0, pageCount - BASE_PAGES_INCLUDED) * COST_PER_EXTRA_PAGE;
+    baseCategoryPriceINR = baseEcommercePrice;
+    const subtotal = baseEcommercePrice + typePrice + pagesPrice;
+    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * 0.2) : 0;
+    oneTimeTotalINR = subtotal + expressPrice;
+    canonicalResult = {
+      ...canonicalResult,
+      baseCategoryPrice: baseEcommercePrice,
+      typePrice,
+      pagesPrice,
+      featuresCost: 0,
+      expressPrice,
+      grandTotal: oneTimeTotalINR,
+    };
+  }
+
   // 5. Maintenance / Recurring Breakdown
   const rawMaintKey = (input.maintenancePlan || input.maintenancePlanId || "none") as string;
   const maintPlan = MAINTENANCE_PLANS[rawMaintKey] || MAINTENANCE_PLANS.none;
@@ -314,26 +344,31 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
       }
 
       if (categoryKey === "ecommerce") {
-        compromiseOptions.push("Launch Phase 1 as an artisan catalogue with direct WhatsApp ordering and UPI QR (starts at ₹9,999 under Starter tier), deferring full automated cart/gateway to Phase 2.");
+        compromiseOptions.push(
+          "Launch Phase 1 as an artisan catalogue with direct WhatsApp ordering and UPI QR (starts at ₹9,999 under Starter tier), explicitly deferring automated checkout, payment gateway integration, and order management to Phase 2.",
+        );
         if (combinedFeatureIds.includes("invoice_generation")) {
           compromiseOptions.push("Postpone automated PDF GST invoicing (-₹3,000 saving).");
         }
         if (combinedFeatureIds.includes("inventory_stock")) {
           compromiseOptions.push("Postpone real-time multi-location inventory syncing (-₹3,000 saving).");
         }
-      }
-
-      if (effectiveArch === "dynamic" && !hasDynamicFeature) {
-        compromiseOptions.push("Switch to a high-speed Static Architecture (-₹8,000 saving, zero hosting cost).");
-      }
-      if (pageCount > 5) {
-        compromiseOptions.push(`Consolidate content into ${Math.min(5, pageCount)} core pages (-₹${((pageCount - 5) * 1000).toLocaleString("en-IN")} saving).`);
+        if (pageCount > blueprint.recommendedPageCount) {
+          compromiseOptions.push(
+            `Consolidate content into ${blueprint.recommendedPageCount} standard e-commerce pages (-₹${((pageCount - blueprint.recommendedPageCount) * 1000).toLocaleString("en-IN")} saving).`,
+          );
+        }
+      } else {
+        if (effectiveArch === "dynamic" && !hasDynamicFeature) {
+          compromiseOptions.push("Switch to a high-speed Static Architecture (-₹8,000 saving, zero hosting cost).");
+        }
+        if (pageCount > 5) {
+          compromiseOptions.push(`Consolidate content into ${Math.min(5, pageCount)} core pages (-₹${((pageCount - 5) * 1000).toLocaleString("en-IN")} saving).`);
+        }
+        compromiseOptions.push("Launch Phase 1 with essential lead capture forms and add online payments or member portals in Phase 2 once initial client revenue starts flowing.");
       }
       if (input.deliverySpeed === "express") {
         compromiseOptions.push("Choose Standard SLA delivery instead of Express Fast-Track (-20% saving).");
-      }
-      if (categoryKey !== "ecommerce") {
-        compromiseOptions.push("Launch Phase 1 with essential lead capture forms and add online payments or member portals in Phase 2 once initial client revenue starts flowing.");
       }
     }
 

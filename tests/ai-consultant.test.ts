@@ -19,6 +19,8 @@ import {
   processConsultantMessage,
   extractProjectRequirements,
   generateFollowUpSuggestions,
+  isInquiryPreparationQuery,
+  buildDeterministicInquiryResponse,
 } from "../src/lib/services/ai-consultant/orchestrator";
 import {
   setGeminiClientFactory,
@@ -623,6 +625,173 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
       assert.ok(founderDoc.doc.content.includes("Live Production Site"), "Must label live site accurately");
       assert.ok(founderDoc.doc.content.includes("Past Production Deployment"), "Must label past deployment accurately");
       assert.ok(founderDoc.doc.content.includes("E-Commerce Deployment"), "Must label e-commerce deployment accurately");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 15. Production Regression: Switch to Jewellery E-Commerce & Inquiry Preparation
+  // ---------------------------------------------------------------------------
+  describe("Production Regression: Jewellery E-Commerce Scope & Inquiry Preparation", () => {
+    it("ensures ecommerce calculator never suggests unsupported static switch or page savings", () => {
+      const estimate = calculateProjectEstimate({
+        categoryKey: "ecommerce",
+        userBudgetINR: 15000,
+      });
+
+      assert.equal(estimate.cost.oneTimeTotalINR, 28999, "Authoritative e-commerce starter cost must be ₹28,999");
+      assert.equal(estimate.pages.count, 6, "E-commerce blueprint must include 6 pages");
+      assert.ok(estimate.budgetAnalysis, "Budget analysis should be present");
+      assert.equal(estimate.budgetAnalysis.fitsBudget, false);
+
+      const options = estimate.budgetAnalysis.compromiseOptions || [];
+
+      // Must NOT suggest switching to static architecture (-₹8,000 saving) as a standalone saving
+      assert.ok(
+        !options.some((opt) => opt.includes("Switch to a high-speed Static Architecture (-₹8,000")),
+        "Must not suggest saving ₹8,000 by switching to static without feature removal",
+      );
+
+      // Must NOT claim ₹1,000 savings by consolidating to 5 pages
+      assert.ok(
+        !options.some((opt) => opt.includes("Consolidate content into 5 core pages (-₹1,000 saving)")),
+        "Must not claim ₹1,000 savings for 5 pages on standard 6-page e-commerce blueprint",
+      );
+
+      // Must offer the reduced ₹9,999 Starter catalogue option with explicitly deferred features
+      const starterOption = options.find((opt) => opt.includes("₹9,999") || opt.includes("Starter"));
+      assert.ok(starterOption, "Must offer reduced Starter catalogue alternative at ₹9,999");
+      assert.ok(starterOption.includes("explicitly deferring"), "Must explicitly note deferred features");
+    });
+
+    it("handles the complete 3-turn reproduction sequence accurately", async () => {
+      setGeminiClientFactory(() => ({
+        models: {
+          generateContent: async (params: any) => {
+            const systemPrompt = params.config?.systemInstruction || "";
+            if (systemPrompt.includes("PREPARE PROJECT INQUIRY SUMMARY")) {
+              return {
+                text: buildDeterministicInquiryResponse(
+                  "ecommerce",
+                  calculateProjectEstimate({ categoryKey: "ecommerce", userBudgetINR: 15000 }),
+                  { categoryKey: "ecommerce", userBudgetINR: 15000 },
+                  "english",
+                ),
+              };
+            }
+            return {
+              text: "Yes, absolutely! We can build a luxury jewellery e-commerce store with full dynamic Next.js 14 architecture, Razorpay payment gateway, and product catalog.",
+            };
+          },
+        },
+      }));
+
+      // Turn 1: Gym website inquiry with ₹15,000 budget and deferred booking
+      const t1 = await processConsultantMessage({
+        messages: [
+          {
+            role: "user",
+            content: "Mujhe gym ki website banwani hai kam budget mein. Mera budget ₹15,000 hai. Kya online booking baad mein kar sakte hain?",
+          },
+        ],
+      });
+      assert.equal(t1.categoryKey, "gym");
+
+      // Turn 2: Switch to Jewellery E-Commerce
+      const t2 = await processConsultantMessage({
+        messages: [
+          { role: "user", content: "Mujhe gym ki website banwani hai kam budget mein. Mera budget ₹15,000 hai. Kya online booking baad mein kar sakte hain?" },
+          { role: "assistant", content: t1.messageText },
+          { role: "user", content: "Can you build a jewellery e-commerce website?" },
+        ],
+        priorProjectState: t1.updatedProjectState,
+      });
+      assert.equal(t2.categoryKey, "ecommerce", "Category must switch to ecommerce");
+      assert.equal(t2.estimate?.cost?.oneTimeTotalINR, 28999, "Estimate card must quote ₹28,999");
+
+      // Turn 3: Prepare Project Inquiry with this Scope
+      const t3 = await processConsultantMessage({
+        messages: [
+          { role: "user", content: "Mujhe gym ki website banwani hai kam budget mein. Mera budget ₹15,000 hai. Kya online booking baad mein kar sakte hain?" },
+          { role: "assistant", content: t1.messageText },
+          { role: "user", content: "Can you build a jewellery e-commerce website?" },
+          { role: "assistant", content: t2.messageText },
+          { role: "user", content: "Prepare Project Inquiry with this Scope." },
+        ],
+        priorProjectState: t2.updatedProjectState,
+      });
+
+      assert.equal(t3.categoryKey, "ecommerce", "Category must remain ecommerce");
+      assert.equal(t3.estimate, undefined, "Must not attach duplicate estimate card on inquiry preparation");
+
+      const reply = t3.messageText;
+
+      // 1. Must list all 6 included pages explicitly
+      assert.ok(reply.includes("/shop"), "Must include /shop page");
+      assert.ok(reply.includes("/product/[id]"), "Must include /product/[id] page");
+      assert.ok(reply.includes("/cart"), "Must include /cart page");
+      assert.ok(reply.includes("/orders"), "Must include /orders page");
+      assert.ok(reply.includes("/policies"), "Must include /policies page");
+
+      // 2. Timeline and pricing
+      assert.ok(reply.includes("28,999"), "Must quote authoritative development fee of ₹28,999");
+      assert.ok(
+        reply.includes("2–3 Weeks") || reply.includes("2-3 Weeks") || reply.includes("2–3 weeks"),
+        "Must quote exact timeline of 2–3 Weeks",
+      );
+
+      // 3. Must not claim unsupported ₹8,000 or ₹1,000 savings
+      assert.ok(!reply.includes("-₹8,000 saving"), "Must not claim standalone -₹8,000 saving");
+      assert.ok(!reply.includes("-₹1,000 saving"), "Must not claim -₹1,000 saving");
+
+      // 4. Must keep jewellery context without gym terms
+      assert.ok(!reply.toLowerCase().includes("gym"), "Must not bring back gym context");
+      assert.ok(!reply.toLowerCase().includes("trainer"), "Must not bring back gym trainers");
+      assert.ok(!reply.toLowerCase().includes("workout"), "Must not bring back workouts");
+      assert.ok(
+        reply.toLowerCase().includes("jeweller") || reply.toLowerCase().includes("store"),
+        "Must preserve jewellery context",
+      );
+
+      // 5. Must conclude with clear next step and NOT repeat "Prepare Project Inquiry with this Scope"
+      assert.ok(
+        !reply.endsWith("Prepare Project Inquiry with this Scope.") &&
+          !reply.endsWith("Prepare Project Inquiry with this Scope") &&
+          !reply.includes("Click 'Prepare Project Inquiry with this Scope'"),
+        "Must not repeat the CTA button text at the end",
+      );
+      assert.ok(
+        reply.toLowerCase().includes("next step") ||
+          reply.toLowerCase().includes("share your") ||
+          reply.toLowerCase().includes("get started") ||
+          reply.toLowerCase().includes("brand logo") ||
+          reply.toLowerCase().includes("catalog"),
+        "Must conclude with clear next steps",
+      );
+    });
+
+    it("distinguishes inquiry preparation requests from ordinary project scoping queries without suppressing estimate cards", async () => {
+      // 1. Verify inquiry detection accurately targets inquiry preparation
+      assert.equal(isInquiryPreparationQuery("Prepare Project Inquiry with this Scope."), true);
+      assert.equal(isInquiryPreparationQuery("Prepare Project Inquiry with this Scope"), true);
+      assert.equal(isInquiryPreparationQuery("prepare project inquiry"), true);
+      assert.equal(isInquiryPreparationQuery("prepare the scope"), true);
+      assert.equal(isInquiryPreparationQuery("inquiry summary"), true);
+
+      // 2. Verify ordinary scoping messages are NOT classified as inquiry preparation
+      assert.equal(isInquiryPreparationQuery("Can you build a jewellery e-commerce website?"), false);
+      assert.equal(isInquiryPreparationQuery("I have a project inquiry for an e-commerce website"), false);
+      assert.equal(isInquiryPreparationQuery("How much does a basic website cost?"), false);
+      assert.equal(isInquiryPreparationQuery("Mujhe gym ki website banwani hai kam budget mein."), false);
+
+      // 3. Verify ordinary scoping message preserves estimate card
+      const scopingResponse = await processConsultantMessage({
+        messages: [
+          { role: "user", content: "Can you build a jewellery e-commerce website?" },
+        ],
+      });
+      assert.equal(scopingResponse.categoryKey, "ecommerce");
+      assert.ok(scopingResponse.estimate, "Ordinary project scoping message must generate and attach an estimate card");
+      assert.equal(scopingResponse.estimate.cost.oneTimeTotalINR, 28999, "Estimate card must quote ₹28,999");
     });
   });
 });

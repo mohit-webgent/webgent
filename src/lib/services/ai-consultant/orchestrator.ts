@@ -274,6 +274,21 @@ export function isProposalAcceptance(text: string): boolean {
 }
 
 /**
+ * Checks whether user message is requesting to prepare a project inquiry with the current scope.
+ */
+export function isInquiryPreparationQuery(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return (
+    /\b(prepare\s+(?:the\s+|project\s+)?inquiry|inquiry\s+with\s+this\s+scope|prepare\s+(?:the\s+)?scope\b|prepare\s+(?:the\s+|project\s+)?proposal|generate\s+(?:the\s+|project\s+)?inquiry|inquiry\s+summary)\b/i.test(
+      lower,
+    ) ||
+    lower.startsWith("prepare project inquiry") ||
+    lower === "prepare project inquiry with this scope." ||
+    lower === "prepare project inquiry with this scope"
+  );
+}
+
+/**
  * Checks whether user message is seeking consultation, features, scope, or cost estimation.
  */
 export function isConsultationQuery(text: string): boolean {
@@ -526,6 +541,21 @@ export function generateFollowUpSuggestions(
   const lower = lastQuery.toLowerCase();
   const chips: string[] = [];
 
+  if (isInquiryPreparationQuery(lastQuery)) {
+    if (categoryKey === "ecommerce") {
+      return [
+        "Let's proceed with full E-Commerce (₹28,999)",
+        "Start with WhatsApp Catalogue MVP (₹9,999)",
+        "What product catalog details do you need?",
+      ];
+    }
+    return [
+      "Let's proceed with this scope",
+      "What details do you need to start?",
+      "How do milestone payments work?",
+    ];
+  }
+
   if (estimate && estimate.budgetAnalysis && !estimate.budgetAnalysis.fitsBudget) {
     chips.push("How can we reduce scope to fit my budget?");
     chips.push("Can we postpone optional features for Phase 2?");
@@ -583,7 +613,7 @@ export function buildDeterministicConsultantResponse(
   let text = `${greeting}Here is our architectural recommendation for your **${estimate.categoryDisplayName}** project:\n\n`;
 
   text += `### Recommended Pages (${estimate.pages.count} Pages)\n`;
-  estimate.pages.list.slice(0, 5).forEach((page, idx) => {
+  estimate.pages.list.forEach((page, idx) => {
     text += `${idx + 1}. **${page.name}** (\`${page.slug}\`): ${page.purpose}\n`;
   });
 
@@ -606,6 +636,80 @@ export function buildDeterministicConsultantResponse(
   }
 
   return text;
+}
+
+/**
+ * Builds an authoritative, structured inquiry summary response.
+ */
+export function buildDeterministicInquiryResponse(
+  categoryKey: string,
+  estimate: ProjectEstimateResult | undefined,
+  extractedParams: CalculatorInput,
+  visitorLanguage: "english" | "hinglish",
+): string {
+  if (categoryKey === "ecommerce") {
+    const fullScopePages = [
+      "1. **Storefront Home** (`/`): Promotional hero banner, featured collections, trust badges, customer reviews.",
+      "2. **Shop / Product Catalog** (`/shop`): Category filters (necklaces, rings, earrings, bracelets), price sorting, quick view.",
+      "3. **Product Detail View** (`/product/[id]`): High-res zoom gallery, variant selector (metal/carat/size), stock status, Buy Now.",
+      "4. **Shopping Cart & Checkout** (`/cart`): Slide-out cart drawer, discount coupon field, shipping calculator, Razorpay payment gateway (UPI, cards, netbanking).",
+      "5. **Order Tracking & History** (`/orders`): Customer purchase timeline, courier tracking links, and downloadable PDF GST tax invoices.",
+      "6. **Shipping & Return Policy** (`/policies`): Clear return windows, exchange procedures, and customer care channels.",
+    ].join("\n");
+
+    let msg = `### **Webgent Project Inquiry Summary: Jewellery E-Commerce Store**\n\n` +
+      `- **Project Type**: E-Commerce & Online Store (Dynamic Next.js 14 Architecture)\n` +
+      `- **Included Pages (6)**:\n${fullScopePages}\n` +
+      `- **Key Features Included**:\n` +
+      `  - Product Catalog & Slide-out Cart Drawer with variant selectors\n` +
+      `  - Razorpay Payment Gateway Integration (UPI, Credit/Debit Cards, Netbanking)\n` +
+      `  - Automated WhatsApp Alerts & Order Confirmations\n` +
+      `  - Complete On-Page Google SEO Setup\n` +
+      `  - Live Inventory Tracking & Low Stock Alerts\n` +
+      `  - Automated PDF Invoice & GST Billing\n` +
+      `- **Investment & Terms**:\n` +
+      `  - **Total Development Fee**: ₹28,999 (Transparent milestone pricing: 50% advance / 50% upon launch review)\n` +
+      `  - **Delivery SLA**: 2–3 Weeks\n` +
+      `  - **Ownership & Support**: 100% source code ownership, zero hidden renewal fees, and 15 days free post-launch support.\n\n`;
+
+    if (extractedParams.userBudgetINR && extractedParams.userBudgetINR < 28999) {
+      msg += `### **Budget Alignment & Scope Options**\n` +
+        `Your target budget is ₹${extractedParams.userBudgetINR.toLocaleString("en-IN")}. Here are your two clear implementation paths:\n\n` +
+        `1. **Option A: Full Dynamic E-Commerce Store (Recommended)** — **₹28,999** (2–3 Weeks SLA)\n` +
+        `   - Complete automated end-to-end purchasing, Razorpay checkout, live inventory, and order history.\n\n` +
+        `2. **Option B: Reduced Starter Catalogue MVP** — **₹9,999** (5–7 Business Days SLA)\n` +
+        `   - High-speed Static Next.js architecture with direct WhatsApp ordering and UPI QR code payments.\n` +
+        `   - **Explicitly Deferred to Phase 2**: Automated shopping cart & checkout flow, online Razorpay gateway integration, and customer order management/history are excluded from Phase 1.\n\n`;
+    }
+
+    msg += `**Next Steps to Kick Off:**\n` +
+      `1. Share your jewellery product catalog, high-res photos, and brand logo.\n` +
+      `2. We will finalize the project milestone agreement (50% upfront advance to begin engineering sprint, 50% upon final staging review).\n` +
+      `3. Delivery of interactive staging link within the applicable SLA.\n\n` +
+      `Would you like to proceed with the full ₹28,999 dynamic store, or begin with the ₹9,999 WhatsApp catalogue MVP?`;
+
+    return msg;
+  }
+
+  // General fallback
+  const pagesList = estimate?.pages?.list && estimate.pages.list.length > 0
+    ? estimate.pages.list.map((p, idx) => `${idx + 1}. **${p.name}** (\`${p.slug}\`): ${p.purpose}`).join("\n")
+    : "1. Home (`/`)\n2. About (`/about`)\n3. Services (`/services`)\n4. Portfolio (`/work`)\n5. Contact (`/contact`)";
+
+  const totalFee = estimate?.cost?.oneTimeTotalINR || 9999;
+  const timeline = estimate?.estimatedTimeline || "5–7 Business Days";
+
+  return `### **Webgent Project Inquiry Summary: ${estimate?.categoryDisplayName || "Custom Website"}**\n\n` +
+    `- **Architecture**: ${estimate?.architecture === "dynamic" ? "Dynamic Next.js 14" : "Static Next.js 14"}\n` +
+    `- **Included Pages (${estimate?.pages?.count || 5})**:\n${pagesList}\n` +
+    `- **Total Development Fee**: ₹${totalFee.toLocaleString("en-IN")} (Milestone: 50% advance / 50% upon launch review)\n` +
+    `- **Delivery SLA**: ${timeline}\n` +
+    `- **Ownership & Terms**: 100% source code ownership, zero hidden fees, 15 days free post-launch support.\n\n` +
+    `**Next Steps to Kick Off:**\n` +
+    `1. Share your branding assets, logo, and core content.\n` +
+    `2. We will finalize the project milestone agreement (50% advance to start).\n` +
+    `3. Interactive staging link delivered within ${timeline}.\n\n` +
+    `Do you have your brand assets and initial content ready?`;
 }
 
 /**
@@ -640,31 +744,33 @@ export async function processConsultantMessage({
     };
   }
 
-  // 2. Classify intent: Greeting vs. General Company vs. Market Comparison vs. Biography vs. Proposal Acceptance vs. Feature Inquiry vs. Project Scoping
+  // 2. Classify intent: Greeting vs. General Company vs. Market Comparison vs. Biography vs. Proposal Acceptance vs. Inquiry Preparation vs. Feature Inquiry vs. Project Scoping
   const isGreeting = isGreetingQuery(lastUserMessage);
   const isGeneralCompany = isGeneralCompanyQuery(lastUserMessage);
   const isComparison = isComparisonQuery(lastUserMessage);
   const isBiography = isBiographyQuery(lastUserMessage);
-  const isAcceptance = isProposalAcceptance(lastUserMessage);
+  const isInquiry = isInquiryPreparationQuery(lastUserMessage);
+  const isAcceptance = !isInquiry && isProposalAcceptance(lastUserMessage);
   const isFeatureQuery = isFeatureInquiry(lastUserMessage);
-  const isScoping = isScopingOrBudgetQuery(lastUserMessage) && !isFeatureQuery && !isAcceptance;
+  const isScoping = isScopingOrBudgetQuery(lastUserMessage) && !isFeatureQuery && !isAcceptance && !isInquiry;
   const detectedCategoryInLatest = detectCategoryFromText(lastUserMessage);
 
   // 3. Extract and accumulate project parameters across conversation turns
   const extractedParams = extractConsultantParams(messages, priorProjectState);
 
-  // Only quote if actively scoping/asking for a new project, not on greetings, company Q&A, biography, comparisons, acceptances, or feature inquiries
+  // Only quote if actively scoping/asking for a new project, not on greetings, company Q&A, biography, comparisons, acceptances, inquiries, or feature inquiries
   const shouldQuote =
     !isGreeting &&
     !isGeneralCompany &&
     !isComparison &&
     !isBiography &&
     !isAcceptance &&
+    !isInquiry &&
     !isFeatureQuery &&
     (Boolean(detectedCategoryInLatest) || isScoping || (Boolean(priorProjectState?.isActivelyQuoting) && Boolean(extractedParams.userBudgetINR)));
 
   let estimate: ProjectEstimateResult | undefined = undefined;
-  if (shouldQuote && (extractedParams.categoryKey || isScoping)) {
+  if ((shouldQuote || isInquiry || isAcceptance) && (extractedParams.categoryKey || isScoping)) {
     estimate = calculateProjectEstimate(extractedParams);
   }
 
@@ -706,7 +812,32 @@ export async function processConsultantMessage({
       };
     }
 
+    if (isInquiry) {
+      return {
+        messageText: buildDeterministicInquiryResponse(categoryKey, estimate, extractedParams, visitorLanguage),
+        followUpSuggestions,
+        categoryKey,
+        updatedProjectState,
+      };
+    }
+
     if (isAcceptance) {
+      if (categoryKey === "ecommerce") {
+        return {
+          messageText:
+            visitorLanguage === "hinglish"
+              ? "Bohot badhiya! Jewellery E-Commerce Store ka ₹28,999 wala proposal final ho gaya hai. Isme complete Dynamic Next.js 14 architecture, 6 custom pages (Home, Shop, Product Detail, Cart, Orders, Policies), Razorpay/UPI gateway, automated WhatsApp alerts aur PDF invoicing included hai (2–3 weeks delivery SLA).\n\n**Next Steps:**\n1. Aap jewellery product catalog, photos aur brand logo share kar sakte hain.\n2. Milestone: 50% advance (₹14,499) par hum engineering sprint start karenge, aur baki 50% final staging review par.\n\nKya aapke paas brand logo aur initial product list ready hai?"
+              : "Fantastic! Your Jewellery E-Commerce Store proposal is confirmed at ₹28,999. This covers full Dynamic Next.js 14 architecture, 6 custom pages (Home, Shop, Product Detail, Cart, Orders, Policies), Razorpay/UPI payment gateway, automated WhatsApp alerts, and PDF GST invoicing with a 2–3 weeks delivery SLA.\n\n**Next Steps:**\n1. Share your jewellery product catalog, photos, and brand logo.\n2. Milestone: 50% advance (₹14,499) to begin the engineering sprint, with the remaining 50% upon final staging review.\n\nDo you have your brand logo and product list ready?",
+          followUpSuggestions: [
+            "What photos or details do you need?",
+            "How do milestone payments work?",
+            "When will the staging link be delivered?",
+          ],
+          categoryKey,
+          updatedProjectState,
+        };
+      }
+
       return {
         messageText:
           visitorLanguage === "hinglish"
@@ -851,8 +982,83 @@ The visitor is asking about founder Mohit Verma's education, experience, skills,
 - Do NOT pretend that you (the AI assistant) attended college or worked at a job as a human. Clearly distinguish yourself as the AI consultant.
 - Answer in ${visitorLanguage === "hinglish" ? "clean, natural Hinglish" : "clear English"}.
 - DO NOT attach a project estimate card. Keep it concise (1–2 paragraphs).`;
+  } else if (isInquiry) {
+    if (categoryKey === "ecommerce") {
+      contextualSystemPrompt += `\n\n### CONTEXT NOTE: PREPARE PROJECT INQUIRY SUMMARY (JEWELLERY E-COMMERCE STORE)
+The visitor requested to prepare a project inquiry for the jewellery e-commerce store ("${lastUserMessage}").
+Ground Truth Specifications from Authoritative Webgent Calculator:
+- Project Category: E-Commerce & Online Store (Dynamic Next.js 14 Architecture)
+- Total Development Fee: ₹28,999 (Milestone: 50% advance / 50% upon final staging review)
+- Delivery Timeline SLA: 2–3 Weeks
+- Included Pages (ALL 6 PAGES MUST BE EXPLICITLY LISTED with their exact paths and purpose):
+  1. Storefront Home (\`/\`): High-impact promotional hero, featured jewellery collections, trust badges, customer reviews.
+  2. Shop / Product Catalog (\`/shop\`): Category filters (necklaces, rings, earrings, bracelets), price sorting, quick view.
+  3. Product Detail View (\`/product/[id]\`): Zoomable high-res photo gallery, variant selectors (metal, carat, size), stock status, direct add-to-cart.
+  4. Shopping Cart & Checkout (\`/cart\`): Slide-out cart drawer, coupon discounts, shipping calculator, Razorpay payment gateway (UPI, cards, netbanking).
+  5. Order Tracking & History (\`/orders\`): Past customer orders, courier tracking links, and downloadable PDF GST tax invoices.
+  6. Shipping & Return Policy (\`/policies\`): Return windows, exchange procedures, secure shipping assurance, and customer support.
+- Key Dynamic Features:
+  * Product Catalog & Slide-out Cart Drawer with variant selectors
+  * Razorpay Payment Gateway integration (UPI, Credit/Debit Cards, Netbanking)
+  * Automated WhatsApp alerts & order confirmation notifications
+  * Live inventory tracking & low stock alerts
+  * Automated PDF GST invoicing
+  * Complete On-Page Google SEO Setup
+- Terms: 100% source code ownership, zero hidden recurring fees, and 15 days free post-launch support.
+
+BUDGET CONTEXT & REDUCED STARTER MVP ALTERNATIVE:
+${
+  extractedParams.userBudgetINR && extractedParams.userBudgetINR < 28999
+    ? `- The visitor previously targeted a budget of ₹${extractedParams.userBudgetINR.toLocaleString("en-IN")}.
+- Clearly distinguish the full ₹28,999 e-commerce scope from our reduced Starter Catalogue MVP at ₹9,999:
+  * Option A: Full Dynamic E-Commerce Store at ₹28,999 (2–3 Weeks SLA, dynamic backend, Razorpay, cart/checkout, order tracking).
+  * Option B: Reduced Starter Catalogue MVP at ₹9,999 (5–7 Business Days SLA, static Next.js showcase, direct WhatsApp ordering and UPI QR).
+  * For Option B, EXPLICITLY list deferred features: automated cart & checkout, online payment gateway (Razorpay) integration, customer accounts & order management, and automated PDF GST invoicing are excluded and deferred to Phase 2.
+- CRITICAL RULES ON SAVINGS:
+  * NEVER claim or suggest an ₹8,000 saving by switching to static architecture without explicitly explaining that automated cart, checkout, order history, and Razorpay integration are removed!
+  * NEVER claim ₹1,000 savings by consolidating to 5 pages (e-commerce standard blueprint requires all 6 pages).
+  * Never claim any saving unless supported by the authoritative calculator.`
+    : ""
+}
+
+INSTRUCTIONS FOR THE RESPONSE:
+1. Provide a comprehensive, professional Project Inquiry Summary for the Jewellery E-Commerce Store.
+2. List all 6 included pages with their exact paths and purposes.
+3. State the exact timeline: 2–3 Weeks.
+4. Keep the jewellery project context strictly intact. Do NOT bring back gym requirements or fitness terms.
+5. Conclude with a clear, actionable next step (e.g. asking for brand logo, jewellery product photos, or collection list).
+6. STRICT PROHIBITION: DO NOT repeat or ask "Prepare Project Inquiry with this Scope" anywhere in your response text or follow-up question.
+7. DO NOT attach an estimate card.`;
+    } else {
+      contextualSystemPrompt += `\n\n### CONTEXT NOTE: PREPARE PROJECT INQUIRY SUMMARY
+The visitor requested to prepare a project inquiry for their project ("${lastUserMessage}").
+Category: ${estimate?.categoryDisplayName || categoryKey}
+Development Fee: ₹${estimate?.cost?.oneTimeTotalINR?.toLocaleString("en-IN") || "9,999"}
+Delivery SLA: ${estimate?.estimatedTimeline || "5–7 Business Days"}
+Included Pages (${estimate?.pages?.count || 5}):
+${estimate?.pages?.list?.map((p) => `  * ${p.name} (\`${p.slug}\`): ${p.purpose}`).join("\n") || ""}
+Conclude with clear next steps. DO NOT repeat "Prepare Project Inquiry with this Scope".
+DO NOT attach an estimate card.`;
+    }
   } else if (isAcceptance) {
-    contextualSystemPrompt += `\n\n### CONTEXT NOTE:
+    if (categoryKey === "ecommerce") {
+      contextualSystemPrompt += `\n\n### CONTEXT NOTE:
+The visitor is accepting the proposed project quote / proposal ("${lastUserMessage}").
+Active Project: Jewellery E-Commerce Store at ₹28,999 (2–3 Weeks, 6 Pages, Dynamic Next.js 14 Architecture with Razorpay & WhatsApp alerts).
+- Acknowledge and confirm the proposal enthusiastically in ${visitorLanguage === "hinglish" ? "natural Hinglish" : "natural English"}.
+- Confirm agreed scope:
+  * Package: Jewellery E-Commerce Store (Home, Shop, Product Detail, Cart, Orders, Policies)
+  * Investment: ₹28,999 (Milestone: 50% upfront advance, 50% upon final staging review)
+  * Delivery: 2–3 Weeks
+  * Included: Full Dynamic Next.js 14 backend, Razorpay payment gateway, automated WhatsApp alerts, automated PDF GST invoices, live inventory tracking, on-page Google SEO, 100% code ownership.
+- Outline clear next steps:
+  1. Share jewellery product list, photos, and brand logo.
+  2. Complete milestone advance (₹14,499) to begin engineering sprint.
+  3. Interactive staging link delivered within 2–3 weeks.
+- End with one brief question asking if they have their brand logo and initial product list ready.
+- DO NOT attach an estimate card. Keep proposal firmly locked.`;
+    } else {
+      contextualSystemPrompt += `\n\n### CONTEXT NOTE:
 The visitor is accepting the proposed project quote / proposal ("${lastUserMessage}").
 Active Project: Gym Starter Website (Phase 1) at ₹11,999 (5–7 Business Days, 5 Pages, Static Architecture, fits comfortably in ₹15,000 budget with ₹3,001 surplus).
 - Acknowledge and confirm the proposal enthusiastically in ${visitorLanguage === "hinglish" ? "natural Hinglish" : "natural English"}.
@@ -867,6 +1073,7 @@ Active Project: Gym Starter Website (Phase 1) at ₹11,999 (5–7 Business Days,
   3. Staging link delivery within 5–7 business days for feedback.
 - End with one brief question asking if they have their logo and photos ready.
 - DO NOT attach an estimate card. Keep Phase 1 firmly locked.`;
+    }
   } else if (isFeatureQuery) {
     const isDepositQuery = /\b(deposit|advance|payment|pay)\b/i.test(lastUserMessage);
     contextualSystemPrompt += `\n\n### CONTEXT NOTE:
@@ -1032,7 +1239,32 @@ Ask at most ONE relevant follow-up question.`;
     };
   }
 
+  if (isInquiry) {
+    return {
+      messageText: buildDeterministicInquiryResponse(categoryKey, estimate, extractedParams, visitorLanguage),
+      followUpSuggestions,
+      categoryKey,
+      updatedProjectState,
+    };
+  }
+
   if (isAcceptance) {
+    if (categoryKey === "ecommerce") {
+      return {
+        messageText:
+          visitorLanguage === "hinglish"
+            ? "Bohot badhiya! Jewellery E-Commerce Store ka ₹28,999 wala proposal final ho gaya hai. Isme complete Dynamic Next.js 14 architecture, 6 custom pages (Home, Shop, Product Detail, Cart, Orders, Policies), Razorpay/UPI gateway, automated WhatsApp alerts aur PDF invoicing included hai (2–3 weeks delivery SLA).\n\n**Next Steps:**\n1. Aap jewellery product catalog, photos aur brand logo share kar sakte hain.\n2. Milestone: 50% advance (₹14,499) par hum engineering sprint start karenge, aur baki 50% final staging review par.\n\nKya aapke paas brand logo aur initial product list ready hai?"
+            : "Fantastic! Your Jewellery E-Commerce Store proposal is confirmed at ₹28,999. This covers full Dynamic Next.js 14 architecture, 6 custom pages (Home, Shop, Product Detail, Cart, Orders, Policies), Razorpay/UPI payment gateway, automated WhatsApp alerts, and PDF GST invoicing with a 2–3 weeks delivery SLA.\n\n**Next Steps:**\n1. Share your jewellery product catalog, photos, and brand logo.\n2. Milestone: 50% advance (₹14,499) to begin the engineering sprint, with the remaining 50% upon final staging review.\n\nDo you have your brand logo and product list ready?",
+        followUpSuggestions: [
+          "What photos or details do you need?",
+          "How do milestone payments work?",
+          "When will the staging link be delivered?",
+        ],
+        categoryKey,
+        updatedProjectState,
+      };
+    }
+
     return {
       messageText:
         visitorLanguage === "hinglish"
