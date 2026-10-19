@@ -395,6 +395,59 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
       assert.equal(reqs.userBudgetINR, 25000);
       assert.ok(reqs.selectedFeatureIds?.includes("admin_dashboard"));
     });
+
+    it("recognizes explicit jewellery e-commerce request after general queries without defaulting to business", async () => {
+      // Exact reproduction sequence:
+      // Turn 1: "What services does Webgent offer?"
+      const turn1 = await processConsultantMessage({
+        messages: [{ role: "user", content: "What services does Webgent offer?" }],
+      });
+      assert.equal(turn1.estimate, undefined);
+
+      // Turn 2: "How much does a basic website cost?"
+      const turn2 = await processConsultantMessage({
+        messages: [
+          { role: "user", content: "What services does Webgent offer?" },
+          { role: "assistant", content: turn1.messageText },
+          { role: "user", content: "How much does a basic website cost?" },
+        ],
+        priorProjectState: turn1.updatedProjectState,
+      });
+      assert.equal(turn2.estimate, undefined);
+
+      // Turn 3: "Can you build a jewellery e-commerce website?"
+      const turn3 = await processConsultantMessage({
+        messages: [
+          { role: "user", content: "What services does Webgent offer?" },
+          { role: "assistant", content: turn1.messageText },
+          { role: "user", content: "How much does a basic website cost?" },
+          { role: "assistant", content: turn2.messageText },
+          { role: "user", content: "Can you build a jewellery e-commerce website?" },
+        ],
+        priorProjectState: turn2.updatedProjectState,
+      });
+
+      assert.ok(turn3.estimate, "Expected estimate card to be attached for jewellery e-commerce request");
+      assert.equal(turn3.estimate.categoryKey, "ecommerce");
+      assert.equal(turn3.estimate.categoryDisplayName, "E-Commerce & Online Store");
+      assert.equal(turn3.categoryKey, "ecommerce");
+      assert.notEqual(turn3.estimate.categoryKey, "business");
+      assert.notEqual(turn3.estimate.categoryDisplayName, "Business, Corporate & Consulting");
+    });
+
+    it("recognizes explicit English project request 'I want an e-commerce website' and overrides stale category", () => {
+      const messages = [
+        { role: "user" as const, content: "What services does Webgent offer?" },
+        { role: "assistant" as const, content: "We offer Next.js and full-stack engineering." },
+        { role: "user" as const, content: "I want an e-commerce website" },
+      ];
+
+      const reqs = extractProjectRequirements(messages, {
+        categoryKey: "business",
+        isActivelyQuoting: false,
+      });
+      assert.equal(reqs.categoryKey, "ecommerce");
+    });
   });
 
   // ---------------------------------------------------------------------------

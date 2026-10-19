@@ -37,6 +37,13 @@ function getRuntimeDatabaseUrl(): string | undefined {
         // Limit each serverless function container to 1 connection to avoid opening idle connections
         parsed.searchParams.set("connection_limit", "1");
       }
+      if (!parsed.searchParams.has("connect_timeout")) {
+        // Safe timeout buffer (15s) for cross-regional connection handshakes without altering existing URL params
+        parsed.searchParams.set("connect_timeout", "15");
+      }
+      if (!parsed.searchParams.has("pool_timeout")) {
+        parsed.searchParams.set("pool_timeout", "15");
+      }
     }
 
     return parsed.toString();

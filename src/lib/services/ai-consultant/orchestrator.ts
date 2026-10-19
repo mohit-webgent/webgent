@@ -194,7 +194,7 @@ export function isGeneralCompanyQuery(text: string): boolean {
     /who\s+r\s+u/i,
     /founder\s+kaun\s+hai/i,
     /who\s+is\s+the\s+founder/i,
-    /what\s+services\s+do\s+you/i,
+    /what\s+services\s+(do\s+you|does\s+webgent|are\s+offered|offer)/i,
     /tell\s+me\s+about\s+(your\s+)?(agency|company|team|services)/i,
     /aapke\s+services\s+kya\s+hai/i,
     /tech\s+stack\s+kya\s+hai/i,
@@ -372,10 +372,16 @@ export function extractConsultantParams(
   let isProjectSwitch = false;
   let categoryKey: string | undefined = undefined;
 
-  // An explicit project switch ONLY occurs if the user explicitly mentions switching/changing projects
+  // An explicit project switch occurs if the user explicitly requests a project or switches categories:
+  // 1. Explicit switching phrasing: "change to", "switch to", "instead", "new project", etc.
+  // 2. Explicit English project creation requests: "can you build/create/develop...", "i want/need an e-commerce website", etc.
+  // 3. Explicit Hindi/Hinglish creation requests: "mujhe ... banwani/banwana/chahiye", "banwani hai", etc.
+  // 4. Stale fallback override: if priorState was not actively quoting a specific project or defaulted to "business"
   const isExplicitProjectSwitch =
     /\b(change\s+to|switch\s+to|instead|nahi|rather\s+than|new\s+project|different\s+project)\b/i.test(latestLower) ||
-    (/\b(mujhe\s+.*(banwani|banwana|chahiye|need|want))\b/i.test(latestLower) && Boolean(detectedCategoryInLatest));
+    (/\b(can\s+you\s+(?:build|create|develop|make|design)|can\s+we\s+(?:build|create|develop|make)|could\s+you\s+(?:build|create|develop)|i\s+(?:want|need|would\s+like)\s+(?:to\s+(?:build|create|develop|make|have)|a|an)|looking\s+(?:for|to\s+build|to\s+create)|(?:build|create|develop|make|design)\s+(?:a|an|me|us)|how\s+much\s+(?:for|to\s+build|does\s+a)|(?:cost|price|quote|pricing)\s+(?:of|for)\s+(?:a|an))\b/i.test(latestLower) && Boolean(detectedCategoryInLatest)) ||
+    (/\b(mujhe\s+.*(banwani|banwana|chahiye|need|want)|banwani\s+hai|banwana\s+hai|bana\s+sakte|banate\s+ho)\b/i.test(latestLower) && Boolean(detectedCategoryInLatest)) ||
+    (Boolean(detectedCategoryInLatest) && priorState?.categoryKey === "business" && !priorState?.isActivelyQuoting);
 
   if (detectedCategoryInLatest && (!priorState?.categoryKey || isExplicitProjectSwitch)) {
     if (priorState?.categoryKey && priorState.categoryKey !== detectedCategoryInLatest) {
