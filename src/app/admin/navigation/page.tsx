@@ -1,6 +1,8 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import { AdminScaffoldView } from "@/components/admin/admin-scaffold-view";
-import { Compass } from "lucide-react";
+import { getNavigationMenu, getFooterConfig } from "@/lib/services/cms";
+import { NavigationContentEditor } from "@/components/admin/navigation-content-editor";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Navigation & Menus — Webgent Admin",
@@ -10,20 +12,18 @@ export const metadata = {
 export default async function AdminNavigationPage() {
   await requireAdmin();
 
+  // Load all navigation items and footer configuration including drafts
+  const [initialNavigation, initialFooter] = await Promise.all([
+    getNavigationMenu({ publishedOnly: false }),
+    getFooterConfig({ publishedOnly: false }),
+  ]);
+
   return (
-    <AdminScaffoldView
-      title="Navigation & Menus"
-      description="Manage top header navbar items, footer navigation links, external social media profiles, and call-to-action redirect links."
-      group="System"
-      icon={Compass}
-      targetStorage="SiteSetting (keys: navigation_menu, footer_links)"
-      publicConsumers={["Navbar Component", "Footer Component", "Root Layout"]}
-      plannedFeatures={[
-        "Add, reorder, rename, or toggle visibility of header navigation links",
-        "Footer column link groups and copyright notice editor",
-        "Social media profile link management (GitHub, Twitter, LinkedIn, Discord)",
-        "Direct cache revalidation for the root layout component",
-      ]}
-    />
+    <div className="animate-in fade-in duration-300">
+      <NavigationContentEditor
+        initialNavigation={initialNavigation}
+        initialFooter={initialFooter}
+      />
+    </div>
   );
 }

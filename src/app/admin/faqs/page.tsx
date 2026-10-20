@@ -1,6 +1,8 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import { AdminScaffoldView } from "@/components/admin/admin-scaffold-view";
-import { HelpCircle } from "lucide-react";
+import { getSiteFaqs } from "@/lib/services/cms";
+import { FaqContentEditor } from "@/components/admin/faq-content-editor";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "FAQs Management — Webgent Admin",
@@ -10,20 +12,12 @@ export const metadata = {
 export default async function AdminFaqsPage() {
   await requireAdmin();
 
+  // Load all FAQs including unpublished drafts for admin editing
+  const initialFaqs = await getSiteFaqs({ publishedOnly: false });
+
   return (
-    <AdminScaffoldView
-      title="Frequently Asked Questions"
-      description="Create, update, reorder, and categorize customer FAQs across Development, Hosting, Pricing, and Post-Launch Support."
-      group="Content"
-      icon={HelpCircle}
-      targetStorage="SiteSetting (key: site_faqs)"
-      publicConsumers={["/pricing", "/contact", "Homepage FAQ Accordion"]}
-      plannedFeatures={[
-        "Categorized FAQ editor with drag-and-drop or numerical display reordering",
-        "Publish/draft toggle per question",
-        "Rich text formatting for detailed answers and policy explanations",
-        "Instant feed into pricing matrix accordion and AI consultant knowledge retrieval",
-      ]}
-    />
+    <div className="animate-in fade-in duration-300">
+      <FaqContentEditor initialConfig={initialFaqs} />
+    </div>
   );
 }

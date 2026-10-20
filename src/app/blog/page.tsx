@@ -5,9 +5,11 @@ import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
+import { resolveRouteMetadata } from "@/lib/services/cms";
+
 export const revalidate = 60;
 
-export const metadata: Metadata = {
+const defaultBlogMetadata: Metadata = {
   title: "Blog & Insights",
   description:
     "Explore engineering insights, product design case studies, and modern web architecture articles.",
@@ -39,6 +41,10 @@ export const metadata: Metadata = {
     creator: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/blog", defaultBlogMetadata);
+}
 
 interface BlogPostItem {
   id: string;

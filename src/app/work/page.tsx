@@ -4,9 +4,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
+import { resolveRouteMetadata } from "@/lib/services/cms";
+
 export const revalidate = 60;
 
-export const metadata: Metadata = {
+const defaultWorkMetadata: Metadata = {
   title: "Work",
   description:
     "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and digital experiences.",
@@ -38,6 +40,10 @@ export const metadata: Metadata = {
     creator: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/work", defaultWorkMetadata);
+}
 
 // Fallback projects if database is empty
 const fallbackProjects = [

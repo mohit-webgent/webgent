@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { AboutView } from "@/components/about/about-view";
+import { resolveRouteMetadata } from "@/lib/services/cms";
 
-export const metadata: Metadata = {
+const defaultAboutMetadata: Metadata = {
   title: "Meet Mohit Verma — Founder & Developer at Webgent",
   description:
     "Software developer and founder of Webgent. Professional journey, technical expertise in React and full-stack development, selected projects, and development methodology.",
@@ -35,6 +36,10 @@ export const metadata: Metadata = {
     site: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/about", defaultAboutMetadata);
+}
 
 export default function AboutPage() {
   return <AboutView />;

@@ -2,11 +2,11 @@ import { Suspense } from "react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
-import { getContactInfo } from "@/lib/services/cms";
+import { getContactInfo, resolveRouteMetadata } from "@/lib/services/cms";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
+const defaultContactMetadata: Metadata = {
   title: "Contact Us — Webgent",
   description:
     "Get in touch! I'll respond within 24 hours. Have questions or need assistance? Contact us at Webgent for support or to discuss your project.",
@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     creator: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/contact", defaultContactMetadata);
+}
 
 export default async function ContactPage() {
   const contactInfo = await getContactInfo();

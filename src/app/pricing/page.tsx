@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { PricingView } from "@/components/pricing/pricing-view";
 import { getPricingData } from "@/lib/services/pricing";
+import { resolveRouteMetadata } from "@/lib/services/cms";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const defaultPricingMetadata: Metadata = {
   title: "Website Pricing & Cost Estimator",
   description:
     "Explore transparent starting rates and configure your project with our interactive budget calculator for web development, React/Next.js apps, SaaS MVPs, and integrations.",
@@ -39,6 +40,10 @@ export const metadata: Metadata = {
     site: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/pricing", defaultPricingMetadata);
+}
 
 export default async function PricingPage() {
   const pricingData = await getPricingData();

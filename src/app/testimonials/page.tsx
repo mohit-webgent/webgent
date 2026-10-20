@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
+import { resolveRouteMetadata } from "@/lib/services/cms";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
+const defaultTestimonialsMetadata: Metadata = {
   title: "Client Testimonials & Feedback | Webgent",
   description: "Verified reviews and client feedback on Webgent web engineering projects.",
   alternates: {
@@ -36,6 +37,10 @@ export const metadata: Metadata = {
     creator: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/testimonials", defaultTestimonialsMetadata);
+}
 
 export default async function TestimonialsPage() {
   let testimonials: Array<{

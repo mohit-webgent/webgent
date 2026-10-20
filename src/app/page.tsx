@@ -14,12 +14,13 @@ import { siteConfig } from "@/config/site";
 import {
   getHomepageHeroContent,
   getHomepageSectionsConfig,
+  resolveRouteMetadata,
   type HomeSectionId,
 } from "@/lib/services/cms";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
+const defaultHomeMetadata: Metadata = {
   title: {
     absolute: "Webgent — Modern Web Development & Engineering Solutions",
   },
@@ -52,6 +53,10 @@ export const metadata: Metadata = {
     site: "@webgent",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolveRouteMetadata("/", defaultHomeMetadata);
+}
 
 type HomePost = {
   id: string;
