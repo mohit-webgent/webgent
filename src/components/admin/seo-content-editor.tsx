@@ -16,7 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { SiteSeoSettings, GlobalSeoConfig, PageSeoOverride } from "@/lib/services/cms-shared";
-import { DEFAULT_SITE_SEO_SETTINGS, isValidSafeUrl, isValidCanonicalBaseUrl } from "@/lib/services/cms-shared";
+import { DEFAULT_SITE_SEO_SETTINGS, isValidSafeUrl, isTrustedCanonicalOrigin } from "@/lib/services/cms-shared";
 
 interface SeoContentEditorProps {
   initialSettings: SiteSeoSettings;
@@ -124,10 +124,11 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
       });
       return;
     }
-    if (!isValidCanonicalBaseUrl(settings.global.canonicalBaseUrl)) {
+    if (!isTrustedCanonicalOrigin(settings.global.canonicalBaseUrl)) {
       setNotification({
         type: "error",
-        message: "Canonical Base URL must be a valid http(s) origin without path or trailing slash (e.g. 'https://webgent.vercel.app').",
+        message:
+          "Canonical Base URL must match the configured production site origin or a trusted domain (e.g. 'https://webgent.vercel.app').",
       });
       return;
     }

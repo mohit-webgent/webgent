@@ -31,7 +31,7 @@ import {
   CMS_CACHE_KEYS,
   CMS_CACHE_TTL_SECONDS,
   isValidSafeUrl,
-  isValidCanonicalBaseUrl,
+  isTrustedCanonicalOrigin,
 } from "./cms-shared";
 
 export * from "./cms-shared";
@@ -582,7 +582,7 @@ export async function getSiteSeoSettings(): Promise<SiteSeoSettings> {
                 ? rawGlobal.defaultDescription.trim()
                 : DEFAULT_GLOBAL_SEO.defaultDescription,
             canonicalBaseUrl:
-              typeof rawGlobal.canonicalBaseUrl === "string" && isValidCanonicalBaseUrl(rawGlobal.canonicalBaseUrl)
+              typeof rawGlobal.canonicalBaseUrl === "string" && isTrustedCanonicalOrigin(rawGlobal.canonicalBaseUrl)
                 ? rawGlobal.canonicalBaseUrl.trim()
                 : DEFAULT_GLOBAL_SEO.canonicalBaseUrl,
             defaultOgImage:
@@ -1012,6 +1012,30 @@ export async function resolveRouteMetadata(
       resolvedTitle = seo.global.defaultTitle;
     }
 
+    const rawTitleStr =
+      typeof resolvedTitle === "string"
+        ? resolvedTitle
+        : resolvedTitle && typeof resolvedTitle === "object" && "absolute" in resolvedTitle && typeof resolvedTitle.absolute === "string"
+          ? resolvedTitle.absolute
+          : resolvedTitle && typeof resolvedTitle === "object" && "default" in resolvedTitle && typeof resolvedTitle.default === "string"
+            ? resolvedTitle.default
+            : seo.global.defaultTitle;
+
+    // Format title to avoid duplicate title template
+    // - For homepage ("/"), use { absolute: rawTitleStr } so root layout template isn't appended
+    // - For sub-routes, strip any existing " | <siteName>" suffix so the template "%s | <siteName>" formats it once cleanly
+    let finalTitle: Metadata["title"];
+    const siteSuffix = ` | ${seo.global.siteName}`;
+    if (route === "/") {
+      finalTitle = { absolute: rawTitleStr };
+    } else {
+      if (rawTitleStr.endsWith(siteSuffix)) {
+        finalTitle = rawTitleStr.slice(0, -siteSuffix.length).trim();
+      } else {
+        finalTitle = rawTitleStr;
+      }
+    }
+
     // 2. Resolve description
     let resolvedDescription = baseFallback.description;
     if (override?.description?.trim()) {
@@ -1020,13 +1044,27 @@ export async function resolveRouteMetadata(
       resolvedDescription = seo.global.defaultDescription;
     }
 
-    // 3. Resolve canonical URL: route-specific canonical path
+    // 3. Resolve canonical URL with consistent trailing-slash behavior
+    // Homepage ("/") always gets trailing slash: "${baseUrl}/"
+    // Sub-routes ("/about", "/pricing", etc.) never have a trailing slash: "${baseUrl}/about"
     let canonicalUrl: string;
     if (override?.canonicalUrl?.trim()) {
       const c = override.canonicalUrl.trim();
-      canonicalUrl = c.startsWith("http") ? c : `${baseUrl}${c.startsWith("/") ? "" : "/"}${c}`;
+      if (c === "/" || c === `${baseUrl}/` || c === `${baseUrl}`) {
+        canonicalUrl = `${baseUrl}/`;
+      } else {
+        const cleanPath = c.replace(/\/+$/, "");
+        canonicalUrl = cleanPath.startsWith("http")
+          ? cleanPath
+          : `${baseUrl}${cleanPath.startsWith("/") ? "" : "/"}${cleanPath}`;
+      }
     } else {
-      canonicalUrl = `${baseUrl}${route.startsWith("/") ? "" : "/"}${route === "/" ? "" : route.replace(/^\//, "")}`;
+      if (route === "/") {
+        canonicalUrl = `${baseUrl}/`;
+      } else {
+        const cleanRoute = route.replace(/\/+$/, "").replace(/^\//, "");
+        canonicalUrl = `${baseUrl}/${cleanRoute}`;
+      }
     }
 
     // 4. Resolve robots: if page has explicit noIndex, use it; otherwise use global default
@@ -1047,9 +1085,7 @@ export async function resolveRouteMetadata(
 
     // 5. Resolve OpenGraph and Twitter
     const fallbackOg = (baseFallback.openGraph || {}) as Record<string, unknown>;
-    const ogTitle =
-      override?.ogTitle?.trim() ||
-      (typeof resolvedTitle === "string" ? resolvedTitle : seo.global.defaultTitle);
+    const ogTitle = override?.ogTitle?.trim() || rawTitleStr;
     const ogDesc =
       override?.ogDescription?.trim() ||
       (typeof resolvedDescription === "string" ? resolvedDescription : seo.global.defaultDescription);
@@ -1057,7 +1093,7 @@ export async function resolveRouteMetadata(
 
     return {
       ...baseFallback,
-      title: resolvedTitle,
+      title: finalTitle,
       description: resolvedDescription,
       alternates: {
         ...(baseFallback.alternates || {}),

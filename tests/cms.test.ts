@@ -31,6 +31,7 @@ import {
   DEFAULT_SITE_SEO_SETTINGS,
   isValidSafeUrl,
   isValidCanonicalBaseUrl,
+  isTrustedCanonicalOrigin,
 } from "../src/lib/services/cms";
 import {
   GET as adminPagesGet,
@@ -1142,6 +1143,33 @@ describe("Centralized CMS Data Access Layer Suite", () => {
         assert.strictEqual(isValidCanonicalBaseUrl(null as unknown as string), false);
       });
 
+      it("enforces trusted canonical origin security (rejects untrusted hosts)", () => {
+        // Trusted origins allowed
+        assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.vercel.app"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.com"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("http://localhost:3000"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("http://127.0.0.1:3000"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://subdomain.webgent.com"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://preview-deploy.vercel.app"), true);
+
+        // Untrusted / malicious hosts strictly rejected
+        assert.strictEqual(isTrustedCanonicalOrigin("https://attacker.com"), false);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://evil-phishing.org"), false);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://malware-distributor.net"), false);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://fake-webgent.com.evil.com"), false);
+
+        // Schema rejects untrusted canonical origin
+        const untrustedPayload = {
+          ...DEFAULT_SITE_SEO_SETTINGS,
+          global: {
+            ...DEFAULT_GLOBAL_SEO,
+            canonicalBaseUrl: "https://attacker.com",
+          },
+        };
+        const res = siteSeoSettingsUpdateSchema.safeParse(untrustedPayload);
+        assert.strictEqual(res.success, false, "Schema must reject untrusted canonical base URL");
+      });
+
       it("rejects invalid title templates without %s placeholder", () => {
         const invalidPayload = {
           ...DEFAULT_SITE_SEO_SETTINGS,
@@ -1264,6 +1292,79 @@ describe("Centralized CMS Data Access Layer Suite", () => {
         assert.ok(aboutCanonical?.includes("/about"), "About canonical URL must contain /about");
       });
 
+      it("normalizes trailing slash behavior strictly (root has trailing slash, sub-routes do not)", async () => {
+        // 1. Root route "/" ends in a single trailing slash
+        const homeMeta = await resolveRouteMetadata("/", { title: "Home" });
+        const homeCanonical = (homeMeta.alternates as { canonical?: string })?.canonical;
+        assert.ok(homeCanonical?.endsWith("/"), "Root route canonical URL must end with trailing slash '/'");
+
+        // 2. Sub-route without trailing slash remains without trailing slash
+        const pricingMeta = await resolveRouteMetadata("/pricing", { title: "Pricing" });
+        const pricingCanonical = (pricingMeta.alternates as { canonical?: string })?.canonical;
+        assert.strictEqual(pricingCanonical?.endsWith("/"), false, "Sub-route canonical URL must NOT end with '/'");
+
+        // 3. Sub-route with custom override containing trailing slash normalizes by stripping it
+        const customTrailingSlashSettings = {
+          global: DEFAULT_GLOBAL_SEO,
+          pages: {
+            ...DEFAULT_PAGE_SEO_OVERRIDES,
+            "/about": {
+              route: "/about",
+              canonicalUrl: "/about/", // Intentional trailing slash in override
+            },
+          },
+        };
+        await prisma.siteSetting.upsert({
+          where: { key: "site_seo_settings" },
+          update: { value: JSON.stringify(customTrailingSlashSettings) },
+          create: { key: "site_seo_settings", value: JSON.stringify(customTrailingSlashSettings) },
+        });
+        await invalidateCmsCache({ keys: ["SEO"] });
+
+        const aboutMeta = await resolveRouteMetadata("/about", { title: "About" });
+        const aboutCanonical = (aboutMeta.alternates as { canonical?: string })?.canonical;
+        assert.strictEqual(aboutCanonical?.endsWith("/"), false, "Override trailing slash must be stripped from sub-route");
+        assert.ok(aboutCanonical?.endsWith("/about"), "Canonical must resolve cleanly to /about");
+      });
+
+      it("formats title correctly without duplicate title-template suffix", async () => {
+        // 1. Homepage title uses { absolute: '...' } to bypass parent layout %s | Webgent
+        const homeMeta = await resolveRouteMetadata("/", { title: "Home" });
+        assert.ok(
+          homeMeta.title && typeof homeMeta.title === "object" && "absolute" in homeMeta.title,
+          "Home title must be an absolute title object",
+        );
+
+        // 2. Sub-route title containing existing ' | Webgent' strips it to avoid 'Title | Webgent | Webgent'
+        const customSubRouteSettings = {
+          global: DEFAULT_GLOBAL_SEO,
+          pages: {
+            ...DEFAULT_PAGE_SEO_OVERRIDES,
+            "/pricing": {
+              route: "/pricing",
+              title: "Transparent Pricing Plans | Webgent", // Already contains site name
+            },
+          },
+        };
+        await prisma.siteSetting.upsert({
+          where: { key: "site_seo_settings" },
+          update: { value: JSON.stringify(customSubRouteSettings) },
+          create: { key: "site_seo_settings", value: JSON.stringify(customSubRouteSettings) },
+        });
+        await invalidateCmsCache({ keys: ["SEO"] });
+
+        const pricingMeta = await resolveRouteMetadata("/pricing", { title: "Pricing" });
+        assert.strictEqual(
+          pricingMeta.title,
+          "Transparent Pricing Plans",
+          "Duplicate '| Webgent' must be stripped from sub-route title so layout template formats it once",
+        );
+
+        // OpenGraph title retains full title string for social sharing
+        const ogTitle = (pricingMeta.openGraph as { title?: string })?.title;
+        assert.ok(ogTitle?.includes("Transparent Pricing Plans"), "OpenGraph title preserves full title string");
+      });
+
       it("applies per-route title, description, and canonical overrides correctly", async () => {
         const customSettings = {
           global: DEFAULT_GLOBAL_SEO,
@@ -1291,7 +1392,8 @@ describe("Centralized CMS Data Access Layer Suite", () => {
           description: "Fallback Description",
         });
 
-        assert.strictEqual(resolved.title, "Custom Pricing & Calculator | Webgent");
+        // Title strips trailing ' | Webgent' so Next.js layout template doesn't duplicate it
+        assert.strictEqual(resolved.title, "Custom Pricing & Calculator");
         assert.strictEqual(resolved.description, "Custom negotiated rates for enterprise web development.");
         const canonical = (resolved.alternates as { canonical?: string })?.canonical;
         assert.ok(canonical?.includes("/pricing-special"), "Canonical override must be honored");

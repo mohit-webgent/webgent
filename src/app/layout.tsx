@@ -4,6 +4,7 @@ import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { MainLayout } from "@/components/layout/main-layout";
 import { getNavigationMenu, getFooterConfig, getSiteSeoSettings } from "@/lib/services/cms";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -151,6 +152,7 @@ export default async function RootLayout({
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${inter.className} font-sans bg-background text-foreground antialiased`}
       >
         <MainLayout navItems={navConfig.items} footerData={footerConfig}>{children}</MainLayout>
+        <SpeedInsights />
       </body>
     </html>
   );

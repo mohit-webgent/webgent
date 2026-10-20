@@ -19,15 +19,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { route: "/contact", priority: 0.8, changeFrequency: "monthly" as const },
   ];
 
-  // Omit routes explicitly flagged with noIndex
+  // Omit routes explicitly flagged with noIndex and apply canonical overrides
   const staticRoutes: MetadataRoute.Sitemap = staticRouteDefinitions
     .filter((r) => !seo.pages[r.route]?.noIndex)
-    .map((r) => ({
-      url: `${baseUrl}${r.route === "/" ? "/" : r.route}`,
-      lastModified: new Date(),
-      changeFrequency: r.changeFrequency,
-      priority: r.priority,
-    }));
+    .map((r) => {
+      const override = seo.pages[r.route];
+      let routeUrl: string;
+      if (override?.canonicalUrl?.trim()) {
+        const c = override.canonicalUrl.trim();
+        if (c === "/" || c === `${baseUrl}/` || c === `${baseUrl}`) {
+          routeUrl = `${baseUrl}/`;
+        } else {
+          const cleanPath = c.replace(/\/+$/, "");
+          routeUrl = cleanPath.startsWith("http")
+            ? cleanPath
+            : `${baseUrl}${cleanPath.startsWith("/") ? "" : "/"}${cleanPath}`;
+        }
+      } else {
+        routeUrl = `${baseUrl}${r.route === "/" ? "/" : r.route}`;
+      }
+
+      return {
+        url: routeUrl,
+        lastModified: new Date(),
+        changeFrequency: r.changeFrequency,
+        priority: r.priority,
+      };
+    });
 
   let dynamicProjectRoutes: MetadataRoute.Sitemap = [];
   let dynamicBlogRoutes: MetadataRoute.Sitemap = [];

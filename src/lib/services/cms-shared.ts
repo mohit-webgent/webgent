@@ -74,6 +74,54 @@ export function isValidCanonicalBaseUrl(val: string): boolean {
   }
 }
 
+export function isTrustedCanonicalOrigin(val: string): boolean {
+  if (!isValidCanonicalBaseUrl(val)) return false;
+  try {
+    const url = new URL(val);
+    const host = url.hostname.toLowerCase();
+
+    // 1. Configured origins from environment and defaults
+    const candidates = [
+      process.env.NEXT_PUBLIC_SITE_URL,
+      process.env.NEXT_PUBLIC_APP_URL,
+      "https://webgent.vercel.app",
+      "https://webgent.com",
+    ].filter(Boolean) as string[];
+
+    const allowedHosts = new Set<string>();
+    for (const cand of candidates) {
+      try {
+        const u = new URL(cand.startsWith("http") ? cand : `https://${cand}`);
+        allowedHosts.add(u.hostname.toLowerCase());
+      } catch {
+        // ignore malformed candidate
+      }
+    }
+
+    // 2. Allow local development hosts
+    if (host === "localhost" || host === "127.0.0.1") {
+      return true;
+    }
+
+    // 3. Exact match against configured hosts
+    if (allowedHosts.has(host)) {
+      return true;
+    }
+
+    // 4. Subdomains of verified project domains (e.g. *.webgent.com, *.vercel.app)
+    if (host.endsWith(".webgent.com") || host === "webgent.com") {
+      return true;
+    }
+    if (host.endsWith(".vercel.app")) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export function sanitizeText(val: string): string {
   // Strip control characters, normalize space
   return val.replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "").trim();
@@ -425,8 +473,8 @@ export const globalSeoSchema = z.object({
     .string()
     .trim()
     .refine(
-      isValidCanonicalBaseUrl,
-      "Canonical base URL must be a valid http(s) origin without trailing slash or path (e.g. 'https://webgent.vercel.app')",
+      isTrustedCanonicalOrigin,
+      "Canonical base URL must match the configured production site origin or a trusted domain (e.g. 'https://webgent.vercel.app')",
     ),
   defaultOgImage: z
     .string()
