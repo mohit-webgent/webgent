@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         "projects") as string
     ).toLowerCase();
 
-    const allowedFolders: AllowedFolder[] = ["projects", "blog", "testimonials"];
+    const allowedFolders: AllowedFolder[] = ["projects", "blog", "testimonials", "general"];
     if (!allowedFolders.includes(rawFolder as AllowedFolder)) {
       return ApiResponse.badRequest(
         `Invalid folder destination "${rawFolder}". Allowed destination folders: ${allowedFolders.join(", ")}`,
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       );
     }
     const folder = rawFolder as AllowedFolder;
+    const altText = (formData.get("altText") as string) || undefined;
 
     if (file.size > MAX_FILE_SIZE) {
       const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     const detectedMime = detectImageMimeType(buffer);
     if (!detectedMime || !ALLOWED_MIME_TYPES.includes(detectedMime)) {
       return ApiResponse.badRequest(
-        "Invalid file format. Only JPG, PNG, and WEBP image files are allowed.",
+        "Invalid file format. Only JPG, PNG, WEBP, and AVIF image files are allowed. SVG is rejected for security.",
         "INVALID_MIME_TYPE",
       );
     }
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
       originalName: file.name,
       mimeType: detectedMime,
       folder,
+      altText,
     });
 
     logger.info("Admin uploaded asset successfully", {
@@ -84,10 +86,11 @@ export async function POST(req: NextRequest) {
 
     return ApiResponse.success(uploadResult, 201);
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error("Error processing admin asset upload", {
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMsg,
     });
-    return ApiResponse.internalError("Failed to upload image asset.");
+    return ApiResponse.badRequest(errorMsg || "Failed to upload image asset.", "UPLOAD_FAILED");
   }
 }
 
@@ -100,6 +103,7 @@ export async function DELETE(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     let keyOrUrl = searchParams.get("key") || searchParams.get("url");
+    const force = searchParams.get("force") === "true";
 
     if (!keyOrUrl) {
       const body = await req.json().catch(() => ({}));
@@ -116,25 +120,33 @@ export async function DELETE(req: NextRequest) {
     const validatedKey = storageService.extractKeyFromUrl(keyOrUrl);
     if (!validatedKey || !storageService.isValidKey(validatedKey)) {
       return ApiResponse.badRequest(
-        "Invalid object key. Deletion is restricted strictly to authorized media directories (images/projects/, images/blog/, images/testimonials/).",
+        "Invalid object key. Deletion is restricted strictly to authorized media directories (images/projects/, images/blog/, images/testimonials/, images/general/).",
         "UNAUTHORIZED_KEY",
       );
     }
 
-    const deleted = await storageService.deleteFile(validatedKey);
-    if (!deleted) {
-      return ApiResponse.badRequest("Failed to delete object from storage.", "DELETE_FAILED");
+    try {
+      const deleted = await storageService.deleteFile(validatedKey, force);
+      if (!deleted) {
+        return ApiResponse.badRequest("Failed to delete object from storage.", "DELETE_FAILED");
+      }
+
+      logger.info("Admin deleted asset record", {
+        key: validatedKey,
+        adminId: authGuard.session.user.id,
+      });
+
+      return ApiResponse.success({
+        message: "Asset deleted successfully from Supabase Storage.",
+        key: validatedKey,
+      });
+    } catch (deleteErr: unknown) {
+      const msg = deleteErr instanceof Error ? deleteErr.message : String(deleteErr);
+      if (msg.includes("Cannot delete asset")) {
+        return ApiResponse.conflict(msg, "REFERENCED_ASSET");
+      }
+      throw deleteErr;
     }
-
-    logger.info("Admin deleted asset record", {
-      key: validatedKey,
-      adminId: authGuard.session.user.id,
-    });
-
-    return ApiResponse.success({
-      message: "Asset deleted successfully from Cloudflare R2 storage.",
-      key: validatedKey,
-    });
   } catch (error) {
     logger.error("Error processing admin asset deletion", {
       error: error instanceof Error ? error.message : String(error),

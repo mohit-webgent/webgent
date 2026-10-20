@@ -14,9 +14,11 @@ import {
   Eye,
   Info,
   ShieldCheck,
+  FolderOpen,
 } from "lucide-react";
 import type { SiteSeoSettings, GlobalSeoConfig, PageSeoOverride } from "@/lib/services/cms-shared";
 import { DEFAULT_SITE_SEO_SETTINGS, isValidSafeUrl, isTrustedCanonicalOrigin } from "@/lib/services/cms-shared";
+import { MediaPickerModal } from "./media-picker-modal";
 
 interface SeoContentEditorProps {
   initialSettings: SiteSeoSettings;
@@ -38,6 +40,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
   const [selectedRoute, setSelectedRoute] = useState<string>("/");
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [isPending, startTransition] = useTransition();
+  const [mediaPickerTarget, setMediaPickerTarget] = useState<"global" | "page" | null>(null);
 
   const [notification, setNotification] = useState<{
     type: "success" | "error" | "info";
@@ -522,13 +525,23 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   <span>Default OpenGraph Image URL</span>
                   <span className="text-[10px] text-muted-foreground">1200 x 630 recommended</span>
                 </label>
-                <input
-                  type="text"
-                  value={settings.global.defaultOgImage}
-                  onChange={(e) => updateGlobal("defaultOgImage", e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
-                  placeholder="https://webgent.vercel.app/api/og?title=Webgent"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={settings.global.defaultOgImage}
+                    onChange={(e) => updateGlobal("defaultOgImage", e.target.value)}
+                    className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                    placeholder="https://webgent.vercel.app/api/og?title=Webgent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMediaPickerTarget("global")}
+                    className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-foreground border border-border/60 text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Library</span>
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -720,13 +733,23 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-foreground">Custom OpenGraph Image URL</label>
-                  <input
-                    type="text"
-                    value={currentOverride?.ogImage || ""}
-                    onChange={(e) => updatePageOverride(selectedRoute, "ogImage", e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
-                    placeholder="Leave empty to use global default"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={currentOverride?.ogImage || ""}
+                      onChange={(e) => updatePageOverride(selectedRoute, "ogImage", e.target.value)}
+                      className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                      placeholder="Leave empty to use global default"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMediaPickerTarget("page")}
+                      className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-foreground border border-border/60 text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors"
+                    >
+                      <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Library</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/50 mt-auto">
@@ -956,6 +979,20 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
           </div>
         </div>
       )}
+
+      <MediaPickerModal
+        isOpen={mediaPickerTarget !== null}
+        onClose={() => setMediaPickerTarget(null)}
+        folder="general"
+        title="Select OpenGraph Image"
+        onSelect={(asset) => {
+          if (mediaPickerTarget === "global") {
+            updateGlobal("defaultOgImage", asset.url);
+          } else if (mediaPickerTarget === "page") {
+            updatePageOverride(selectedRoute, "ogImage", asset.url);
+          }
+        }}
+      />
     </div>
   );
 }

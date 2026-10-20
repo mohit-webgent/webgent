@@ -79,6 +79,9 @@ export const ApiResponse = {
 
   notFound: (message = "Resource not found", code = "NOT_FOUND") => apiError(message, 404, code),
 
+  conflict: (message: string, code = "CONFLICT", details?: unknown) =>
+    apiError(message, 409, code, details),
+
   tooManyRequests: (message = "Too many requests", code = "TOO_MANY_REQUESTS") =>
     apiError(message, 429, code),
 

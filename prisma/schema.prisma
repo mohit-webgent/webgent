@@ -337,3 +337,27 @@ model SystemAuditLog {
   @@index([createdAt])
   @@map("system_audit_logs")
 }
+
+/// Media model for centralized media library management and cross-content references
+model Media {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  url          String
+  storageKey   String   @unique
+  bucket       String   @default("webgent-media")
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  altText      String?
+  folder       String   @default("general")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([storageKey])
+  @@index([folder])
+  @@index([createdAt])
+  @@map("media")
+}
+

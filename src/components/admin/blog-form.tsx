@@ -11,10 +11,12 @@ import {
   Eye,
   Clock,
   Sparkles,
+  FolderOpen,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { blogPostSchema } from "@/lib/validations/blog";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { MediaPickerModal } from "@/components/admin/media-picker-modal";
 
 interface BlogPostData {
   id?: string;
@@ -51,6 +53,7 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
   const [featured, setFeatured] = useState(initialData?.featured || false);
   const [seoTitle, setSeoTitle] = useState(initialData?.seoTitle || "");
   const [seoDescription, setSeoDescription] = useState(initialData?.seoDescription || "");
+  const [isContentMediaPickerOpen, setIsContentMediaPickerOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
 
@@ -255,6 +258,15 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
           <div className="flex items-center gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
             <button
               type="button"
+              onClick={() => setIsContentMediaPickerOpen(true)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900 flex items-center gap-1.5 transition-all"
+              title="Insert image from media library"
+            >
+              <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Insert Image</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab("editor")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === "editor"
@@ -403,6 +415,16 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
           </>
         )}
       </button>
+      <MediaPickerModal
+        isOpen={isContentMediaPickerOpen}
+        onClose={() => setIsContentMediaPickerOpen(false)}
+        folder="blog"
+        title="Insert Image into Blog Article"
+        onSelect={(asset) => {
+          const imageMarkdown = `\n\n![${asset.altText || asset.filename}](${asset.url})\n`;
+          setContent((prev) => (prev ? `${prev}${imageMarkdown}` : imageMarkdown.trim()));
+        }}
+      />
     </form>
   );
 }
