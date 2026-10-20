@@ -1,11 +1,26 @@
 import { auth } from "@/auth";
+import type { Session } from "next-auth";
 import { UserRole, UserStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { ApiResponse } from "@/lib/api/response";
 
-export async function getAuthSession() {
+export type AuthSessionResolver = () => Promise<Session | null>;
+let sessionResolver: AuthSessionResolver | null = null;
+
+/**
+ * Allows injecting a custom auth session resolver for integration tests.
+ * Pass null to restore default behavior (NextAuth auth()).
+ */
+export function setAuthSessionResolver(resolver: AuthSessionResolver | null) {
+  sessionResolver = resolver;
+}
+
+export async function getAuthSession(): Promise<Session | null> {
+  if (sessionResolver) {
+    return await sessionResolver();
+  }
   try {
-    return await auth();
+    return (await auth()) as Session | null;
   } catch {
     return null;
   }

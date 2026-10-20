@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
+import { getContactInfo } from "@/lib/services/cms";
 
 export const revalidate = 3600;
 
@@ -36,7 +37,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const contactInfo = await getContactInfo();
   return (
     <div className="min-h-[85vh] w-full bg-[#000000] text-white pt-8 pb-16 sm:pt-14 sm:pb-24 px-4 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
       <h1 className="sr-only">Contact Webgent — Web Architecture &amp; Development Consultation</h1>
@@ -53,7 +55,7 @@ export default function ContactPage() {
             <div className="min-h-[480px] w-full bg-[#0F1014] rounded-[24px] animate-pulse border border-white/[0.08]" />
           }
         >
-          <ContactForm />
+          <ContactForm contactInfo={contactInfo} />
         </Suspense>
       </div>
     </div>

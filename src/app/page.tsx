@@ -11,6 +11,11 @@ import { CtaLink } from "@/components/ui/cta-link";
 import type { Metadata } from "next";
 import { logger } from "@/lib/logger";
 import { siteConfig } from "@/config/site";
+import {
+  getHomepageHeroContent,
+  getHomepageSectionsConfig,
+  type HomeSectionId,
+} from "@/lib/services/cms";
 
 export const revalidate = 60;
 
@@ -59,6 +64,11 @@ type HomePost = {
 };
 
 export default async function HomePage() {
+  const [heroContent, sectionsConfig] = await Promise.all([
+    getHomepageHeroContent(),
+    getHomepageSectionsConfig(),
+  ]);
+
   let featuredProjects: Awaited<ReturnType<typeof prisma.project.findMany>> = [];
   let testimonials: Awaited<ReturnType<typeof prisma.testimonial.findMany>> = [];
   let latestPosts: HomePost[] = [];
@@ -115,29 +125,16 @@ export default async function HomePage() {
     }
   }
 
-  return (
-    <div className="space-y-8 sm:space-y-12 lg:space-y-16 pb-8 sm:pb-16 max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto px-3.5 sm:px-8 lg:px-12 2xl:px-16 3xl:px-24 font-sans w-full">
-      <h1 className="sr-only">Webgent — Modern Web Development & Engineering Solutions</h1>
-      {/* 1. HERO SECTION (Approved Product Visual preserved with choreographed entrance & scroll story) */}
-      <HeroSection />
-
-      {/* 2. CAPABILITIES SECTION (Interactive Sticky Discipline) */}
-      <InteractiveCapabilities />
-
-      {/* 3. SIGNATURE 'HOW WE BUILD' 3D DIGITAL PRODUCT EVOLUTION */}
-      <HowWeBuildSection />
-
-      {/* 4. HORIZONTAL SCROLL STORYTELLING: FEATURED CASE STUDIES */}
-      <HorizontalShowcase projects={featuredProjects} />
-
-      {/* 5. TESTIMONIALS SECTION (Curved Arc Carousel Matching User Reference) */}
-      <ArcTestimonials initialTestimonials={testimonials} />
-
-      {/* 6. ENGINEERING BLOG (Ultra-Premium Architectural Deep Dives) */}
-      <EngineeringBlogSection posts={latestPosts} />
-
-      {/* 7. FOOTER CTA */}
+  const sectionMap: Record<HomeSectionId, React.ReactNode> = {
+    hero: <HeroSection key="hero" data={heroContent} />,
+    capabilities: <InteractiveCapabilities key="capabilities" />,
+    howWeBuild: <HowWeBuildSection key="howWeBuild" />,
+    showcase: <HorizontalShowcase key="showcase" projects={featuredProjects} />,
+    testimonials: <ArcTestimonials key="testimonials" initialTestimonials={testimonials} />,
+    blog: <EngineeringBlogSection key="blog" posts={latestPosts} />,
+    cta: (
       <ScrollReveal
+        key="cta"
         as="section"
         className="relative overflow-hidden rounded-2xl bg-[#0D0D0D] border border-white/[0.08] p-6 sm:p-10 md:p-12 text-center space-y-5 shadow-2xl"
       >
@@ -168,6 +165,31 @@ export default async function HomePage() {
           </CtaLink>
         </div>
       </ScrollReveal>
+    ),
+  };
+
+  const orderedSections = [...sectionsConfig.sections]
+    .sort((a, b) => a.order - b.order)
+    .filter((s) => s.enabled)
+    .map((s) => sectionMap[s.id])
+    .filter(Boolean);
+
+  return (
+    <div className="space-y-8 sm:space-y-12 lg:space-y-16 pb-8 sm:pb-16 max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto px-3.5 sm:px-8 lg:px-12 2xl:px-16 3xl:px-24 font-sans w-full">
+      <h1 className="sr-only">Webgent — Modern Web Development & Engineering Solutions</h1>
+      {orderedSections.length > 0 ? (
+        orderedSections
+      ) : (
+        <>
+          <HeroSection data={heroContent} />
+          <InteractiveCapabilities />
+          <HowWeBuildSection />
+          <HorizontalShowcase projects={featuredProjects} />
+          <ArcTestimonials initialTestimonials={testimonials} />
+          <EngineeringBlogSection posts={latestPosts} />
+          {sectionMap.cta}
+        </>
+      )}
     </div>
   );
 }

@@ -6,8 +6,14 @@ import { siteConfig } from "@/config/site";
 import { ArrowUpRight, ArrowUp } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
+import { type FooterConfig, DEFAULT_FOOTER_CONFIG } from "@/lib/services/cms-shared";
 
-export function Footer() {
+export interface FooterProps {
+  data?: FooterConfig;
+}
+
+export function Footer({ data }: FooterProps = {}) {
+  const config = data || DEFAULT_FOOTER_CONFIG;
   const footerRef = useRef<HTMLElement | null>(null);
   const watermarkRef = useRef<HTMLDivElement | null>(null);
 
@@ -78,8 +84,7 @@ export function Footer() {
             </Link>
 
             <p className="text-xs sm:text-sm text-[#909090] max-w-sm leading-relaxed">
-              Designing and engineering high-performance web applications, scalable cloud backends,
-              and digital platforms for growing businesses and modern brands.
+              {config.brandTagline}
             </p>
           </div>
 
@@ -89,46 +94,27 @@ export function Footer() {
               Systems
             </p>
             <ul className="space-y-2.5 text-xs">
-              <li>
-                <Link
-                  href="/work"
-                  className="text-[#9E9E9E] hover:text-white transition-colors block"
-                >
-                  Selected Case Studies
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-[#9E9E9E] hover:text-white transition-colors block"
-                >
-                  Engineering Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-[#9E9E9E] hover:text-white transition-colors block"
-                >
-                  Pricing & Plans
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-[#9E9E9E] hover:text-white transition-colors block"
-                >
-                  About Founder
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-[#9E9E9E] hover:text-white transition-colors block"
-                >
-                  Contact Us
-                </Link>
-              </li>
+              {config.systemsLinks.map((link) => (
+                <li key={link.href + link.title}>
+                  {link.isExternal ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#9E9E9E] hover:text-white transition-colors block"
+                    >
+                      {link.title}
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.href}
+                      className="text-[#9E9E9E] hover:text-white transition-colors block"
+                    >
+                      {link.title}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -138,11 +124,11 @@ export function Footer() {
               Core Stack
             </p>
             <ul className="space-y-2.5 text-xs text-[#9E9E9E]">
-              <li className="hover:text-white transition-colors">Next.js 14</li>
-              <li className="hover:text-white transition-colors">PostgreSQL & Prisma</li>
-              <li className="hover:text-white transition-colors">TypeScript</li>
-              <li className="hover:text-white transition-colors">Tailwind CSS</li>
-              <li className="hover:text-white transition-colors">GSAP Motion</li>
+              {config.coreStack.map((tech) => (
+                <li key={tech} className="hover:text-white transition-colors">
+                  {tech}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -152,48 +138,29 @@ export function Footer() {
               Connect
             </p>
             <ul className="space-y-2.5 text-xs">
-              <li>
-                <a
-                  href={siteConfig.links.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>GitHub</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-60" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href={siteConfig.links.twitter}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>Twitter / X</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-60" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href={siteConfig.links.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>LinkedIn</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-60" />
-                </a>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>Direct Inquiries</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-60" />
-                </Link>
-              </li>
+              {config.connectLinks.map((link) => (
+                <li key={link.href + link.title}>
+                  {link.isExternal ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <span>{link.title}</span>
+                      <ArrowUpRight className="w-3 h-3 opacity-60" />
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.href}
+                      className="text-[#9E9E9E] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <span>{link.title}</span>
+                      <ArrowUpRight className="w-3 h-3 opacity-60" />
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -201,7 +168,7 @@ export function Footer() {
         {/* Bottom Bar: Copyright & Navigation */}
         <div className="mt-12 pt-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#707070]">
           <p className="text-[#8A8A8A] text-[11px] font-mono text-center sm:text-left">
-            &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+            &copy; {new Date().getFullYear()} {siteConfig.name}. {config.copyrightText || "All rights reserved."}
           </p>
 
           <button

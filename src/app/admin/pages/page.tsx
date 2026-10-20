@@ -1,29 +1,29 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import { AdminScaffoldView } from "@/components/admin/admin-scaffold-view";
-import { LayoutTemplate } from "lucide-react";
+import {
+  getHomepageHeroContent,
+  getHomepageSectionsConfig,
+} from "@/lib/services/cms";
+import { HomepageContentEditor } from "@/components/admin/homepage-content-editor";
 
 export const metadata = {
-  title: "Pages & Content Builder — Webgent Admin",
+  title: "Pages & Content Editor — Webgent Admin",
   robots: { index: false, follow: false },
 };
 
 export default async function AdminPagesPage() {
   await requireAdmin();
 
+  const [initialHero, initialSections] = await Promise.all([
+    getHomepageHeroContent(),
+    getHomepageSectionsConfig(),
+  ]);
+
   return (
-    <AdminScaffoldView
-      title="Pages & Content Builder"
-      description="Manage public website pages, hero headings, subtitles, call-to-action buttons, section ordering, and component visibility across Webgent."
-      group="Content"
-      icon={LayoutTemplate}
-      targetStorage="SiteSetting (keys: home_hero_content, home_sections_config)"
-      publicConsumers={["/", "/about", "/contact"]}
-      plannedFeatures={[
-        "Homepage Hero title, subtitle, badges, and primary/secondary CTA editing",
-        "Section visibility toggles and display sequence reordering",
-        "Feature list and capability card customization without code deployment",
-        "Cache revalidation triggers for instant homepage updates",
-      ]}
-    />
+    <div className="animate-in fade-in duration-300">
+      <HomepageContentEditor
+        initialHero={initialHero}
+        initialSections={initialSections.sections}
+      />
+    </div>
   );
 }

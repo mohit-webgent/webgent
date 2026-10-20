@@ -33,6 +33,27 @@ const envSchema = z.object({
 });
 
 function parseEnv() {
+  if (typeof window !== "undefined") {
+    // In client-side bundles, Next.js intentionally strips server-only environment variables
+    // (such as DATABASE_URL and AUTH_SECRET) for security. Return client-safe values.
+    return {
+      NODE_ENV: (process.env.NODE_ENV as "development" | "production" | "test") || "development",
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "https://webgent.vercel.app",
+      NEXT_PUBLIC_APP_URL:
+        process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://webgent.vercel.app",
+      DATABASE_URL: "",
+      AUTH_SECRET: "",
+      LOG_LEVEL: (process.env.LOG_LEVEL as "debug" | "info" | "warn" | "error") || "info",
+      EMAIL_FROM: process.env.EMAIL_FROM || "Webgent <onboarding@resend.dev>",
+      ADMIN_NOTIFICATION_EMAIL: process.env.ADMIN_NOTIFICATION_EMAIL || "admin@webgent.com",
+      R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || "webgent-media",
+      TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM || "+14155238886",
+      ANTHROPIC_MODEL: "claude-3-5-sonnet-20241022",
+      GEMINI_MODEL: "gemini-3.8-flash",
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    } as z.infer<typeof envSchema>;
+  }
+
   const parsed = envSchema.safeParse({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,

@@ -8,15 +8,21 @@ import { trackCtaClick } from "@/lib/analytics/client";
 
 interface HeroStartProjectButtonProps {
   className?: string;
+  label?: string;
+  href?: string;
 }
 
-export function HeroStartProjectButton({ className = "" }: HeroStartProjectButtonProps) {
+export function HeroStartProjectButton({
+  className = "",
+  label = "START YOUR PROJECT",
+  href = "/contact",
+}: HeroStartProjectButtonProps) {
   const buttonRef = useRef<HTMLAnchorElement | null>(null);
   const specularRef = useRef<HTMLDivElement | null>(null);
   const arrowRef = useRef<HTMLSpanElement | null>(null);
   const shadowRef = useRef<HTMLDivElement | null>(null);
 
-  const textLabel = "START YOUR PROJECT";
+  const textLabel = label.toUpperCase();
 
   // Magnetic & 3D Tilt interaction
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -164,7 +170,7 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
   }, []);
 
   const handleClick = () => {
-    trackCtaClick("Hero Start Project", "/contact");
+    trackCtaClick("Hero Start Project", href);
 
     // Subtle tactile depression
     if (buttonRef.current) {
@@ -188,7 +194,7 @@ export function HeroStartProjectButton({ className = "" }: HeroStartProjectButto
       {/* 2. Main Premium Satin CTA */}
       <Link
         ref={buttonRef}
-        href="/contact"
+        href={href}
         aria-label={textLabel}
         onClick={handleClick}
         onMouseMove={handleMouseMove}

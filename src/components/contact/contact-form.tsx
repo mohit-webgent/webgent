@@ -19,6 +19,7 @@ import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 import { FOUNDER_PROFILE } from "@/data/founder-profile";
 import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
+import type { ContactInfo } from "@/lib/services/cms-shared";
 
 const PROJECT_TYPES = [
   "Web Application",
@@ -42,7 +43,11 @@ const BUDGET_OPTIONS = [
   "Flexible",
 ] as const;
 
-export function ContactForm() {
+export interface ContactFormProps {
+  contactInfo?: ContactInfo;
+}
+
+export function ContactForm({ contactInfo }: ContactFormProps = {}) {
   const searchParams = useSearchParams();
 
   const [name, setName] = useState("");
@@ -64,9 +69,9 @@ export function ContactForm() {
   const hasStartedRef = useRef(false);
   const turnstileRef = useRef<TurnstileRef>(null);
 
-  const contactEmail = FOUNDER_PROFILE.email || "mohitvermag75@gmail.com";
-  const contactPhone = "+91 98765 43210";
-  const contactAddress = FOUNDER_PROFILE.location || "Gurugram / Noida, India";
+  const contactEmail = contactInfo?.email || FOUNDER_PROFILE.email || "mohitvermag75@gmail.com";
+  const contactPhone = contactInfo?.phone || "+91 98765 43210";
+  const contactAddress = contactInfo?.officeAddress || FOUNDER_PROFILE.location || "Gurugram / Noida, India";
 
   useEffect(() => {
     if (!searchParams) return;
@@ -215,27 +220,33 @@ export function ContactForm() {
           </div>
 
           {/* Phone */}
-          <div className="flex items-center gap-4 group">
-            <a
-              href="https://api.whatsapp.com/send?phone=919876543210&text=Hi%20Mohit,%20I%20would%20like%20to%20discuss%20a%20project%20with%20Webgent."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
-            >
-              <Phone className="w-5 h-5 text-white" />
-            </a>
-            <div className="min-w-0">
-              <span className="block text-xs text-neutral-400 font-medium">Phone</span>
-              <a
-                href="https://api.whatsapp.com/send?phone=919876543210&text=Hi%20Mohit,%20I%20would%20like%20to%20discuss%20a%20project%20with%20Webgent."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-sm sm:text-base text-white hover:text-neutral-200 font-medium transition-colors"
-              >
-                {contactPhone}
-              </a>
-            </div>
-          </div>
+          {(() => {
+            const whatsappPhone = contactPhone.replace(/[^0-9]/g, "") || "919876543210";
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=Hi%20Webgent,%20I%20would%20like%20to%20discuss%20a%20project%20with%20Webgent.`;
+            return (
+              <div className="flex items-center gap-4 group">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
+                >
+                  <Phone className="w-5 h-5 text-white" />
+                </a>
+                <div className="min-w-0">
+                  <span className="block text-xs text-neutral-400 font-medium">Phone</span>
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm sm:text-base text-white hover:text-neutral-200 font-medium transition-colors"
+                  >
+                    {contactPhone}
+                  </a>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Address */}
           <div className="flex items-center gap-4">

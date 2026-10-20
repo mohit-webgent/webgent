@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPricingData } from "@/lib/services/pricing";
-import { prisma } from "@/lib/db";
-import { getAuthSession } from "@/lib/auth-utils";
+import { getPricingData, savePricingOverrides } from "@/lib/services/pricing";
+import { verifyAdminApiAccess } from "@/lib/auth-utils";
+import { ZodError } from "zod";
 
 export const dynamic = "force-dynamic";
 
@@ -13,44 +13,32 @@ export async function GET() {
     console.error("Failed to fetch pricing data:", error);
     return NextResponse.json(
       { success: false, error: "Failed to retrieve pricing data." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized. Admin privileges required to update pricing rates." },
-      { status: 401 }
-    );
+  const authCheck = await verifyAdminApiAccess();
+  if (authCheck instanceof NextResponse) {
+    return authCheck;
   }
 
   try {
     const body = await req.json();
-
-    // Upsert pricing_overrides in site_settings
-    const setting = await prisma.siteSetting.upsert({
-      where: { key: "pricing_overrides" },
-      update: {
-        value: JSON.stringify(body),
-        updatedAt: new Date(),
-      },
-      create: {
-        key: "pricing_overrides",
-        value: JSON.stringify(body),
-        description: "Custom pricing rates and configurator catalog overrides",
-        isPublic: true,
-      },
-    });
-
-    return NextResponse.json({ success: true, updated: true, setting });
+    const result = await savePricingOverrides(body);
+    return NextResponse.json({ success: true, updated: true, data: result.data, meta: result.meta });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { success: false, error: "Validation failed: Invalid pricing data.", details: error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
     console.error("Failed to update pricing overrides:", error);
     return NextResponse.json(
       { success: false, error: "Failed to save pricing overrides." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

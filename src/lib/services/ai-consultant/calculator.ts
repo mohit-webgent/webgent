@@ -16,7 +16,9 @@ import {
   FeatureOption,
   BASE_PAGES_INCLUDED,
   COST_PER_EXTRA_PAGE,
+  MIN_PROJECT_COST,
   WEBSITE_TYPES,
+  EstimatorCalculationConfig,
 } from "@/lib/pricing.config";
 import {
   DOMAIN_BLUEPRINTS,
@@ -135,7 +137,10 @@ export function resolveCategoryKey(rawKey?: string | null): string {
 /**
  * Pure deterministic cost calculation function for AI Consultant.
  */
-export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEstimateResult {
+export function calculateProjectEstimate(
+  input: CalculatorInput = {},
+  pricingConfig?: EstimatorCalculationConfig,
+): ProjectEstimateResult {
   const categoryKey = resolveCategoryKey(input.categoryKey);
   const blueprint = DOMAIN_BLUEPRINTS[categoryKey] || DOMAIN_BLUEPRINTS.business;
 
@@ -186,7 +191,12 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
   const recommendedList: FeatureOption[] = [];
   const optionalList: FeatureOption[] = [];
 
-  POPULAR_FEATURES.forEach((feat) => {
+  const featureCatalog =
+    pricingConfig?.features && pricingConfig.features.length > 0
+      ? pricingConfig.features
+      : POPULAR_FEATURES;
+
+  featureCatalog.forEach((feat) => {
     if (blueprint.essentialFeatures.includes(feat.id)) {
       essentialList.push(feat);
     } else if (blueprint.recommendedFeatures.includes(feat.id) || combinedFeatureIds.includes(feat.id)) {
@@ -218,13 +228,16 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
       : "standard";
 
   // 4. Run Canonical Pricing Calculation
-  let canonicalResult = calculatePricing({
-    categoryId: mappedPricingCategoryId,
-    typeId: effectiveArch,
-    pageCount,
-    deliverySpeed: effectiveDeliverySpeed,
-    selectedFeatureIds: combinedFeatureIds,
-  });
+  let canonicalResult = calculatePricing(
+    {
+      categoryId: mappedPricingCategoryId,
+      typeId: effectiveArch,
+      pageCount,
+      deliverySpeed: effectiveDeliverySpeed,
+      selectedFeatureIds: combinedFeatureIds,
+    },
+    pricingConfig,
+  );
 
   let baseCategoryPriceINR = canonicalResult.baseCategoryPrice;
   let oneTimeTotalINR = canonicalResult.grandTotal;
@@ -237,13 +250,17 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
     (!userFeatureIds || userFeatureIds.length === 0 || userFeatureIds.every((f) => blueprint.essentialFeatures.includes(f)));
 
   if (isBaselineGym) {
-    baseCategoryPriceINR = blueprint.startingPriceINR;
-    const subtotal = blueprint.startingPriceINR;
-    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * 0.2) : 0;
+    const configuredCat = pricingConfig?.categories?.find((c) => c.id === "business");
+    const baseGymPrice = configuredCat ? configuredCat.startingPrice : blueprint.startingPriceINR;
+    baseCategoryPriceINR = baseGymPrice;
+    const minCostGym = pricingConfig?.pricingSettings?.minProjectCost ?? MIN_PROJECT_COST;
+    const subtotal = Math.max(minCostGym, baseGymPrice);
+    const expressMultiplier = pricingConfig?.pricingSettings?.expressMultiplier ?? 0.2;
+    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * expressMultiplier) : 0;
     oneTimeTotalINR = subtotal + expressPrice;
     canonicalResult = {
       ...canonicalResult,
-      baseCategoryPrice: blueprint.startingPriceINR,
+      baseCategoryPrice: baseGymPrice,
       typePrice: 0,
       pagesPrice: 0,
       featuresCost: 0,
@@ -260,13 +277,18 @@ export function calculateProjectEstimate(input: CalculatorInput = {}): ProjectEs
     (!userFeatureIds || userFeatureIds.length === 0 || userFeatureIds.every((f) => blueprint.essentialFeatures.includes(f)));
 
   if (isBaselineEcommerce) {
-    const baseEcommercePrice = blueprint.startingPriceINR;
-    const dynamicType = WEBSITE_TYPES.find((t) => t.id === "dynamic");
+    const configuredCat = pricingConfig?.categories?.find((c) => c.id === "ecommerce");
+    const baseEcommercePrice = configuredCat ? configuredCat.startingPrice : blueprint.startingPriceINR;
+    const dynamicType = (pricingConfig?.types || WEBSITE_TYPES).find((t) => t.id === "dynamic");
     const typePrice = dynamicType ? dynamicType.additionalCost : 8000;
-    const pagesPrice = Math.max(0, pageCount - BASE_PAGES_INCLUDED) * COST_PER_EXTRA_PAGE;
+    const basePagesInc = pricingConfig?.pageSettings?.basePagesIncluded ?? BASE_PAGES_INCLUDED;
+    const costExtra = pricingConfig?.pageSettings?.costPerExtraPage ?? COST_PER_EXTRA_PAGE;
+    const pagesPrice = Math.max(0, pageCount - basePagesInc) * costExtra;
     baseCategoryPriceINR = baseEcommercePrice;
-    const subtotal = baseEcommercePrice + typePrice + pagesPrice;
-    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * 0.2) : 0;
+    const minCostEcom = pricingConfig?.pricingSettings?.minProjectCost ?? MIN_PROJECT_COST;
+    const subtotal = Math.max(minCostEcom, baseEcommercePrice + typePrice + pagesPrice);
+    const expressMultiplier = pricingConfig?.pricingSettings?.expressMultiplier ?? 0.2;
+    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * expressMultiplier) : 0;
     oneTimeTotalINR = subtotal + expressPrice;
     canonicalResult = {
       ...canonicalResult,

@@ -6,8 +6,14 @@ import { usePathname } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { CtaLink } from "@/components/ui/cta-link";
 import { Menu, X, ArrowRight } from "lucide-react";
+import type { NavItem } from "@/lib/services/cms-shared";
 
-export function Header() {
+export interface HeaderProps {
+  navItems?: NavItem[];
+}
+
+export function Header({ navItems }: HeaderProps = {}) {
+  const activeNav = navItems && navItems.length > 0 ? navItems : siteConfig.mainNav;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -53,7 +59,7 @@ export function Header() {
             aria-label="Main Navigation"
             className="hidden md:flex items-center gap-7 lg:gap-8 text-xs font-medium"
           >
-            {siteConfig.mainNav.map((item) => {
+            {activeNav.map((item) => {
               const isActive =
                 item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
 
@@ -100,7 +106,7 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#0A0A0A]/95 backdrop-blur-xl px-6 py-5 space-y-4 shadow-2xl border-b border-white/[0.08]">
           <nav aria-label="Mobile Navigation" className="flex flex-col space-y-2">
-            {siteConfig.mainNav.map((item) => {
+            {activeNav.map((item) => {
               const isActive =
                 item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
 

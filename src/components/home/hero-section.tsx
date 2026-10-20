@@ -12,8 +12,14 @@ import {
   MOTION_EASING,
   isReducedMotion,
 } from "@/components/animations/gsap-core";
+import { HomeHeroContent, DEFAULT_HERO_CONTENT } from "@/lib/services/cms-shared";
 
-export function HeroSection() {
+export interface HeroSectionProps {
+  data?: HomeHeroContent;
+}
+
+export function HeroSection({ data }: HeroSectionProps = {}) {
+  const content = data || DEFAULT_HERO_CONTENT;
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const eyebrowRef = useRef<HTMLDivElement | null>(null);
   const headlineRef = useRef<HTMLDivElement | null>(null);
@@ -161,7 +167,7 @@ export function HeroSection() {
             ref={eyebrowRef}
             className="text-[10px] sm:text-xs font-mono tracking-[0.2em] sm:tracking-[0.22em] text-[#8A8A8A] uppercase"
           >
-            WEBGENT <span className="text-[#444444] mx-2">/</span> DIGITAL ENGINEERING STUDIO
+            {content.eyebrow}
           </div>
 
           {/* Headline with line-based reveal */}
@@ -169,18 +175,18 @@ export function HeroSection() {
             role="heading"
             aria-level={2}
             ref={headlineRef}
-            aria-label="YOU IMAGINE WE ENGINEER REALITY."
+            aria-label={`${content.headlineLine1} ${content.headlineLine2} ${content.headlineLine3}`}
             className="text-4xl sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] 2xl:text-[5.2rem] 3xl:text-[6rem] font-bold tracking-[-0.035em] leading-[0.95] uppercase text-[#F5F5F3]"
           >
             <span aria-hidden="true">
               <span className="block overflow-hidden">
-                <span className="hero-headline-line block">YOU IMAGINE</span>
+                <span className="hero-headline-line block">{content.headlineLine1}</span>
               </span>
               <span className="block overflow-hidden">
-                <span className="hero-headline-line block text-[#A8A8A8]">WE ENGINEER</span>
+                <span className="hero-headline-line block text-[#A8A8A8]">{content.headlineLine2}</span>
               </span>
               <span className="block overflow-hidden">
-                <span className="hero-headline-line block">REALITY.</span>
+                <span className="hero-headline-line block">{content.headlineLine3}</span>
               </span>
             </span>
           </div>
@@ -190,7 +196,7 @@ export function HeroSection() {
             ref={paragraphRef}
             className="text-sm sm:text-base lg:text-[15px] xl:text-base 2xl:text-lg text-[#8A8A8A] max-w-[520px] 2xl:max-w-[640px] leading-[1.6] font-normal"
           >
-            We design and build digital products for ambitious businesses.
+            {content.subheadline}
           </p>
 
           {/* CTA Buttons - Single row on mobile with balanced responsive sizing */}
@@ -198,14 +204,18 @@ export function HeroSection() {
             ref={ctaRef}
             className="flex flex-row items-center gap-2 sm:gap-4 pt-2 sm:pt-3 w-full sm:w-auto"
           >
-            <HeroStartProjectButton className="flex-1 sm:flex-initial" />
+            <HeroStartProjectButton
+              className="flex-1 sm:flex-initial"
+              label={content.primaryCtaText}
+              href={content.primaryCtaLink}
+            />
 
             <CtaLink
-              href="/work"
+              href={content.secondaryCtaLink}
               label="Hero Browse Work"
               className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-7 py-3 sm:py-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-[#E5E5E3] hover:text-white border border-white/[0.12] hover:border-white/[0.24] font-medium text-[11px] sm:text-[13px] tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(0,0,0,0.3)] backdrop-blur-md whitespace-nowrap text-center"
             >
-              <span>EXPLORE PORTFOLIO</span>
+              <span>{content.secondaryCtaText}</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-50 transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
             </CtaLink>
           </div>

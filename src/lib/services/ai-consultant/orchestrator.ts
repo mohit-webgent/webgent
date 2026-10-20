@@ -12,6 +12,8 @@ import {
   ProjectEstimateResult,
   CalculatorInput,
 } from "./calculator";
+import { getPricingData, getPricingCalculationConfig } from "@/lib/services/pricing";
+import type { EstimatorCalculationConfig } from "@/lib/pricing.config";
 import {
   detectPromptAbuse,
   getGeminiClient,
@@ -770,7 +772,16 @@ export async function processConsultantMessage({
 
   let estimate: ProjectEstimateResult | undefined = undefined;
   if ((shouldQuote || isInquiry || isAcceptance) && (extractedParams.categoryKey || isScoping)) {
-    estimate = calculateProjectEstimate(extractedParams);
+    let pricingConfig: EstimatorCalculationConfig | undefined = undefined;
+    try {
+      const pricingData = await getPricingData();
+      pricingConfig = getPricingCalculationConfig(pricingData);
+    } catch (err) {
+      logger.warn("[AIConsultant] Could not retrieve live pricing data, falling back to defaults", {
+        error: String(err),
+      });
+    }
+    estimate = calculateProjectEstimate(extractedParams, pricingConfig);
   }
 
   const categoryKey = estimate?.categoryKey || resolveCategoryKey(extractedParams.categoryKey);

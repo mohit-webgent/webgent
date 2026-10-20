@@ -829,7 +829,7 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
                           touchAction: "pan-y",
                         }}
                       >
-                        {pkg.keyHighlights.map((hl, i) => (
+                        {pkg.keyHighlights.map((hl: string, i: number) => (
                           <li key={i} className="flex items-start gap-2.5">
                             <span className="p-0.5 rounded bg-emerald-400/10 text-emerald-400 shrink-0 mt-0.5">
                               <Check className="w-3.5 h-3.5 stroke-[2.5]" />

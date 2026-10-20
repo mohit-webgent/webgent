@@ -11,12 +11,15 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { ScrollProgressBar } from "@/components/animations/scroll-progress";
 import { PageTransition } from "@/components/animations/page-transition";
 import { WebgentOpeningAnimation } from "@/components/animations/webgent-opening-animation";
+import type { NavItem, FooterConfig } from "@/lib/services/cms-shared";
 
 export interface MainLayoutProps {
   children: React.ReactNode;
+  navItems?: NavItem[];
+  footerData?: FooterConfig;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ children, navItems, footerData }: MainLayoutProps) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
   const isHome = pathname === "/";
@@ -43,11 +46,11 @@ export function MainLayout({ children }: MainLayoutProps) {
         >
           Skip to main content
         </a>
-        <Header />
+        <Header navItems={navItems} />
         <main id="main-content" className="flex-1 w-full">
           <PageTransition>{children}</PageTransition>
         </main>
-        <Footer />
+        <Footer data={footerData} />
         <Suspense fallback={null}>
           <AnalyticsTracker />
         </Suspense>

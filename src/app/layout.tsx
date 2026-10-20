@@ -3,6 +3,7 @@ import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { MainLayout } from "@/components/layout/main-layout";
+import { getNavigationMenu, getFooterConfig } from "@/lib/services/cms";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -96,11 +97,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [navConfig, footerConfig] = await Promise.all([
+    getNavigationMenu(),
+    getFooterConfig(),
+  ]);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -136,7 +142,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${inter.className} font-sans bg-background text-foreground antialiased`}
       >
-        <MainLayout>{children}</MainLayout>
+        <MainLayout navItems={navConfig.items} footerData={footerConfig}>{children}</MainLayout>
       </body>
     </html>
   );

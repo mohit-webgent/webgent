@@ -3,6 +3,14 @@ import { getAuthSession } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import {
+  DEFAULT_HERO_CONTENT,
+  DEFAULT_HOME_SECTIONS,
+  DEFAULT_NAVIGATION_MENU,
+  DEFAULT_FOOTER_CONFIG,
+  DEFAULT_SITE_FAQS,
+  invalidateCmsCache,
+} from "@/lib/services/cms";
 
 const updateSettingsSchema = z.record(z.string());
 
@@ -95,6 +103,31 @@ const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isP
       description: "Google Analytics 4 Measurement ID",
       isPublic: true,
     },
+    home_hero_content: {
+      value: JSON.stringify(DEFAULT_HERO_CONTENT),
+      description: "Homepage Hero Section Configuration",
+      isPublic: true,
+    },
+    home_sections_config: {
+      value: JSON.stringify(DEFAULT_HOME_SECTIONS),
+      description: "Homepage Sections Ordering and Visibility",
+      isPublic: true,
+    },
+    navigation_menu: {
+      value: JSON.stringify(DEFAULT_NAVIGATION_MENU),
+      description: "Main Header Navigation Items",
+      isPublic: true,
+    },
+    footer_links: {
+      value: JSON.stringify(DEFAULT_FOOTER_CONFIG),
+      description: "Footer Links and Stack Configuration",
+      isPublic: true,
+    },
+    site_faqs: {
+      value: JSON.stringify(DEFAULT_SITE_FAQS),
+      description: "Site-wide Frequently Asked Questions",
+      isPublic: true,
+    },
   };
 
 export async function GET() {
@@ -161,6 +194,9 @@ export async function PUT(req: NextRequest) {
         });
       }),
     );
+
+    // Invalidate CMS cache and trigger Next.js ISR path revalidations
+    await invalidateCmsCache();
 
     return NextResponse.json({
       success: true,
