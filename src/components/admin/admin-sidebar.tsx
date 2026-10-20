@@ -25,6 +25,7 @@ import {
   Search,
   UserCog,
   ScrollText,
+  Layers,
 } from "lucide-react";
 
 export interface NavItem {
@@ -63,6 +64,12 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
         href: "/admin/pages",
         icon: LayoutTemplate,
         colorClass: "text-violet-400 group-hover:text-violet-300",
+      },
+      {
+        label: "Services & Features",
+        href: "/admin/services",
+        icon: Layers,
+        colorClass: "text-sky-400 group-hover:text-sky-300",
       },
       {
         label: "Projects",

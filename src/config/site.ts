@@ -6,6 +6,7 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://webgent.vercel.app",
   mainNav: [
     { title: "Home", href: "/" },
+    { title: "Services", href: "/services" },
     { title: "Work", href: "/work" },
     { title: "About", href: "/about" },
     { title: "Blog", href: "/blog" },

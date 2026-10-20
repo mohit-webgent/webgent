@@ -35,6 +35,7 @@ import {
 } from "./cms-shared";
 
 export * from "./cms-shared";
+export * from "./cms-services";
 
 // ============================================================================
 // 4. SERVER-SIDE READERS WITH SAFE FALLBACKS

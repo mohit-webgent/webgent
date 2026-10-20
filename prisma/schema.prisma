@@ -361,3 +361,67 @@ model Media {
   @@map("media")
 }
 
+/// Service model for public website services and portfolio offerings
+model Service {
+  id               String           @id @default(uuid())
+  name             String
+  slug             String           @unique
+  shortDescription String
+  description      String?
+  icon             String?          @default("Layers")
+  coverImage       String?
+  startingPrice    Int?
+  priceLabel       String?
+  displayOrder     Int              @default(0)
+  featured         Boolean          @default(false)
+  showOnHome       Boolean          @default(true)
+  published        Boolean          @default(true)
+  seoTitle         String?
+  seoDescription   String?
+  ogImage          String?
+  serviceFeatures  ServiceFeature[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([slug])
+  @@index([published])
+  @@index([displayOrder])
+  @@index([showOnHome])
+  @@index([featured])
+  @@map("services")
+}
+
+/// Feature model for individual technical capabilities and modular feature items
+model Feature {
+  id              String           @id @default(uuid())
+  title           String
+  description     String?
+  icon            String?          @default("Check")
+  category        String?          @default("General")
+  displayOrder    Int              @default(0)
+  enabled         Boolean          @default(true)
+  showOnPublic    Boolean          @default(true)
+  serviceFeatures ServiceFeature[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([enabled])
+  @@index([displayOrder])
+  @@index([category])
+  @@index([showOnPublic])
+  @@map("features")
+}
+
+/// ServiceFeature join table for normalized many-to-many relationship with custom ordering
+model ServiceFeature {
+  serviceId String
+  featureId String
+  order     Int     @default(0)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  feature   Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, featureId])
+  @@index([serviceId])
+  @@index([featureId])
+  @@map("service_features")
+}

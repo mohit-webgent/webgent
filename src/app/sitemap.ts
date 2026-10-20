@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRouteDefinitions = [
     { route: "/", priority: 1.0, changeFrequency: "daily" as const },
+    { route: "/services", priority: 0.9, changeFrequency: "weekly" as const },
     { route: "/work", priority: 0.9, changeFrequency: "daily" as const },
     { route: "/about", priority: 0.9, changeFrequency: "weekly" as const },
     { route: "/blog", priority: 0.9, changeFrequency: "daily" as const },
@@ -49,9 +50,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let dynamicProjectRoutes: MetadataRoute.Sitemap = [];
   let dynamicBlogRoutes: MetadataRoute.Sitemap = [];
+  let dynamicServiceRoutes: MetadataRoute.Sitemap = [];
 
   try {
-    const [publishedProjects, publishedPosts] = await Promise.all([
+    const [publishedProjects, publishedPosts, publishedServices] = await Promise.all([
       prisma.project.findMany({
         where: { published: true },
         select: { slug: true, updatedAt: true },
@@ -59,6 +61,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.blogPost.findMany({
         where: { status: "PUBLISHED", deletedAt: null },
         select: { slug: true, updatedAt: true, publishedAt: true },
+      }),
+      prisma.service.findMany({
+        where: { published: true },
+        select: { slug: true, updatedAt: true },
       }),
     ]);
 
@@ -75,9 +81,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }));
+
+    dynamicServiceRoutes = publishedServices.map((service) => ({
+      url: `${baseUrl}/services/${service.slug}`,
+      lastModified: service.updatedAt || new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
   } catch (error) {
     console.error("Database connection unavailable while generating sitemap:", error);
   }
 
-  return [...staticRoutes, ...dynamicProjectRoutes, ...dynamicBlogRoutes];
+  return [...staticRoutes, ...dynamicServiceRoutes, ...dynamicProjectRoutes, ...dynamicBlogRoutes];
 }
