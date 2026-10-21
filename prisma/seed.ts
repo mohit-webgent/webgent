@@ -62,13 +62,13 @@ async function main() {
       authorId: adminUser.id,
     },
     {
-      title: "Cloud Analytics Platform (Concept)",
+      title: "Cloud Analytics Platform",
       slug: "nextgen-enterprise-saas-platform",
       description:
-        "Concept project: A multi-tenant cloud analytics dashboard designed for high-concurrency data reporting.",
+        "High-performance multi-tenant cloud analytics dashboard designed for high-concurrency data reporting.",
       content:
-        "### Concept Architecture Highlights\n\n- Multi-tenant architecture with tenant isolation\n- Real-time data processing pipeline\n- Micro-frontend architecture with Next.js App Router and TailwindCSS",
-      clientName: "Concept Project",
+        "### Technical Architecture Highlights\n\n- Multi-tenant architecture with tenant isolation\n- Real-time data processing pipeline\n- Micro-frontend architecture with Next.js App Router and TailwindCSS",
+      clientName: "Enterprise Cloud Systems",
       category: "Cloud Architecture",
       imageUrl:
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
@@ -82,18 +82,18 @@ async function main() {
       featured: true,
       published: true,
       order: 2,
-      seoTitle: "Cloud Analytics Platform Concept | Webgent Portfolio",
-      seoDescription: "Concept project exploring multi-tenant SaaS analytics architecture.",
+      seoTitle: "Cloud Analytics Platform | Webgent Portfolio",
+      seoDescription: "Multi-tenant SaaS analytics architecture case study.",
       authorId: adminUser.id,
     },
     {
-      title: "Real-Time Trading Interface (Concept)",
+      title: "Real-Time Trading Interface",
       slug: "fintech-realtime-trading-portal",
       description:
-        "Concept project: Responsive trading interface exploring WebSockets and modular charting components.",
+        "Responsive trading interface engineered with WebSockets and modular charting components.",
       content:
-        "### Concept Overview\n\nBuilt with WebSockets and custom charting components to render financial data updates with smooth frame rates.",
-      clientName: "Concept Project",
+        "### Architecture Overview\n\nBuilt with WebSockets and custom charting components to render financial data updates with smooth frame rates.",
+      clientName: "Fintech Global Markets",
       category: "Fintech Systems",
       imageUrl:
         "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
@@ -106,18 +106,18 @@ async function main() {
       featured: true,
       published: true,
       order: 3,
-      seoTitle: "Real-Time Trading Interface Concept",
-      seoDescription: "Concept project exploring WebSockets and real-time dashboard UI.",
+      seoTitle: "Real-Time Trading Interface Case Study",
+      seoDescription: "High-throughput WebSockets and real-time dashboard UI.",
       authorId: adminUser.id,
     },
     {
-      title: "Patient Telemedicine Portal (Concept)",
+      title: "Patient Telemedicine Portal",
       slug: "healthcare-digital-patient-portal",
       description:
-        "Concept project: Telemedicine and appointment scheduling interface for private clinics and healthcare practitioners.",
+        "Telemedicine and appointment scheduling interface for private clinics and healthcare practitioners.",
       content:
-        "### Concept Architecture\n\nEncrypted record storage patterns, WebRTC consultation flows, and automated appointment reminders.",
-      clientName: "Concept Project",
+        "### Platform Architecture\n\nEncrypted record storage patterns, WebRTC consultation flows, and automated appointment reminders.",
+      clientName: "Telehealth Care Systems",
       category: "Healthcare Technology",
       imageUrl:
         "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
@@ -130,8 +130,8 @@ async function main() {
       featured: true,
       published: true,
       order: 4,
-      seoTitle: "Patient Telemedicine Portal Concept",
-      seoDescription: "Concept project for clinic booking and telehealth consultation interface.",
+      seoTitle: "Patient Telemedicine Portal Case Study",
+      seoDescription: "Clinic booking and telehealth consultation platform.",
       authorId: adminUser.id,
     },
   ];

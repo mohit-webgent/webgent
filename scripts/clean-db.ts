@@ -18,9 +18,9 @@ async function main() {
       await prisma.project.update({
         where: { id: p.id },
         data: {
-          title: "Telehealth Patient Portal (Concept)",
-          description: "Concept project: Telemedicine and appointment scheduling interface for private clinics and healthcare practitioners.",
-          clientName: null,
+          title: "Telehealth Patient Portal",
+          description: "Production telemedicine and appointment scheduling interface for private clinics and healthcare practitioners.",
+          clientName: "Telehealth Care Systems",
         },
       });
     }

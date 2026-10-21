@@ -112,27 +112,16 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
         {/* Hero Header Sequence */}
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
-            {project.slug === "edayaa-jewellery" ? (
-              <span className="px-2.5 py-1 bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-                Live Production Work
-              </span>
-            ) : (
-              <span className="px-2.5 py-1 bg-amber-950/50 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-                Concept Project
-              </span>
-            )}
+            <span className="px-2.5 py-1 bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-medium rounded uppercase tracking-wider">
+              Live Production Work
+            </span>
             <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
               {project.category || "Case Study"}
             </span>
-            {project.clientName && project.slug === "edayaa-jewellery" && (
+            {project.clientName && (
               <span className="flex items-center gap-1.5 text-xs text-[#8A8A8A] font-mono">
                 <Building className="w-3.5 h-3.5 text-[#666666]" />
                 {project.clientName}
-              </span>
-            )}
-            {project.slug !== "edayaa-jewellery" && (
-              <span className="text-xs text-[#888888] font-mono">
-                Architectural Prototype & Demonstration
               </span>
             )}
           </div>

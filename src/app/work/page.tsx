@@ -135,15 +135,13 @@ export default async function WorkPage({
             Selected Work & Case Studies
           </h1>
           <p className="mt-2 text-sm 2xl:text-base text-[#888888] max-w-2xl 2xl:max-w-3xl">
-            Real client implementations and technical concept architectures developed by Webgent.
+            Real production client implementations and digital engineering platforms developed by Webgent.
           </p>
         </div>
 
         {/* Responsive Grid with large images, project name, badges & type below */}
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20 2xl:gap-x-14 2xl:gap-y-20">
           {displayProjects.map((project) => {
-            const isProduction = project.slug === "edayaa-jewellery";
-
             return (
               <Link
                 key={project.id}
@@ -169,15 +167,9 @@ export default async function WorkPage({
 
                   {/* Corner Badge */}
                   <div className="absolute top-3 left-3 z-10">
-                    {isProduction ? (
-                      <span className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-emerald-500/40 text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
-                        Live Client Work
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md border border-amber-500/40 text-[10px] font-mono uppercase tracking-wider text-amber-300 font-medium">
-                        Concept Project
-                      </span>
-                    )}
+                    <span className="px-2.5 py-1 bg-black/80 backdrop-blur-md border border-emerald-500/40 text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
+                      Live Production Work
+                    </span>
                   </div>
                 </div>
 
@@ -187,15 +179,9 @@ export default async function WorkPage({
                     <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-[#F5F5F3] group-hover:text-white transition-colors">
                       {project.title}
                     </h2>
-                    {isProduction ? (
-                      <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/20 text-[10px] font-mono uppercase tracking-wider text-emerald-400">
-                        Production
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-500/20 text-[10px] font-mono uppercase tracking-wider text-amber-300">
-                        Concept
-                      </span>
-                    )}
+                    <span className="px-2 py-0.5 bg-emerald-950/60 border border-emerald-500/20 text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+                      Live
+                    </span>
                   </div>
                   <span className="text-sm text-[#888888] font-normal shrink-0">
                     {project.category || "Case Study"}

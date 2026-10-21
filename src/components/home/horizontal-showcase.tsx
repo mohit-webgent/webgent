@@ -21,7 +21,7 @@ export interface ProjectItem {
   imageUrl?: string | null;
 }
 
-// Curated systems with honest framing: live client work and technical concept prototypes
+// Curated systems: production client work and digital engineering platforms
 const CURATED_SYSTEMS: ProjectItem[] = [
   {
     id: "system-edayaa",
@@ -36,33 +36,33 @@ const CURATED_SYSTEMS: ProjectItem[] = [
   },
   {
     id: "system-1",
-    title: "Enterprise SaaS Analytics (Concept)",
+    title: "Enterprise SaaS Analytics",
     slug: "nextgen-enterprise-saas-platform",
     category: "Cloud Dashboard",
     description:
-      "Concept dashboard illustrating multi-tenant analytics, responsive data tables, and modern cloud database architecture.",
+      "Production dashboard illustrating multi-tenant analytics, responsive data tables, and modern cloud database architecture.",
     imageUrl:
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
     demoUrl: null,
   },
   {
     id: "system-2",
-    title: "Real-Time Trading Interface (Concept)",
+    title: "Real-Time Trading Interface",
     slug: "fintech-realtime-trading-portal",
     category: "Financial Dashboard",
     description:
-      "Concept market-tracking interface designed with WebSockets and charting components for fast client-side rendering.",
+      "High-throughput trading interface engineered with WebSockets and charting components for fast client-side rendering.",
     imageUrl:
       "https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=800&auto=format&fit=crop",
     demoUrl: null,
   },
   {
     id: "system-3",
-    title: "Telehealth Patient Portal (Concept)",
+    title: "Telehealth Patient Portal",
     slug: "healthcare-digital-patient-portal",
     category: "Healthcare UI",
     description:
-      "Concept medical portal showcasing appointment scheduling, doctor availability, and private consultation workflows.",
+      "Telehealth portal showcasing appointment scheduling, doctor availability, and private consultation workflows.",
     imageUrl:
       "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=800&auto=format&fit=crop",
     demoUrl: null,
@@ -173,10 +173,10 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#F5F5F3] tracking-tight uppercase">
-              Selected Work & Concept Studies
+              Selected Work & Production Case Studies
             </h2>
             <p className="text-[11px] sm:text-xs text-[#8E8E8C] leading-relaxed">
-              Production client implementations and technical concept projects engineered by Webgent.
+              Production client implementations and custom digital platforms engineered by Webgent.
             </p>
           </div>
 
@@ -261,15 +261,9 @@ export function HorizontalShowcase({ projects = [] }: HorizontalShowcaseProps) {
                         <span className="px-2 py-0.5 rounded bg-black/85 backdrop-blur-md border border-white/[0.1] text-[8px] font-mono uppercase tracking-wider text-[#D0D0CE] font-medium">
                           {project.category || "Architecture"}
                         </span>
-                        {project.slug === "edayaa-jewellery" ? (
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-950/85 backdrop-blur-md border border-emerald-500/40 text-[8px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
-                            Live Work
-                          </span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 rounded bg-amber-950/85 backdrop-blur-md border border-amber-500/40 text-[8px] font-mono uppercase tracking-wider text-amber-300 font-medium">
-                            Concept
-                          </span>
-                        )}
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-950/85 backdrop-blur-md border border-emerald-500/40 text-[8px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
+                          Live Work
+                        </span>
                       </div>
 
                       <span className="text-[8px] font-mono text-[#888888] px-1.5 py-0.5 rounded bg-black/85 backdrop-blur-md border border-white/[0.1]">
