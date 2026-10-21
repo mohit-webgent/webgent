@@ -1,12 +1,14 @@
-import { NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { ApiResponse } from "@/lib/api/response";
+import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+  const authGuard = await verifyAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {
@@ -33,48 +35,58 @@ export async function GET() {
       totalEvents,
       topPageViewsGrouped,
     ] = await Promise.all([
-      prisma.lead.findMany({
-        select: { id: true, status: true, score: true },
-      }),
-      prisma.lead.findMany({
-        take: 6,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          company: true,
-          service: true,
-          budget: true,
-          score: true,
-          status: true,
-          createdAt: true,
-        },
-      }),
-      prisma.project.count(),
-      prisma.project.count({ where: { published: true } }),
-      prisma.blogPost.count({ where: { deletedAt: null } }),
-      prisma.blogPost.count({
-        where: { status: "PUBLISHED", deletedAt: null },
-      }),
-      prisma.testimonial.count({ where: { deletedAt: null } }),
-      prisma.testimonial.count({
-        where: { status: "APPROVED", deletedAt: null },
-      }),
-      prisma.subscriber.count(),
-      prisma.subscriber.count({ where: { isActive: true } }),
-      prisma.chatSession.count(),
-      prisma.chatSession.count({ where: { status: "ACTIVE" } }),
-      prisma.pageView.count(),
-      prisma.pageView.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-      prisma.pageView.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
-      prisma.event.count(),
-      prisma.pageView.groupBy({
-        by: ["path"],
-        _count: { path: true },
-        orderBy: { _count: { path: "desc" } },
-        take: 5,
-      }),
+      prisma.lead
+        .findMany({
+          select: { id: true, status: true, score: true },
+        })
+        .catch(() => []),
+      prisma.lead
+        .findMany({
+          take: 6,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            company: true,
+            service: true,
+            budget: true,
+            score: true,
+            status: true,
+            createdAt: true,
+          },
+        })
+        .catch(() => []),
+      prisma.project.count().catch(() => 0),
+      prisma.project.count({ where: { published: true } }).catch(() => 0),
+      prisma.blogPost.count({ where: { deletedAt: null } }).catch(() => 0),
+      prisma.blogPost
+        .count({
+          where: { status: "PUBLISHED", deletedAt: null },
+        })
+        .catch(() => 0),
+      prisma.testimonial.count({ where: { deletedAt: null } }).catch(() => 0),
+      prisma.testimonial
+        .count({
+          where: { status: "APPROVED", deletedAt: null },
+        })
+        .catch(() => 0),
+      prisma.subscriber.count().catch(() => 0),
+      prisma.subscriber.count({ where: { isActive: true } }).catch(() => 0),
+      prisma.chatSession.count().catch(() => 0),
+      prisma.chatSession.count({ where: { status: "ACTIVE" } }).catch(() => 0),
+      prisma.pageView.count().catch(() => 0),
+      prisma.pageView.count({ where: { createdAt: { gte: sevenDaysAgo } } }).catch(() => 0),
+      prisma.pageView.count({ where: { createdAt: { gte: thirtyDaysAgo } } }).catch(() => 0),
+      prisma.event.count().catch(() => 0),
+      prisma.pageView
+        .groupBy({
+          by: ["path"],
+          _count: { path: true },
+          orderBy: { _count: { path: "desc" } },
+          take: 5,
+        })
+        .catch(() => []),
     ]);
 
     const totalLeads = allLeads.length;
@@ -118,45 +130,39 @@ export async function GET() {
       views: item._count.path,
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        leads: {
-          total: totalLeads,
-          new: newLeads,
-          contacted: contactedLeads,
-          proposalSent: proposalSentLeads,
-          won: wonLeads,
-          lost: lostLeads,
-          onHold: onHoldLeads,
-          conversionRate,
-          averageScore,
-          recent: recentLeads,
+    return ApiResponse.success({
+      leads: {
+        total: totalLeads,
+        new: newLeads,
+        contacted: contactedLeads,
+        proposalSent: proposalSentLeads,
+        won: wonLeads,
+        lost: lostLeads,
+        onHold: onHoldLeads,
+        conversionRate,
+        averageScore,
+        recent: recentLeads,
+      },
+      content: {
+        projects: { total: totalProjects, published: publishedProjects },
+        blogPosts: { total: totalPosts, published: publishedPosts },
+        testimonials: {
+          total: totalTestimonials,
+          approved: approvedTestimonials,
         },
-        content: {
-          projects: { total: totalProjects, published: publishedProjects },
-          blogPosts: { total: totalPosts, published: publishedPosts },
-          testimonials: {
-            total: totalTestimonials,
-            approved: approvedTestimonials,
-          },
-          subscribers: { total: totalSubscribers, active: activeSubscribers },
-          chat: { total: totalChatSessions, active: activeChatSessions },
-        },
-        analytics: {
-          totalPageViews,
-          last7Days: pageViewsLast7Days,
-          last30Days: pageViewsLast30Days,
-          totalEvents,
-          topPages,
-        },
+        subscribers: { total: totalSubscribers, active: activeSubscribers },
+        chat: { total: totalChatSessions, active: activeChatSessions },
+      },
+      analytics: {
+        totalPageViews,
+        last7Days: pageViewsLast7Days,
+        last30Days: pageViewsLast30Days,
+        totalEvents,
+        topPages,
       },
     });
   } catch (error) {
     logger.error("Failed to calculate admin dashboard stats", { error });
-    return NextResponse.json(
-      { success: false, error: "Failed to load dashboard metrics" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to load dashboard metrics.");
   }
 }

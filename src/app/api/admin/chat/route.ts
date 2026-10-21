@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { NextRequest } from "next/server";
+import { ApiResponse } from "@/lib/api/response";
+import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { ChatStatus, Prisma } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 const createSessionSchema = z.object({
   visitorId: z.string().min(1, "Visitor ID is required"),
@@ -11,13 +14,22 @@ const createSessionSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
-export async function GET(req: NextRequest) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
+function safeParseMetadata(val: string | null): Record<string, unknown> | null {
+  if (!val) return null;
   try {
+    return JSON.parse(val);
+  } catch {
+    return { raw: val };
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "15", 10)));
@@ -71,7 +83,7 @@ export async function GET(req: NextRequest) {
       id: s.id,
       visitorId: s.visitorId,
       status: s.status,
-      metadata: s.metadata ? JSON.parse(s.metadata) : null,
+      metadata: safeParseMetadata(s.metadata),
       messageCount: s._count.messages,
       lastMessage: s.messages[0]
         ? {
@@ -85,47 +97,37 @@ export async function GET(req: NextRequest) {
       updatedAt: s.updatedAt,
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: formattedSessions,
-      meta: {
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit) || 1,
-        },
-        counts: {
-          all: totalActive + totalClosed + totalArchived,
-          active: totalActive,
-          closed: totalClosed,
-          archived: totalArchived,
-        },
+    return ApiResponse.success(formattedSessions, 200, {
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+      counts: {
+        all: totalActive + totalClosed + totalArchived,
+        active: totalActive,
+        closed: totalClosed,
+        archived: totalArchived,
       },
     });
   } catch (error) {
     logger.error("Failed to query admin chat sessions", { error });
-    return NextResponse.json(
-      { success: false, error: "Failed to load chat sessions" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to load chat sessions.");
   }
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
   try {
-    const body = await req.json();
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
+    const body = await req.json().catch(() => ({}));
     const validated = createSessionSchema.safeParse(body);
     if (!validated.success) {
-      return NextResponse.json(
-        { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 },
-      );
+      return ApiResponse.badRequest(validated.error.errors[0]?.message || "Invalid payload");
     }
 
     const { visitorId, initialMessage, metadata } = validated.data;
@@ -149,12 +151,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: chatSession }, { status: 201 });
+    return ApiResponse.success(chatSession, 201);
   } catch (error) {
     logger.error("Failed to create chat session", { error });
-    return NextResponse.json(
-      { success: false, error: "Failed to create chat session" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to create chat session.");
   }
 }

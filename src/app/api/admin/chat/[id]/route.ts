@@ -1,21 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { NextRequest } from "next/server";
+import { ApiResponse } from "@/lib/api/response";
+import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { ChatStatus } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 const updateSessionSchema = z.object({
   status: z.enum(["ACTIVE", "CLOSED", "ARCHIVED"]),
 });
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
+function safeParseMetadata(val: string | null): Record<string, unknown> | null {
+  if (!val) return null;
   try {
+    return JSON.parse(val);
+  } catch {
+    return { raw: val };
+  }
+}
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
     const chatSession = await prisma.chatSession.findUnique({
       where: { id: params.id },
       include: {
@@ -26,42 +38,30 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     });
 
     if (!chatSession) {
-      return NextResponse.json(
-        { success: false, error: "Chat session not found" },
-        { status: 404 },
-      );
+      return ApiResponse.notFound("Chat session not found.");
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...chatSession,
-        metadata: chatSession.metadata ? JSON.parse(chatSession.metadata) : null,
-      },
+    return ApiResponse.success({
+      ...chatSession,
+      metadata: safeParseMetadata(chatSession.metadata),
     });
   } catch (error) {
     logger.error("Failed to fetch chat session details", { error, id: params.id });
-    return NextResponse.json(
-      { success: false, error: "Failed to retrieve chat session" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to retrieve chat session.");
   }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
   try {
-    const body = await req.json();
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
+    const body = await req.json().catch(() => ({}));
     const validated = updateSessionSchema.safeParse(body);
     if (!validated.success) {
-      return NextResponse.json(
-        { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 },
-      );
+      return ApiResponse.badRequest(validated.error.errors[0]?.message || "Invalid status");
     }
 
     const updated = await prisma.chatSession.update({
@@ -76,36 +76,37 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
     });
 
-    return NextResponse.json({ success: true, data: updated });
+    return ApiResponse.success(updated);
   } catch (error) {
     logger.error("Failed to update chat session", { error, id: params.id });
-    return NextResponse.json(
-      { success: false, error: "Failed to update chat session status" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to update chat session status.");
   }
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
   try {
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
+    const existing = await prisma.chatSession.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!existing) {
+      return ApiResponse.notFound("Chat session not found.");
+    }
+
     await prisma.chatSession.delete({
       where: { id: params.id },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Chat session deleted successfully",
+    return ApiResponse.success({
+      message: "Chat session deleted successfully.",
     });
   } catch (error) {
     logger.error("Failed to delete chat session", { error, id: params.id });
-    return NextResponse.json(
-      { success: false, error: "Failed to delete chat session" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to delete chat session.");
   }
 }

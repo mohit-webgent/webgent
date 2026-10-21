@@ -440,9 +440,44 @@ Starting Webgent Development Rate: ₹${bp.startingPriceINR.toLocaleString("en-I
     });
   }
 
+  // 13. Dynamic approved knowledge from SiteSetting (Admin Console configured)
+  try {
+    const customSetting = await prisma.siteSetting.findUnique({
+      where: { key: "ai_approved_knowledge" },
+    });
+    if (customSetting?.value) {
+      const parsed = JSON.parse(customSetting.value);
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          if (item.enabled && item.content) {
+            docs.push({
+              id: `custom_${item.id}`,
+              title: item.title || "Custom Approved Knowledge",
+              category: item.category || "custom",
+              url: "/about",
+              summary: item.content.slice(0, 150),
+              content: item.content,
+              keywords: Array.isArray(item.keywords) ? item.keywords : [],
+            });
+          }
+        }
+      }
+    }
+  } catch (err) {
+    logger.warn("[KnowledgeRetrieval] Could not load dynamic site_settings knowledge", { error: err });
+  }
+
   cachedIndex = docs;
   lastIndexTimestamp = now;
   return docs;
+}
+
+/**
+ * Invalidates the in-memory knowledge retrieval index so newly saved items take effect immediately.
+ */
+export function invalidateKnowledgeRetrievalCache(): void {
+  cachedIndex = null;
+  lastIndexTimestamp = 0;
 }
 
 /**

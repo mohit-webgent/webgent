@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { NextRequest } from "next/server";
+import { ApiResponse } from "@/lib/api/response";
+import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+
+export const dynamic = "force-dynamic";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -10,14 +13,14 @@ const updateProfileSchema = z.object({
 });
 
 export async function GET() {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
   try {
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: authGuard.session.user.id },
       select: {
         id: true,
         name: true,
@@ -32,39 +35,36 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+      return ApiResponse.notFound("User not found.");
     }
 
-    return NextResponse.json({ success: true, data: user });
+    return ApiResponse.success(user);
   } catch (error) {
     logger.error("Failed to fetch admin profile", { error });
-    return NextResponse.json(
-      { success: false, error: "Failed to retrieve profile" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to retrieve profile.");
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
-  }
-
   try {
-    const body = await req.json();
+    const authGuard = await verifyAdminApiAccess();
+    if (authGuard instanceof Response) {
+      return authGuard;
+    }
+
+    const body = await req.json().catch(() => ({}));
     const validated = updateProfileSchema.safeParse(body);
     if (!validated.success) {
-      return NextResponse.json(
-        { success: false, error: validated.error.errors[0]?.message },
-        { status: 400 },
+      return ApiResponse.validationError(
+        "Invalid profile update parameters.",
+        validated.error.flatten().fieldErrors,
       );
     }
 
     const { name, avatarUrl } = validated.data;
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: authGuard.session.user.id },
       data: {
         name: name.trim(),
         avatarUrl: avatarUrl ? avatarUrl.trim() : null,
@@ -80,16 +80,11 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Profile updated successfully",
-      data: updatedUser,
+    return ApiResponse.success(updatedUser, 200, {
+      message: "Profile updated successfully.",
     });
   } catch (error) {
     logger.error("Failed to update admin profile", { error });
-    return NextResponse.json(
-      { success: false, error: "Failed to save profile changes" },
-      { status: 500 },
-    );
+    return ApiResponse.internalError("Failed to save profile changes.");
   }
 }

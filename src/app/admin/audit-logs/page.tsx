@@ -1,6 +1,8 @@
 import { requireStrictAdmin } from "@/lib/auth-utils";
-import { AdminScaffoldView } from "@/components/admin/admin-scaffold-view";
-import { ScrollText } from "lucide-react";
+import { getAuditLogs } from "@/lib/services/audit-log";
+import { AuditLogsView } from "@/components/admin/audit-logs-view";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "System Audit Logs — Webgent Admin",
@@ -10,21 +12,19 @@ export const metadata = {
 export default async function AdminAuditLogsPage() {
   await requireStrictAdmin();
 
+  const data = await getAuditLogs({ page: 1, limit: 20 });
+
   return (
-    <AdminScaffoldView
-      title="System Audit Logs"
-      description="Inspect chronological records of security actions, administrative modifications, content deletions, and sensitive setting updates across Webgent."
-      group="System"
-      icon={ScrollText}
-      targetStorage="Prisma Model: SystemAuditLog (table: system_audit_logs)"
-      publicConsumers={["Security Compliance", "Internal Audit & Diagnostics"]}
-      adminOnly={true}
-      plannedFeatures={[
-        "Searchable and paginated table of administrative audit events",
-        "Action type filtering (AUTH_LOGIN, LEAD_DELETED, SETTINGS_UPDATED, PROJECT_PUBLISHED)",
-        "Actor attribution (admin ID, timestamp, IP address)",
-        "Detailed JSON metadata inspector dialog for security forensics",
-      ]}
-    />
+    <div className="animate-in fade-in duration-300">
+      <AuditLogsView
+        initialLogs={data.logs}
+        initialPagination={{
+          page: data.page,
+          limit: data.limit,
+          total: data.total,
+          totalPages: data.totalPages,
+        }}
+      />
+    </div>
   );
 }

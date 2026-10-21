@@ -1,6 +1,8 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import { AdminScaffoldView } from "@/components/admin/admin-scaffold-view";
-import { Sparkles } from "lucide-react";
+import { getKnowledgeBaseConfig } from "@/lib/services/knowledge-base-service";
+import { KnowledgeBaseEditor } from "@/components/admin/knowledge-base-editor";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "AI Consultant Knowledge Base — Webgent Admin",
@@ -10,20 +12,11 @@ export const metadata = {
 export default async function AdminKnowledgePage() {
   await requireAdmin();
 
+  const config = await getKnowledgeBaseConfig();
+
   return (
-    <AdminScaffoldView
-      title="AI Consultant Approved Knowledge"
-      description="Manage the ground-truth facts, domain blueprints, custom behavioral instructions, and quoting boundaries used by the Google Gemini AI Consultant."
-      group="AI Consultant"
-      icon={Sparkles}
-      targetStorage="SiteSetting (keys: ai_approved_knowledge, ai_custom_rules)"
-      publicConsumers={["/api/chat/start", "/api/chat/message", "AI Consultant Orchestrator"]}
-      plannedFeatures={[
-        "Approved facts manager (verified company credentials, founder background, verified projects)",
-        "Domain blueprint editor (Gym, E-commerce, SaaS, Booking starter packages)",
-        "Custom behavioral instructions and tone guardrails editor",
-        "Instant in-memory knowledge index reload without restarting server processes",
-      ]}
-    />
+    <div className="animate-in fade-in duration-300">
+      <KnowledgeBaseEditor initialConfig={config} />
+    </div>
   );
 }

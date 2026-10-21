@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/redis";
+import { cacheGet, cacheSet, cacheDel, getRedisClient } from "@/lib/redis";
 import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import {
@@ -543,11 +543,41 @@ export async function deleteFeature(id: string): Promise<boolean> {
 
 export async function purgeServicesCache(): Promise<void> {
   try {
-    await cacheDel([
+    const keysToDelete: string[] = [
       CMS_SERVICES_CACHE_KEYS.ALL_SERVICES,
       CMS_SERVICES_CACHE_KEYS.HOME_SERVICES,
       CMS_SERVICES_CACHE_KEYS.ALL_FEATURES,
-    ]);
+    ];
+
+    for (const h of ["all", "home"]) {
+      for (const f of ["all", "feat"]) {
+        for (const l of ["none", "1", "2", "3", "4", "5", "6", "8", "10", "12", "20", "50"]) {
+          keysToDelete.push(`${CMS_SERVICES_CACHE_KEYS.ALL_SERVICES}:${h}:${f}:${l}`);
+        }
+      }
+    }
+
+    const client = getRedisClient();
+    if (client) {
+      try {
+        const foundServices = await client.keys(`${CMS_SERVICES_CACHE_KEYS.ALL_SERVICES}*`);
+        if (foundServices && foundServices.length > 0) {
+          keysToDelete.push(...foundServices);
+        }
+        const foundFeatures = await client.keys(`${CMS_SERVICES_CACHE_KEYS.ALL_FEATURES}*`);
+        if (foundFeatures && foundFeatures.length > 0) {
+          keysToDelete.push(...foundFeatures);
+        }
+        const foundSlugs = await client.keys(`${CMS_SERVICES_CACHE_KEYS.SERVICE_SLUG_PREFIX}*`);
+        if (foundSlugs && foundSlugs.length > 0) {
+          keysToDelete.push(...foundSlugs);
+        }
+      } catch {
+        // Fallback to static keys
+      }
+    }
+
+    await cacheDel(Array.from(new Set(keysToDelete)));
   } catch (err) {
     logger.warn("[CMS Services] Redis purge error", { error: String(err) });
   }
