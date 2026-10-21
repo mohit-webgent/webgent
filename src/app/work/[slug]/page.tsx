@@ -200,21 +200,28 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
         )}
 
         {/* Closing Action Banner */}
-        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-14 text-center space-y-6 shadow-2xl">
-          <div className="space-y-3 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-9 px-6 sm:px-10 text-center space-y-4 sm:space-y-5 shadow-2xl">
+          {/* Subtle decorative radial vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+          />
+
+          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-black tracking-tight uppercase">
               Ready to Engineer a Similar Platform?
             </h2>
-            <p className="text-xs sm:text-sm text-[#909090] leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
               Let&apos;s evaluate your technical requirements and construct an enterprise system
               engineered for high scale and longevity.
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
             <CtaLink
               href="/contact"
               label="Project Detail Discuss Architecture"
-              className="inline-flex items-center gap-2 px-7 py-3 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
             >
               <span>Discuss Your Architecture</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -222,7 +229,7 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
             <CtaLink
               href="/work"
               label="Project Detail Browse More"
-              className="inline-flex items-center gap-2 px-7 py-3 bg-transparent hover:bg-white/[0.04] text-[#E5E5E5] border border-white/14 font-medium text-xs rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-xl transition-all"
             >
               <span>Browse More Projects</span>
             </CtaLink>

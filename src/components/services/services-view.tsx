@@ -164,25 +164,34 @@ export function ServicesView({ services }: ServicesViewProps) {
         </div>
 
         {/* Bottom Banner */}
-        <div className="mt-20 p-8 sm:p-12 rounded-2xl bg-[#0D0D0D] border border-white/[0.08] text-center space-y-4 max-w-4xl mx-auto shadow-2xl">
-          <h3 className="text-xl sm:text-3xl font-bold text-white tracking-tight uppercase">
-            Have a custom architecture or enterprise scope in mind?
-          </h3>
-          <p className="text-xs sm:text-sm text-[#909090] max-w-xl mx-auto leading-relaxed">
-            Configure an itemized budget estimate using our interactive calculator or schedule a technical discovery call with our founder.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <div className="mt-12 sm:mt-16 relative overflow-hidden py-7 sm:py-8 px-6 sm:px-10 rounded-2xl bg-white border border-black/10 text-center space-y-3.5 max-w-4xl mx-auto shadow-2xl">
+          {/* Subtle decorative radial vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+          />
+
+          <div className="relative z-10 space-y-2 max-w-2xl mx-auto">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black tracking-tight uppercase">
+              Have a custom architecture or enterprise scope in mind?
+            </h3>
+            <p className="text-xs sm:text-sm text-[#3A3A3C] max-w-xl mx-auto leading-relaxed">
+              Configure an itemized budget estimate using our interactive calculator or schedule a technical discovery call with our founder.
+            </p>
+          </div>
+
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
             <CtaLink
               href="/pricing"
               label="Explore Pricing Estimator"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-[#F5F5F3] hover:bg-white rounded-xl transition-all shadow-md"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-black hover:bg-[#1E1E24] rounded-xl transition-all shadow-md active:scale-95"
             >
               <span>Explore Interactive Estimator</span>
               <ArrowRight className="w-4 h-4" />
             </CtaLink>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.12] rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-transparent hover:bg-black/[0.05] border border-black/25 hover:border-black/60 rounded-xl transition-all"
             >
               <span>Schedule Technical Consultation</span>
               <ArrowUpRight className="w-4 h-4" />

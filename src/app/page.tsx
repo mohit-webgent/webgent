@@ -141,7 +141,7 @@ export default async function HomePage() {
       <ScrollReveal
         key="cta"
         as="section"
-        className="relative overflow-hidden rounded-none bg-[#FFFFFF] border border-black/10 p-8 sm:p-14 md:p-16 text-center space-y-6 shadow-2xl"
+        className="relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-9 px-6 sm:px-10 text-center space-y-4 sm:space-y-5 shadow-2xl"
       >
         {/* Subtle decorative radial vignette */}
         <div
@@ -149,33 +149,28 @@ export default async function HomePage() {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
         />
 
-        <div className="relative z-10 space-y-3.5 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/[0.05] border border-black/[0.1] text-black text-[11px] font-mono uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-            <span>Ready to Build</span>
-          </div>
-
-          <h2 className="text-3xl sm:text-5xl font-bold text-black tracking-tight uppercase">
+        <div className="relative z-10 space-y-2 max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black tracking-tight uppercase">
             Have Something Worth Building?
           </h2>
-          <p className="text-xs sm:text-sm md:text-base text-[#3A3A3C] max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#3A3A3C] max-w-xl mx-auto leading-relaxed">
             Let&apos;s turn your vision into modern, reliable web solutions. Speak directly with our technical
             team today.
           </p>
         </div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3.5 pt-2">
+        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-1">
           <CtaLink
             href="/contact"
             label="Home Footer Start Project"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-none transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.99]"
+            className="inline-flex items-center justify-center px-7 py-3 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.99]"
           >
             Start Your Project
           </CtaLink>
           <CtaLink
             href="/work"
             label="Home Footer Browse Work"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-none transition-all duration-200"
+            className="inline-flex items-center justify-center px-7 py-3 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-xl transition-all duration-200"
           >
             Browse Case Studies
           </CtaLink>

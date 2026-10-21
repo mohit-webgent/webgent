@@ -38,6 +38,8 @@ import {
   Wrench,
   Loader2,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import { buildWhatsAppUrl } from "@/config/whatsapp";
 import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
 
 import { BackendPricingData } from "@/lib/services/pricing";
@@ -1669,6 +1671,43 @@ Note: Third-party service charges (hosting, SMS, payment gateway fees, domain, e
             </div>
           </div>
         </section>
+
+        {/* Closing Action Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-8 px-6 sm:px-10 text-center space-y-4 shadow-2xl">
+          {/* Subtle decorative radial vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+          />
+
+          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black tracking-tight uppercase">
+              Need a Custom Enterprise Scope or Architecture?
+            </h3>
+            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
+              Have specific compliance, high-concurrency, or non-standard system requirements? Schedule a direct engineering consultation.
+            </p>
+          </div>
+
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-semibold text-white bg-black hover:bg-[#1E1E24] rounded-xl transition-all shadow-md active:scale-95"
+            >
+              <span>Schedule Technical Consultation</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <a
+              href={buildWhatsAppUrl({ serviceName: "Custom Webgent Architecture" })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-[#25D366] hover:bg-[#20ba59] rounded-xl transition-all shadow-md active:scale-95"
+            >
+              <WhatsAppIcon className="w-4 h-4 fill-current" />
+              <span>Chat on WhatsApp</span>
+            </a>
+          </div>
+        </div>
 
         {/* ========================================================================= */}
         {/* DIRECT PROJECT PLAN SUBMISSION MODAL (Submits request & fires email)        */}

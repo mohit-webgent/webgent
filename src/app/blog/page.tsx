@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/redis";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
@@ -302,6 +302,40 @@ export default async function BlogPage() {
             </div>
           </div>
         )}
+
+        {/* Closing Action Banner */}
+        <div className="mt-16 sm:mt-24 relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-9 px-6 sm:px-10 text-center space-y-4 sm:space-y-5 shadow-2xl">
+          {/* Subtle decorative radial vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+          />
+
+          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-black tracking-tight uppercase">
+              Need Help Architecting Your Web Application?
+            </h2>
+            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
+              We translate complex system requirements into robust, high-performance web solutions. Get in touch with our team.
+            </p>
+          </div>
+
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
+            >
+              <span>Contact Engineering Team</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-xl transition-all"
+            >
+              <span>Explore Pricing Plans</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

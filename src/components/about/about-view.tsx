@@ -598,20 +598,26 @@ export function AboutView() {
         {/* 6. CALL TO ACTION & DIRECT CONTACT BAR                              */}
         {/* =================================================================== */}
         <section aria-label="Direct Contact" className="pt-4 border-t border-white/[0.08]">
-          <div className="p-8 bg-gradient-to-r from-[#0C1510] via-[#090D0B] to-[#070908] border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-2xl">
-            <div className="space-y-1.5">
-              <h2 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+          <div className="relative overflow-hidden rounded-2xl p-6 sm:p-7 md:py-6 md:px-8 bg-white border border-black/10 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-2xl">
+            {/* Subtle decorative radial vignette */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+            />
+
+            <div className="relative z-10 space-y-1.5">
+              <h2 className="text-xl sm:text-2xl font-bold text-black tracking-tight">
                 Looking to build a website or web application?
               </h2>
-              <p className="text-xs sm:text-sm text-[#A0A0A0] max-w-lg leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#3A3A3C] max-w-lg leading-relaxed">
                 Work directly with Mohit Verma through Webgent Studio. Transparent milestone estimates, production code quality, and responsive delivery.
               </p>
             </div>
 
-            <div className="flex flex-row items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
+            <div className="relative z-10 flex flex-row items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="flex-1 sm:flex-initial justify-center px-4 sm:px-6 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)] flex items-center gap-2 whitespace-nowrap text-center"
+                className="flex-1 sm:flex-initial justify-center px-5 py-2.5 sm:py-3 bg-black hover:bg-[#1E1E24] text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-md active:scale-[0.99] flex items-center gap-2 whitespace-nowrap text-center"
               >
                 <span>Discuss Your Project</span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
@@ -619,7 +625,7 @@ export function AboutView() {
 
               <Link
                 href="/pricing"
-                className="flex-1 sm:flex-initial justify-center px-3.5 sm:px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium text-xs sm:text-sm tracking-wide transition-colors border border-white/[0.1] whitespace-nowrap text-center"
+                className="flex-1 sm:flex-initial justify-center px-4 sm:px-5 py-2.5 sm:py-3 bg-transparent hover:bg-black/[0.05] text-black font-medium text-xs sm:text-sm rounded-xl transition-all border border-black/25 hover:border-black/60 whitespace-nowrap text-center"
               >
                 View Pricing
               </Link>

@@ -146,39 +146,32 @@ export function NewsletterForm({
   }
 
   // =========================================================================
-  // CARD VARIANT: Classic, Architectural, Balanced Height (Zero Roundedness)
+  // CARD VARIANT: Classic, Architectural, Balanced Height (Rounded & Compact)
   // =========================================================================
   return (
-    <div className="relative w-full bg-[#FBFBFA] text-[#0A0A0A] border border-[#0A0A0A]/20 shadow-[0_24px_65px_rgba(0,0,0,0.65)] py-9 sm:py-11 lg:py-12 px-7 sm:px-10 lg:px-14 select-none rounded-none overflow-hidden">
-      {/* Precision Inner Hairline Frame (Architectural Blueprint Style) */}
-      <div className="pointer-events-none absolute inset-2.5 sm:inset-3 border border-[#0A0A0A]/[0.12] rounded-none" />
+    <div className="relative w-full bg-[#FBFBFA] text-[#0A0A0A] border border-[#0A0A0A]/20 shadow-[0_24px_65px_rgba(0,0,0,0.65)] py-6 sm:py-8 px-6 sm:px-10 select-none rounded-2xl overflow-hidden">
+      {/* Precision Inner Hairline Frame */}
+      <div className="pointer-events-none absolute inset-2.5 sm:inset-3 border border-[#0A0A0A]/[0.12] rounded-xl" />
 
       {/* Hairline Corner Alignment Marks */}
-      <div className="pointer-events-none absolute top-1.5 left-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+      <div className="pointer-events-none absolute top-2.5 left-3 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
         +
       </div>
-      <div className="pointer-events-none absolute top-1.5 right-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+      <div className="pointer-events-none absolute top-2.5 right-3 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
         +
       </div>
-      <div className="pointer-events-none absolute bottom-1.5 left-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+      <div className="pointer-events-none absolute bottom-2.5 left-3 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
         +
       </div>
-      <div className="pointer-events-none absolute bottom-1.5 right-2 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
+      <div className="pointer-events-none absolute bottom-2.5 right-3 text-[9px] font-mono text-[#0A0A0A]/40 leading-none select-none">
         +
       </div>
 
       {/* Balanced 2-Column Architectural Layout */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-7 lg:gap-12 rounded-none">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-10">
         {/* Left Column: Classic Luxury Typography */}
-        <div className="lg:col-span-7 space-y-2.5 rounded-none">
-          <div className="inline-flex items-center gap-2 rounded-none">
-            <span className="w-1.5 h-1.5 bg-[#0A0A0A] rounded-none shrink-0" />
-            <span className="text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-[0.25em] text-[#0A0A0A]/70 font-semibold">
-              DISPATCH // NO. 048 &bull; PRIVATE CIRCULATION
-            </span>
-          </div>
-
-          <h3 className="text-2xl sm:text-3xl lg:text-[2.2rem] font-serif text-[#0A0A0A] tracking-tight leading-[1.12]">
+        <div className="lg:col-span-7 space-y-2">
+          <h3 className="text-xl sm:text-2xl lg:text-[1.8rem] font-serif text-[#0A0A0A] tracking-tight leading-[1.15]">
             {title}
           </h3>
 
@@ -188,9 +181,9 @@ export function NewsletterForm({
         </div>
 
         {/* Right Column: Sharp Subscription Form & Editorial Metadata */}
-        <div className="lg:col-span-5 lg:border-l lg:border-[#0A0A0A]/12 lg:pl-10 rounded-none">
+        <div className="lg:col-span-5 lg:border-l lg:border-[#0A0A0A]/12 lg:pl-8">
           {success ? (
-            <div className="p-4 sm:p-5 bg-white border border-[#0A0A0A] text-[#0A0A0A] space-y-1.5 shadow-sm rounded-none">
+            <div className="p-4 bg-white border border-[#0A0A0A] text-[#0A0A0A] space-y-1.5 shadow-sm rounded-xl">
               <div className="text-xs font-mono font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-[#0A0A0A]" />
                 REGISTRATION CONFIRMED
@@ -200,15 +193,15 @@ export function NewsletterForm({
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-2 rounded-none">
+            <form onSubmit={handleSubmit} className="space-y-2">
               {/* Form Header Stamp */}
               <div className="flex items-center justify-between text-[9.5px] font-mono uppercase tracking-[0.18em] text-[#0A0A0A]/60 font-semibold px-0.5">
                 <span>DIRECT INBOX DISPATCH</span>
                 <span>FORTNIGHTLY RELEASE</span>
               </div>
 
-              {/* Sharp Inline Input & Button */}
-              <div className="flex flex-col sm:flex-row items-stretch border border-[#0A0A0A] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-none">
+              {/* Inline Input & Button */}
+              <div className="flex flex-col sm:flex-row items-stretch border border-[#0A0A0A] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-xl overflow-hidden">
                 <input
                   type="email"
                   required
@@ -217,13 +210,13 @@ export function NewsletterForm({
                   onFocus={handleFocus}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-transparent text-xs sm:text-[13px] text-[#0A0A0A] placeholder-[#888888] font-mono focus:outline-none rounded-none border-0"
+                  className="w-full px-4 py-2.5 sm:py-3 bg-transparent text-xs sm:text-[13px] text-[#0A0A0A] placeholder-[#888888] font-mono focus:outline-none border-0"
                 />
 
                 <button
                   type="submit"
                   disabled={loading || !email}
-                  className="px-6 py-3 bg-[#0A0A0A] hover:bg-[#222222] text-[#FBFBFA] text-xs font-mono font-bold tracking-[0.18em] uppercase transition-colors shrink-0 flex items-center justify-center gap-2 border-0 rounded-none disabled:opacity-40 cursor-pointer"
+                  className="px-6 py-2.5 sm:py-3 bg-[#0A0A0A] hover:bg-[#222222] text-[#FBFBFA] text-xs font-mono font-bold tracking-[0.18em] uppercase transition-colors shrink-0 flex items-center justify-center gap-2 border-0 disabled:opacity-40 cursor-pointer"
                 >
                   {loading ? (
                     <>

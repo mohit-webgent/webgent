@@ -267,6 +267,49 @@ export function ServiceDetailView({ service }: ServiceDetailViewProps) {
             </div>
           </div>
         )}
+
+        {/* Closing Action Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-8 px-6 sm:px-10 text-center space-y-4 shadow-2xl">
+          {/* Subtle decorative radial vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+          />
+
+          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black tracking-tight uppercase">
+              Ready to deploy {service.name}?
+            </h3>
+            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
+              Let&apos;s evaluate your technical scope and deliver this capability with enterprise production quality.
+            </p>
+          </div>
+
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
+            <Link
+              href={`/contact?service=${encodeURIComponent(service.name)}`}
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-semibold text-white bg-black hover:bg-[#1E1E24] rounded-xl transition-all shadow-md active:scale-95"
+            >
+              <span>Initiate Consultation</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
+            <a
+              href={buildWhatsAppUrl({ serviceName: service.name })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-[#25D366] hover:bg-[#20ba59] rounded-xl transition-all shadow-md active:scale-95"
+            >
+              <WhatsAppIcon className="w-4 h-4 fill-current" />
+              <span>Chat on WhatsApp</span>
+            </a>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-transparent hover:bg-black/[0.05] border border-black/25 hover:border-black/60 rounded-xl transition-all"
+            >
+              <span>Calculate Estimate</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
