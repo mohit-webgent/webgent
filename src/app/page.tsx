@@ -66,6 +66,10 @@ type HomePost = {
   category: string | null;
   readTime: number | null;
   publishedAt: Date | null;
+  coverImage?: string | null;
+  ogImage?: string | null;
+  imageUrl?: string | null;
+  tags?: string[];
 };
 
 export default async function HomePage() {
@@ -78,7 +82,7 @@ export default async function HomePage() {
   let testimonials: Awaited<ReturnType<typeof prisma.testimonial.findMany>> = [];
   let latestPosts: HomePost[] = [];
 
-  const cacheKey = "cache:home:composite_data_v1";
+  const cacheKey = "cache:home:composite_data_v2";
   const cachedData = await cacheGet<{
     featuredProjects: typeof featuredProjects;
     testimonials: typeof testimonials;
@@ -104,7 +108,7 @@ export default async function HomePage() {
         }),
         prisma.blogPost.findMany({
           where: { status: "PUBLISHED", deletedAt: null },
-          orderBy: { publishedAt: "desc" },
+          orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
           take: 3,
           select: {
             id: true,
@@ -114,12 +118,21 @@ export default async function HomePage() {
             category: true,
             readTime: true,
             publishedAt: true,
+            coverImage: true,
+            ogImage: true,
+            tags: true,
           },
         }),
       ]);
       featuredProjects = results[0];
       testimonials = results[1];
-      latestPosts = results[2];
+      latestPosts = results[2].map((post) => ({
+        ...post,
+        imageUrl: post.coverImage || post.ogImage || null,
+        tags: post.tags
+          ? post.tags.split(",").map((t) => t.trim()).filter(Boolean)
+          : [post.category || "Engineering"],
+      }));
 
       await cacheSet(cacheKey, { featuredProjects, testimonials, latestPosts }, 60);
     } catch (error) {

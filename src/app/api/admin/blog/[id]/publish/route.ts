@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { cacheDel } from "@/lib/redis";
 import { ApiResponse } from "@/lib/api/response";
 import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { logger } from "@/lib/logger";
@@ -58,6 +59,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       revalidatePath("/blog");
       revalidatePath("/");
       if (updatedPost.slug) revalidatePath(`/blog/${updatedPost.slug}`);
+      await cacheDel([
+        "cache:home:composite_data_v2",
+        "cache:home:composite_data_v1",
+        "cache:blog:published_posts_v1",
+      ]);
     } catch (e) {
       logger.warn("Failed to revalidate blog paths", { error: String(e) });
     }

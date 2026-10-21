@@ -5,6 +5,13 @@ import Link from "next/link";
 import { ArrowRight, Clock, Terminal } from "lucide-react";
 import { Card3DTilt } from "@/components/animations/card-tilt";
 
+const FALLBACK_COVERS = [
+  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80",
+];
+
 export interface BlogPostItem {
   id: string;
   title: string;
@@ -14,7 +21,21 @@ export interface BlogPostItem {
   readTime?: number | null;
   publishedAt?: Date | string | null;
   imageUrl?: string | null;
-  tags?: string[];
+  coverImage?: string | null;
+  ogImage?: string | null;
+  tags?: string[] | string | null;
+}
+
+interface DisplayBlogPostItem {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  readTime: number;
+  publishedAt: string;
+  imageUrl: string;
+  tags: string[];
 }
 
 interface EngineeringBlogSectionProps {
@@ -27,25 +48,32 @@ export function EngineeringBlogSection({ posts = [] }: EngineeringBlogSectionPro
     return null;
   }
 
-  const displayPosts: BlogPostItem[] = posts.map((p, idx) => ({
-    id: p.id || `post-${idx}`,
-    title: p.title,
-    slug: p.slug,
-    excerpt: p.excerpt || "",
-    category: p.category || "Engineering",
-    readTime: p.readTime || 4,
-    publishedAt: p.publishedAt
-      ? new Date(p.publishedAt).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "Recent Article",
-    imageUrl:
-      p.imageUrl ||
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=800&auto=format&fit=crop",
-    tags: p.tags || ["Next.js", "Web Engineering"],
-  }));
+  const displayPosts: DisplayBlogPostItem[] = posts.map((p, idx) => {
+    const rawImage = p.imageUrl || p.coverImage || p.ogImage;
+    const fallbackImage = FALLBACK_COVERS[idx % FALLBACK_COVERS.length];
+
+    return {
+      id: p.id || `post-${idx}`,
+      title: p.title,
+      slug: p.slug,
+      excerpt: p.excerpt || "",
+      category: p.category || "Engineering",
+      readTime: p.readTime || 4,
+      publishedAt: p.publishedAt
+        ? new Date(p.publishedAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "Recent Article",
+      imageUrl: rawImage && rawImage.trim().length > 0 ? rawImage.trim() : fallbackImage,
+      tags: Array.isArray(p.tags)
+        ? p.tags
+        : typeof p.tags === "string"
+        ? p.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : ["Architecture", "Engineering"],
+    };
+  });
 
   return (
     <section className="relative w-full py-5 sm:py-7 lg:py-9 border-t border-white/[0.06] text-left select-none overflow-hidden bg-[#07080A]">
@@ -99,10 +127,17 @@ export function EngineeringBlogSection({ posts = [] }: EngineeringBlogSectionPro
                     {/* Visual Architectural Cover Header */}
                     <div className="relative h-[155px] sm:h-[175px] w-full overflow-hidden bg-[#07080A] border-b border-white/[0.06] shrink-0">
                       {post.imageUrl ? (
-                        <div
-                          className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                          style={{
-                            backgroundImage: `url('${post.imageUrl}')`,
+                        <img
+                          src={post.imageUrl}
+                          alt={post.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            const fallback = FALLBACK_COVERS[idx % FALLBACK_COVERS.length];
+                            if (target.src !== fallback) {
+                              target.src = fallback;
+                            }
                           }}
                         />
                       ) : (
@@ -114,7 +149,7 @@ export function EngineeringBlogSection({ posts = [] }: EngineeringBlogSectionPro
                       {/* Dark Vignette Overlay */}
                       <div
                         aria-hidden="true"
-                        className="absolute inset-0 bg-gradient-to-t from-[#090A0D] via-[#090A0D]/60 to-black/30"
+                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090A0D] via-[#090A0D]/60 to-black/30"
                       />
 
                       {/* Header Overlays */}

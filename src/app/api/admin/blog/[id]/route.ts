@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { cacheDel } from "@/lib/redis";
 import { ApiResponse } from "@/lib/api/response";
 import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { blogPostSchema } from "@/lib/validations/blog";
@@ -145,6 +146,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       if (existingPost.slug && existingPost.slug !== updatedPost.slug) {
         revalidatePath(`/blog/${existingPost.slug}`);
       }
+      await cacheDel([
+        "cache:home:composite_data_v2",
+        "cache:home:composite_data_v1",
+        "cache:blog:published_posts_v1",
+      ]);
     } catch (e) {
       logger.warn("Failed to revalidate blog paths", { error: String(e) });
     }
@@ -194,6 +200,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         revalidatePath("/blog");
         revalidatePath("/");
         if (post.slug) revalidatePath(`/blog/${post.slug}`);
+        await cacheDel([
+          "cache:home:composite_data_v2",
+          "cache:home:composite_data_v1",
+          "cache:blog:published_posts_v1",
+        ]);
       } catch (e) {
         logger.warn("Failed to revalidate blog paths", { error: String(e) });
       }
@@ -216,6 +227,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       revalidatePath("/blog");
       revalidatePath("/");
       if (post.slug) revalidatePath(`/blog/${post.slug}`);
+      await cacheDel([
+        "cache:home:composite_data_v2",
+        "cache:home:composite_data_v1",
+        "cache:blog:published_posts_v1",
+      ]);
     } catch (e) {
       logger.warn("Failed to revalidate blog paths", { error: String(e) });
     }
