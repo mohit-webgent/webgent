@@ -4,6 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, Star, Sparkles } from "lucide-react";
 import { CtaLink } from "@/components/ui/cta-link";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import { buildWhatsAppUrl } from "@/config/whatsapp";
 import type { CmsService } from "@/lib/services/cms-services-shared";
 import {
   Layers,
@@ -185,6 +187,15 @@ export function ServicesView({ services }: ServicesViewProps) {
               <span>Schedule Technical Consultation</span>
               <ArrowUpRight className="w-4 h-4" />
             </Link>
+            <a
+              href={buildWhatsAppUrl({ serviceName: "Webgent Engineering Services" })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-[#25D366] hover:bg-[#20ba59] rounded-xl transition-all shadow-md active:scale-95"
+            >
+              <WhatsAppIcon className="w-4 h-4 fill-current" />
+              <span>Chat on WhatsApp</span>
+            </a>
           </div>
         </div>
       </div>

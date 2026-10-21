@@ -6,7 +6,6 @@ import {
   AlertCircle,
   Loader2,
   Mail,
-  Phone,
   MapPin,
   Check,
   Layers,
@@ -19,6 +18,8 @@ import { contactFormSchema } from "@/lib/validations/contact";
 import { trackFormStart, trackFormSubmit } from "@/lib/analytics/client";
 import { FOUNDER_PROFILE } from "@/data/founder-profile";
 import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import { WHATSAPP_CONFIG, buildWhatsAppUrl } from "@/config/whatsapp";
 import type { ContactInfo } from "@/lib/services/cms-shared";
 
 const PROJECT_TYPES = [
@@ -70,8 +71,11 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
   const turnstileRef = useRef<TurnstileRef>(null);
 
   const contactEmail = contactInfo?.email || FOUNDER_PROFILE.email || "mohitvermag75@gmail.com";
-  const contactPhone = contactInfo?.phone || "+91 98765 43210";
+  const contactPhone = contactInfo?.phone || WHATSAPP_CONFIG.displayNumber;
   const contactAddress = contactInfo?.officeAddress || FOUNDER_PROFILE.location || "Gurugram / Noida, India";
+  const whatsappUrl = buildWhatsAppUrl({
+    serviceName: prefilledService || undefined,
+  });
 
   useEffect(() => {
     if (!searchParams) return;
@@ -219,34 +223,29 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
             </div>
           </div>
 
-          {/* Phone */}
-          {(() => {
-            const whatsappPhone = contactPhone.replace(/[^0-9]/g, "") || "919876543210";
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=Hi%20Webgent,%20I%20would%20like%20to%20discuss%20a%20project%20with%20Webgent.`;
-            return (
-              <div className="flex items-center gap-4 group">
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
-                >
-                  <Phone className="w-5 h-5 text-white" />
-                </a>
-                <div className="min-w-0">
-                  <span className="block text-xs text-neutral-400 font-medium">Phone</span>
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm sm:text-base text-white hover:text-neutral-200 font-medium transition-colors"
-                  >
-                    {contactPhone}
-                  </a>
-                </div>
-              </div>
-            );
-          })()}
+          {/* Phone / WhatsApp */}
+          <div className="flex items-center gap-4 group">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Direct WhatsApp chat"
+              className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-[#25D366]/40 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
+            >
+              <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
+            </a>
+            <div className="min-w-0">
+              <span className="block text-xs text-neutral-400 font-medium">WhatsApp / Phone</span>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm sm:text-base text-white hover:text-[#25D366] font-medium transition-colors"
+              >
+                {contactPhone}
+              </a>
+            </div>
+          </div>
 
           {/* Address */}
           <div className="flex items-center gap-4">
@@ -258,6 +257,24 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
               <span className="block text-sm sm:text-base text-white font-medium">
                 {contactAddress}
               </span>
+            </div>
+          </div>
+
+          {/* Clear Chat on WhatsApp Action Button */}
+          <div className="pt-2 border-t border-white/[0.06]">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              id="contact-chat-on-whatsapp-button"
+              className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.99] text-black font-bold text-sm shadow-[0_4px_24px_rgba(37,211,102,0.3)] hover:shadow-[0_6px_30px_rgba(37,211,102,0.45)] transition-all cursor-pointer group"
+            >
+              <WhatsAppIcon className="w-5 h-5 fill-current" />
+              <span>Chat on WhatsApp</span>
+            </a>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 mt-2.5 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+              <span>Direct WhatsApp chat · Instant connect</span>
             </div>
           </div>
         </div>

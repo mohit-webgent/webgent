@@ -1,3 +1,5 @@
+import { WHATSAPP_CONFIG, buildWhatsAppUrl } from "./whatsapp";
+
 export const siteConfig = {
   name: "Webgent",
   tagline: "Next-Gen Web Solutions & Engineering",
@@ -18,5 +20,9 @@ export const siteConfig = {
     twitter: "https://twitter.com/webgent",
     linkedin: "https://www.linkedin.com",
     testimonials: "/testimonials",
+    whatsapp: `https://wa.me/${WHATSAPP_CONFIG.number}`,
+    whatsappChat: buildWhatsAppUrl(),
   },
+  whatsapp: WHATSAPP_CONFIG,
 };
+

@@ -11,12 +11,13 @@ interface ServicePageProps {
 }
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
-  const service = await getPublicServiceBySlug(params.slug);
-  if (!service) {
-    return {
-      title: "Service Not Found",
-    };
-  }
+  try {
+    const service = await getPublicServiceBySlug(params.slug);
+    if (!service) {
+      return {
+        title: "Service Not Found",
+      };
+    }
 
   const title = service.seoTitle || `${service.name} — Engineering Services | Webgent`;
   const description = service.seoDescription || service.shortDescription;
@@ -55,11 +56,22 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       creator: "@webgent",
       site: "@webgent",
     },
-  };
+    };
+  } catch {
+    return {
+      title: "Services — Webgent",
+    };
+  }
 }
 
 export default async function SingleServicePage({ params }: ServicePageProps) {
-  const service = await getPublicServiceBySlug(params.slug);
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams?.slug;
+  if (!slug) {
+    notFound();
+  }
+
+  const service = await getPublicServiceBySlug(slug);
   if (!service) {
     notFound();
   }

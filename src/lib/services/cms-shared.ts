@@ -573,6 +573,7 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
     { id: "footer-github", title: "GitHub", href: "https://github.com/mohit-webgent/webgent", isExternal: true, published: true },
     { id: "footer-twitter", title: "Twitter / X", href: "https://twitter.com/webgent", isExternal: true, published: true },
     { id: "footer-linkedin", title: "LinkedIn", href: "https://linkedin.com/company/webgent", isExternal: true, published: true },
+    { id: "footer-whatsapp", title: "WhatsApp", href: "https://wa.me/918800241462", isExternal: true, published: true },
     { id: "footer-inquiries", title: "Direct Inquiries", href: "/contact", isExternal: false, published: true },
   ],
   copyrightText: "All rights reserved.",

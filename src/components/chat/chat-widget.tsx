@@ -21,6 +21,8 @@ import {
 import { Turnstile, TurnstileRef } from "@/components/ui/turnstile";
 import { EstimateCard } from "./estimate-card";
 import { FormattedMessage } from "./formatted-message";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import { buildWhatsAppUrl } from "@/config/whatsapp";
 import type { ProjectEstimateResult } from "@/lib/services/ai-consultant/calculator";
 
 interface Message {
@@ -87,6 +89,14 @@ export function ChatWidget() {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 150);
+    }
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("webgent:chat-widget-toggle", {
+          detail: { isOpen },
+        }),
+      );
     }
   }, [isOpen, scrollToBottom]);
 
@@ -339,34 +349,7 @@ export function ChatWidget() {
       {/* =================================================================== */}
       {/* FLOATING LAUNCHER BUTTON (WhatsApp / Instagram Direct Message Style)*/}
       {/* =================================================================== */}
-      <div className={`fixed bottom-4 sm:bottom-6 right-3 sm:right-6 z-50 flex items-center gap-2.5 sm:gap-3 ${isOpen ? "hidden sm:flex" : ""}`}>
-        {!isOpen && (
-          <button
-            type="button"
-            onClick={handleToggleOpen}
-            className="hidden md:flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-[#0D0E14]/95 hover:bg-[#141622] text-xs text-[#E5E5E3] hover:text-white border border-white/[0.14] hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all group cursor-pointer"
-          >
-            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-emerald-500/50 shrink-0">
-              <Image
-                src="/images/mohit-verma.jpeg"
-                alt="Mohit Verma"
-                fill
-                sizes="24px"
-                className="object-cover"
-              />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[12px] font-semibold flex items-center gap-1 leading-tight">
-                <span>Chat with Mohit</span>
-                <BadgeCheck className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
-              </span>
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1 leading-tight font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Active now</span>
-              </span>
-            </div>
-          </button>
-        )}
+      <div className={`fixed bottom-4 sm:bottom-6 right-3 sm:right-6 z-50 flex items-center ${isOpen ? "hidden sm:flex" : ""}`}>
 
         <button
           type="button"
@@ -459,6 +442,16 @@ export function ChatWidget() {
 
             {/* Header Action Icons */}
             <div className="flex items-center gap-0.5 shrink-0">
+              <a
+                href={buildWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Chat with Mohit on WhatsApp"
+                className="p-1.5 rounded-full text-[#8E8E8C] hover:text-[#25D366] hover:bg-white/[0.08] transition-colors cursor-pointer"
+              >
+                <WhatsAppIcon className="w-4 h-4 fill-current" />
+              </a>
+
               <button
                 type="button"
                 onClick={() => setShowDetailsForm((prev) => !prev)}

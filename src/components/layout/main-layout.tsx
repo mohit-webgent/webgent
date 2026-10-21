@@ -6,6 +6,7 @@ import { Header } from "./header";
 import { Footer } from "./footer";
 import { AnalyticsTracker } from "@/components/analytics/analytics-tracker";
 import { ChatWidget } from "@/components/chat/chat-widget";
+import { WhatsAppFloatingButton } from "./whatsapp-floating-button";
 
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { ScrollProgressBar } from "@/components/animations/scroll-progress";
@@ -54,6 +55,7 @@ export function MainLayout({ children, navItems, footerData }: MainLayoutProps) 
         <Suspense fallback={null}>
           <AnalyticsTracker />
         </Suspense>
+        <WhatsAppFloatingButton />
         <ChatWidget />
       </div>
     </SmoothScrollProvider>

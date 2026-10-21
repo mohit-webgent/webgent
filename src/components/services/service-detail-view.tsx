@@ -30,6 +30,8 @@ import {
   Smartphone,
   Compass,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import { buildWhatsAppUrl } from "@/config/whatsapp";
 import type { CmsService } from "@/lib/services/cms-services-shared";
 
 const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -67,7 +69,7 @@ export function ServiceDetailView({ service }: ServiceDetailViewProps) {
   // Group features by category
   const featuresByCategory = React.useMemo(() => {
     const map: Record<string, typeof service.features> = {};
-    service.features.forEach((feat) => {
+    (service?.features || []).forEach((feat) => {
       const cat = feat.category || "General";
       if (!map[cat]) map[cat] = [];
       map[cat].push(feat);
@@ -191,6 +193,17 @@ export function ServiceDetailView({ service }: ServiceDetailViewProps) {
                   <span>Initiate Project Consultation</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
+
+                <a
+                  href={buildWhatsAppUrl({ serviceName: service.name })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id={`service-whatsapp-${service.slug}`}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white hover:text-black bg-[#25D366]/15 hover:bg-[#25D366] border border-[#25D366]/40 hover:border-[#25D366] rounded-xl transition-all shadow-sm active:scale-95 group"
+                >
+                  <WhatsAppIcon className="w-4 h-4 text-[#25D366] group-hover:text-black fill-current transition-colors" />
+                  <span>Chat on WhatsApp about this Service</span>
+                </a>
 
                 <Link
                   href="/pricing"
