@@ -16,15 +16,12 @@ import {
   CheckCheck,
   Copy,
   Briefcase,
-  Layers,
   Sparkles,
   ExternalLink,
   Code2,
   Database,
   Server,
   Wrench,
-  Compass,
-  Laptop,
 } from "lucide-react";
 import {
   FOUNDER_PROFILE,
@@ -37,7 +34,6 @@ import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 
 export function AboutView() {
   const {
-    name,
     badge,
     headline,
     location,
@@ -549,7 +545,7 @@ export function AboutView() {
                 Selected Work &amp; Production Experience
               </h2>
               <p className="text-sm text-[#A3A3A3] max-w-xl font-light">
-                A selection of web interfaces and applications I've contributed to across professional work and independent development.
+                A selection of web interfaces and applications I&apos;ve contributed to across professional work and independent development.
               </p>
             </div>
 
