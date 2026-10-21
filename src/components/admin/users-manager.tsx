@@ -309,7 +309,39 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {filteredUsers.length > 0 ? (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="motion-safe:animate-pulse">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-800" />
+                        <div className="space-y-1">
+                          <div className="h-3.5 w-28 bg-white/[0.07] rounded" />
+                          <div className="h-3 w-40 bg-white/[0.03] rounded" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-5 w-16 rounded-md bg-white/[0.04]" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-5 w-16 rounded bg-white/[0.04]" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-3.5 w-20 rounded bg-white/[0.03]" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-3.5 w-20 rounded bg-white/[0.03]" />
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="inline-flex gap-1.5 justify-end">
+                        <div className="w-7 h-7 rounded-lg bg-slate-800" />
+                        <div className="w-7 h-7 rounded-lg bg-slate-800" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((u) => {
                   const isCurrent = u.id === currentAdminId;
                   return (

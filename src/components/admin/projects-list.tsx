@@ -239,9 +239,47 @@ export function ProjectsList() {
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
-          <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-            <span className="text-xs">Loading projects database...</span>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-950/60 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Order</th>
+                  <th className="py-3.5 px-4">Project</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Featured</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="motion-safe:animate-pulse">
+                    <td className="py-4 px-4 w-16">
+                      <div className="h-6 w-8 bg-slate-800 rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 w-44 bg-white/[0.07] rounded mb-1.5" />
+                      <div className="h-3 w-64 bg-white/[0.03] rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 w-24 bg-white/[0.04] rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 w-16 bg-white/[0.04] rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 w-20 bg-white/[0.04] rounded-md" />
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="inline-flex gap-1.5">
+                        <div className="w-7 h-7 rounded-lg bg-slate-800" />
+                        <div className="w-7 h-7 rounded-lg bg-slate-800" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="p-12 text-center space-y-3">

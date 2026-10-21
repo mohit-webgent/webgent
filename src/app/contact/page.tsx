@@ -3,6 +3,7 @@ import { ContactForm } from "@/components/contact/contact-form";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
 import { getContactInfo, resolveRouteMetadata } from "@/lib/services/cms";
+import { ContactPageSkeleton } from "./loading";
 
 export const revalidate = 3600;
 
@@ -54,11 +55,7 @@ export default async function ContactPage() {
 
       <div className="w-full max-w-6xl mx-auto relative z-10">
         {/* Main 2-Column Split: Contact Info Card (Left) & Form (Right) */}
-        <Suspense
-          fallback={
-            <div className="min-h-[480px] w-full bg-[#0F1014] rounded-[24px] animate-pulse border border-white/[0.08]" />
-          }
-        >
+        <Suspense fallback={<ContactPageSkeleton />}>
           <ContactForm contactInfo={contactInfo} />
         </Suspense>
       </div>

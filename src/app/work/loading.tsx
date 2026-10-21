@@ -1,45 +1,35 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function WorkLoading() {
   return (
-    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-12 px-5 sm:px-8 lg:px-12 2xl:px-24 relative overflow-hidden font-sans">
-      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto space-y-16 animate-pulse">
-        <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="h-6 w-48 bg-white/[0.04] border border-white/[0.08] rounded-md mx-auto" />
-          <div className="h-10 sm:h-12 w-3/4 bg-white/[0.06] border border-white/[0.07] rounded-xl mx-auto" />
-          <div className="h-3.5 w-2/3 bg-white/[0.03] rounded mx-auto" />
+    <div className="min-h-screen bg-[#080808] text-[#EDEDED] pt-8 pb-20 sm:pt-12 sm:pb-28 px-6 sm:px-10 lg:px-16 2xl:px-24 font-sans">
+      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto">
+        {/* Left-Aligned Header Intro */}
+        <div className="mb-10 sm:mb-14 space-y-2">
+          <Skeleton className="h-9 sm:h-12 w-80 sm:w-96 rounded-xl bg-white/[0.08]" />
+          <Skeleton className="h-4 w-full max-w-lg bg-white/[0.03]" />
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="h-8 w-20 bg-white/[0.03] border border-white/[0.07] rounded-lg shrink-0"
-              />
-            ))}
-          </div>
-          <div className="h-9 w-full sm:w-64 bg-white/[0.02] border border-white/[0.08] rounded-lg" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Responsive Grid of 16:10 Image Showcase Cards (matching WorkPage) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20 2xl:gap-x-14 2xl:gap-y-20">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-6 sm:p-7 space-y-5 h-72 flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="h-4 w-24 bg-white/[0.04] rounded" />
-                  <div className="h-3 w-16 bg-white/[0.03] rounded" />
-                </div>
-                <div className="h-6 w-4/5 bg-white/[0.06] rounded" />
-                <div className="space-y-2">
-                  <div className="h-3 w-full bg-white/[0.03] rounded" />
-                  <div className="h-3 w-5/6 bg-white/[0.03] rounded" />
+            <div key={i} className="block">
+              {/* Large 16:10 Aspect Ratio Image Container */}
+              <div className="w-full aspect-[16/10] rounded-none bg-[#121212] border border-white/[0.08] relative overflow-hidden">
+                <Skeleton className="w-full h-full rounded-none bg-white/[0.03]" />
+                {/* Top-left corner badge */}
+                <div className="absolute top-3 left-3">
+                  <Skeleton className="h-5 w-24 rounded bg-white/[0.08]" />
                 </div>
               </div>
-              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between">
-                <div className="h-4 w-28 bg-white/[0.05] rounded" />
-                <div className="h-4 w-4 bg-white/[0.04] rounded" />
+
+              {/* Title & Metadata below image */}
+              <div className="mt-5 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
+                <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                  <Skeleton className="h-6 w-48 sm:w-60 rounded-lg bg-white/[0.08]" />
+                  <Skeleton className="h-4 w-16 rounded bg-white/[0.04]" />
+                </div>
+                <Skeleton className="h-4 w-24 rounded bg-white/[0.03] shrink-0" />
               </div>
             </div>
           ))}

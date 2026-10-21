@@ -196,7 +196,25 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {logs.length > 0 ? (
+              {loading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="motion-safe:animate-pulse">
+                    <td className="py-3.5 px-4">
+                      <div className="h-6 w-32 rounded-lg bg-white/[0.05]" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-4 w-40 bg-white/[0.07] rounded mb-1" />
+                      <div className="h-3 w-56 bg-white/[0.03] rounded" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-3.5 w-32 bg-white/[0.03] rounded" />
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="h-6 w-16 rounded-lg bg-slate-800 ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              ) : logs.length > 0 ? (
                 logs.map((log) => {
                   const meta = log.metadata || {};
                   const actor =

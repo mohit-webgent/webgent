@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { PricingView } from "@/components/pricing/pricing-view";
 import { getPricingData } from "@/lib/services/pricing";
 import { resolveRouteMetadata } from "@/lib/services/cms";
+import PricingLoading from "./loading";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,7 @@ export default async function PricingPage() {
   const pricingData = await getPricingData();
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#080808]" />}>
+    <Suspense fallback={<PricingLoading />}>
       <PricingView initialData={pricingData} />
     </Suspense>
   );

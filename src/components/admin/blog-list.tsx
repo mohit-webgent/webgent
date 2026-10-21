@@ -213,9 +213,49 @@ export function BlogList() {
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
-          <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-            <span className="text-xs">Loading blog database...</span>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-950/60 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Article</th>
+                  <th className="py-3.5 px-4">Category / Tags</th>
+                  <th className="py-3.5 px-4">Read Time</th>
+                  <th className="py-3.5 px-4">Views</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="motion-safe:animate-pulse">
+                    <td className="py-4 px-4">
+                      <div className="h-4 w-48 bg-white/[0.07] rounded mb-1.5" />
+                      <div className="h-3 w-64 bg-white/[0.03] rounded mb-1" />
+                      <div className="h-2.5 w-32 bg-white/[0.02] rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 w-20 rounded bg-white/[0.04] mb-1" />
+                      <div className="h-3 w-28 rounded bg-white/[0.02]" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 w-12 rounded bg-white/[0.03]" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 w-14 rounded bg-white/[0.03]" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 w-20 rounded-md bg-white/[0.04]" />
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="inline-flex gap-1.5">
+                        <div className="w-7 h-7 rounded-lg bg-slate-800" />
+                        <div className="w-7 h-7 rounded-lg bg-slate-800" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : filteredPosts.length === 0 ? (
           <div className="p-12 text-center space-y-3">

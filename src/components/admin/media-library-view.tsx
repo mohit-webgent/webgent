@@ -433,16 +433,19 @@ export function MediaLibraryView() {
 
       {/* Main Content Area */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 py-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-white/[0.02] border border-white/[0.06] animate-pulse p-3 flex flex-col justify-between"
+              className="rounded-2xl bg-[#0E0E10] border border-white/[0.08] p-2.5 flex flex-col justify-between motion-safe:animate-pulse space-y-2.5"
             >
-              <div className="w-full h-24 bg-white/[0.04] rounded-xl" />
-              <div className="space-y-1.5">
-                <div className="w-3/4 h-3 bg-white/[0.04] rounded" />
-                <div className="w-1/2 h-2 bg-white/[0.04] rounded" />
+              <div className="w-full aspect-square rounded-xl bg-white/[0.04] border border-white/[0.04]" />
+              <div className="space-y-1.5 px-0.5 pb-0.5">
+                <div className="w-3/4 h-3 bg-white/[0.05] rounded" />
+                <div className="flex items-center justify-between">
+                  <div className="w-1/3 h-2.5 bg-white/[0.03] rounded" />
+                  <div className="w-1/4 h-2.5 bg-white/[0.03] rounded" />
+                </div>
               </div>
             </div>
           ))}
