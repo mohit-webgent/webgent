@@ -141,30 +141,41 @@ export default async function HomePage() {
       <ScrollReveal
         key="cta"
         as="section"
-        className="relative overflow-hidden rounded-2xl bg-[#0D0D0D] border border-white/[0.08] p-6 sm:p-10 md:p-12 text-center space-y-5 shadow-2xl"
+        className="relative overflow-hidden rounded-none bg-[#FFFFFF] border border-black/10 p-8 sm:p-14 md:p-16 text-center space-y-6 shadow-2xl"
       >
-        <div className="space-y-3 max-w-2xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-bold text-[#F5F5F3] tracking-tight uppercase">
+        {/* Subtle decorative radial vignette */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
+        />
+
+        <div className="relative z-10 space-y-3.5 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/[0.05] border border-black/[0.1] text-black text-[11px] font-mono uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+            <span>Ready to Build</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-5xl font-bold text-black tracking-tight uppercase">
             Have Something Worth Building?
           </h2>
-          <p className="text-xs sm:text-sm text-[#909090] max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm md:text-base text-[#3A3A3C] max-w-xl mx-auto leading-relaxed">
             Let&apos;s turn your vision into modern, reliable web solutions. Speak directly with our technical
             team today.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3.5 pt-2">
+        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3.5 pt-2">
           <CtaLink
             href="/contact"
             label="Home Footer Start Project"
-            className="inline-flex items-center justify-center px-7 py-3.5 bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs rounded-lg transition-colors"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-none transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.99]"
           >
             Start Your Project
           </CtaLink>
           <CtaLink
             href="/work"
             label="Home Footer Browse Work"
-            className="inline-flex items-center justify-center px-7 py-3.5 bg-transparent hover:bg-white/[0.04] text-[#E5E5E5] border border-white/14 font-medium text-xs rounded-lg transition-colors"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-none transition-all duration-200"
           >
             Browse Case Studies
           </CtaLink>
