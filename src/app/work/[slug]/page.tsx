@@ -2,9 +2,10 @@ import { prisma } from "@/lib/db";
 import { Project } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Github, Tag, Building, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
+import { ArrowLeft, Github, Tag, Building, Sparkles, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { DemoLink } from "@/components/work/demo-link";
+import { ProjectGallery } from "@/components/work/project-gallery";
 import { siteConfig } from "@/config/site";
 import { ClipReveal } from "@/components/animations/clip-reveal";
 import { ParallaxImage } from "@/components/animations/parallax-image";
@@ -204,30 +205,9 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
           </div>
         )}
 
-        {/* Screenshot Gallery with custom cursor & parallax */}
+        {/* Screenshot Gallery with interactive modal preview */}
         {screenshotList.length > 0 && (
-          <div className="space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] flex items-center gap-2.5 tracking-tight uppercase">
-              <CheckCircle2 className="w-5 h-5 text-[#8A8A8A]" />
-              <span>Interface & Telemetry Gallery</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {screenshotList.map((url, idx) => (
-                <div
-                  key={idx}
-                  className="bg-[#0D0D0D] border border-white/[0.08] rounded-xl overflow-hidden shadow-xl group"
-                >
-                  <img
-                    src={url}
-                    alt={`${project.title} screenshot ${idx + 1}`}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <ProjectGallery screenshots={screenshotList} projectTitle={project.title} />
         )}
 
         {/* Closing Action Banner */}

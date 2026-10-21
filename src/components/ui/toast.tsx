@@ -150,27 +150,27 @@ function ToastItemCard({
   const getBorderColor = () => {
     switch (toast.type) {
       case "success":
-        return "border-emerald-500/30 bg-slate-900/95 shadow-emerald-950/40";
+        return "border-emerald-500/40 bg-[#0D0D12] shadow-2xl";
       case "error":
-        return "border-rose-500/30 bg-slate-900/95 shadow-rose-950/40";
+        return "border-rose-500/40 bg-[#0D0D12] shadow-2xl";
       case "warning":
-        return "border-amber-500/30 bg-slate-900/95 shadow-amber-950/40";
+        return "border-amber-500/40 bg-[#0D0D12] shadow-2xl";
       case "info":
       default:
-        return "border-sky-500/30 bg-slate-900/95 shadow-sky-950/40";
+        return "border-sky-500/40 bg-[#0D0D12] shadow-2xl";
     }
   };
 
   return (
     <div
       role="alert"
-      className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-bottom-3 ${getBorderColor()}`}
+      className={`pointer-events-auto flex items-start gap-3 p-4 rounded-none border shadow-2xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-bottom-3 ${getBorderColor()}`}
     >
       {getIcon()}
       <div className="flex-1 min-w-0 pr-1">
         <p className="text-xs sm:text-sm font-semibold text-white leading-tight">{toast.title}</p>
         {toast.description && (
-          <p className="text-xs text-slate-300 mt-1 leading-relaxed break-words">
+          <p className="text-xs text-[#D0D0CE] mt-1 leading-relaxed break-words font-sans">
             {toast.description}
           </p>
         )}
@@ -178,7 +178,7 @@ function ToastItemCard({
       <button
         type="button"
         onClick={() => onDismiss(toast.id)}
-        className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+        className="text-[#888888] hover:text-white p-1 rounded-none hover:bg-white/[0.05] transition-colors"
         aria-label="Dismiss notification"
       >
         <X className="w-4 h-4" />

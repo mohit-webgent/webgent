@@ -229,20 +229,20 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#0D0D11] border-r border-white/[0.08] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.08] shrink-0">
           <Link href="/admin" onClick={onClose} className="flex items-center gap-3 group">
-            <div className="p-2 bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white rounded-xl shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-transform">
+            <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-sm transition-all rounded-none">
               <Shield className="w-5 h-5" />
             </div>
             <div>
               <span className="font-extrabold text-base text-white tracking-tight leading-none block">
                 Webgent
               </span>
-              <span className="text-[10px] font-semibold text-indigo-400 uppercase tracking-widest block mt-0.5">
+              <span className="text-[10px] font-mono font-semibold text-emerald-400 uppercase tracking-widest block mt-0.5">
                 Admin Console
               </span>
             </div>
@@ -252,7 +252,7 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
             type="button"
             onClick={onClose}
             aria-label="Close navigation"
-            className="lg:hidden p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="lg:hidden p-1 text-[#888888] hover:text-white rounded-none hover:bg-white/[0.05] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -272,7 +272,7 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
 
             return (
               <div key={group.title} className="space-y-1">
-                <div className="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <div className="px-3 pb-1 text-[10px] font-mono font-bold text-[#666666] uppercase tracking-wider">
                   {group.title}
                 </div>
 
@@ -285,18 +285,18 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
                       key={item.href}
                       href={item.href}
                       onClick={onClose}
-                      className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                      className={`group flex items-center justify-between px-3 py-2 rounded-none text-xs font-semibold transition-all duration-150 ${
                         active
-                          ? "bg-indigo-600/15 text-white border border-indigo-500/30 shadow-sm"
-                          : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                          ? "bg-emerald-500/10 text-white border-l-2 border-emerald-400 border-t border-b border-r border-white/[0.06] shadow-sm"
+                          : "text-[#888888] hover:text-white hover:bg-white/[0.03] border-l-2 border-transparent"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`p-1.5 rounded-none transition-colors ${
                             active
-                              ? "bg-indigo-600 text-white"
-                              : "bg-slate-800/80 " + item.colorClass
+                              ? "bg-emerald-500/20 text-emerald-300"
+                              : "bg-white/[0.03] " + item.colorClass
                           }`}
                         >
                           <Icon className="w-4 h-4" />
@@ -305,7 +305,7 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
                       </div>
 
                       {item.badge !== undefined && (
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-none bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                           {item.badge}
                         </span>
                       )}
@@ -317,14 +317,14 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
           })}
         </div>
 
-        <div className="p-3 border-t border-slate-800 shrink-0">
+        <div className="p-3 border-t border-white/[0.08] shrink-0">
           <Link
             href="/"
             target="_blank"
-            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition-colors"
+            className="flex items-center justify-between px-3 py-2 rounded-none text-xs font-mono text-[#888888] hover:text-white hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.08]"
           >
             <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 bg-emerald-400 motion-safe:animate-pulse"></span>
               <span>Live Website</span>
             </span>
             <ExternalLink className="w-3.5 h-3.5" />

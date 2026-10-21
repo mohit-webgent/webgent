@@ -23,7 +23,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
+      <div className="admin-theme min-h-screen bg-[#080808] text-[#EDEDED] flex font-sans selection:bg-white selection:text-black">
         <AdminSidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -31,13 +31,13 @@ export function AdminShell({ children, user }: AdminShellProps) {
         />
 
         <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
-          <header className="sticky top-0 z-30 h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between gap-4">
+          <header className="sticky top-0 z-30 h-16 bg-[#0D0D11]/90 backdrop-blur-md border-b border-white/[0.08] px-4 sm:px-8 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Open navigation sidebar"
-                className="lg:hidden p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                className="lg:hidden p-2 text-[#888888] hover:text-white rounded-none hover:bg-white/[0.05] border border-transparent hover:border-white/[0.08] transition-colors"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -47,7 +47,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
 
             <div className="flex items-center gap-2.5 sm:gap-4">
               <AdminNotifications />
-              <div className="h-5 w-px bg-slate-800" />
+              <div className="h-5 w-px bg-white/[0.08]" />
               <AdminUserMenu user={user} />
             </div>
           </header>

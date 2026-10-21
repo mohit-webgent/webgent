@@ -296,3 +296,116 @@ video {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   }
 }
+
+/* ==========================================================================
+   ADMIN CONSOLE THEME SYNCHRONIZATION:
+   Forces Webgent's dark architectural theme, sharp zero-radius corners,
+   and harmonizes all slate/indigo tints with matte black/charcoal & emerald.
+   ========================================================================== */
+.admin-theme {
+  --admin-bg-base: #080808;
+  --admin-bg-card: #0D0D12;
+  --admin-bg-elevated: #111116;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-border-light: rgba(255, 255, 255, 0.14);
+}
+
+/* 1. Enforce sharp architectural corners across all admin sections, cards, tables, inputs, buttons, and modals */
+.admin-theme [class*="rounded"] {
+  border-radius: 0 !important;
+}
+
+/* 2. Harmonize all slate backgrounds to project matte black/charcoal surfaces */
+.admin-theme .bg-slate-950 {
+  background-color: #080808 !important;
+}
+.admin-theme .bg-slate-900,
+.admin-theme .bg-slate-900\/80,
+.admin-theme .bg-slate-900\/90,
+.admin-theme .bg-slate-900\/95,
+.admin-theme .bg-slate-900\/60 {
+  background-color: #0D0D12 !important;
+}
+.admin-theme .bg-slate-800,
+.admin-theme .bg-slate-800\/80,
+.admin-theme .bg-slate-800\/60,
+.admin-theme .bg-slate-800\/50,
+.admin-theme .bg-slate-800\/40 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+.admin-theme .hover\:bg-slate-800:hover,
+.admin-theme .hover\:bg-slate-800\/80:hover,
+.admin-theme .hover\:bg-slate-800\/60:hover,
+.admin-theme .hover\:bg-slate-800\/40:hover,
+.admin-theme .hover\:bg-slate-700:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 3. Harmonize slate borders to project subtle white alpha borders */
+.admin-theme .border-slate-800,
+.admin-theme .border-slate-800\/80,
+.admin-theme .border-slate-800\/60,
+.admin-theme .border-slate-800\/50,
+.admin-theme .border-slate-700 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.admin-theme .hover\:border-slate-700:hover,
+.admin-theme .hover\:border-slate-600:hover {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* 4. Harmonize slate text colors to project text tokens */
+.admin-theme .text-slate-100 {
+  color: #EDEDED !important;
+}
+.admin-theme .text-slate-200 {
+  color: #E0E0E0 !important;
+}
+.admin-theme .text-slate-300 {
+  color: #D4D4D4 !important;
+}
+.admin-theme .text-slate-400 {
+  color: #888888 !important;
+}
+.admin-theme .text-slate-500 {
+  color: #666666 !important;
+}
+.admin-theme .text-slate-600 {
+  color: #444444 !important;
+}
+
+/* 5. Harmonize indigo accents to project emerald accents */
+.admin-theme .bg-indigo-600 {
+  background-color: #10b981 !important;
+  color: #000000 !important;
+}
+.admin-theme .hover\:bg-indigo-500:hover {
+  background-color: #34d399 !important;
+  color: #000000 !important;
+}
+.admin-theme .bg-indigo-600\/20,
+.admin-theme .bg-indigo-600\/15,
+.admin-theme .bg-indigo-500\/10,
+.admin-theme .bg-indigo-500\/20,
+.admin-theme .bg-indigo-950\/20,
+.admin-theme .bg-indigo-950\/40,
+.admin-theme .bg-indigo-950\/60 {
+  background-color: rgba(52, 211, 153, 0.1) !important;
+}
+.admin-theme .text-indigo-400,
+.admin-theme .text-indigo-300,
+.admin-theme .group-hover\:text-indigo-300:hover {
+  color: #34d399 !important;
+}
+.admin-theme .border-indigo-500,
+.admin-theme .border-indigo-500\/30,
+.admin-theme .border-indigo-500\/20,
+.admin-theme .border-indigo-500\/10 {
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+.admin-theme .shadow-indigo-600\/30,
+.admin-theme .shadow-indigo-600\/25,
+.admin-theme .shadow-indigo-600\/20,
+.admin-theme .shadow-indigo-500\/10 {
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.12) !important;
+}

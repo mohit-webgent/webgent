@@ -47,17 +47,39 @@ export default function ProjectDetailLoading() {
         </div>
 
         {/* Technical Architecture & Scope Container */}
-        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-12 space-y-6 shadow-2xl">
+        <div className="bg-[#0D0D12] border border-white/[0.08] rounded-none p-8 sm:p-12 space-y-6 shadow-2xl">
           <div className="flex items-center gap-3 pb-2">
-            <Skeleton className="w-6 h-6 rounded bg-white/[0.06]" />
-            <Skeleton className="h-6 w-72 rounded bg-white/[0.07]" />
+            <Skeleton className="w-6 h-6 rounded-none bg-white/[0.06]" />
+            <Skeleton className="h-6 w-72 rounded-none bg-white/[0.07]" />
           </div>
 
           <div className="space-y-3 pt-2">
-            <Skeleton className="h-3.5 w-full bg-white/[0.03]" />
-            <Skeleton className="h-3.5 w-11/12 bg-white/[0.03]" />
-            <Skeleton className="h-3.5 w-5/6 bg-white/[0.03]" />
-            <Skeleton className="h-3.5 w-4/5 bg-white/[0.03]" />
+            <Skeleton className="h-3.5 w-full rounded-none bg-white/[0.03]" />
+            <Skeleton className="h-3.5 w-11/12 rounded-none bg-white/[0.03]" />
+            <Skeleton className="h-3.5 w-5/6 rounded-none bg-white/[0.03]" />
+            <Skeleton className="h-3.5 w-4/5 rounded-none bg-white/[0.03]" />
+          </div>
+        </div>
+
+        {/* Interface & Telemetry Gallery Skeleton (3-Column Grid) */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+            <div className="flex items-center gap-2.5">
+              <Skeleton className="w-5 h-5 rounded-none bg-emerald-500/20" />
+              <Skeleton className="h-6 w-64 rounded-none bg-white/[0.08]" />
+            </div>
+            <Skeleton className="h-4 w-20 rounded-none bg-white/[0.04]" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-[#0D0D12] border border-white/[0.08] rounded-none overflow-hidden aspect-[16/10]"
+              >
+                <Skeleton className="w-full h-full rounded-none bg-white/[0.04]" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
