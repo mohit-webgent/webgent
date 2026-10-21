@@ -3,6 +3,7 @@ export interface ProjectItem {
   id: string;
   name: string;
   category: string;
+  projectType: "Client Project" | "Selected Project" | "Professional Experience";
   description: string;
   myContribution: string[];
   techStack: string[];
@@ -54,16 +55,15 @@ export interface WorkingPrinciple {
 // ---------------------------------------------------------------------------
 export const FOUNDER_PROFILE = {
   name: "Mohit Verma",
-  badge: "FOUNDER / WEBGENT",
-  headline: "The Developer Behind the Work.",
-  roleTitle: "Software Developer · Webgent",
-  subTitle: "Founder of Webgent | Software Developer at DBA Lounge",
-  avatarUrl: "/images/mohit-verma.jpeg", // or fallback / external URL
+  badge: "ABOUT / THE PERSON BEHIND WEBGENT",
+  headline: "Building digital experiences. Engineering real-world solutions.",
+  roleTitle: "Software Developer at DBA Lounge · Founder of Webgent Studio",
+  subTitle: "Software Developer at DBA Lounge | Founder & Developer at Webgent Studio",
+  avatarUrl: "/images/mohit-verma.jpeg",
   identities: [
-    "Founder of Webgent",
     "Software Developer at DBA Lounge",
-    "React Developer",
-    "Frontend Developer",
+    "Founder & Developer at Webgent Studio",
+    "Frontend & React Engineer",
     "MERN Stack Developer",
   ],
   location: "Gurugram / Noida, India",
@@ -73,23 +73,53 @@ export const FOUNDER_PROFILE = {
   linkedinUrl: "https://linkedin.com/in/webmohitverma",
 
   introParagraphs: [
-    "I’m Mohit Verma, a software developer focused on building responsive digital experiences, production-ready web interfaces and practical web applications. Through Webgent, I work on turning business requirements into thoughtfully designed websites and software products.",
-    "My background combines computer science education, hands-on development experience, production project work and continued learning across modern web technologies.",
+    "I'm Mohit Verma, a software developer focused on building responsive web interfaces and practical web applications. Alongside my professional role at DBA Lounge, I run Webgent Studio, where I work on independent web projects and digital experiences for businesses.",
+    "My background combines formal computer science education (MCA), hands-on full-stack development, production project work, and continued learning across modern web technologies.",
   ],
 
   // -------------------------------------------------------------------------
-  // Current Professional Experience
+  // Two Professional Tracks (Crystal Clear Separation)
   // -------------------------------------------------------------------------
   currentRole: {
     company: "DBA Lounge",
     role: "Software Developer",
     location: "Gurugram, India",
     period: "Present",
+    label: "FULL-TIME ROLE",
+    title: "Software Developer at DBA Lounge",
     description:
-      "Working as a Software Developer and continuing to advance my technical capabilities through professional production development. Focused on engineering dependable frontend solutions, collaborative sprints, and scalable web architectures.",
+      "Working within a professional software development environment, contributing to production projects, collaborating with teams, and continuing to strengthen my engineering skills.",
+    highlights: [
+      "Architecting responsive frontend interfaces and design systems using React.js.",
+      "Engineering scalable, production-ready web interfaces with modern component patterns.",
+      "Collaborating across agile sprints and production deployments.",
+      "Focusing on high-performance render cycles and accessible web standards.",
+    ],
+    techStack: ["React.js", "TypeScript", "Next.js", "Tailwind CSS", "REST APIs", "Git"],
     note: "Employment details and approved project work are maintained in compliance with company confidentiality standards.",
-    editablePlaceholder:
-      "Future approved details on specific responsibilities, technical stacks, and production milestones will be updated here.",
+  },
+
+  studioRole: {
+    venture: "Webgent Studio",
+    role: "Founder & Developer",
+    focus: "Web Development & Digital Solutions",
+    location: "Gurugram / Noida, India",
+    period: "Active",
+    label: "PERSONAL VENTURE",
+    title: "Founder & Developer at Webgent Studio",
+    description:
+      "Building an independent web development studio focused on responsive business websites, modern web applications, and practical digital solutions tailored to client requirements.",
+    highlights: [
+      "Custom responsive websites and web application development for businesses and clients.",
+      "Modular frontend component architecture and intuitive user interfaces.",
+      "End-to-end project execution: planning, UI development, API integrations, and deployment.",
+    ],
+    services: [
+      "Business Websites & Landing Pages",
+      "React Frontend Applications",
+      "E-Commerce & Digital Storefronts",
+      "Custom Web Applications",
+    ],
   },
 
   // -------------------------------------------------------------------------
@@ -98,24 +128,29 @@ export const FOUNDER_PROFILE = {
   previousExperience: [
     {
       company: "Diamond Ore Consulting",
-      role: "MERN Stack Developer",
+      role: "MERN Stack Developer Intern",
       type: "Internship" as const,
       location: "Noida, India",
       period: "September 2025 – April 2026",
+      description:
+        "Developed responsive frontend interfaces using React.js and Tailwind CSS, worked on a headless CMS solution using Strapi, and built reusable UI component libraries.",
       highlights: [
         "Developed responsive frontend interfaces using React.js and Tailwind CSS for production applications.",
         "Worked on a headless CMS solution using Strapi and REST APIs.",
         "Built reusable UI components including buttons, cards, modals and forms.",
         "Contributed to responsive design and cross-device compatibility.",
-        "Worked with collaborative development workflows.",
+        "Collaborated in sprint workflows and version control pipelines.",
       ],
+      techStack: ["React.js", "Tailwind CSS", "Strapi CMS", "REST APIs", "JavaScript"],
     },
     {
       company: "TrayiStats AI Technologies",
-      role: "Full Stack Developer",
+      role: "Full Stack Developer Intern",
       type: "Internship" as const,
       location: "Noida, India",
       period: "January 2025 – July 2025",
+      description:
+        "Built responsive React.js frontend pages, developed Node.js and Express.js REST API endpoints, and worked with MySQL query optimization.",
       highlights: [
         "Developed responsive React.js frontend pages.",
         "Built REST API endpoints using Node.js and Express.js.",
@@ -123,6 +158,7 @@ export const FOUNDER_PROFILE = {
         "Participated in code reviews and sprint planning.",
         "Used Jira as part of the development workflow.",
       ],
+      techStack: ["React.js", "Node.js", "Express.js", "MySQL", "Jira", "REST APIs"],
     },
   ],
 
@@ -154,7 +190,7 @@ export const FOUNDER_PROFILE = {
       description: "Crafting fluid, accessible, high-performance interfaces and design systems.",
       skills: [
         "React.js",
-        "JavaScript (ES6+)",
+        "JavaScript",
         "HTML5",
         "CSS3",
         "Tailwind CSS",
@@ -172,29 +208,26 @@ export const FOUNDER_PROFILE = {
         "Express.js",
         "REST APIs",
         "JWT Authentication",
-        "Role-Based Access Control",
-        "Razorpay Integration",
-        "SMTP Email Integration",
       ],
     },
     {
       categoryKey: "databases" as const,
-      title: "Databases & Storage",
-      description: "Structuring relational and document data for fast querying and integrity.",
+      title: "Databases",
+      description: "Structuring relational and document data for querying, performance, and integrity.",
       skills: ["MongoDB", "MySQL"],
     },
     {
       categoryKey: "tools" as const,
       title: "Tools & Workflow",
       description: "Managing collaborative pipelines, API testing, and deployment targets.",
-      skills: ["Git", "GitHub", "Postman", "Strapi CMS", "Jira", "Vercel", "Render"],
+      skills: ["Git", "GitHub", "Postman", "Jira", "Vercel", "Render", "Strapi CMS"],
     },
     {
       categoryKey: "learning" as const,
-      title: "Currently Learning & Expanding",
-      description: "Continuously deepening skills across modern full-stack web platforms.",
+      title: "Currently Exploring",
+      description: "Continuously deepening technical capabilities across modern full-stack web platforms.",
       skills: [
-        "Next.js (App Router)",
+        "Next.js App Router",
         "Advanced Full-Stack Architecture",
         "Modern Cloud Application Development",
       ],
@@ -206,9 +239,47 @@ export const FOUNDER_PROFILE = {
   // -------------------------------------------------------------------------
   projects: [
     {
+      id: "bird-outsourcing",
+      name: "Bird Outsourcing",
+      category: "Corporate Business Solutions",
+      projectType: "Client Project" as const,
+      description:
+        "A responsive corporate business website engineered to communicate global outsourcing and enterprise services.",
+      myContribution: [
+        "Developed the responsive React.js and Tailwind CSS frontend application.",
+        "Built a modular, reusable UI component library.",
+        "Designed accessible, cross-browser compatible layouts.",
+        "Structured performant static and dynamic service content sections.",
+      ],
+      techStack: ["React.js", "Tailwind CSS", "Component Library", "Cross-Browser UI"],
+      liveUrl: "https://birdoutsourcing.com/",
+      isLive: true,
+      statusLabel: "Live Production Site",
+    },
+    {
+      id: "edayaa-jewellery",
+      name: "Edayaa Jewellery Platform",
+      category: "E-Commerce & Digital Storefront",
+      projectType: "Client Project" as const,
+      description:
+        "A modern e-commerce shopping experience tailored for fine jewellery collections with responsive product catalogs.",
+      myContribution: [
+        "Constructed a mobile-first responsive frontend architecture.",
+        "Developed product catalog listing, filtering, and detailed product showcase views.",
+        "Built interactive shopping cart and checkout user interface.",
+        "Implemented client-side state management using Redux Toolkit.",
+        "Configured persistent shopping cart storage across user sessions.",
+      ],
+      techStack: ["React.js", "Redux Toolkit", "Tailwind CSS", "REST APIs"],
+      liveUrl: "https://edayaajewellery.com/",
+      isLive: false,
+      statusLabel: "E-Commerce Deployment",
+    },
+    {
       id: "institutional-platform",
       name: "Institutional Management Platform",
       category: "Education & Role Dashboards",
+      projectType: "Selected Project" as const,
       description:
         "A comprehensive web platform featuring role-specific dashboards for administrators, teachers, and students.",
       myContribution: [
@@ -222,43 +293,8 @@ export const FOUNDER_PROFILE = {
       ],
       techStack: ["React.js", "Node.js", "JWT", "REST APIs", "Razorpay", "Tailwind CSS"],
       liveUrl: "https://studies.mentorworld.in/",
-      isLive: false, // marked as past production deployment per live check
+      isLive: false,
       statusLabel: "Past Production Deployment",
-    },
-    {
-      id: "edayaa-jewellery",
-      name: "Jewellery E-Commerce Platform",
-      category: "E-Commerce & Digital Storefront",
-      description:
-        "A modern e-commerce shopping experience tailored for fine jewellery collections with responsive product catalogs.",
-      myContribution: [
-        "Constructed a mobile-first responsive frontend architecture.",
-        "Developed product catalog listing, filtering, and detailed product showcase views.",
-        "Built interactive shopping cart and checkout user interface.",
-        "Implemented client-side state management using Redux Toolkit.",
-        "Configured persistent shopping cart storage across user sessions.",
-      ],
-      techStack: ["React.js", "Redux Toolkit", "Tailwind CSS", "REST APIs"],
-      liveUrl: "https://edayaajewellery.com/",
-      isLive: false, // marked as e-commerce deployment
-      statusLabel: "E-Commerce Deployment",
-    },
-    {
-      id: "bird-outsourcing",
-      name: "Business Services Platform",
-      category: "Corporate Business Solutions",
-      description:
-        "A responsive corporate business website engineered to communicate global outsourcing and enterprise services.",
-      myContribution: [
-        "Developed the responsive React.js and Tailwind CSS frontend application.",
-        "Built a modular, reusable UI component library.",
-        "Designed accessible, cross-browser compatible layouts.",
-        "Structured performant static and dynamic service content sections.",
-      ],
-      techStack: ["React.js", "Tailwind CSS", "Component Library", "Cross-Browser UI"],
-      liveUrl: "https://birdoutsourcing.com/",
-      isLive: true,
-      statusLabel: "Live Production Site",
     },
   ],
 
