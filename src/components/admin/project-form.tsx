@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Save,
   Loader2,
@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  UploadCloud,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { projectSchema } from "@/lib/validations/project";
@@ -89,6 +90,78 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
     const updated = [...screenshotList, url].join("\n");
     setScreenshots(updated);
     setNewScreenshotUrl("");
+  };
+
+  const handleAddMultipleScreenshotUrls = (urlsToAdd: string[]) => {
+    const valid = urlsToAdd
+      .map((u) => u.trim())
+      .filter((u) => u && !screenshotList.includes(u));
+    if (valid.length === 0) return;
+    const updated = [...screenshotList, ...valid].join("\n");
+    setScreenshots(updated);
+  };
+
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [galleryUploadProgress, setGalleryUploadProgress] = useState("");
+  const [galleryDragActive, setGalleryDragActive] = useState(false);
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDirectSystemUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    if (fileArray.length === 0) return;
+
+    const validMimes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+    const validFiles = fileArray.filter((f) => {
+      if (!validMimes.includes(f.type)) {
+        setError(`File "${f.name}" is not a supported format (JPG, PNG, WEBP, AVIF).`);
+        return false;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        setError(`File "${f.name}" exceeds the 5MB size limit.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    try {
+      setIsUploadingGallery(true);
+      setError(null);
+      const newUrls: string[] = [];
+
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        setGalleryUploadProgress(`Uploading ${i + 1} of ${validFiles.length}: ${file.name}...`);
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folder", "projects");
+
+        const res = await fetch("/api/admin/media", {
+          method: "POST",
+          body: formData,
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error?.message || `Failed to upload "${file.name}"`);
+        }
+
+        if (json.data?.url) {
+          newUrls.push(json.data.url);
+        }
+      }
+
+      handleAddMultipleScreenshotUrls(newUrls);
+      setSuccess(`Successfully uploaded ${newUrls.length} screenshot${newUrls.length === 1 ? "" : "s"} from your device.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "System upload failed.";
+      setError(msg);
+    } finally {
+      setIsUploadingGallery(false);
+      setGalleryUploadProgress("");
+    }
   };
 
   const handleRemoveScreenshot = (indexToRemove: number) => {
@@ -434,7 +507,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             </button>
           </div>
 
-          {/* Controls: Direct URL Input + Add Button + Media Library Picker Button */}
+          {/* Controls: Direct URL Input + Add Button + Upload from Computer + Media Library Picker Button */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
             <div className="relative flex-1">
               <ImageIcon className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
@@ -464,24 +537,98 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               <span>Add URL</span>
             </button>
 
+            {/* Direct Upload From System Button */}
+            <input
+              ref={galleryFileInputRef}
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleDirectSystemUpload(e.target.files);
+                }
+                e.target.value = "";
+              }}
+            />
+
+            <button
+              type="button"
+              onClick={() => galleryFileInputRef.current?.click()}
+              disabled={isUploadingGallery}
+              className="px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
+              title="Upload multiple screenshot files directly from your computer"
+            >
+              {isUploadingGallery ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                  <span>{galleryUploadProgress || "Uploading..."}</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload from Computer</span>
+                </>
+              )}
+            </button>
+
+            {/* Pick from Media Library Button */}
             <button
               type="button"
               onClick={() => setIsGalleryPickerOpen(true)}
-              className="px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
+              className="px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-white border border-slate-700 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              title="Choose one or more images from your existing Media Library"
             >
-              <FolderOpen className="w-4 h-4" />
+              <FolderOpen className="w-4 h-4 text-emerald-400" />
               <span>Pick from Media Library</span>
             </button>
           </div>
 
-          {/* MediaPickerModal Instance */}
+          {/* Drag & Drop Zone for Direct Multi-Image Upload */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setGalleryDragActive(true);
+            }}
+            onDragLeave={() => setGalleryDragActive(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setGalleryDragActive(false);
+              if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleDirectSystemUpload(e.dataTransfer.files);
+              }
+            }}
+            onClick={() => galleryFileInputRef.current?.click()}
+            className={`p-3.5 border border-dashed transition-all text-center cursor-pointer ${
+              galleryDragActive
+                ? "border-emerald-400 bg-emerald-500/10 text-emerald-300"
+                : "border-slate-800 hover:border-slate-700 bg-slate-950/40 text-slate-400 hover:text-slate-300"
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xs font-mono">
+              <UploadCloud className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>
+                {isUploadingGallery
+                  ? galleryUploadProgress || "Uploading screenshots from your system..."
+                  : "Drag & drop multiple screenshot images here, or click to upload directly from computer"}
+              </span>
+              <span className="text-[10px] text-slate-500">(PNG, JPG, WebP, AVIF up to 5MB each)</span>
+            </div>
+          </div>
+
+          {/* MediaPickerModal Instance (with Multi-Select & Batch Upload Support) */}
           <MediaPickerModal
             isOpen={isGalleryPickerOpen}
             onClose={() => setIsGalleryPickerOpen(false)}
             folder="projects"
-            title="Select Project Screenshot from Media Library"
+            title="Select Project Screenshots from Media Library"
+            multiple={true}
             onSelect={(asset) => {
               handleAddScreenshotUrl(asset.url);
+              setIsGalleryPickerOpen(false);
+            }}
+            onSelectMultiple={(assets) => {
+              handleAddMultipleScreenshotUrls(assets.map((a) => a.url));
               setIsGalleryPickerOpen(false);
             }}
           />
