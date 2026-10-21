@@ -124,6 +124,7 @@ export function BlogForm({ initialData }: { initialData?: BlogPostData }) {
       }
 
       setSuccess(`Article ${isEditing ? "updated" : "created"} successfully!`);
+      router.refresh();
       if (!isEditing) {
         router.push("/admin/blog");
       }

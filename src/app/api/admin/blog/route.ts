@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -167,6 +168,15 @@ export async function POST(req: NextRequest) {
     });
 
     logger.info("Created new blog post", { postId: post.id, slug: post.slug });
+
+    try {
+      revalidatePath("/admin/blog");
+      revalidatePath("/blog");
+      revalidatePath("/");
+      if (post.slug) revalidatePath(`/blog/${post.slug}`);
+    } catch (e) {
+      logger.warn("Failed to revalidate blog paths", { error: String(e) });
+    }
 
     return ApiResponse.success(post, 201);
   } catch (error) {

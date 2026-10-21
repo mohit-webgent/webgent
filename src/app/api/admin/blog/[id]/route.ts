@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -136,6 +137,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       slug: updatedPost.slug,
     });
 
+    try {
+      revalidatePath("/admin/blog");
+      revalidatePath("/blog");
+      revalidatePath("/");
+      if (updatedPost.slug) revalidatePath(`/blog/${updatedPost.slug}`);
+      if (existingPost.slug && existingPost.slug !== updatedPost.slug) {
+        revalidatePath(`/blog/${existingPost.slug}`);
+      }
+    } catch (e) {
+      logger.warn("Failed to revalidate blog paths", { error: String(e) });
+    }
+
     return ApiResponse.success(updatedPost);
   } catch (error) {
     logger.error("Error updating blog post", { error: String(error) });
@@ -175,6 +188,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       });
 
       logger.info("Permanently deleted blog post record", { postId: id });
+
+      try {
+        revalidatePath("/admin/blog");
+        revalidatePath("/blog");
+        revalidatePath("/");
+        if (post.slug) revalidatePath(`/blog/${post.slug}`);
+      } catch (e) {
+        logger.warn("Failed to revalidate blog paths", { error: String(e) });
+      }
+
       return ApiResponse.success({ message: "Blog post permanently deleted." });
     }
 
@@ -187,6 +210,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     });
 
     logger.info("Soft-deleted blog post record", { postId: id });
+
+    try {
+      revalidatePath("/admin/blog");
+      revalidatePath("/blog");
+      revalidatePath("/");
+      if (post.slug) revalidatePath(`/blog/${post.slug}`);
+    } catch (e) {
+      logger.warn("Failed to revalidate blog paths", { error: String(e) });
+    }
 
     return ApiResponse.success({
       message: "Blog post soft-deleted and archived successfully.",

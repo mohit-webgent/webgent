@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Search,
@@ -14,10 +15,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   Tag,
+  RotateCw,
 } from "lucide-react";
 import Link from "next/link";
 
-interface BlogPost {
+export interface BlogPost {
   id: string;
   title: string;
   slug: string;
@@ -35,9 +37,11 @@ interface BlogPost {
   } | null;
 }
 
-export function BlogList() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
+  const router = useRouter();
+  const [posts, setPosts] = useState<BlogPost[]>(initialPosts || []);
+  const [loading, setLoading] = useState<boolean>(!initialPosts || initialPosts.length === 0);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
@@ -48,23 +52,41 @@ export function BlogList() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPosts = async () => {
-    setLoading(true);
+  const fetchPosts = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+    setError(null);
+
     try {
-      const res = await fetch("/api/admin/blog?limit=100");
+      const res = await fetch("/api/admin/blog?limit=100", {
+        cache: "no-store",
+      });
       if (res.ok) {
         const json = await res.json();
         setPosts(json.data?.posts || []);
+      } else {
+        const json = await res.json().catch(() => null);
+        setError(json?.error?.message || json?.message || "Failed to load articles.");
       }
     } catch {
+      setError("Network error while loading articles.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (initialPosts && initialPosts.length > 0) {
+      setPosts(initialPosts);
+      setLoading(false);
+    } else {
+      fetchPosts(false);
+    }
+  }, [initialPosts]);
 
   const handleTogglePublish = async (post: BlogPost) => {
     setError(null);
@@ -81,6 +103,7 @@ export function BlogList() {
         setFeedback(
           `Post "${post.title}" ${nextStatus === "PUBLISHED" ? "published" : "set to draft"}.`,
         );
+        router.refresh();
       }
     } catch {
       setError("Failed to update publication state.");
@@ -113,6 +136,7 @@ export function BlogList() {
           }.`,
         );
         setDeleteTarget(null);
+        router.refresh();
       } else {
         setError("Failed to delete blog post.");
       }
@@ -140,19 +164,36 @@ export function BlogList() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Blog & Article CMS</h1>
-          <p className="text-sm text-slate-400">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">Blog & Article CMS</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              {posts.length} {posts.length === 1 ? "article" : "articles"}
+            </span>
+          </div>
+          <p className="text-sm text-slate-400 mt-1">
             Publish insights, tech articles, SEO content, and track reader engagement
           </p>
         </div>
 
-        <Link
-          href="/admin/blog/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Article</span>
-        </Link>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => fetchPosts(false)}
+            disabled={loading || refreshing}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs rounded-xl border border-slate-700/60 transition-all disabled:opacity-50"
+            title="Refresh articles"
+          >
+            <RotateCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
+            <span>{refreshing ? "Syncing..." : "Refresh"}</span>
+          </button>
+
+          <Link
+            href="/admin/blog/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Article</span>
+          </Link>
+        </div>
       </div>
 
       {feedback && (
@@ -194,18 +235,23 @@ export function BlogList() {
           />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {["ALL", "DRAFT", "PUBLISHED", "ARCHIVED"].map((st) => (
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {[
+            { key: "ALL", label: `ALL (${posts.length})` },
+            { key: "PUBLISHED", label: `PUBLISHED (${posts.filter((p) => p.status === "PUBLISHED").length})` },
+            { key: "DRAFT", label: `DRAFT (${posts.filter((p) => p.status === "DRAFT").length})` },
+            { key: "ARCHIVED", label: `ARCHIVED (${posts.filter((p) => p.status === "ARCHIVED").length})` },
+          ].map((st) => (
             <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
+              key={st.key}
+              onClick={() => setStatusFilter(st.key)}
               className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                statusFilter === st
+                statusFilter === st.key
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
                   : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white"
               }`}
             >
-              {st}
+              {st.label}
             </button>
           ))}
         </div>
