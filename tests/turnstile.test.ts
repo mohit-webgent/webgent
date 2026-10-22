@@ -273,6 +273,78 @@ describe("Cloudflare Turnstile Verification Suite", () => {
         globalThis.fetch = originalFetch;
       }
     });
+
+    it("accepts webgent.online hostname in production", async () => {
+      (process.env as any).NODE_ENV = "production";
+      process.env.TURNSTILE_SECRET_KEY = "test-secret";
+
+      const originalFetch = globalThis.fetch;
+      try {
+        globalThis.fetch = async () =>
+          new Response(
+            JSON.stringify({
+              success: true,
+              hostname: "webgent.online",
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        (globalThis.fetch as any)._isMocked = true;
+
+        const res = await verifyTurnstileToken("valid-token-online");
+        assert.equal(res.success, true);
+        assert.equal(res.hostname, "webgent.online");
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("accepts www.webgent.online hostname in production", async () => {
+      (process.env as any).NODE_ENV = "production";
+      process.env.TURNSTILE_SECRET_KEY = "test-secret";
+
+      const originalFetch = globalThis.fetch;
+      try {
+        globalThis.fetch = async () =>
+          new Response(
+            JSON.stringify({
+              success: true,
+              hostname: "www.webgent.online",
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        (globalThis.fetch as any)._isMocked = true;
+
+        const res = await verifyTurnstileToken("valid-token-www-online");
+        assert.equal(res.success, true);
+        assert.equal(res.hostname, "www.webgent.online");
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("rejects reused token with timeout-or-duplicate (simulates repeated Save Details)", async () => {
+      (process.env as any).NODE_ENV = "production";
+      process.env.TURNSTILE_SECRET_KEY = "test-secret";
+
+      const originalFetch = globalThis.fetch;
+      try {
+        globalThis.fetch = async () =>
+          new Response(
+            JSON.stringify({
+              success: false,
+              "error-codes": ["timeout-or-duplicate"],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        (globalThis.fetch as any)._isMocked = true;
+
+        const res = await verifyTurnstileToken("already-used-token");
+        assert.equal(res.success, false);
+        assert.match(res.error || "", /expired|already used/i);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
   });
 
   // ---------------------------------------------------------------------------

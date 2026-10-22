@@ -144,6 +144,8 @@ export async function verifyTurnstileToken(
     if (isProduction && data.hostname) {
       const allowedHostnames = [
         "webgent.vercel.app",
+        "webgent.online",
+        "www.webgent.online",
         "webgent.com",
         "www.webgent.com",
       ];

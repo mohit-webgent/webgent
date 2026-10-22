@@ -189,6 +189,9 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
               size,
               action,
               cData,
+              retry: "auto",
+              "retry-interval": 3000,
+              "refresh-expired": "auto",
               callback: (token: string) => {
                 if (isMounted) {
                   setLoadError(null);

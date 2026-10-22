@@ -207,7 +207,10 @@ export function ChatWidget() {
   const handleSaveDetails = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!turnstileToken) {
+    // Always prefer the live widget token over React state (which can be stale after remount)
+    const freshToken = turnstileRef.current?.getResponse() || turnstileToken;
+
+    if (!freshToken) {
       setTurnstileError("Security verification is required. Please complete the verification challenge above.");
       return;
     }
@@ -229,7 +232,7 @@ export function ChatWidget() {
     setTurnstileError(null);
 
     if (!sessionId) {
-      const newSessionId = await initSession(undefined, turnstileToken);
+      const newSessionId = await initSession(undefined, freshToken);
       if (!newSessionId) {
         return;
       }
