@@ -6,12 +6,12 @@ const isDevelopment = process.env.NODE_ENV !== "production";
  */
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com${isDevelopment ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com https://*.googletagmanager.com${isDevelopment ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   // CMS images can be hosted anywhere over HTTPS.
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' https://challenges.cloudflare.com https://vitals.vercel-insights.com${isDevelopment ? " ws: wss:" : ""}`,
+  `connect-src 'self' https://challenges.cloudflare.com https://vitals.vercel-insights.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com${isDevelopment ? " ws: wss:" : ""}`,
   "frame-src https://challenges.cloudflare.com",
   "media-src 'self' https:",
   "object-src 'none'",

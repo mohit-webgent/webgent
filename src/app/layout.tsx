@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/site";
 import { MainLayout } from "@/components/layout/main-layout";
 import { getNavigationMenu, getFooterConfig, getSiteSeoSettings } from "@/lib/services/cms";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleTag } from "@/components/analytics/google-tag";
 
 const sans = Geist({
   subsets: ["latin"],
@@ -163,6 +164,7 @@ export default async function RootLayout({
         className={`${sans.variable} ${display.variable} ${serif.variable} ${mono.variable} font-sans bg-canvas text-fg antialiased`}
       >
         <MainLayout navItems={navConfig.items} footerData={footerConfig}>{children}</MainLayout>
+        <GoogleTag />
         {process.env.VERCEL && <SpeedInsights />}
       </body>
     </html>
