@@ -5,7 +5,7 @@ import { SeoContentEditor } from "@/components/admin/seo-content-editor";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Global SEO & Metadata Studio — Webgent Admin",
+  title: "SEO & Meta Tags — Webgent Admin",
   robots: { index: false, follow: false },
 };
 

@@ -8,14 +8,15 @@ import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
  * GET /api/admin/services/[id]
  * Retrieves single service by ID with attached features.
  */
-export async function GET(_req: NextRequest, { params }: RouteParams) {
+export async function GET(_req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   const authCheck = await verifyAdminApiAccess();
   if (authCheck instanceof NextResponse) {
     return authCheck;
@@ -38,7 +39,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
  * PUT /api/admin/services/[id]
  * Updates service details and feature associations.
  */
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   const authCheck = await verifyAdminApiAccess();
   if (authCheck instanceof NextResponse) {
     return authCheck;
@@ -80,7 +82,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
  * DELETE /api/admin/services/[id]
  * Deletes service and cascades its service-feature links.
  */
-export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+export async function DELETE(_req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   const authCheck = await verifyAdminApiAccess();
   if (authCheck instanceof NextResponse) {
     return authCheck;

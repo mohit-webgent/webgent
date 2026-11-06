@@ -15,19 +15,19 @@ export default function GlobalError({
 
   return (
     <html lang="en" className="dark">
-      <body className="bg-[#080808] text-[#F5F5F3] min-h-screen flex items-center justify-center p-6 font-sans">
-        <div className="max-w-md w-full bg-[#0D0D0D] border border-white/[0.08] rounded-xl p-8 text-center space-y-6">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/[0.02] border border-white/[0.10] text-[#A0A0A0] text-xs font-mono uppercase tracking-wider">
+      <body className="bg-canvas text-fg min-h-screen flex items-center justify-center p-6 font-sans">
+        <div className="max-w-md w-full bg-surface border border-line rounded-xl p-8 text-center space-y-6">
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/[0.02] border border-line text-fg-muted text-xs font-mono uppercase tracking-wider">
             Critical Root Failure
           </div>
-          <h1 className="text-2xl font-light text-[#F5F5F3] tracking-tight">System Interruption</h1>
-          <p className="text-[#969696] text-xs leading-relaxed">
+          <h1 className="text-2xl font-light text-fg tracking-tight">System Interruption</h1>
+          <p className="text-fg-muted text-xs leading-relaxed">
             An unhandled fatal exception occurred at the root layout boundary.
           </p>
           <button
             type="button"
             onClick={() => reset()}
-            className="px-5 py-2.5 bg-[#E8E8E6] hover:bg-white text-[#080808] rounded-lg font-medium text-xs transition-colors"
+            className="px-5 py-2.5 bg-accent hover:bg-accent-hover text-accent-fg rounded-lg font-medium text-xs transition-colors"
           >
             Reload Application
           </button>

@@ -31,12 +31,12 @@ export function ScrollProgressBar() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-white/[0.04] pointer-events-none"
+      className="fixed top-0 left-0 right-0 z-50 h-[2px] pointer-events-none"
       aria-hidden="true"
     >
       <div
         ref={barRef}
-        className="h-full w-full bg-gradient-to-r from-white/30 via-white/70 to-white/90 origin-left scale-x-0 will-change-transform"
+        className="h-full w-full bg-accent origin-left scale-x-0 will-change-transform"
       />
     </div>
   );

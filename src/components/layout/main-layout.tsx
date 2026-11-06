@@ -11,7 +11,6 @@ import { WhatsAppFloatingButton } from "./whatsapp-floating-button";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { ScrollProgressBar } from "@/components/animations/scroll-progress";
 import { PageTransition } from "@/components/animations/page-transition";
-import { WebgentOpeningAnimation } from "@/components/animations/webgent-opening-animation";
 import type { NavItem, FooterConfig } from "@/lib/services/cms-shared";
 
 export interface MainLayoutProps {
@@ -23,7 +22,6 @@ export interface MainLayoutProps {
 export function MainLayout({ children, navItems, footerData }: MainLayoutProps) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
-  const isHome = pathname === "/";
 
   if (isAdmin) {
     return (
@@ -38,12 +36,11 @@ export function MainLayout({ children, navItems, footerData }: MainLayoutProps) 
 
   return (
     <SmoothScrollProvider>
-      {isHome && <WebgentOpeningAnimation />}
-      <div className="relative flex min-h-screen flex-col bg-transparent text-[#D0D0CE] selection:bg-white/15 selection:text-[#F5F5F3] overflow-x-clip w-full">
+      <div className="relative flex min-h-screen w-full flex-col">
         <ScrollProgressBar />
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:p-3 focus:bg-[#E8E8E6] focus:text-[#080808] focus:rounded-lg focus:shadow-xl focus:outline-none focus:ring-1 focus:ring-white text-xs font-mono"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-fg focus:px-4 focus:py-3 focus:text-sm focus:text-canvas"
         >
           Skip to main content
         </a>

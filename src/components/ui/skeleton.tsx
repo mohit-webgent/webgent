@@ -14,7 +14,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
     <div
       aria-hidden="true"
       className={cn(
-        "bg-white/[0.05] border border-white/[0.04] motion-safe:animate-pulse rounded-lg pointer-events-none select-none",
+        "bg-white/[0.05] border border-line motion-safe:animate-pulse rounded-lg pointer-events-none select-none",
         className,
       )}
       {...props}

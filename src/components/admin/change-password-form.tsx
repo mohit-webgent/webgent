@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 import { Lock, CheckCircle2, AlertCircle, Loader2, KeyRound } from "lucide-react";
 import { changePasswordSchema } from "@/lib/validations/auth";
 
@@ -47,10 +48,11 @@ export function ChangePasswordForm() {
         return;
       }
 
-      setSuccess("Your password has been changed successfully.");
+      setSuccess("Password changed. All sessions have ended, so please sign in again.");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      await signOut({ callbackUrl: "/admin/login" });
     } catch {
       setError("An unexpected network error occurred.");
     } finally {
@@ -65,9 +67,9 @@ export function ChangePasswordForm() {
           <KeyRound className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">Change Admin Password</h2>
+          <h2 className="text-xl font-bold text-fg">Change Password</h2>
           <p className="text-sm text-slate-400">
-            Update your account credentials to maintain security
+            Choose a new password for your account.
           </p>
         </div>
       </div>
@@ -111,7 +113,7 @@ export function ChangePasswordForm() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -134,7 +136,7 @@ export function ChangePasswordForm() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Minimum 8 characters with upper, lower, & number"
-              className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -157,7 +159,7 @@ export function ChangePasswordForm() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter new password"
-              className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -166,7 +168,7 @@ export function ChangePasswordForm() {
           id="change-password-submit"
           type="submit"
           disabled={loading}
-          className="py-3 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all disabled:opacity-50"
+          className="py-3 px-6 bg-accent hover:bg-accent text-accent-fg font-semibold text-sm rounded-xl flex items-center gap-2 transition-all disabled:opacity-50"
         >
           {loading ? (
             <>

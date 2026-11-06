@@ -3,7 +3,8 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { LeadDetailEditor } from "@/components/admin/lead-detail-editor";
 
-export default async function AdminLeadDetailPage({ params }: { params: { id: string } }) {
+export default async function AdminLeadDetailPage({ params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   await requireAdmin();
 
   const lead = await prisma.lead.findUnique({

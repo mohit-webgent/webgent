@@ -7,7 +7,8 @@ import { verifyAdminApiAccess } from "@/lib/auth-utils";
 import { leadUpdateSchema } from "@/lib/validations/contact";
 import { logger } from "@/lib/logger";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -31,7 +32,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -89,7 +91,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {

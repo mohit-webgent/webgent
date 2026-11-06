@@ -30,7 +30,7 @@ function parseInline(text: string, isUser = false): React.ReactNode[] {
       elements.push(
         <strong
           key={key}
-          className={isUser ? "font-bold text-white" : "font-semibold text-white"}
+          className={isUser ? "font-bold text-accent-fg" : "font-semibold text-white"}
         >
           {inner}
         </strong>,
@@ -50,7 +50,7 @@ function parseInline(text: string, isUser = false): React.ReactNode[] {
           className={
             isUser
               ? "underline text-white font-medium hover:opacity-90"
-              : "text-emerald-400 hover:text-emerald-300 underline font-medium transition-colors"
+              : "text-accent hover:text-accent underline font-medium transition-colors"
           }
         >
           {linkText}
@@ -63,8 +63,8 @@ function parseInline(text: string, isUser = false): React.ReactNode[] {
           key={key}
           className={
             isUser
-              ? "px-1 py-0.5 rounded bg-white/20 font-mono text-[11px]"
-              : "px-1.5 py-0.5 rounded bg-white/[0.08] text-emerald-300 font-mono text-[11px] border border-white/[0.06]"
+              ? "px-1 py-0.5 rounded bg-white/20 font-mono text-xs"
+              : "px-1.5 py-0.5 rounded bg-white/[0.08] text-accent font-mono text-xs border border-line"
           }
         >
           {code}
@@ -114,7 +114,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
           <p
             key={`p_${idx}_${blocks.length}`}
             className={`text-[12.5px] leading-relaxed break-words ${
-              isUser ? "text-white" : "text-[#E2E2DF]"
+              isUser ? "text-accent-fg" : "text-fg"
             }`}
           >
             {parseInline(text, isUser)}
@@ -136,14 +136,14 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
           {currentList.items.map((item, itemIdx) => (
             <li
               key={`item_${itemIdx}`}
-              className="flex items-start gap-2 text-[12px] text-[#DFDFDC] leading-relaxed"
+              className="flex items-start gap-2 text-[12px] text-fg-soft leading-relaxed"
             >
               {isOrdered ? (
-                <span className="font-mono text-emerald-400 font-semibold text-[11px] shrink-0 mt-0.5">
+                <span className="font-mono text-accent font-semibold text-xs shrink-0 mt-0.5">
                   {itemIdx + 1}.
                 </span>
               ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+                <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-1.5" />
               )}
               <span className="flex-1 break-words">
                 {parseInline(item, isUser)}
@@ -173,7 +173,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
       blocks.push(
         <h4
           key={`h4_${idx}`}
-          className="text-[12px] font-bold text-white tracking-wide uppercase mt-2 mb-1 text-emerald-400/90"
+          className="text-[12px] font-bold text-white tracking-wide uppercase mt-2 mb-1 text-accent/90"
         >
           {parseInline(trimmed.slice(4), isUser)}
         </h4>,

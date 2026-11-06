@@ -1,6 +1,8 @@
 "use client";
 
+import { formatDate } from "@/lib/format-date";
 import { useState, useCallback } from "react";
+import { useToast } from "@/components/ui/toast";
 import {
   UserCog,
   Plus,
@@ -33,6 +35,7 @@ interface UsersManagerProps {
 }
 
 export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps) {
+  const toast = useToast();
   const [users, setUsers] = useState<SystemUser[]>(initialUsers);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -68,11 +71,11 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
         setUsers(json.data || []);
       }
     } catch (err) {
-      console.error("Failed to load users", err);
+      toast.error("Couldn't load users", err instanceof Error ? err.message : undefined);
     } finally {
       setLoading(false);
     }
-  }, [roleFilter, statusFilter, search]);
+  }, [roleFilter, statusFilter, search, toast]);
 
   const handleOpenAddModal = () => {
     setFormName("");
@@ -183,7 +186,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
       setDeletingUser(null);
       fetchUsers();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Deletion failed.");
+      toast.error("Couldn't delete user", err instanceof Error ? err.message : undefined);
     } finally {
       setSubmitting(false);
     }
@@ -205,23 +208,23 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
+            <span className="px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3" />
               Admin Only Access
             </span>
-            <span className="px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
               {users.length} Total Users
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
               <UserCog className="w-6 h-6" />
             </div>
             <span>Users & Access Control</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-            Manage administrative personnel, assign RBAC permissions (ADMIN vs EDITOR), suspend compromised accounts, and audit login access.
+            Add team members, choose admin or editor access, and suspend accounts.
           </p>
         </div>
 
@@ -229,7 +232,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
           <button
             onClick={() => fetchUsers()}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-fg transition-all"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-rose-400" : ""}`} />
             <span>Refresh</span>
@@ -237,7 +240,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
 
           <button
             onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow-lg shadow-rose-600/30 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Add User</span>
@@ -260,7 +263,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition-colors"
+            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500 transition-colors"
           >
             <option value="ALL">All Roles</option>
             <option value="ADMIN">ADMIN</option>
@@ -272,7 +275,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition-colors"
+            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500 transition-colors"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">ACTIVE</option>
@@ -289,7 +292,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition-colors"
+            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-rose-500 transition-colors"
           />
         </div>
       </div>
@@ -348,30 +351,30 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                     <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white uppercase text-xs">
+                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-fg uppercase text-xs">
                             {u.name ? u.name.charAt(0) : "U"}
                           </div>
                           <div>
-                            <div className="font-semibold text-white flex items-center gap-1.5">
+                            <div className="font-semibold text-fg flex items-center gap-1.5">
                               <span>{u.name}</span>
                               {isCurrent && (
-                                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                <span className="px-1.5 py-0.2 rounded text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                                   You
                                 </span>
                               )}
                             </div>
-                            <div className="text-slate-400 font-mono text-[11px]">{u.email}</div>
+                            <div className="text-slate-400 font-mono text-xs">{u.email}</div>
                           </div>
                         </div>
                       </td>
 
                       <td className="py-3.5 px-4">
                         <span
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${
+                          className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${
                             u.role === "ADMIN"
                               ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
                               : u.role === "EDITOR"
-                              ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                              ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
                               : "bg-slate-800 text-slate-400 border-slate-700"
                           }`}
                         >
@@ -381,7 +384,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
 
                       <td className="py-3.5 px-4">
                         <span
-                          className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
+                          className={`px-2 py-0.5 rounded text-xs font-semibold border ${
                             u.status === "ACTIVE"
                               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                               : u.status === "SUSPENDED"
@@ -393,12 +396,12 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
-                        {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "Never"}
+                      <td className="py-3.5 px-4 text-slate-400 font-mono text-xs">
+                        {u.lastLoginAt ? formatDate(u.lastLoginAt) : "Never"}
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
-                        {new Date(u.createdAt).toLocaleDateString()}
+                      <td className="py-3.5 px-4 text-slate-400 font-mono text-xs">
+                        {formatDate(u.createdAt)}
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
@@ -406,7 +409,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                           <button
                             onClick={() => handleOpenEditModal(u)}
                             title="Edit permissions"
-                            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-fg transition-colors"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -439,16 +442,16 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
 
       {/* Add User Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-fg flex items-center gap-2">
                 <UserCog className="w-5 h-5 text-rose-400" />
                 <span>Create Staff Account</span>
               </h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-1.5 text-slate-400 hover:text-fg hover:bg-slate-800 rounded-xl transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -470,7 +473,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="e.g. Jane Doe"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500"
                 />
               </div>
 
@@ -482,7 +485,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   placeholder="jane@webgent.com"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500"
                 />
               </div>
 
@@ -492,7 +495,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   <select
                     value={formRole}
                     onChange={(e) => setFormRole(e.target.value as "ADMIN" | "EDITOR" | "USER")}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500"
                   >
                     <option value="EDITOR">EDITOR (Content & Leads)</option>
                     <option value="ADMIN">ADMIN (Full System Privileges)</option>
@@ -505,7 +508,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as "ACTIVE" | "INACTIVE" | "SUSPENDED")}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
@@ -523,7 +526,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-rose-500"
                 />
               </div>
 
@@ -531,14 +534,14 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-fg text-xs font-semibold rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-rose-600/30"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl"
                 >
                   {submitting ? "Creating..." : "Create Account"}
                 </button>
@@ -550,16 +553,16 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
 
       {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <UserCog className="w-5 h-5 text-sky-400" />
+              <h3 className="text-base font-bold text-fg flex items-center gap-2">
+                <UserCog className="w-5 h-5 text-indigo-400" />
                 <span>Modify Staff Account</span>
               </h3>
               <button
                 onClick={() => setEditingUser(null)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-1.5 text-slate-400 hover:text-fg hover:bg-slate-800 rounded-xl transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -589,7 +592,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   required
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -610,7 +613,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                     value={formRole}
                     onChange={(e) => setFormRole(e.target.value as "ADMIN" | "EDITOR" | "USER")}
                     disabled={editingUser.id === currentAdminId}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 disabled:opacity-50"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500 disabled:opacity-50"
                   >
                     <option value="EDITOR">EDITOR</option>
                     <option value="ADMIN">ADMIN</option>
@@ -624,7 +627,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as "ACTIVE" | "INACTIVE" | "SUSPENDED")}
                     disabled={editingUser.id === currentAdminId}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 disabled:opacity-50"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500 disabled:opacity-50"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
@@ -642,7 +645,7 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
                   placeholder="New password (optional)"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -650,14 +653,14 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-fg text-xs font-semibold rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-sky-600/30"
+                  className="px-4 py-2 bg-accent hover:bg-accent text-accent-fg text-xs font-bold rounded-xl"
                 >
                   {submitting ? "Saving..." : "Save Changes"}
                 </button>
@@ -669,17 +672,17 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
 
       {/* Delete Confirmation Modal */}
       {deletingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl relative">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
                 <AlertTriangle className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Delete User Account?</h3>
+              <h3 className="text-base font-bold text-fg">Delete User Account?</h3>
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed">
-              Are you sure you want to remove <span className="font-semibold text-white">{deletingUser.email}</span>?
+              Are you sure you want to remove <span className="font-semibold text-fg">{deletingUser.email}</span>?
               This action cannot be undone.
             </p>
 
@@ -687,14 +690,14 @@ export function UsersManager({ initialUsers, currentAdminId }: UsersManagerProps
               <button
                 type="button"
                 onClick={() => setDeletingUser(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-fg text-xs font-semibold rounded-xl"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteUser}
                 disabled={submitting}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-rose-600/30"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl"
               >
                 {submitting ? "Deleting..." : "Confirm Delete"}
               </button>

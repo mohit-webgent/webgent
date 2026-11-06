@@ -4,7 +4,7 @@ import { MediaLibraryView } from "@/components/admin/media-library-view";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Media & Asset Library — Webgent Admin",
+  title: "Media Library — Webgent Admin",
   robots: { index: false, follow: false },
 };
 

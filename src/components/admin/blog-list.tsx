@@ -80,12 +80,9 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
   };
 
   useEffect(() => {
-    if (initialPosts && initialPosts.length > 0) {
-      setPosts(initialPosts);
-      setLoading(false);
-    } else {
-      fetchPosts(false);
-    }
+    if (initialPosts && initialPosts.length > 0) return;
+    const timer = setTimeout(() => fetchPosts(false), 0);
+    return () => clearTimeout(timer);
   }, [initialPosts]);
 
   const handleTogglePublish = async (post: BlogPost) => {
@@ -165,7 +162,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Blog & Article CMS</h1>
+            <h1 className="text-3xl font-extrabold text-fg tracking-tight">Blog</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               {posts.length} {posts.length === 1 ? "article" : "articles"}
             </span>
@@ -179,7 +176,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
           <button
             onClick={() => fetchPosts(false)}
             disabled={loading || refreshing}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs rounded-xl border border-slate-700/60 transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-fg font-medium text-xs rounded-xl border border-slate-700/60 transition-all disabled:opacity-50"
             title="Refresh articles"
           >
             <RotateCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
@@ -188,7 +185,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
 
           <Link
             href="/admin/blog/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent text-accent-fg font-semibold text-xs rounded-xl transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>New Article</span>
@@ -231,7 +228,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
             placeholder="Search posts by title, tag, or category..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-fg text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -247,8 +244,8 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
               onClick={() => setStatusFilter(st.key)}
               className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                 statusFilter === st.key
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                  : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white"
+                  ? "bg-accent text-accent-fg"
+                  : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-accent-fg"
               }`}
             >
               {st.label}
@@ -306,13 +303,13 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
         ) : filteredPosts.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <BookOpen className="w-8 h-8 text-slate-600 mx-auto" />
-            <p className="text-base font-semibold text-white">No articles found</p>
+            <p className="text-base font-semibold text-fg">No articles found</p>
             <p className="text-xs text-slate-400">
               Create your first blog article to publish insights.
             </p>
             <Link
               href="/admin/blog/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent text-accent-fg font-semibold text-xs rounded-xl"
             >
               <Plus className="w-4 h-4" />
               <span>Create Article</span>
@@ -335,11 +332,11 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                 {filteredPosts.map((post) => (
                   <tr key={post.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-4 px-4">
-                      <div className="font-bold text-white text-sm">{post.title}</div>
-                      <p className="text-slate-400 text-[11px] line-clamp-1 max-w-md mt-0.5">
+                      <div className="font-bold text-fg text-sm">{post.title}</div>
+                      <p className="text-slate-400 text-xs line-clamp-1 max-w-md mt-0.5">
                         {post.excerpt || "No excerpt provided"}
                       </p>
-                      <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono mt-1">
+                      <div className="flex items-center gap-3 text-xs text-slate-500 font-mono mt-1">
                         <span>slug: /blog/{post.slug}</span>
                         {post.author && <span>By {post.author.name}</span>}
                       </div>
@@ -347,13 +344,13 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
 
                     <td className="py-4 px-4">
                       <div className="space-y-1">
-                        <span className="px-2 py-0.5 bg-slate-950 text-indigo-400 border border-indigo-500/20 rounded-md font-semibold text-[10px]">
+                        <span className="px-2 py-0.5 bg-slate-950 text-indigo-400 border border-indigo-500/20 rounded-md font-semibold text-xs">
                           {post.category || "General"}
                         </span>
                         {post.tags && (
                           <div className="flex flex-wrap gap-1 items-center">
                             <Tag className="w-2.5 h-2.5 text-slate-500" />
-                            <span className="text-[10px] text-slate-400 line-clamp-1">
+                            <span className="text-xs text-slate-400 line-clamp-1">
                               {post.tags}
                             </span>
                           </div>
@@ -378,7 +375,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                     <td className="py-4 px-4">
                       <button
                         onClick={() => handleTogglePublish(post)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
                           post.status === "PUBLISHED"
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                             : post.status === "ARCHIVED"
@@ -405,7 +402,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                     <td className="py-4 px-4 text-right space-x-2">
                       <Link
                         href={`/admin/blog/${post.id}/edit`}
-                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-accent text-slate-300 hover:text-accent-fg rounded-lg transition-all"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </Link>
@@ -415,7 +412,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                           setDeleteTarget(post);
                           setIsPermanentDelete(false);
                         }}
-                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-fg rounded-lg transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -433,7 +430,7 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
           onClick={() => {
             if (!deleting) setDeleteTarget(null);
           }}
-          className="fixed inset-0 z-50 bg-transparent backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -445,14 +442,14 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Delete Article</h3>
+                <h3 className="text-lg font-bold text-fg">Delete Article</h3>
                 <p className="text-xs text-slate-400">Choose deletion mode for safety.</p>
               </div>
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed">
               Are you sure you want to delete{" "}
-              <strong className="text-white">&quot;{deleteTarget.title}&quot;</strong>?
+              <strong className="text-fg">&quot;{deleteTarget.title}&quot;</strong>?
             </p>
 
             <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
@@ -465,10 +462,10 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                   className="w-4 h-4 accent-indigo-600"
                 />
                 <div>
-                  <span className="text-xs font-bold text-white block">
+                  <span className="text-xs font-bold text-fg block">
                     Soft Delete (Recommended)
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-xs text-slate-400">
                     Archives the article while preserving historical database references.
                   </span>
                 </div>
@@ -484,8 +481,8 @@ export function BlogList({ initialPosts }: { initialPosts?: BlogPost[] }) {
                 />
                 <div>
                   <span className="text-xs font-bold text-red-400 block">Permanent Delete</span>
-                  <span className="text-[11px] text-slate-400">
-                    Completely removes record and associated media assets from database & R2.
+                  <span className="text-xs text-slate-400">
+                    Permanently deletes this article and its media.
                   </span>
                 </div>
               </label>

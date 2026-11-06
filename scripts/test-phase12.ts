@@ -159,7 +159,7 @@ async function runTests() {
   // Verify dashboard stats route code ensures no fake data
   const dashboardStatsCode = fs.readFileSync("src/app/api/admin/dashboard/stats/route.ts", "utf8");
   assert(
-    dashboardStatsCode.includes("prisma.lead.findMany"),
+    /prisma\.lead\s*\.findMany/.test(dashboardStatsCode),
     "Dashboard computes stats directly from PostgreSQL Lead model",
   );
   assert(

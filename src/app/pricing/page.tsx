@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { PricingView } from "@/components/pricing/pricing-view";
 import { getPricingData } from "@/lib/services/pricing";
-import { resolveRouteMetadata } from "@/lib/services/cms";
+import { getSiteFaqs, resolveRouteMetadata } from "@/lib/services/cms";
 import PricingLoading from "./loading";
 
 export const dynamic = "force-dynamic";
@@ -47,11 +47,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PricingPage() {
-  const pricingData = await getPricingData();
+  const [pricingData, faqConfig] = await Promise.all([getPricingData(), getSiteFaqs()]);
 
   return (
     <Suspense fallback={<PricingLoading />}>
-      <PricingView initialData={pricingData} />
+      <PricingView initialData={pricingData} faqs={faqConfig.faqs} />
     </Suspense>
   );
 }

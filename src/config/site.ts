@@ -16,9 +16,8 @@ export const siteConfig = {
     { title: "Contact", href: "/contact" },
   ],
   links: {
-    github: "https://github.com/mohit-webgent/webgent",
-    twitter: "https://twitter.com/webgent",
-    linkedin: "https://www.linkedin.com",
+    github: "https://github.com/mohitvermag",
+    linkedin: "https://linkedin.com/in/webmohitverma",
     testimonials: "/testimonials",
     whatsapp: `https://wa.me/${WHATSAPP_CONFIG.number}`,
     whatsappChat: buildWhatsAppUrl(),

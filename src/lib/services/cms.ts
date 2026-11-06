@@ -735,7 +735,7 @@ export async function saveSiteFaqs(body: unknown): Promise<SaveFaqsResult> {
   return {
     success: true,
     message: cacheRefreshed
-      ? "Frequently Asked Questions saved and public cache revalidated successfully."
+      ? "Your FAQ changes are live on the site."
       : "Frequently Asked Questions saved to database. Notice: Public cache revalidation encountered warnings.",
     data: payload,
     meta: {
@@ -871,7 +871,7 @@ export async function saveNavigationContent(body: unknown): Promise<SaveNavigati
   return {
     success: true,
     message: cacheRefreshed
-      ? "Navigation and footer configuration updated and public cache revalidated successfully."
+      ? "Your navigation changes are live on the site."
       : "Navigation and footer saved to database. Notice: Public cache revalidation encountered warnings.",
     data: {
       navigation: sanitizedNavigationConfig,
@@ -975,7 +975,7 @@ export async function saveSiteSeoSettings(body: unknown): Promise<SaveSeoResult>
   return {
     success: true,
     message: cacheRefreshed
-      ? "SEO and metadata configuration updated and public cache revalidated successfully."
+      ? "Your SEO changes are live on the site."
       : "SEO configuration saved to database. Notice: Public cache revalidation encountered warnings.",
     data: completeSettings,
     meta: {

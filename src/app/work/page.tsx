@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/redis";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { WorkExplorer } from "@/components/work/work-explorer";
+import { CtaBand } from "@/components/ui/cta-band";
+import { PageHero } from "@/components/ui/page-hero";
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
@@ -46,56 +47,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return resolveRouteMetadata("/work", defaultWorkMetadata);
 }
 
-// Fallback projects if database is empty
-const fallbackProjects = [
-  {
-    id: "edayaa-jewellery",
-    title: "Edayaa Jewellery E-Commerce Store",
-    slug: "edayaa-jewellery",
-    category: "E-Commerce & Retail",
-    imageUrl:
-      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=85",
-  },
-  {
-    id: "fallback-1",
-    title: "NextGen Enterprise SaaS Platform",
-    slug: "nextgen-enterprise-saas-platform",
-    category: "AI & Cloud Infrastructure",
-    imageUrl:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=85",
-  },
-  {
-    id: "fallback-2",
-    title: "Fintech Global Payments Infrastructure",
-    slug: "fintech-global-payments",
-    category: "Web & Mobile Application",
-    imageUrl:
-      "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1600&q=85",
-  },
-  {
-    id: "fallback-3",
-    title: "Aura Design System & Studio",
-    slug: "aura-design-system",
-    category: "Brand & Design Architecture",
-    imageUrl:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=85",
-  },
-];
-
 export default async function WorkPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined; category?: string; q?: string };
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined; category?: string; q?: string }>;
 }) {
+  const searchParams = await searchParamsPromise;
   let projects: Array<{
     id: string;
     title: string;
     slug: string;
     category: string | null;
     imageUrl: string | null;
+    description: string;
+    demoUrl: string | null;
   }> = [];
 
-  const cacheKey = "cache:work:published_projects_v1";
+  const cacheKey = "cache:work:published_projects_v2";
   const cachedProjects = await cacheGet<typeof projects>(cacheKey);
 
   if (cachedProjects) {
@@ -116,117 +84,25 @@ export default async function WorkPage({
   }
 
   const categoryFilter = typeof searchParams?.category === "string" ? searchParams.category : undefined;
-  const queryFilter = typeof searchParams?.q === "string" ? searchParams.q.toLowerCase() : undefined;
-
-  let displayProjects = projects.length > 0 ? projects : fallbackProjects;
-  if (categoryFilter) {
-    const cat = categoryFilter.toLowerCase();
-    displayProjects = displayProjects.filter((p) => p.category?.toLowerCase().includes(cat));
-  }
-  if (queryFilter) {
-    displayProjects = displayProjects.filter((p) => p.title.toLowerCase().includes(queryFilter));
-  }
+  const queryFilter = typeof searchParams?.q === "string" ? searchParams.q : "";
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#EDEDED] pt-8 pb-20 sm:pt-12 sm:pb-28 px-6 sm:px-10 lg:px-16 2xl:px-24">
-      <div className="w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto">
-        {/* Header Intro */}
-        <div className="mb-10 sm:mb-14">
-          <h1 className="text-3xl sm:text-4xl 2xl:text-5xl font-semibold tracking-tight text-[#F5F5F3]">
-            Selected Work & Case Studies
-          </h1>
-          <p className="mt-2 text-sm 2xl:text-base text-[#888888] max-w-2xl 2xl:max-w-3xl">
-            Real production client implementations and digital engineering platforms developed by Webgent.
-          </p>
-        </div>
+    <>
+      <PageHero
+        eyebrow="Work"
+        title="Projects, built and shipped."
+        description="A selection of websites and web applications designed and built by Webgent. Hover a project to scroll through it."
+      />
 
-        {/* Responsive Grid with large images, project name, badges & type below */}
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-x-8 gap-y-12 sm:gap-x-12 sm:gap-y-16 lg:gap-x-14 lg:gap-y-20 2xl:gap-x-14 2xl:gap-y-20">
-          {displayProjects.map((project) => {
-            return (
-              <Link
-                key={project.id}
-                href={`/work/${project.slug}`}
-                className="group block focus:outline-none"
-              >
-                {/* Large Image (Sharp, Non-Rounded) */}
-                <div className="w-full aspect-[16/10] bg-[#121212] overflow-hidden border border-white/[0.08] relative">
-                  {project.imageUrl ? (
-                    <img
-                      src={project.imageUrl}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#161616] to-[#0D0D0D]">
-                      <span className="text-4xl sm:text-6xl font-light text-white/20 select-none">
-                        {project.title.charAt(0)}
-                      </span>
-                    </div>
-                  )}
+      <WorkExplorer projects={projects} initialCategory={categoryFilter} initialQuery={queryFilter} />
 
-                  {/* Corner Badge */}
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="px-2.5 py-1 bg-black/80 backdrop-blur-md border border-emerald-500/40 text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-medium">
-                      Live Production Work
-                    </span>
-                  </div>
-                </div>
-
-                {/* Project Name and Type */}
-                <div className="mt-5 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-4">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-[#F5F5F3] group-hover:text-white transition-colors">
-                      {project.title}
-                    </h2>
-                    <span className="px-2 py-0.5 bg-emerald-950/60 border border-emerald-500/20 text-[10px] font-mono uppercase tracking-wider text-emerald-400">
-                      Live
-                    </span>
-                  </div>
-                  <span className="text-sm text-[#888888] font-normal shrink-0">
-                    {project.category || "Case Study"}
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Closing Action Banner */}
-        <div className="mt-16 sm:mt-24 relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-9 px-6 sm:px-10 text-center space-y-4 sm:space-y-5 shadow-2xl">
-          {/* Subtle decorative radial vignette */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
-          />
-
-          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-black tracking-tight uppercase">
-              Have a Similar Vision to Build?
-            </h2>
-            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
-              We engineer performant, scalable digital platforms from concept to deployment. Schedule a discovery session with our team.
-            </p>
-          </div>
-
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
-            >
-              <span>Start Your Project</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-xl transition-all"
-            >
-              <span>Explore Estimator</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+      <CtaBand
+        title="Have a similar project in mind?"
+        description="Tell me about it and I'll come back with a clear scope, timeline and price."
+        secondaryLabel="See pricing"
+        secondaryHref="/pricing"
+        analyticsName="Work"
+      />
+    </>
   );
 }

@@ -34,18 +34,14 @@ export function checkRateLimitSync(
     pruneExpiredRecords();
   }
 
-  const effectiveWindow = key.includes("203.0.113.99")
-    ? Math.max(windowMs, 15 * 60 * 1000)
-    : windowMs;
-
   const record = rateLimitStore.get(key);
 
   if (!record || now > record.resetTime) {
     rateLimitStore.set(key, {
       count: 1,
-      resetTime: now + effectiveWindow,
+      resetTime: now + windowMs,
     });
-    return { success: true, remaining: limit - 1, resetMs: effectiveWindow };
+    return { success: true, remaining: limit - 1, resetMs: windowMs };
   }
 
   if (record.count >= limit) {
@@ -78,21 +74,17 @@ export async function checkRateLimit(
 
   if (client) {
     try {
-      const effectiveWindow = key.includes("203.0.113.99")
-        ? Math.max(windowMs, 15 * 60 * 1000)
-        : windowMs;
-
       const redisKey = `ratelimit:${key}`;
       const count = await client.incr(redisKey);
 
       if (count === 1) {
-        await client.pexpire(redisKey, effectiveWindow);
+        await client.pexpire(redisKey, windowMs);
       }
 
       let pttl = await client.pttl(redisKey);
       if (pttl < 0) {
-        await client.pexpire(redisKey, effectiveWindow);
-        pttl = effectiveWindow;
+        await client.pexpire(redisKey, windowMs);
+        pttl = windowMs;
       }
 
       if (count > limit) {
@@ -117,4 +109,18 @@ export async function checkRateLimit(
   }
 
   return memResult;
+}
+
+/** Forgets a limiter key, for example after a successful login. */
+export async function clearRateLimit(key: string): Promise<void> {
+  rateLimitStore.delete(key);
+
+  const client = getRedisClient();
+  if (!client) return;
+
+  try {
+    await client.del(`ratelimit:${key}`);
+  } catch (error) {
+    logger.warn("[RateLimit] Failed to clear Redis key", { key, error: String(error) });
+  }
 }

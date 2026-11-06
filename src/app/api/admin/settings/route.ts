@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { verifyStrictAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
@@ -12,7 +12,7 @@ import {
   invalidateCmsCache,
 } from "@/lib/services/cms";
 
-const updateSettingsSchema = z.record(z.string());
+const updateSettingsSchema = z.record(z.string(), z.string());
 
 const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isPublic: boolean }> =
   {
@@ -28,42 +28,42 @@ const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isP
     },
     logo_url: { value: "", description: "Brand Logo URL", isPublic: true },
     contact_email: {
-      value: "hello@webgent.com",
+      value: "mohitvermag75@gmail.com",
       description: "Primary Inbound Contact Email",
       isPublic: true,
     },
     contact_phone: {
-      value: "+1 (800) 555-WEBGENT",
+      value: "+91 8800241462",
       description: "Support Phone Number",
       isPublic: true,
     },
     office_address: {
-      value: "548 Market St, Suite 342, San Francisco, CA 94104",
+      value: "Gurugram / Noida, India",
       description: "Physical Headquarters Address",
       isPublic: true,
     },
     business_hours: {
-      value: "Mon - Fri: 9:00 AM - 6:00 PM PST",
+      value: "Replies by email or WhatsApp",
       description: "Operating Hours",
       isPublic: true,
     },
     github_url: {
-      value: "https://github.com/mohit-webgent/webgent",
+      value: "https://github.com/mohitvermag",
       description: "Official GitHub Repository / Organization",
       isPublic: true,
     },
     twitter_url: {
-      value: "https://twitter.com/webgent",
+      value: "",
       description: "Twitter / X Profile",
       isPublic: true,
     },
     linkedin_url: {
-      value: "https://linkedin.com/company/webgent",
+      value: "https://linkedin.com/in/webmohitverma",
       description: "LinkedIn Company Profile",
       isPublic: true,
     },
     discord_url: {
-      value: "https://discord.gg/webgent",
+      value: "",
       description: "Community Discord Server",
       isPublic: true,
     },
@@ -88,13 +88,13 @@ const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isP
       isPublic: true,
     },
     default_meta_title: {
-      value: "Webgent — Elite Web Engineering & Digital Transformation",
+      value: "Webgent — Modern Web Development",
       description: "Default SEO Title Tag",
       isPublic: true,
     },
     default_meta_description: {
       value:
-        "Webgent delivers cutting-edge web applications, architectural consulting, and high-performance digital systems for ambitious brands.",
+        "Webgent designs and builds fast business websites and web applications.",
       description: "Default SEO Meta Description",
       isPublic: true,
     },
@@ -131,9 +131,9 @@ const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isP
   };
 
 export async function GET() {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {
@@ -159,9 +159,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {

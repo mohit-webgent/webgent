@@ -32,3 +32,6 @@ next-env.d.ts
 chrome_*.png
 hero_*.png
 
+
+# local test database settings
+.env.test

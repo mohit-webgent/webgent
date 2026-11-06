@@ -81,7 +81,7 @@ export const eventSchema = z.object({
       return cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
     }),
   metadata: z
-    .union([z.record(z.unknown()), z.string()])
+    .union([z.record(z.string(), z.unknown()), z.string()])
     .optional()
     .nullable()
     .transform((val) => {

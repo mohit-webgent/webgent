@@ -18,10 +18,11 @@ const updateUserSchema = z.object({
 });
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function GET(_req: NextRequest, { params }: RouteParams) {
+export async function GET(_req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -58,7 +59,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteParams) {
+export async function PATCH(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -168,7 +170,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+export async function DELETE(_req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {

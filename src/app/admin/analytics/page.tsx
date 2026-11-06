@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  BarChart3,
   Users,
   Eye,
   Activity,
@@ -75,8 +74,6 @@ export default function AdminAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchAnalytics = useCallback(async (selectedPeriod: ValidPeriod) => {
-    setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/admin/analytics?period=${selectedPeriod}`);
       const json = await res.json();
@@ -93,22 +90,32 @@ export default function AdminAnalyticsPage() {
   }, []);
 
   useEffect(() => {
-    fetchAnalytics(period);
+    const timer = setTimeout(() => fetchAnalytics(period), 0);
+    return () => clearTimeout(timer);
   }, [period, fetchAnalytics]);
+
+  const reload = () => {
+    setLoading(true);
+    setError(null);
+    fetchAnalytics(period);
+  };
+
+  const selectPeriod = (nextPeriod: ValidPeriod) => {
+    if (nextPeriod === period) return;
+    setLoading(true);
+    setError(null);
+    setPeriod(nextPeriod);
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300 pb-16 font-sans">
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
+      <div className="bg-surface border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold">
-            <BarChart3 className="w-3.5 h-3.5" />
-            <span>Phase 10 Custom Telemetry</span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl font-extrabold text-fg tracking-tight">
             Traffic & Conversion Analytics
           </h1>
           <p className="text-sm text-slate-400">
-            Real-time privacy-compliant site analytics, event tracking, and conversion funnels.
+            Page views, events and conversions from your public site.
           </p>
         </div>
 
@@ -116,20 +123,20 @@ export default function AdminAnalyticsPage() {
           {(["7d", "30d", "90d"] as ValidPeriod[]).map((p) => (
             <button
               key={p}
-              onClick={() => setPeriod(p)}
+              onClick={() => selectPeriod(p)}
               className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
                 period === p
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-accent text-accent-fg"
+                  : "text-slate-400 hover:text-accent-fg hover:bg-slate-800/60"
               }`}
             >
               {p === "7d" ? "7 Days" : p === "30d" ? "30 Days" : "90 Days"}
             </button>
           ))}
           <button
-            onClick={() => fetchAnalytics(period)}
+            onClick={reload}
             title="Refresh analytics"
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-colors ml-1"
+            className="p-2 text-slate-400 hover:text-fg hover:bg-slate-800/60 rounded-xl transition-colors ml-1"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-indigo-400" : ""}`} />
           </button>
@@ -140,8 +147,8 @@ export default function AdminAnalyticsPage() {
         <div className="p-4 bg-red-950/50 border border-red-800 rounded-2xl text-red-300 text-sm flex items-center justify-between">
           <span>{error}</span>
           <button
-            onClick={() => fetchAnalytics(period)}
-            className="text-xs bg-red-800/50 hover:bg-red-800 px-3 py-1.5 rounded-lg text-white font-semibold transition-colors"
+            onClick={reload}
+            className="text-xs bg-red-800/50 hover:bg-red-800 px-3 py-1.5 rounded-lg text-fg font-semibold transition-colors"
           >
             Retry
           </button>
@@ -159,7 +166,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">
+            <span className="text-3xl font-extrabold text-fg">
               {loading ? "..." : (data?.summary.totalPageViews ?? 0).toLocaleString()}
             </span>
           </div>
@@ -176,41 +183,41 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">
+            <span className="text-3xl font-extrabold text-fg">
               {loading ? "..." : (data?.summary.uniqueVisitors ?? 0).toLocaleString()}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">Distinct anonymous sessions</p>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-purple-500/40 transition-colors">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Tracked Events
             </span>
-            <div className="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
+            <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
               <Activity className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">
+            <span className="text-3xl font-extrabold text-fg">
               {loading ? "..." : (data?.summary.totalEvents ?? 0).toLocaleString()}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">CTAs, forms & engagement</p>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-500/40 transition-colors">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Conversion Rate
             </span>
-            <div className="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/20">
+            <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">
+            <span className="text-3xl font-extrabold text-fg">
               {loading ? "..." : `${data?.summary.overallConversionRate ?? 0}%`}
             </span>
           </div>
@@ -221,7 +228,7 @@ export default function AdminAnalyticsPage() {
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-fg flex items-center gap-2">
               <Layers className="w-5 h-5 text-indigo-400" />
               <span>Conversion Funnel</span>
             </h2>
@@ -240,13 +247,13 @@ export default function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-indigo-400">Step {idx + 1}</span>
                 {idx > 0 && step.dropOff > 0 && (
-                  <span className="text-[10px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                  <span className="text-xs font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
                     -{step.dropOff}% drop
                   </span>
                 )}
               </div>
-              <h3 className="text-sm font-bold text-white">{step.step}</h3>
-              <div className="text-2xl font-extrabold text-white">
+              <h3 className="text-sm font-bold text-fg">{step.step}</h3>
+              <div className="text-2xl font-extrabold text-fg">
                 {step.count.toLocaleString()}
               </div>
 
@@ -256,7 +263,7 @@ export default function AdminAnalyticsPage() {
                   style={{ width: `${Math.min(100, Math.max(step.rate, 2))}%` }}
                 />
               </div>
-              <div className="text-[11px] text-slate-400 flex justify-between">
+              <div className="text-xs text-slate-400 flex justify-between">
                 <span>Step Rate</span>
                 <span className="text-slate-200 font-semibold">{step.rate}%</span>
               </div>
@@ -268,7 +275,7 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-fg flex items-center gap-2">
               <Eye className="w-4 h-4 text-emerald-400" />
               <span>Top Pages</span>
             </h2>
@@ -320,8 +327,8 @@ export default function AdminAnalyticsPage() {
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-purple-400" />
+            <h2 className="text-base font-bold text-fg flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
               <span>Tracked Event Distribution</span>
             </h2>
             <span className="text-xs text-slate-500">Key user interactions</span>
@@ -335,12 +342,12 @@ export default function AdminAnalyticsPage() {
                   className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between"
                 >
                   <span
-                    className="text-[11px] font-semibold text-slate-400 font-mono truncate"
+                    className="text-xs font-semibold text-slate-400 font-mono truncate"
                     title={name}
                   >
                     {name}
                   </span>
-                  <span className="text-xl font-extrabold text-white mt-2">
+                  <span className="text-xl font-extrabold text-fg mt-2">
                     {count.toLocaleString()}
                   </span>
                 </div>
@@ -352,8 +359,8 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-cyan-400" />
+            <h2 className="text-base font-bold text-fg flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-indigo-400" />
               <span>Device Category Split</span>
             </h2>
             <span className="text-xs text-slate-500">Visitor technology</span>
@@ -375,12 +382,12 @@ export default function AdminAnalyticsPage() {
                         <span className="text-slate-400 font-mono">
                           {dev.count.toLocaleString()} visits
                         </span>
-                        <span className="font-bold text-white">{dev.percentage}%</span>
+                        <span className="font-bold text-fg">{dev.percentage}%</span>
                       </div>
                     </div>
                     <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
                       <div
-                        className="bg-cyan-500 h-full rounded-full transition-all duration-500"
+                        className="bg-indigo-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(100, dev.percentage)}%` }}
                       />
                     </div>
@@ -397,7 +404,7 @@ export default function AdminAnalyticsPage() {
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-fg flex items-center gap-2">
               <Globe className="w-4 h-4 text-emerald-400" />
               <span>Country Distribution</span>
             </h2>
@@ -412,7 +419,7 @@ export default function AdminAnalyticsPage() {
                   className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-8 py-1 rounded bg-slate-800 text-center font-mono font-bold text-[11px] text-emerald-400">
+                    <span className="w-8 py-1 rounded bg-slate-800 text-center font-mono font-bold text-xs text-emerald-400">
                       {item.country}
                     </span>
                     <span className="font-semibold text-slate-200">
@@ -423,7 +430,7 @@ export default function AdminAnalyticsPage() {
                     <span className="text-slate-400 font-mono">
                       {item.count.toLocaleString()} visits
                     </span>
-                    <span className="font-bold text-white min-w-[40px] text-right">
+                    <span className="font-bold text-fg min-w-[40px] text-right">
                       {item.percentage}%
                     </span>
                   </div>

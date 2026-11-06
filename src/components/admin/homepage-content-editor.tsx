@@ -20,6 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import type {
   HomeHeroContent,
   HomeSectionItem,
@@ -82,6 +83,7 @@ export function HomepageContentEditor({
   initialSections,
 }: HomepageContentEditorProps) {
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [activeTab, setActiveTab] = useState<"hero" | "sections">("hero");
   const [hero, setHero] = useState<HomeHeroContent>(initialHero);
@@ -98,7 +100,7 @@ export function HomepageContentEditor({
     JSON.stringify(hero) !== JSON.stringify(savedHero) ||
     JSON.stringify(sections) !== JSON.stringify(savedSections);
 
-  const handleSaveRef = useRef<() => void>();
+  const handleSaveRef = useRef<(() => void) | undefined>(undefined);
 
   // Warn before leaving if unsaved changes exist
   useEffect(() => {
@@ -170,7 +172,7 @@ export function HomepageContentEditor({
     setHero(DEFAULT_HERO_CONTENT);
     setSections(DEFAULT_HOME_SECTIONS.sections);
     setFieldErrors({});
-    toast.info("Loaded default studio settings. Click 'Save Changes' to apply.");
+    toast.info("Default content loaded. Click Save Changes to publish it.");
   };
 
   // Reload fresh state from server
@@ -178,9 +180,11 @@ export function HomepageContentEditor({
   const handleRefreshFromServer = async () => {
     if (saving || refreshing) return;
     if (isDirty) {
-      const confirmDiscard = window.confirm(
-        "You have unsaved changes. Refreshing will overwrite them with the latest server data. Continue?",
-      );
+      const confirmDiscard = await confirm({
+        title: "Discard unsaved changes?",
+        description: "Reloading replaces your unsaved edits with the latest saved content.",
+        confirmText: "Discard and reload",
+      });
       if (!confirmDiscard) return;
     }
 
@@ -287,33 +291,35 @@ export function HomepageContentEditor({
     }
   };
 
-  handleSaveRef.current = handleSave;
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  });
 
   return (
     <div className="space-y-6">
       {/* =================================================================== */}
       {/* TOP HEADER & ACTION RIBBON                                          */}
       {/* =================================================================== */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-line pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight">
               Homepage Content Editor
             </h1>
             {isDirty ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 Unsaved Changes
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 Saved
               </span>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Manage live hero messaging, CTA redirect paths, and section ordering with instant cache revalidation.
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Edit the homepage hero, call-to-action buttons and section order.
           </p>
         </div>
 
@@ -323,17 +329,17 @@ export function HomepageContentEditor({
             onClick={handleRefreshFromServer}
             disabled={saving || refreshing}
             title="Fetch latest saved homepage state from server"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#181920] hover:bg-[#22242E] disabled:opacity-40 text-neutral-300 hover:text-white border border-white/[0.08] text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-3 hover:bg-surface-3 disabled:opacity-40 text-slate-300 hover:text-fg border border-line text-xs font-medium transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-amber-400" : "opacity-60"}`} />
-            <span>Sync</span>
+            <span>Reload</span>
           </button>
 
           <Link
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#181920] hover:bg-[#22242E] text-neutral-300 hover:text-white border border-white/[0.08] text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-3 hover:bg-surface-3 text-slate-300 hover:text-fg border border-line text-xs font-medium transition-colors"
           >
             <span>Live Site</span>
             <ExternalLink className="w-3.5 h-3.5 opacity-60" />
@@ -343,7 +349,7 @@ export function HomepageContentEditor({
             type="button"
             onClick={handleResetToSaved}
             disabled={!isDirty || saving}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#181920] hover:bg-[#22242E] disabled:opacity-40 disabled:cursor-not-allowed text-neutral-300 hover:text-white border border-white/[0.08] text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-3 hover:bg-surface-3 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-fg border border-line text-xs font-medium transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Revert</span>
@@ -353,8 +359,8 @@ export function HomepageContentEditor({
             type="button"
             onClick={handleResetToDefaults}
             disabled={saving}
-            title="Reset to default studio content"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#181920] hover:bg-[#22242E] disabled:opacity-40 text-neutral-400 hover:text-white border border-white/[0.08] text-xs font-medium transition-colors"
+            title="Reset to the default content"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-3 hover:bg-surface-3 disabled:opacity-40 text-slate-400 hover:text-fg border border-line text-xs font-medium transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Defaults</span>
@@ -364,7 +370,7 @@ export function HomepageContentEditor({
             type="button"
             onClick={handleSave}
             disabled={!isDirty || saving}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-white hover:bg-neutral-100 disabled:bg-neutral-700 disabled:text-neutral-400 text-black font-semibold text-xs transition-all shadow-md active:translate-y-0.5"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:bg-slate-700 disabled:text-slate-400 text-accent-fg font-semibold text-xs transition-all shadow-md active:translate-y-0.5"
           >
             {saving ? (
               <>
@@ -384,18 +390,18 @@ export function HomepageContentEditor({
       {/* =================================================================== */}
       {/* TAB NAVIGATION                                                      */}
       {/* =================================================================== */}
-      <div className="flex border-b border-white/[0.08] gap-4">
+      <div className="flex border-b border-line gap-4">
         <button
           type="button"
           onClick={() => setActiveTab("hero")}
           className={`flex items-center gap-2 py-3 px-1 border-b-2 text-xs sm:text-sm font-semibold transition-colors ${
             activeTab === "hero"
-              ? "border-white text-white"
-              : "border-transparent text-neutral-400 hover:text-white"
+              ? "border-white text-fg"
+              : "border-transparent text-slate-400 hover:text-fg"
           }`}
         >
           <Type className="w-4 h-4" />
-          <span>Hero Content &amp; Messaging</span>
+          <span>Hero</span>
         </button>
 
         <button
@@ -403,13 +409,13 @@ export function HomepageContentEditor({
           onClick={() => setActiveTab("sections")}
           className={`flex items-center gap-2 py-3 px-1 border-b-2 text-xs sm:text-sm font-semibold transition-colors ${
             activeTab === "sections"
-              ? "border-white text-white"
-              : "border-transparent text-neutral-400 hover:text-white"
+              ? "border-white text-fg"
+              : "border-transparent text-slate-400 hover:text-fg"
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span>Section Visibility &amp; Ordering</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/[0.08] text-neutral-300">
+          <span>Sections</span>
+          <span className="px-1.5 py-0.2 rounded-full text-xs bg-white/[0.08] text-slate-300">
             {sections.filter((s) => s.enabled).length}/{sections.length}
           </span>
         </button>
@@ -421,24 +427,24 @@ export function HomepageContentEditor({
       {activeTab === "hero" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Editing Form (Col span 7) */}
-          <div className="lg:col-span-7 space-y-6 bg-[#101116] border border-white/[0.08] rounded-2xl p-6 sm:p-7 shadow-xl">
-            <div className="border-b border-white/[0.06] pb-4">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Type className="w-4 h-4 text-neutral-400" />
-                <span>Hero Copywriting &amp; CTAs</span>
+          <div className="lg:col-span-7 space-y-6 bg-surface-2 border border-line rounded-2xl p-6 sm:p-7 shadow-xl">
+            <div className="border-b border-line pb-4">
+              <h2 className="text-base font-bold text-fg flex items-center gap-2">
+                <Type className="w-4 h-4 text-slate-400" />
+                <span>Hero Text &amp; Buttons</span>
               </h2>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                Edit the primary typography sequence and conversion buttons displayed above the fold.
+              <p className="text-xs text-slate-400 mt-0.5">
+                Edit the headline and buttons visitors see first.
               </p>
             </div>
 
             {/* Eyebrow */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-neutral-300">
-                  Eyebrow Moniker <span className="text-rose-400">*</span>
+                <label className="text-xs font-medium text-slate-300">
+                  Eyebrow Text <span className="text-rose-400">*</span>
                 </label>
-                <span className="text-[10px] text-neutral-400">{hero.eyebrow.length}/120</span>
+                <span className="text-xs text-slate-400">{hero.eyebrow.length}/120</span>
               </div>
               <input
                 type="text"
@@ -446,25 +452,25 @@ export function HomepageContentEditor({
                 maxLength={120}
                 onChange={(e) => setHero({ ...hero, eyebrow: e.target.value })}
                 placeholder="WEBGENT / DIGITAL ENGINEERING STUDIO"
-                className={`w-full px-3.5 py-2.5 rounded-lg bg-[#181920] border text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
-                  fieldErrors.eyebrow ? "border-rose-500/80" : "border-white/[0.1] hover:border-white/20"
+                className={`w-full px-3.5 py-2.5 rounded-lg bg-surface-3 border text-xs text-fg placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
+                  fieldErrors.eyebrow ? "border-rose-500/80" : "border-line hover:border-line-strong"
                 }`}
               />
               {fieldErrors.eyebrow && (
-                <p className="text-[11px] text-rose-400">{fieldErrors.eyebrow}</p>
+                <p className="text-xs text-rose-400">{fieldErrors.eyebrow}</p>
               )}
             </div>
 
             {/* Headline Segments (3-part sequence) */}
             <div className="space-y-3 pt-2">
-              <label className="text-xs font-medium text-neutral-300 block">
-                Headline Lines (Sequential Kinetic Reveal) <span className="text-rose-400">*</span>
+              <label className="text-xs font-medium text-slate-300 block">
+                Headline <span className="text-rose-400">*</span>
               </label>
 
               {/* Line 1 */}
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px] text-neutral-400">
-                  <span>Line 1 (Primary High-Contrast)</span>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Line 1</span>
                   <span>{hero.headlineLine1.length}/80</span>
                 </div>
                 <input
@@ -473,19 +479,19 @@ export function HomepageContentEditor({
                   maxLength={80}
                   onChange={(e) => setHero({ ...hero, headlineLine1: e.target.value })}
                   placeholder="YOU IMAGINE"
-                  className={`w-full px-3.5 py-2.5 rounded-lg bg-[#181920] border text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
-                    fieldErrors.headlineLine1 ? "border-rose-500/80" : "border-white/[0.1] hover:border-white/20"
+                  className={`w-full px-3.5 py-2.5 rounded-lg bg-surface-3 border text-xs text-fg placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
+                    fieldErrors.headlineLine1 ? "border-rose-500/80" : "border-line hover:border-line-strong"
                   }`}
                 />
                 {fieldErrors.headlineLine1 && (
-                  <p className="text-[11px] text-rose-400">{fieldErrors.headlineLine1}</p>
+                  <p className="text-xs text-rose-400">{fieldErrors.headlineLine1}</p>
                 )}
               </div>
 
               {/* Line 2 */}
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px] text-neutral-400">
-                  <span>Line 2 (Muted Studio Tone)</span>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Line 2 (muted)</span>
                   <span>{hero.headlineLine2.length}/80</span>
                 </div>
                 <input
@@ -494,19 +500,19 @@ export function HomepageContentEditor({
                   maxLength={80}
                   onChange={(e) => setHero({ ...hero, headlineLine2: e.target.value })}
                   placeholder="WE ENGINEER"
-                  className={`w-full px-3.5 py-2.5 rounded-lg bg-[#181920] border text-xs text-[#A8A8A8] placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
-                    fieldErrors.headlineLine2 ? "border-rose-500/80" : "border-white/[0.1] hover:border-white/20"
+                  className={`w-full px-3.5 py-2.5 rounded-lg bg-surface-3 border text-xs text-fg-muted placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
+                    fieldErrors.headlineLine2 ? "border-rose-500/80" : "border-line hover:border-line-strong"
                   }`}
                 />
                 {fieldErrors.headlineLine2 && (
-                  <p className="text-[11px] text-rose-400">{fieldErrors.headlineLine2}</p>
+                  <p className="text-xs text-rose-400">{fieldErrors.headlineLine2}</p>
                 )}
               </div>
 
               {/* Line 3 */}
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px] text-neutral-400">
-                  <span>Line 3 (Final Emphatic Line)</span>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Line 3</span>
                   <span>{hero.headlineLine3.length}/80</span>
                 </div>
                 <input
@@ -515,12 +521,12 @@ export function HomepageContentEditor({
                   maxLength={80}
                   onChange={(e) => setHero({ ...hero, headlineLine3: e.target.value })}
                   placeholder="REALITY."
-                  className={`w-full px-3.5 py-2.5 rounded-lg bg-[#181920] border text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
-                    fieldErrors.headlineLine3 ? "border-rose-500/80" : "border-white/[0.1] hover:border-white/20"
+                  className={`w-full px-3.5 py-2.5 rounded-lg bg-surface-3 border text-xs text-fg placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white transition-all ${
+                    fieldErrors.headlineLine3 ? "border-rose-500/80" : "border-line hover:border-line-strong"
                   }`}
                 />
                 {fieldErrors.headlineLine3 && (
-                  <p className="text-[11px] text-rose-400">{fieldErrors.headlineLine3}</p>
+                  <p className="text-xs text-rose-400">{fieldErrors.headlineLine3}</p>
                 )}
               </div>
             </div>
@@ -528,10 +534,10 @@ export function HomepageContentEditor({
             {/* Subheadline Paragraph */}
             <div className="space-y-1.5 pt-2">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-neutral-300">
+                <label className="text-xs font-medium text-slate-300">
                   Supporting Paragraph <span className="text-rose-400">*</span>
                 </label>
-                <span className="text-[10px] text-neutral-400">{hero.subheadline.length}/400</span>
+                <span className="text-xs text-slate-400">{hero.subheadline.length}/400</span>
               </div>
               <textarea
                 rows={3}
@@ -539,96 +545,96 @@ export function HomepageContentEditor({
                 maxLength={400}
                 onChange={(e) => setHero({ ...hero, subheadline: e.target.value })}
                 placeholder="We design and build digital products for ambitious businesses."
-                className={`w-full px-3.5 py-2.5 rounded-lg bg-[#181920] border text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white transition-all resize-none ${
-                  fieldErrors.subheadline ? "border-rose-500/80" : "border-white/[0.1] hover:border-white/20"
+                className={`w-full px-3.5 py-2.5 rounded-lg bg-surface-3 border text-xs text-fg placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white transition-all resize-none ${
+                  fieldErrors.subheadline ? "border-rose-500/80" : "border-line hover:border-line-strong"
                 }`}
               />
               {fieldErrors.subheadline && (
-                <p className="text-[11px] text-rose-400">{fieldErrors.subheadline}</p>
+                <p className="text-xs text-rose-400">{fieldErrors.subheadline}</p>
               )}
             </div>
 
             {/* CTA Buttons Configuration */}
-            <div className="space-y-4 pt-3 border-t border-white/[0.06]">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+            <div className="space-y-4 pt-3 border-t border-line">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Call to Action Buttons
               </h3>
 
               {/* Primary CTA */}
-              <div className="p-4 rounded-xl bg-[#14151C] border border-white/[0.06] space-y-3">
+              <div className="p-4 rounded-xl bg-surface-2 border border-line space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-white">Primary Action (Satin Tactile Button)</span>
-                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  <span className="text-xs font-semibold text-fg">Primary Action (Satin Tactile Button)</span>
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                     High-Emphasis
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] text-neutral-400 block mb-1">Button Text</label>
+                    <label className="text-xs text-slate-400 block mb-1">Button Text</label>
                     <input
                       type="text"
                       value={hero.primaryCtaText}
                       maxLength={50}
                       onChange={(e) => setHero({ ...hero, primaryCtaText: e.target.value })}
                       placeholder="START YOUR PROJECT"
-                      className="w-full px-3 py-2 rounded-lg bg-[#1C1E26] border border-white/[0.08] text-xs text-white focus:outline-none focus:ring-1 focus:ring-white"
+                      className="w-full px-3 py-2 rounded-lg bg-surface-3 border border-line text-xs text-fg focus:outline-none focus:ring-1 focus:ring-white"
                     />
                     {fieldErrors.primaryCtaText && (
-                      <p className="text-[10px] text-rose-400 mt-1">{fieldErrors.primaryCtaText}</p>
+                      <p className="text-xs text-rose-400 mt-1">{fieldErrors.primaryCtaText}</p>
                     )}
                   </div>
                   <div>
-                    <label className="text-[11px] text-neutral-400 block mb-1">Destination URL</label>
+                    <label className="text-xs text-slate-400 block mb-1">Destination URL</label>
                     <input
                       type="text"
                       value={hero.primaryCtaLink}
                       maxLength={200}
                       onChange={(e) => setHero({ ...hero, primaryCtaLink: e.target.value })}
                       placeholder="/contact"
-                      className="w-full px-3 py-2 rounded-lg bg-[#1C1E26] border border-white/[0.08] text-xs text-white focus:outline-none focus:ring-1 focus:ring-white"
+                      className="w-full px-3 py-2 rounded-lg bg-surface-3 border border-line text-xs text-fg focus:outline-none focus:ring-1 focus:ring-white"
                     />
                     {fieldErrors.primaryCtaLink && (
-                      <p className="text-[10px] text-rose-400 mt-1">{fieldErrors.primaryCtaLink}</p>
+                      <p className="text-xs text-rose-400 mt-1">{fieldErrors.primaryCtaLink}</p>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Secondary CTA */}
-              <div className="p-4 rounded-xl bg-[#14151C] border border-white/[0.06] space-y-3">
+              <div className="p-4 rounded-xl bg-surface-2 border border-line space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-white">Secondary Action (Glass Ghost Button)</span>
-                  <span className="text-[10px] text-neutral-400 bg-white/[0.05] px-2 py-0.5 rounded border border-white/10">
+                  <span className="text-xs font-semibold text-fg">Secondary Action (Glass Ghost Button)</span>
+                  <span className="text-xs text-slate-400 bg-white/[0.05] px-2 py-0.5 rounded border border-line">
                     Outline
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] text-neutral-400 block mb-1">Button Text</label>
+                    <label className="text-xs text-slate-400 block mb-1">Button Text</label>
                     <input
                       type="text"
                       value={hero.secondaryCtaText}
                       maxLength={50}
                       onChange={(e) => setHero({ ...hero, secondaryCtaText: e.target.value })}
                       placeholder="EXPLORE PORTFOLIO"
-                      className="w-full px-3 py-2 rounded-lg bg-[#1C1E26] border border-white/[0.08] text-xs text-white focus:outline-none focus:ring-1 focus:ring-white"
+                      className="w-full px-3 py-2 rounded-lg bg-surface-3 border border-line text-xs text-fg focus:outline-none focus:ring-1 focus:ring-white"
                     />
                     {fieldErrors.secondaryCtaText && (
-                      <p className="text-[10px] text-rose-400 mt-1">{fieldErrors.secondaryCtaText}</p>
+                      <p className="text-xs text-rose-400 mt-1">{fieldErrors.secondaryCtaText}</p>
                     )}
                   </div>
                   <div>
-                    <label className="text-[11px] text-neutral-400 block mb-1">Destination URL</label>
+                    <label className="text-xs text-slate-400 block mb-1">Destination URL</label>
                     <input
                       type="text"
                       value={hero.secondaryCtaLink}
                       maxLength={200}
                       onChange={(e) => setHero({ ...hero, secondaryCtaLink: e.target.value })}
                       placeholder="/work"
-                      className="w-full px-3 py-2 rounded-lg bg-[#1C1E26] border border-white/[0.08] text-xs text-white focus:outline-none focus:ring-1 focus:ring-white"
+                      className="w-full px-3 py-2 rounded-lg bg-surface-3 border border-line text-xs text-fg focus:outline-none focus:ring-1 focus:ring-white"
                     />
                     {fieldErrors.secondaryCtaLink && (
-                      <p className="text-[10px] text-rose-400 mt-1">{fieldErrors.secondaryCtaLink}</p>
+                      <p className="text-xs text-rose-400 mt-1">{fieldErrors.secondaryCtaLink}</p>
                     )}
                   </div>
                 </div>
@@ -638,47 +644,44 @@ export function HomepageContentEditor({
 
           {/* Real-Time Visual Preview Card (Col span 5) */}
           <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
-            <div className="bg-[#0A0A0E] border border-white/[0.1] rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-6">
-                <span className="text-xs font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  Live Hero Preview
-                </span>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                  Synchronous
+            <div className="bg-surface border border-line rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+              <div className="flex items-center justify-between border-b border-line pb-3 mb-6">
+                <span className="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  Preview
                 </span>
               </div>
 
               {/* Eyebrow Preview */}
-              <div className="text-[9px] font-mono tracking-[0.2em] text-[#8A8A8A] uppercase mb-3">
+              <div className="text-xs font-mono tracking-[0.2em] text-fg-muted uppercase mb-3">
                 {hero.eyebrow || "WEBGENT / DIGITAL ENGINEERING STUDIO"}
               </div>
 
               {/* Headline Preview */}
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight leading-[1.05] uppercase text-[#F5F5F3] space-y-1 mb-4">
-                <div className="text-white">{hero.headlineLine1 || "YOU IMAGINE"}</div>
-                <div className="text-[#A8A8A8]">{hero.headlineLine2 || "WE ENGINEER"}</div>
-                <div className="text-white">{hero.headlineLine3 || "REALITY."}</div>
+              <div className="text-2xl sm:text-3xl font-bold tracking-tight leading-[1.05] uppercase text-fg space-y-1 mb-4">
+                <div className="text-fg">{hero.headlineLine1 || "YOU IMAGINE"}</div>
+                <div className="text-fg-muted">{hero.headlineLine2 || "WE ENGINEER"}</div>
+                <div className="text-fg">{hero.headlineLine3 || "REALITY."}</div>
               </div>
 
               {/* Paragraph Preview */}
-              <p className="text-xs text-[#8A8A8A] leading-relaxed mb-6 line-clamp-3">
+              <p className="text-xs text-fg-muted leading-relaxed mb-6 line-clamp-3">
                 {hero.subheadline || "We design and build digital products for ambitious businesses."}
               </p>
 
               {/* Buttons Preview */}
               <div className="flex flex-wrap items-center gap-2.5 pt-2">
-                <div className="px-3.5 py-2 rounded-lg bg-white text-black text-[11px] font-semibold tracking-wider uppercase shadow-sm">
+                <div className="px-3.5 py-2 rounded-lg bg-accent text-accent-fg text-xs font-semibold tracking-wider uppercase shadow-sm">
                   {hero.primaryCtaText || "START YOUR PROJECT"}
                 </div>
-                <div className="px-3.5 py-2 rounded-lg bg-white/[0.04] text-[#E5E5E3] border border-white/[0.12] text-[11px] font-semibold tracking-wider uppercase">
+                <div className="px-3.5 py-2 rounded-lg bg-white/[0.04] text-fg border border-line text-xs font-semibold tracking-wider uppercase">
                   {hero.secondaryCtaText || "EXPLORE PORTFOLIO"}
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/[0.06] text-[11px] text-neutral-400 flex items-center gap-2">
-                <HelpCircle className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                <span>Renders identically across desktop, tablet, and mobile breakpoints.</span>
+              <div className="mt-8 pt-4 border-t border-line text-xs text-slate-400 flex items-center gap-2">
+                <HelpCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span>A preview of the text. The live layout adapts to each screen size.</span>
               </div>
             </div>
           </div>
@@ -690,25 +693,25 @@ export function HomepageContentEditor({
       {/* =================================================================== */}
       {activeTab === "sections" && (
         <div className="space-y-6">
-          <div className="bg-[#101116] border border-white/[0.08] rounded-2xl p-6 sm:p-7 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4 mb-6">
+          <div className="bg-surface-2 border border-line rounded-2xl p-6 sm:p-7 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4 mb-6">
               <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-neutral-400" />
+                <h2 className="text-base font-bold text-fg flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-slate-400" />
                   <span>Homepage Section Flow &amp; Visibility</span>
                 </h2>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Reorder sections using the arrows (▲/▼) or toggle visibility switches to show/hide sections instantly.
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Reorder sections with the arrows, or use the switches to show or hide them. Changes go live when you save.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setSections(DEFAULT_HOME_SECTIONS.sections)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181920] hover:bg-[#20222C] text-xs text-neutral-300 border border-white/[0.08] transition-colors self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-3 hover:bg-surface-3 text-xs text-slate-300 border border-line transition-colors self-start sm:self-auto"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>Reset to Default Sequence</span>
+                <span>Reset to Default Order</span>
               </button>
             </div>
 
@@ -726,26 +729,26 @@ export function HomepageContentEditor({
                     key={section.id}
                     className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border transition-all ${
                       section.enabled
-                        ? "bg-[#15161E] border-white/[0.08] hover:border-white/20"
-                        : "bg-[#111218]/60 border-white/[0.04] opacity-60"
+                        ? "bg-surface-2 border-line hover:border-line-strong"
+                        : "bg-surface-2/60 border-line opacity-60"
                     }`}
                   >
                     {/* Left: Position & Title */}
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex flex-col items-center justify-center w-8 h-8 rounded-lg bg-[#1F212B] border border-white/[0.08] text-xs font-mono font-bold text-white shrink-0">
+                      <div className="flex flex-col items-center justify-center w-8 h-8 rounded-lg bg-surface-3 border border-line text-xs font-mono font-bold text-fg shrink-0">
                         {index + 1}
                       </div>
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-semibold text-white truncate">
+                          <h3 className="text-sm font-semibold text-fg truncate">
                             {meta.title}
                           </h3>
-                          <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-white/[0.06] text-neutral-400 border border-white/[0.06]">
+                          <span className="text-xs font-mono px-2 py-0.2 rounded bg-white/[0.06] text-slate-400 border border-line">
                             {meta.category}
                           </span>
                         </div>
-                        <p className="text-xs text-neutral-400 truncate mt-0.5">
+                        <p className="text-xs text-slate-400 truncate mt-0.5">
                           {meta.subtitle}
                         </p>
                       </div>
@@ -759,7 +762,7 @@ export function HomepageContentEditor({
                         onClick={() => moveSectionUp(index)}
                         disabled={index === 0}
                         title="Move Up"
-                        className="p-2 rounded-lg bg-[#1C1E26] hover:bg-[#262833] disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300 hover:text-white border border-white/[0.06] transition-colors"
+                        className="p-2 rounded-lg bg-surface-3 hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 hover:text-fg border border-line transition-colors"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
                       </button>
@@ -770,7 +773,7 @@ export function HomepageContentEditor({
                         onClick={() => moveSectionDown(index)}
                         disabled={index === sections.length - 1}
                         title="Move Down"
-                        className="p-2 rounded-lg bg-[#1C1E26] hover:bg-[#262833] disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300 hover:text-white border border-white/[0.06] transition-colors"
+                        className="p-2 rounded-lg bg-surface-3 hover:bg-surface-3 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 hover:text-fg border border-line transition-colors"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
                       </button>
@@ -782,7 +785,7 @@ export function HomepageContentEditor({
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                           section.enabled
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                            : "bg-neutral-800 text-neutral-400 border-white/[0.06] hover:bg-neutral-700"
+                            : "bg-slate-800 text-slate-400 border-line hover:bg-slate-700"
                         }`}
                       >
                         {section.enabled ? (
@@ -792,7 +795,7 @@ export function HomepageContentEditor({
                           </>
                         ) : (
                           <>
-                            <EyeOff className="w-3.5 h-3.5 text-neutral-400" />
+                            <EyeOff className="w-3.5 h-3.5 text-slate-400" />
                             <span>Hidden</span>
                           </>
                         )}

@@ -52,7 +52,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
         href: "/admin",
         icon: LayoutDashboard,
         exact: true,
-        colorClass: "text-indigo-400 group-hover:text-indigo-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
     ],
   },
@@ -63,43 +63,43 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
         label: "Pages & CMS",
         href: "/admin/pages",
         icon: LayoutTemplate,
-        colorClass: "text-violet-400 group-hover:text-violet-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Services & Features",
         href: "/admin/services",
         icon: Layers,
-        colorClass: "text-sky-400 group-hover:text-sky-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Projects",
         href: "/admin/projects",
         icon: Briefcase,
-        colorClass: "text-emerald-400 group-hover:text-emerald-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Blog",
         href: "/admin/blog",
         icon: FileText,
-        colorClass: "text-amber-400 group-hover:text-amber-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Testimonials",
         href: "/admin/testimonials",
         icon: MessageSquareQuote,
-        colorClass: "text-pink-400 group-hover:text-pink-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "FAQs",
         href: "/admin/faqs",
         icon: HelpCircle,
-        colorClass: "text-cyan-400 group-hover:text-cyan-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Media Library",
         href: "/admin/media",
         icon: ImageIcon,
-        colorClass: "text-teal-400 group-hover:text-teal-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
     ],
   },
@@ -110,25 +110,26 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
         label: "Leads",
         href: "/admin/leads",
         icon: Users,
-        colorClass: "text-blue-400 group-hover:text-blue-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Pricing & Packages",
         href: "/admin/pricing",
         icon: Tags,
-        colorClass: "text-emerald-400 group-hover:text-emerald-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
+        adminOnly: true,
       },
       {
         label: "Newsletter",
         href: "/admin/newsletter",
         icon: Mail,
-        colorClass: "text-violet-400 group-hover:text-violet-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Analytics",
         href: "/admin/analytics",
         icon: BarChart3,
-        colorClass: "text-sky-400 group-hover:text-sky-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
     ],
   },
@@ -139,13 +140,14 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
         label: "Chat Sessions",
         href: "/admin/chat",
         icon: MessageCircle,
-        colorClass: "text-teal-400 group-hover:text-teal-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
+        adminOnly: true,
       },
       {
         label: "Knowledge Base",
         href: "/admin/knowledge",
         icon: Sparkles,
-        colorClass: "text-amber-400 group-hover:text-amber-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
     ],
   },
@@ -156,40 +158,40 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
         label: "Navigation & Menus",
         href: "/admin/navigation",
         icon: Compass,
-        colorClass: "text-indigo-400 group-hover:text-indigo-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "SEO & Meta Tags",
         href: "/admin/seo",
         icon: Search,
-        colorClass: "text-blue-400 group-hover:text-blue-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
       {
         label: "Settings",
         href: "/admin/settings",
         icon: Settings,
-        colorClass: "text-slate-400 group-hover:text-slate-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
         adminOnly: true,
       },
       {
         label: "Users & Roles",
         href: "/admin/users",
         icon: UserCog,
-        colorClass: "text-rose-400 group-hover:text-rose-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
         adminOnly: true,
       },
       {
         label: "Audit Logs",
         href: "/admin/audit-logs",
         icon: ScrollText,
-        colorClass: "text-orange-400 group-hover:text-orange-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
         adminOnly: true,
       },
       {
         label: "Profile & Security",
         href: "/admin/profile",
         icon: UserCheck,
-        colorClass: "text-cyan-400 group-hover:text-cyan-300",
+        colorClass: "text-fg-muted group-hover:text-fg",
       },
     ],
   },
@@ -213,7 +215,10 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
     if (item.exact) {
       return pathname === item.href;
     }
-    return pathname.startsWith(item.href);
+    if (item.href === "/admin/profile" && pathname === "/admin/change-password") {
+      return true;
+    }
+    return pathname === item.href || pathname.startsWith(`${item.href}/`);
   };
 
   const isSuperAdmin = userRole === "ADMIN";
@@ -224,26 +229,26 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
         <div
           role="presentation"
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-transparent backdrop-blur-md lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
         />
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#0D0D11] border-r border-white/[0.08] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-surface border-r border-line flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.08] shrink-0">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-line shrink-0">
           <Link href="/admin" onClick={onClose} className="flex items-center gap-3 group">
-            <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-sm transition-all rounded-none">
+            <div className="p-2 bg-accent/10 border border-accent/20 text-accent rounded-none">
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-extrabold text-base text-white tracking-tight leading-none block">
+              <span className="font-extrabold text-base text-fg tracking-tight leading-none block">
                 Webgent
               </span>
-              <span className="text-[10px] font-mono font-semibold text-emerald-400 uppercase tracking-widest block mt-0.5">
-                Admin Console
+              <span className="text-xs font-medium text-fg-muted block mt-0.5">
+                Admin console
               </span>
             </div>
           </Link>
@@ -252,7 +257,7 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
             type="button"
             onClick={onClose}
             aria-label="Close navigation"
-            className="lg:hidden p-1 text-[#888888] hover:text-white rounded-none hover:bg-white/[0.05] transition-colors"
+            className="lg:hidden p-1 text-fg-muted hover:text-fg rounded-none hover:bg-white/[0.05] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -272,7 +277,7 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
 
             return (
               <div key={group.title} className="space-y-1">
-                <div className="px-3 pb-1 text-[10px] font-mono font-bold text-[#666666] uppercase tracking-wider">
+                <div className="px-3 pb-1 text-xs font-semibold text-fg-muted">
                   {group.title}
                 </div>
 
@@ -285,17 +290,18 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
                       key={item.href}
                       href={item.href}
                       onClick={onClose}
-                      className={`group flex items-center justify-between px-3 py-2 rounded-none text-xs font-semibold transition-all duration-150 ${
+                      aria-current={active ? "page" : undefined}
+                      className={`group flex items-center justify-between px-3 py-2 rounded-none text-xs font-semibold transition-colors border-l-2 ${
                         active
-                          ? "bg-emerald-500/10 text-white border-l-2 border-emerald-400 border-t border-b border-r border-white/[0.06] shadow-sm"
-                          : "text-[#888888] hover:text-white hover:bg-white/[0.03] border-l-2 border-transparent"
+                          ? "bg-accent/10 text-fg border-accent"
+                          : "text-fg-muted hover:text-fg hover:bg-white/[0.03] border-transparent"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`p-1.5 rounded-none transition-colors ${
                             active
-                              ? "bg-emerald-500/20 text-emerald-300"
+                              ? "bg-accent/15 text-accent"
                               : "bg-white/[0.03] " + item.colorClass
                           }`}
                         >
@@ -305,7 +311,7 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
                       </div>
 
                       {item.badge !== undefined && (
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-none bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span className="px-2 py-0.5 text-xs font-mono font-bold rounded-none bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
                           {item.badge}
                         </span>
                       )}
@@ -317,14 +323,15 @@ export function AdminSidebar({ isOpen, onClose, userRole }: AdminSidebarProps) {
           })}
         </div>
 
-        <div className="p-3 border-t border-white/[0.08] shrink-0">
+        <div className="p-3 border-t border-line shrink-0">
           <Link
             href="/"
             target="_blank"
-            className="flex items-center justify-between px-3 py-2 rounded-none text-xs font-mono text-[#888888] hover:text-white hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.08]"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3 py-2 rounded-none text-xs text-fg-muted hover:text-fg hover:bg-white/[0.04] transition-colors border border-transparent hover:border-line"
           >
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-emerald-400 motion-safe:animate-pulse"></span>
+              <span className="w-1.5 h-1.5 bg-accent"></span>
               <span>Live Website</span>
             </span>
             <ExternalLink className="w-3.5 h-3.5" />

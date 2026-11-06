@@ -2,22 +2,16 @@ import { prisma } from "@/lib/db";
 import { BlogPost, User, Prisma } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Clock,
-  Eye,
-  Calendar,
-  User as UserIcon,
-  ArrowRight,
-  BookOpen,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Eye, User as UserIcon } from "lucide-react";
+import { RevealGroup } from "@/components/animations/reveal-group";
+import { TextReveal } from "@/components/animations/text-reveal";
+import { PostCard } from "@/components/blog/post-card";
 import type { Metadata } from "next";
 import { BlogReadTracker } from "@/components/blog/blog-read-tracker";
+import { MarkdownContent } from "@/components/ui/markdown-content";
 import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 import { siteConfig } from "@/config/site";
-import { ClipReveal } from "@/components/animations/clip-reveal";
 import { ParallaxImage } from "@/components/animations/parallax-image";
-import { Card3DTilt } from "@/components/animations/card-tilt";
 
 export const revalidate = 60;
 
@@ -26,10 +20,11 @@ type PostWithAuthor = BlogPost & {
 };
 
 export async function generateMetadata({
-  params,
+  params: routeParams,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  const params = await routeParams;
   try {
     const post = await prisma.blogPost.findFirst({
       where: { slug: params.slug, status: "PUBLISHED", deletedAt: null },
@@ -47,11 +42,12 @@ export async function generateMetadata({
 
     const baseTitle = post.seoTitle || post.title;
     const fullTitle = `${baseTitle} | Webgent`;
-    const description = post.seoDescription || post.excerpt || post.content.substring(0, 160);
+    const description =
+      post.seoDescription || post.excerpt || post.content.replace(/[#*`>_\[\]]/g, "").trim().substring(0, 160);
     const ogImage =
       post.ogImage ||
       post.coverImage ||
-      `${siteConfig.url}/api/og?title=${encodeURIComponent(post.title)}&badge=${encodeURIComponent(post.category || "Technical Article")}&desc=${encodeURIComponent((post.excerpt || post.content).slice(0, 140))}&author=${encodeURIComponent(post.author?.name || "Webgent Team")}`;
+      `${siteConfig.url}/api/og?title=${encodeURIComponent(post.title)}&badge=${encodeURIComponent(post.category || "Technical Article")}&desc=${encodeURIComponent((post.excerpt || post.content).slice(0, 140))}&author=${encodeURIComponent(post.author?.name || "Webgent")}`;
 
     const tagsList = post.tags ? post.tags.split(",").map((t) => t.trim()) : [];
 
@@ -68,7 +64,7 @@ export async function generateMetadata({
         siteName: siteConfig.name,
         type: "article",
         publishedTime: post.publishedAt?.toISOString(),
-        authors: [post.author?.name || "Webgent Engineering"],
+        authors: [post.author?.name || "Webgent"],
         tags: tagsList,
         images: [
           {
@@ -92,7 +88,8 @@ export async function generateMetadata({
   }
 }
 
-export default async function PublicBlogDetailPage({ params }: { params: { slug: string } }) {
+export default async function PublicBlogDetailPage({ params: routeParams }: { params: Promise<{ slug: string }> }) {
+  const params = await routeParams;
   let post: PostWithAuthor | null = null;
   let relatedPosts: PostWithAuthor[] = [];
 
@@ -105,15 +102,7 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
     });
 
     if (fetchedPost) {
-      const updated = await prisma.blogPost.update({
-        where: { id: fetchedPost.id },
-        data: { views: { increment: 1 } },
-        include: {
-          author: { select: { id: true, name: true, avatarUrl: true } },
-        },
-      });
-
-      post = updated as PostWithAuthor;
+      post = fetchedPost as PostWithAuthor;
 
       const currentTags = post.tags
         ? post.tags
@@ -160,166 +149,104 @@ export default async function PublicBlogDetailPage({ params }: { params: { slug:
     : [];
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 2xl:px-20 relative overflow-hidden font-sans">
+    <>
       <BlogReadTracker slug={post.slug} title={post.title} readTime={post.readTime} />
 
-      <div className="max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl mx-auto space-y-12 relative z-10 text-left">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors group"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-          <span>INDEX / RETURN TO BLOG</span>
-        </Link>
+      <article>
+        <header className="relative isolate overflow-hidden pb-10 pt-10 sm:pt-14">
+          <div className="mx-auto max-w-4xl px-[var(--gutter)]">
+            <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg">
+              <ArrowLeft className="h-4 w-4" />
+              All articles
+            </Link>
 
-        <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-              {post.category || "Engineering"}
-            </span>
-
-            <div className="flex items-center gap-4 text-xs font-mono text-[#8A8A8A]">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#666666]" />
-                <span>
-                  {post.publishedAt
-                    ? new Date(post.publishedAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "Published recently"}
+            <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-fg-muted">
+              {post.category && <span className="text-accent">{post.category}</span>}
+              {post.publishedAt && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4" />
+                  {new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#666666]" />
-                <span>{post.readTime || 1} min read</span>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-[#8A8A8A]">
-                <Eye className="w-3.5 h-3.5" />
-                <span>{post.views} views</span>
-              </div>
-            </div>
-          </div>
-
-          <ClipReveal>
-            <h1 className="text-3xl sm:text-5xl font-bold text-[#F5F5F3] tracking-tight leading-tight uppercase">
-              {post.title}
-            </h1>
-          </ClipReveal>
-
-          <div className="flex items-center gap-3 pt-2">
-            <div className="w-9 h-9 rounded-lg bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[#E5E5E3] font-bold">
-              {post.author.avatarUrl ? (
-                <img
-                  src={post.author.avatarUrl}
-                  alt={post.author.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full rounded-lg object-cover"
-                />
-              ) : (
-                <UserIcon className="w-4 h-4 text-[#8A8A8A]" />
               )}
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="h-4 w-4" />
+                {post.readTime || 1} min read
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Eye className="h-4 w-4" />
+                {post.views} views
+              </span>
             </div>
-            <div>
-              <div className="text-xs font-semibold text-[#F5F5F3]">{post.author.name}</div>
-              <div className="text-[11px] text-[#8A8A8A] font-mono">
-                Software Architecture Group
-              </div>
+
+            <TextReveal as="h1" immediate className="display-lg mt-5">
+              {post.title}
+            </TextReveal>
+
+            <div className="fade-up mt-7 flex items-center gap-3">
+              {post.author.avatarUrl ? (
+                <img src={post.author.avatarUrl} alt="" loading="lazy" decoding="async" className="h-10 w-10 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent">
+                  <UserIcon className="h-4 w-4" />
+                </span>
+              )}
+              <p className="font-medium">{post.author.name}</p>
             </div>
           </div>
-        </div>
+        </header>
 
         {post.coverImage && (
-          <ParallaxImage className="rounded-xl border border-white/[0.08] shadow-2xl">
-            {/* LCP Optimization: fetchpriority="high" */}
-            <img
-              src={post.coverImage}
-              alt={post.title}
-              fetchPriority="high"
-              decoding="async"
-              className="w-full h-auto max-h-[500px] object-cover"
-            />
-          </ParallaxImage>
+          <div className="mx-auto max-w-6xl px-[var(--gutter)]">
+            <ParallaxImage className="overflow-hidden rounded-[1.25rem] border border-line">
+              {/* LCP Optimization: fetchpriority="high" */}
+              <img src={post.coverImage} alt={post.title} fetchPriority="high" decoding="async" className="max-h-[560px] w-full object-cover" />
+            </ParallaxImage>
+          </div>
         )}
 
-        <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-12 space-y-6 shadow-2xl">
-          <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm sm:text-base whitespace-pre-wrap font-sans">
-            {post.content}
-          </div>
+        <div className="mx-auto max-w-3xl px-[var(--gutter)] pt-12">
+          <MarkdownContent content={post.content} className="prose-lg font-sans" />
 
           {tagsList.length > 0 && (
-            <div className="pt-6 border-t border-white/[0.06] flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-mono text-[#8A8A8A] uppercase tracking-wider mr-2">
-                Article Tags:
-              </span>
+            <div className="mt-12 flex flex-wrap items-center gap-2 border-t border-line pt-6">
               {tagsList.map((tag, idx) => (
-                <Link
-                  key={idx}
-                  href={`/blog?tag=${encodeURIComponent(tag)}`}
-                  className="px-2.5 py-1 bg-[#141414] hover:bg-[#1C1C1C] border border-white/[0.06] text-[#8A8A8A] hover:text-[#F5F5F3] text-xs font-mono rounded transition-colors"
-                >
+                <Link key={idx} href={`/blog?tag=${encodeURIComponent(tag)}`} className="chip transition-colors hover:border-line-strong hover:text-fg">
                   #{tag}
                 </Link>
               ))}
             </div>
           )}
         </div>
+      </article>
 
-        {relatedPosts.length > 0 && (
-          <div className="space-y-6 pt-6 border-t border-white/[0.06]">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] flex items-center gap-2 tracking-tight uppercase">
-              <BookOpen className="w-4 h-4 text-[#8A8A8A]" />
-              <span>Related Technical Publications</span>
-            </h2>
+      {relatedPosts.length > 0 && (
+        <section className="wrap section">
+          <h2 className="display-md mb-10">Keep reading</h2>
+          <RevealGroup className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-3">
+            {relatedPosts.map((related) => (
+              <PostCard
+                key={related.id}
+                post={{
+                  title: related.title,
+                  slug: related.slug,
+                  excerpt: related.excerpt,
+                  category: related.category,
+                  meta: `${related.readTime || 1} min read`,
+                  imageUrl: related.coverImage,
+                }}
+              />
+            ))}
+          </RevealGroup>
+        </section>
+      )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {relatedPosts.map((rel) => (
-                <div key={rel.id}>
-                  <Card3DTilt>
-                    <div className="bg-[#0D0D0D] border border-white/[0.08] hover:border-white/[0.18] rounded-xl p-5 space-y-3 flex flex-col justify-between transition-all duration-300 shadow-xl h-full min-h-[190px] group">
-                      <div className="space-y-2">
-                        <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-                          {rel.category || "Article"}
-                        </span>
-                        <h3 className="text-sm font-bold text-[#F5F5F3] group-hover:text-white transition-colors">
-                          <Link href={`/blog/${rel.slug}`}>{rel.title}</Link>
-                        </h3>
-                      </div>
-
-                      <div className="pt-3 flex items-center justify-between gap-2 border-t border-white/[0.06] text-xs">
-                        <Link
-                          href={`/blog/${rel.slug}`}
-                          className="inline-flex items-center gap-1 font-semibold text-[#E8E8E6] hover:text-white text-xs"
-                        >
-                          <span>Read Publication</span>
-                          <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                        </Link>
-
-                        <div className="flex items-center gap-1 text-[11px] text-[#666666] font-mono">
-                          <Clock className="w-3 h-3" />
-                          <span>{rel.readTime || 1}m</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Card3DTilt>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="pt-6">
-          <NewsletterForm
-            variant="card"
-            title="Enjoyed this technical brief? Subscribe bi-weekly"
-            description="Subscribe for deep technical articles, system architecture breakdowns, and web performance insights."
-          />
-        </div>
+      <div className="wrap pb-[var(--section-space)] pt-16">
+        <NewsletterForm
+          variant="card"
+          title="Enjoyed this? Get the next one by email."
+          description="Occasional articles on web development and performance. Unsubscribe at any time."
+        />
       </div>
-    </div>
+    </>
   );
 }

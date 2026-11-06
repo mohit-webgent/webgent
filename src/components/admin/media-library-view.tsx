@@ -116,8 +116,10 @@ export function MediaLibraryView() {
   }, [search, selectedFolder, sortBy, sortOrder, toast]);
 
   useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+    // A short wait while typing avoids one request per keystroke.
+    const timer = setTimeout(fetchItems, search ? 300 : 0);
+    return () => clearTimeout(timer);
+  }, [fetchItems, search]);
 
   // Copy to clipboard
   const handleCopyUrl = (item: MediaItem) => {
@@ -181,7 +183,7 @@ export function MediaLibraryView() {
         throw new Error(json.error?.message || "Failed to delete asset");
       }
 
-      toast.success("Asset deleted successfully from Supabase Storage.");
+      toast.success("File deleted.");
       setDeletingItem(null);
       setDeleteForce(false);
       if (selectedItem?.id === deletingItem.id) setSelectedItem(null);
@@ -239,7 +241,7 @@ export function MediaLibraryView() {
       }
 
       setUploadProgress(100);
-      toast.success("Image uploaded successfully to Supabase Storage!");
+      toast.success("Image uploaded");
       setIsUploadModalOpen(false);
       setUploadFile(null);
       setUploadAltText("");
@@ -273,15 +275,15 @@ export function MediaLibraryView() {
   return (
     <div className="space-y-6">
       {/* Top Banner / Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0E0E10] border border-white/[0.08] shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-surface border border-line shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
               <ImageIcon className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-[#F5F5F3]">Media & Asset Library</h1>
-              <p className="text-xs text-[#8A8A8A]">
+              <h1 className="text-xl font-bold text-fg">Media Library</h1>
+              <p className="text-xs text-fg-muted">
                 High-performance image storage powered by Supabase Storage bucket:{" "}
                 <span className="font-mono text-indigo-400">webgent-media</span>
               </p>
@@ -294,7 +296,7 @@ export function MediaLibraryView() {
             type="button"
             onClick={fetchItems}
             disabled={loading}
-            className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#A0A0A0] hover:text-[#F5F5F3] border border-white/[0.08] transition-colors"
+            className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-fg-muted hover:text-fg border border-line transition-colors"
             title="Refresh assets"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-indigo-400" : ""}`} />
@@ -303,7 +305,7 @@ export function MediaLibraryView() {
           <button
             type="button"
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent text-accent-fg font-medium text-xs transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             <UploadCloud className="w-4 h-4" />
             <span>Upload New Asset</span>
@@ -313,24 +315,24 @@ export function MediaLibraryView() {
 
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-xl bg-[#0E0E10] border border-white/[0.08]">
-          <p className="text-[11px] text-[#8A8A8A] uppercase font-mono">Total Assets</p>
-          <p className="text-xl sm:text-2xl font-bold text-[#F5F5F3] mt-1">{items.length}</p>
+        <div className="p-4 rounded-xl bg-surface border border-line">
+          <p className="text-xs text-fg-muted uppercase font-mono">Total Assets</p>
+          <p className="text-xl sm:text-2xl font-bold text-fg mt-1">{items.length}</p>
         </div>
-        <div className="p-4 rounded-xl bg-[#0E0E10] border border-white/[0.08]">
-          <p className="text-[11px] text-[#8A8A8A] uppercase font-mono">Storage Used</p>
-          <p className="text-xl sm:text-2xl font-bold text-[#F5F5F3] mt-1">
-            {totalStorageMb} <span className="text-xs font-normal text-[#8A8A8A]">MB</span>
+        <div className="p-4 rounded-xl bg-surface border border-line">
+          <p className="text-xs text-fg-muted uppercase font-mono">Storage Used</p>
+          <p className="text-xl sm:text-2xl font-bold text-fg mt-1">
+            {totalStorageMb} <span className="text-xs font-normal text-fg-muted">MB</span>
           </p>
         </div>
-        <div className="p-4 rounded-xl bg-[#0E0E10] border border-white/[0.08]">
-          <p className="text-[11px] text-[#8A8A8A] uppercase font-mono">In Use Content</p>
+        <div className="p-4 rounded-xl bg-surface border border-line">
+          <p className="text-xs text-fg-muted uppercase font-mono">In Use Content</p>
           <p className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">
             {items.filter((i) => (i.referencesCount || 0) > 0).length}
           </p>
         </div>
-        <div className="p-4 rounded-xl bg-[#0E0E10] border border-white/[0.08]">
-          <p className="text-[11px] text-[#8A8A8A] uppercase font-mono">Unreferenced</p>
+        <div className="p-4 rounded-xl bg-surface border border-line">
+          <p className="text-xs text-fg-muted uppercase font-mono">Unreferenced</p>
           <p className="text-xl sm:text-2xl font-bold text-amber-400 mt-1">
             {items.filter((i) => (i.referencesCount || 0) === 0).length}
           </p>
@@ -338,17 +340,17 @@ export function MediaLibraryView() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-4 rounded-xl bg-[#0E0E10] border border-white/[0.08] space-y-3">
+      <div className="p-4 rounded-xl bg-surface border border-line space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-[#8A8A8A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search by filename, original name, or alt text..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-black/40 border border-white/[0.08] rounded-xl text-xs text-[#F5F5F3] placeholder:text-[#606060] focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-black/40 border border-line rounded-xl text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
 
@@ -358,7 +360,7 @@ export function MediaLibraryView() {
             <select
               value={usageFilter}
               onChange={(e) => setUsageFilter(e.target.value as "all" | "in-use" | "unused")}
-              className="px-3 py-2 bg-black/40 border border-white/[0.08] rounded-xl text-xs text-[#A0A0A0] focus:outline-none focus:border-indigo-500"
+              className="px-3 py-2 bg-black/40 border border-line rounded-xl text-xs text-fg-muted focus:outline-none focus:border-indigo-500"
             >
               <option value="all">All Usages</option>
               <option value="in-use">In Use (Referenced)</option>
@@ -373,7 +375,7 @@ export function MediaLibraryView() {
                 setSortBy(parts[0] as "createdAt" | "size" | "filename");
                 setSortOrder(parts[1] as "desc" | "asc");
               }}
-              className="px-3 py-2 bg-black/40 border border-white/[0.08] rounded-xl text-xs text-[#A0A0A0] focus:outline-none focus:border-indigo-500"
+              className="px-3 py-2 bg-black/40 border border-line rounded-xl text-xs text-fg-muted focus:outline-none focus:border-indigo-500"
             >
               <option value="createdAt-desc">Newest Uploads</option>
               <option value="createdAt-asc">Oldest Uploads</option>
@@ -383,14 +385,14 @@ export function MediaLibraryView() {
             </select>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-black/40 border border-white/[0.08] rounded-xl p-0.5">
+            <div className="flex items-center bg-black/40 border border-line rounded-xl p-0.5">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded-lg transition-colors ${
                   viewMode === "grid"
-                    ? "bg-white/[0.12] text-white"
-                    : "text-[#8A8A8A] hover:text-[#F5F5F3]"
+                    ? "bg-white/[0.12] text-fg"
+                    : "text-fg-muted hover:text-fg"
                 }`}
                 title="Grid view"
               >
@@ -401,8 +403,8 @@ export function MediaLibraryView() {
                 onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded-lg transition-colors ${
                   viewMode === "list"
-                    ? "bg-white/[0.12] text-white"
-                    : "text-[#8A8A8A] hover:text-[#F5F5F3]"
+                    ? "bg-white/[0.12] text-fg"
+                    : "text-fg-muted hover:text-fg"
                 }`}
                 title="List view"
               >
@@ -421,8 +423,8 @@ export function MediaLibraryView() {
               onClick={() => setSelectedFolder(f)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all shrink-0 ${
                 selectedFolder === f
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-white/[0.04] text-[#A0A0A0] hover:bg-white/[0.08] hover:text-[#F5F5F3]"
+                  ? "bg-accent text-accent-fg shadow-sm"
+                  : "bg-white/[0.04] text-fg-muted hover:bg-white/[0.08] hover:text-fg"
               }`}
             >
               {f === "all" ? "All Folders" : f}
@@ -437,9 +439,9 @@ export function MediaLibraryView() {
           {Array.from({ length: 12 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-[#0E0E10] border border-white/[0.08] p-2.5 flex flex-col justify-between motion-safe:animate-pulse space-y-2.5"
+              className="rounded-2xl bg-surface border border-line p-2.5 flex flex-col justify-between motion-safe:animate-pulse space-y-2.5"
             >
-              <div className="w-full aspect-square rounded-xl bg-white/[0.04] border border-white/[0.04]" />
+              <div className="w-full aspect-square rounded-xl bg-white/[0.04] border border-line" />
               <div className="space-y-1.5 px-0.5 pb-0.5">
                 <div className="w-3/4 h-3 bg-white/[0.05] rounded" />
                 <div className="flex items-center justify-between">
@@ -457,28 +459,28 @@ export function MediaLibraryView() {
           <button
             type="button"
             onClick={fetchItems}
-            className="px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-white text-xs font-medium"
+            className="px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-fg text-xs font-medium"
           >
             Retry Connection
           </button>
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-[#0E0E10] border border-white/[0.08] space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-[#8A8A8A]">
+        <div className="p-12 text-center rounded-2xl bg-surface border border-line space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-line flex items-center justify-center mx-auto text-fg-muted">
             <ImageIcon className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-[#F5F5F3]">No images found</h3>
-            <p className="text-xs text-[#8A8A8A] max-w-sm mx-auto mt-1">
+            <h3 className="text-sm font-semibold text-fg">No images found</h3>
+            <p className="text-xs text-fg-muted max-w-sm mx-auto mt-1">
               {search || selectedFolder !== "all" || usageFilter !== "all"
                 ? "No media items matched your active search filters."
-                : "Your Supabase storage bucket has no uploaded assets yet. Click 'Upload New Asset' to begin."}
+                : "No files uploaded yet. Click Upload New Asset to add your first one."}
             </p>
           </div>
           <button
             type="button"
             onClick={() => setIsUploadModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors"
+            className="px-4 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-medium transition-colors"
           >
             Upload First Image
           </button>
@@ -493,12 +495,12 @@ export function MediaLibraryView() {
             return (
               <div
                 key={item.id}
-                className="group relative rounded-2xl bg-[#0E0E10] border border-white/[0.08] hover:border-indigo-500/50 p-2.5 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:shadow-black/50"
+                className="group relative rounded-2xl bg-surface border border-line hover:border-indigo-500/50 p-2.5 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:shadow-black/50"
               >
                 {/* Thumbnail Container */}
                 <div
                   onClick={() => setSelectedItem(item)}
-                  className="w-full aspect-square rounded-xl bg-black/60 border border-white/[0.04] overflow-hidden relative cursor-pointer flex items-center justify-center group-hover:opacity-95"
+                  className="w-full aspect-square rounded-xl bg-black/60 border border-line overflow-hidden relative cursor-pointer flex items-center justify-center group-hover:opacity-95"
                   style={{
                     backgroundImage:
                       "linear-gradient(45deg, #18181b 25%, transparent 25%), linear-gradient(-45deg, #18181b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #18181b 75%), linear-gradient(-45deg, transparent 75%, #18181b 75%)",
@@ -516,12 +518,12 @@ export function MediaLibraryView() {
                   {/* Usage Badge */}
                   <div className="absolute top-2 left-2">
                     {refCount > 0 ? (
-                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-semibold flex items-center gap-1 shadow">
+                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-1 shadow">
                         <CheckCircle2 className="w-2.5 h-2.5" />
                         <span>{refCount}</span>
                       </span>
                     ) : (
-                      <span className="px-1.5 py-0.5 rounded-md bg-zinc-900/80 border border-white/10 text-zinc-400 text-[10px] font-medium shadow">
+                      <span className="px-1.5 py-0.5 rounded-md bg-slate-900/80 border border-line text-slate-400 text-xs font-medium shadow">
                         Unused
                       </span>
                     )}
@@ -535,7 +537,7 @@ export function MediaLibraryView() {
                         e.stopPropagation();
                         handleCopyUrl(item);
                       }}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-fg transition-colors"
                       title="Copy Public URL"
                     >
                       {copiedId === item.id ? (
@@ -550,7 +552,7 @@ export function MediaLibraryView() {
                         e.stopPropagation();
                         handleOpenEdit(item);
                       }}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-fg transition-colors"
                       title="Edit metadata"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -562,7 +564,7 @@ export function MediaLibraryView() {
                         setDeletingItem(item);
                         setDeleteForce(false);
                       }}
-                      className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white transition-colors"
+                      className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-fg transition-colors"
                       title="Delete asset"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -573,23 +575,23 @@ export function MediaLibraryView() {
                 {/* Info Footer */}
                 <div className="pt-2 space-y-1">
                   <p
-                    className="text-xs font-medium text-[#F5F5F3] truncate"
+                    className="text-xs font-medium text-fg truncate"
                     title={item.originalName || item.filename}
                   >
                     {item.originalName || item.filename}
                   </p>
 
-                  <div className="flex items-center justify-between text-[10px] text-[#8A8A8A] font-mono">
+                  <div className="flex items-center justify-between text-xs text-fg-muted font-mono">
                     <span className="uppercase">{item.folder}</span>
                     <span>{sizeKb} KB</span>
                   </div>
 
                   {item.altText ? (
-                    <p className="text-[10px] text-[#A0A0A0] truncate italic" title={item.altText}>
+                    <p className="text-xs text-fg-muted truncate italic" title={item.altText}>
                       &ldquo;{item.altText}&rdquo;
                     </p>
                   ) : (
-                    <p className="text-[10px] text-amber-500/80 italic">No alt text</p>
+                    <p className="text-xs text-amber-500/80 italic">No alt text</p>
                   )}
                 </div>
               </div>
@@ -598,11 +600,11 @@ export function MediaLibraryView() {
         </div>
       ) : (
         /* ================= LIST VIEW ================= */
-        <div className="rounded-2xl bg-[#0E0E10] border border-white/[0.08] overflow-hidden">
+        <div className="rounded-2xl bg-surface border border-line overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-black/40 text-[#8A8A8A] font-mono uppercase text-[10px]">
+                <tr className="border-b border-line bg-black/40 text-fg-muted font-mono uppercase text-xs">
                   <th className="py-3 px-4">Preview</th>
                   <th className="py-3 px-4">Filename</th>
                   <th className="py-3 px-4">Folder</th>
@@ -624,7 +626,7 @@ export function MediaLibraryView() {
                       onClick={() => setSelectedItem(item)}
                     >
                       <td className="py-2.5 px-4">
-                        <div className="w-12 h-12 rounded-lg bg-black border border-white/[0.06] overflow-hidden flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg bg-black border border-line overflow-hidden flex items-center justify-center">
                           <img
                             src={item.url}
                             alt={item.altText || item.filename}
@@ -633,22 +635,22 @@ export function MediaLibraryView() {
                         </div>
                       </td>
 
-                      <td className="py-2.5 px-4 font-medium text-[#F5F5F3]">
+                      <td className="py-2.5 px-4 font-medium text-fg">
                         <p className="truncate max-w-xs">{item.originalName || item.filename}</p>
-                        <p className="text-[10px] text-[#8A8A8A] font-mono truncate max-w-xs">
+                        <p className="text-xs text-fg-muted font-mono truncate max-w-xs">
                           {item.storageKey}
                         </p>
                       </td>
 
                       <td className="py-2.5 px-4">
-                        <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-[#A0A0A0] text-[10px] uppercase font-mono">
+                        <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-fg-muted text-xs uppercase font-mono">
                           {item.folder}
                         </span>
                       </td>
 
-                      <td className="py-2.5 px-4 font-mono text-[#8A8A8A]">{sizeKb} KB</td>
+                      <td className="py-2.5 px-4 font-mono text-fg-muted">{sizeKb} KB</td>
 
-                      <td className="py-2.5 px-4 text-[#A0A0A0] max-w-xs truncate">
+                      <td className="py-2.5 px-4 text-fg-muted max-w-xs truncate">
                         {item.altText ? (
                           <span>&ldquo;{item.altText}&rdquo;</span>
                         ) : (
@@ -658,12 +660,12 @@ export function MediaLibraryView() {
 
                       <td className="py-2.5 px-4">
                         {refCount > 0 ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-semibold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
                             <CheckCircle2 className="w-2.5 h-2.5" />
                             <span>{refCount} place(s)</span>
                           </span>
                         ) : (
-                          <span className="inline-flex px-2 py-0.5 rounded-md bg-zinc-900 border border-white/10 text-zinc-400 text-[10px]">
+                          <span className="inline-flex px-2 py-0.5 rounded-md bg-slate-900 border border-line text-slate-400 text-xs">
                             Unused
                           </span>
                         )}
@@ -674,7 +676,7 @@ export function MediaLibraryView() {
                           <button
                             type="button"
                             onClick={() => handleCopyUrl(item)}
-                            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[#A0A0A0] hover:text-[#F5F5F3] transition-colors"
+                            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-fg-muted hover:text-fg transition-colors"
                             title="Copy Public URL"
                           >
                             {copiedId === item.id ? (
@@ -686,7 +688,7 @@ export function MediaLibraryView() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(item)}
-                            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[#A0A0A0] hover:text-[#F5F5F3] transition-colors"
+                            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-fg-muted hover:text-fg transition-colors"
                             title="Edit metadata"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -697,7 +699,7 @@ export function MediaLibraryView() {
                               setDeletingItem(item);
                               setDeleteForce(false);
                             }}
-                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-fg transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -715,20 +717,20 @@ export function MediaLibraryView() {
 
       {/* ================= DETAIL PREVIEW MODAL ================= */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-[#0E0E10] border border-white/[0.12] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-surface border border-line rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between p-4 border-b border-line">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-[#F5F5F3] truncate max-w-md">
+                <h3 className="text-sm font-semibold text-fg truncate max-w-md">
                   {selectedItem.originalName || selectedItem.filename}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="p-1 text-[#8A8A8A] hover:text-[#F5F5F3]"
+                className="p-1 text-fg-muted hover:text-fg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -738,7 +740,7 @@ export function MediaLibraryView() {
             <div className="p-6 overflow-y-auto space-y-6">
               {/* Preview Box */}
               <div
-                className="w-full h-64 rounded-xl bg-black border border-white/[0.06] overflow-hidden flex items-center justify-center relative p-2"
+                className="w-full h-64 rounded-xl bg-black border border-line overflow-hidden flex items-center justify-center relative p-2"
                 style={{
                   backgroundImage:
                     "linear-gradient(45deg, #18181b 25%, transparent 25%), linear-gradient(-45deg, #18181b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #18181b 75%), linear-gradient(-45deg, transparent 75%, #18181b 75%)",
@@ -755,30 +757,30 @@ export function MediaLibraryView() {
 
               {/* Metadata Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                  <p className="text-[10px] text-[#8A8A8A] uppercase font-mono">Format</p>
-                  <p className="font-semibold text-[#F5F5F3] mt-0.5 uppercase">
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-line">
+                  <p className="text-xs text-fg-muted uppercase font-mono">Format</p>
+                  <p className="font-semibold text-fg mt-0.5 uppercase">
                     {selectedItem.mimeType.replace("image/", "")}
                   </p>
                 </div>
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                  <p className="text-[10px] text-[#8A8A8A] uppercase font-mono">Size</p>
-                  <p className="font-semibold text-[#F5F5F3] mt-0.5">
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-line">
+                  <p className="text-xs text-fg-muted uppercase font-mono">Size</p>
+                  <p className="font-semibold text-fg mt-0.5">
                     {(selectedItem.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                  <p className="text-[10px] text-[#8A8A8A] uppercase font-mono">Folder</p>
-                  <p className="font-semibold text-[#F5F5F3] mt-0.5 capitalize">
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-line">
+                  <p className="text-xs text-fg-muted uppercase font-mono">Folder</p>
+                  <p className="font-semibold text-fg mt-0.5 capitalize">
                     {selectedItem.folder}
                   </p>
                 </div>
               </div>
 
               {/* Alt Text Section */}
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1">
-                <p className="text-[10px] text-[#8A8A8A] uppercase font-mono">Alt Text (Accessibility & SEO)</p>
-                <p className="text-xs text-[#E5E5E3]">
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-line space-y-1">
+                <p className="text-xs text-fg-muted uppercase font-mono">Alt Text (Accessibility & SEO)</p>
+                <p className="text-xs text-fg">
                   {selectedItem.altText || (
                     <span className="text-amber-400 italic">No alt text provided yet.</span>
                   )}
@@ -787,18 +789,18 @@ export function MediaLibraryView() {
 
               {/* Public URL Box */}
               <div className="space-y-1.5">
-                <p className="text-[10px] text-[#8A8A8A] uppercase font-mono">Public CDN / Supabase URL</p>
+                <p className="text-xs text-fg-muted uppercase font-mono">Public URL</p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     readOnly
                     value={selectedItem.url}
-                    className="flex-1 px-3 py-2 bg-black border border-white/[0.08] rounded-xl text-xs text-[#8A8A8A] font-mono truncate select-all"
+                    className="flex-1 px-3 py-2 bg-black border border-line rounded-xl text-xs text-fg-muted font-mono truncate select-all"
                   />
                   <button
                     type="button"
                     onClick={() => handleCopyUrl(selectedItem)}
-                    className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 shrink-0"
+                    className="px-3 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg font-medium text-xs flex items-center gap-1.5 shrink-0"
                   >
                     {copiedId === selectedItem.id ? (
                       <>
@@ -816,7 +818,7 @@ export function MediaLibraryView() {
                     href={selectedItem.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#A0A0A0] hover:text-white border border-white/[0.08]"
+                    className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-fg-muted hover:text-fg border border-line"
                     title="Open in new tab"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -827,7 +829,7 @@ export function MediaLibraryView() {
               {/* Active References Section */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-[#8A8A8A] uppercase font-mono">
+                  <p className="text-xs text-fg-muted uppercase font-mono">
                     Content References ({selectedItem.references?.length || 0})
                   </p>
                 </div>
@@ -837,17 +839,17 @@ export function MediaLibraryView() {
                     {selectedItem.references.map((ref, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs"
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-line text-xs"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-mono uppercase">
+                          <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono uppercase">
                             {ref.type}
                           </span>
-                          <span className="font-medium text-[#F5F5F3]">{ref.title}</span>
-                          <span className="text-[10px] text-[#8A8A8A]">({ref.field})</span>
+                          <span className="font-medium text-fg">{ref.title}</span>
+                          <span className="text-xs text-fg-muted">({ref.field})</span>
                         </div>
                         {ref.status && (
-                          <span className="text-[10px] font-mono text-[#8A8A8A] uppercase">
+                          <span className="text-xs font-mono text-fg-muted uppercase">
                             {ref.status}
                           </span>
                         )}
@@ -855,7 +857,7 @@ export function MediaLibraryView() {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs text-[#8A8A8A] flex items-center gap-2">
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-line text-xs text-fg-muted flex items-center gap-2">
                     <Info className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>This asset is not currently referenced in published or draft content.</span>
                   </div>
@@ -864,13 +866,13 @@ export function MediaLibraryView() {
             </div>
 
             {/* Modal Actions */}
-            <div className="p-4 border-t border-white/[0.08] flex items-center justify-between">
+            <div className="p-4 border-t border-line flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => {
                   handleOpenEdit(selectedItem);
                 }}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#F5F5F3] text-xs font-medium border border-white/[0.08]"
+                className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-fg text-xs font-medium border border-line"
               >
                 Edit Metadata
               </button>
@@ -881,7 +883,7 @@ export function MediaLibraryView() {
                   setDeletingItem(selectedItem);
                   setDeleteForce(false);
                 }}
-                className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-white text-xs font-medium border border-rose-500/20 transition-colors"
+                className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-fg text-xs font-medium border border-rose-500/20 transition-colors"
               >
                 Delete Asset
               </button>
@@ -892,14 +894,14 @@ export function MediaLibraryView() {
 
       {/* ================= EDIT METADATA MODAL ================= */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0E0E10] border border-white/[0.12] rounded-2xl shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-surface border border-line rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#F5F5F3]">Edit Asset Metadata</h3>
+              <h3 className="text-sm font-semibold text-fg">Edit Asset Metadata</h3>
               <button
                 type="button"
                 onClick={() => setEditingItem(null)}
-                className="p-1 text-[#8A8A8A] hover:text-[#F5F5F3]"
+                className="p-1 text-fg-muted hover:text-fg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -907,7 +909,7 @@ export function MediaLibraryView() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#A0A0A0] mb-1">
+                <label className="block text-xs font-semibold text-fg-muted mb-1">
                   Alt Text (Descriptive text for accessibility & SEO)
                 </label>
                 <input
@@ -915,18 +917,18 @@ export function MediaLibraryView() {
                   placeholder="e.g. Modern dashboard showing web metrics"
                   value={editingAltText}
                   onChange={(e) => setEditingAltText(e.target.value)}
-                  className="w-full px-3 py-2 bg-black border border-white/[0.08] rounded-xl text-xs text-[#F5F5F3] focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-black border border-line rounded-xl text-xs text-fg focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#A0A0A0] mb-1">
+                <label className="block text-xs font-semibold text-fg-muted mb-1">
                   Folder Category
                 </label>
                 <select
                   value={editingFolder}
                   onChange={(e) => setEditingFolder(e.target.value as AllowedFolder)}
-                  className="w-full px-3 py-2 bg-black border border-white/[0.08] rounded-xl text-xs text-[#F5F5F3] focus:outline-none focus:border-indigo-500 capitalize"
+                  className="w-full px-3 py-2 bg-black border border-line rounded-xl text-xs text-fg focus:outline-none focus:border-indigo-500 capitalize"
                 >
                   <option value="projects">Projects</option>
                   <option value="blog">Blog</option>
@@ -940,7 +942,7 @@ export function MediaLibraryView() {
               <button
                 type="button"
                 onClick={() => setEditingItem(null)}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] text-[#A0A0A0] hover:text-white text-xs font-medium"
+                className="px-4 py-2 rounded-xl bg-white/[0.04] text-fg-muted hover:text-fg text-xs font-medium"
               >
                 Cancel
               </button>
@@ -948,7 +950,7 @@ export function MediaLibraryView() {
                 type="button"
                 onClick={handleSaveEdit}
                 disabled={savingEdit}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-medium flex items-center gap-1.5"
               >
                 {savingEdit && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Save Changes</span>
@@ -960,20 +962,20 @@ export function MediaLibraryView() {
 
       {/* ================= UPLOAD MODAL ================= */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <form
             onSubmit={handleUploadSubmit}
-            className="w-full max-w-lg bg-[#0E0E10] border border-white/[0.12] rounded-2xl shadow-2xl p-6 space-y-4"
+            className="w-full max-w-lg bg-surface border border-line rounded-2xl shadow-2xl p-6 space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UploadCloud className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-[#F5F5F3]">Upload Image to Supabase</h3>
+                <h3 className="text-sm font-semibold text-fg">Upload Image</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsUploadModalOpen(false)}
-                className="p-1 text-[#8A8A8A] hover:text-[#F5F5F3]"
+                className="p-1 text-fg-muted hover:text-fg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -988,7 +990,7 @@ export function MediaLibraryView() {
 
             {/* File drop zone */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-[#A0A0A0]">Select Image File</label>
+              <label className="block text-xs font-semibold text-fg-muted">Select Image File</label>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/avif"
@@ -997,20 +999,20 @@ export function MediaLibraryView() {
                     setUploadFile(e.target.files[0]);
                   }
                 }}
-                className="w-full px-3 py-2 bg-black border border-white/[0.08] rounded-xl text-xs text-[#F5F5F3] file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-indigo-600 file:text-white hover:file:bg-indigo-500"
+                className="w-full px-3 py-2 bg-black border border-line rounded-xl text-xs text-fg file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-indigo-600 file:text-fg hover:file:bg-indigo-500"
               />
-              <p className="text-[11px] text-[#8A8A8A]">
+              <p className="text-xs text-fg-muted">
                 Supported: JPEG, PNG, WebP, AVIF. Max 5MB. SVG is rejected for safety.
               </p>
             </div>
 
             {/* Folder Destination */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-[#A0A0A0]">Folder Destination</label>
+              <label className="block text-xs font-semibold text-fg-muted">Folder Destination</label>
               <select
                 value={uploadFolder}
                 onChange={(e) => setUploadFolder(e.target.value as AllowedFolder)}
-                className="w-full px-3 py-2 bg-black border border-white/[0.08] rounded-xl text-xs text-[#F5F5F3] focus:outline-none focus:border-indigo-500 capitalize"
+                className="w-full px-3 py-2 bg-black border border-line rounded-xl text-xs text-fg focus:outline-none focus:border-indigo-500 capitalize"
               >
                 <option value="projects">projects (images/projects/)</option>
                 <option value="blog">blog (images/blog/)</option>
@@ -1021,7 +1023,7 @@ export function MediaLibraryView() {
 
             {/* Alt Text */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-[#A0A0A0]">
+              <label className="block text-xs font-semibold text-fg-muted">
                 Alt Text (Recommended for SEO)
               </label>
               <input
@@ -1029,7 +1031,7 @@ export function MediaLibraryView() {
                 placeholder="Descriptive text for this image..."
                 value={uploadAltText}
                 onChange={(e) => setUploadAltText(e.target.value)}
-                className="w-full px-3 py-2 bg-black border border-white/[0.08] rounded-xl text-xs text-[#F5F5F3] focus:outline-none focus:border-indigo-500"
+                className="w-full px-3 py-2 bg-black border border-line rounded-xl text-xs text-fg focus:outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -1042,8 +1044,8 @@ export function MediaLibraryView() {
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-center text-[#8A8A8A] font-mono">
-                  Uploading to Supabase Storage...
+                <p className="text-xs text-center text-fg-muted font-mono">
+                  Uploading...
                 </p>
               </div>
             )}
@@ -1052,14 +1054,14 @@ export function MediaLibraryView() {
               <button
                 type="button"
                 onClick={() => setIsUploadModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] text-[#A0A0A0] hover:text-white text-xs font-medium"
+                className="px-4 py-2 rounded-xl bg-white/[0.04] text-fg-muted hover:text-fg text-xs font-medium"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isUploading}
-                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-medium flex items-center gap-1.5"
               >
                 {isUploading ? (
                   <>
@@ -1080,16 +1082,16 @@ export function MediaLibraryView() {
 
       {/* ================= DELETE CONFIRMATION MODAL ================= */}
       {deletingItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0E0E10] border border-rose-500/30 rounded-2xl shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-surface border border-rose-500/30 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-2.5 text-rose-400">
               <AlertTriangle className="w-5 h-5 shrink-0" />
-              <h3 className="text-sm font-bold text-white">Delete Media Asset</h3>
+              <h3 className="text-sm font-bold text-fg">Delete Media Asset</h3>
             </div>
 
-            <p className="text-xs text-[#A0A0A0] leading-relaxed">
+            <p className="text-xs text-fg-muted leading-relaxed">
               Are you sure you want to permanently delete{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-fg">
                 {deletingItem.originalName || deletingItem.filename}
               </span>{" "}
               from Supabase Storage and the database?
@@ -1102,7 +1104,7 @@ export function MediaLibraryView() {
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>Warning: This image is referenced in {deletingItem.referencesCount} place(s)!</span>
                 </div>
-                <p className="text-[11px] leading-relaxed">
+                <p className="text-xs leading-relaxed">
                   Deleting this file will break images in published or draft content.
                 </p>
 
@@ -1114,7 +1116,7 @@ export function MediaLibraryView() {
                     onChange={(e) => setDeleteForce(e.target.checked)}
                     className="rounded border-amber-500/50 bg-black/40 text-amber-500 focus:ring-0"
                   />
-                  <label htmlFor="forceDeleteCheckbox" className="text-[11px] text-amber-200 cursor-pointer">
+                  <label htmlFor="forceDeleteCheckbox" className="text-xs text-amber-200 cursor-pointer">
                     I understand the risk and wish to force deletion anyway
                   </label>
                 </div>
@@ -1129,7 +1131,7 @@ export function MediaLibraryView() {
                   setDeleteForce(false);
                 }}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] text-[#A0A0A0] hover:text-white text-xs font-medium"
+                className="px-4 py-2 rounded-xl bg-white/[0.04] text-fg-muted hover:text-fg text-xs font-medium"
               >
                 Cancel
               </button>
@@ -1138,7 +1140,7 @@ export function MediaLibraryView() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isDeleting || ((deletingItem.referencesCount || 0) > 0 && !deleteForce)}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium flex items-center gap-1.5 shadow-lg shadow-rose-600/20"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium flex items-center gap-1.5"
               >
                 {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Permanently Delete</span>

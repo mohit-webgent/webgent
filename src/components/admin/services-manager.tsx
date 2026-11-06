@@ -469,15 +469,15 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400">
+            <span className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
               <Layers className="w-5 h-5" />
             </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Services & Features CMS
+            <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
+              Services & Features
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Manage public website service offerings, technical feature matrix, and marketing pricing.
+            Manage the services, features and starting prices shown on your site.
           </p>
         </div>
 
@@ -486,7 +486,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
             href="/services"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-fg bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors"
           >
             <span>View Public /services</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -496,7 +496,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
             <button
               type="button"
               onClick={openCreateServiceModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg shadow-sky-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-accent-fg bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>New Service</span>
@@ -505,7 +505,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
             <button
               type="button"
               onClick={openCreateFeatureModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-accent-fg bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>New Feature</span>
@@ -521,7 +521,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
           onClick={() => setActiveTab("services")}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-colors ${
             activeTab === "services"
-              ? "border-sky-500 text-sky-400"
+              ? "border-indigo-500 text-indigo-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
@@ -557,7 +557,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 value={serviceSearch}
                 onChange={(e) => setServiceSearch(e.target.value)}
                 placeholder="Search services by title, slug, or description..."
-                className="w-full pl-9 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="w-full pl-9 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-fg placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -569,8 +569,8 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                   onClick={() => setServiceStatusFilter(filterKey)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors shrink-0 ${
                     serviceStatusFilter === filterKey
-                      ? "bg-sky-500/20 text-sky-300 border border-sky-500/30"
-                      : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                      ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                      : "bg-slate-900 text-slate-400 hover:text-fg border border-slate-800"
                   }`}
                 >
                   {filterKey}
@@ -593,7 +593,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 <button
                   type="button"
                   onClick={openCreateServiceModal}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-sky-400 bg-sky-500/10 border border-sky-500/20 rounded-lg hover:bg-sky-500/20 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-lg hover:bg-indigo-500/20 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Create Service</span>
@@ -611,14 +611,14 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     {/* Header line with icon, status and badges */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <span className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400">
+                        <span className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                           {renderServiceIcon(svc.icon)}
                         </span>
                         <div>
-                          <h3 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">
+                          <h3 className="text-sm font-bold text-fg group-hover:text-indigo-300 transition-colors">
                             {svc.name}
                           </h3>
-                          <span className="text-[11px] font-mono text-slate-400">/{svc.slug}</span>
+                          <span className="text-xs font-mono text-slate-400">/{svc.slug}</span>
                         </div>
                       </div>
 
@@ -656,7 +656,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
 
                     {/* Features pill preview */}
                     <div className="pt-2 border-t border-slate-800/80">
-                      <div className="text-[11px] text-slate-400 font-medium mb-1.5 flex items-center justify-between">
+                      <div className="text-xs text-slate-400 font-medium mb-1.5 flex items-center justify-between">
                         <span>Included Features:</span>
                         <span className="text-slate-300 font-semibold">{svc.features.length}</span>
                       </div>
@@ -664,13 +664,13 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         {svc.features.slice(0, 3).map((feat) => (
                           <span
                             key={feat.id}
-                            className="px-2 py-0.5 text-[10px] rounded bg-slate-800 text-slate-300 border border-slate-700 truncate max-w-[140px]"
+                            className="px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 border border-slate-700 truncate max-w-[140px]"
                           >
                             {feat.title}
                           </span>
                         ))}
                         {svc.features.length > 3 && (
-                          <span className="px-1.5 py-0.5 text-[10px] text-slate-400">
+                          <span className="px-1.5 py-0.5 text-xs text-slate-400">
                             +{svc.features.length - 3} more
                           </span>
                         )}
@@ -683,7 +683,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     <button
                       type="button"
                       onClick={() => handleToggleServicePublish(svc)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors ${
                         svc.published
                           ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
                           : "bg-slate-800 text-slate-400 hover:bg-slate-700"
@@ -708,7 +708,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         target="_blank"
                         rel="noreferrer"
                         title="Preview Public Page"
-                        className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-fg rounded-lg hover:bg-slate-800 transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
@@ -716,7 +716,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         type="button"
                         onClick={() => openEditServiceModal(svc)}
                         title="Edit Service"
-                        className="p-1.5 text-slate-400 hover:text-sky-400 rounded-lg hover:bg-slate-800 transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-indigo-400 rounded-lg hover:bg-slate-800 transition-colors"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -757,7 +757,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 value={featureSearch}
                 onChange={(e) => setFeatureSearch(e.target.value)}
                 placeholder="Search features by title or description..."
-                className="w-full pl-9 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full pl-9 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-fg placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -768,7 +768,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors shrink-0 ${
                   featureCategoryFilter === "all"
                     ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                    : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                    : "bg-slate-900 text-slate-400 hover:text-fg border border-slate-800"
                 }`}
               >
                 All Categories
@@ -781,7 +781,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors shrink-0 ${
                     featureCategoryFilter === cat
                       ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                      : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                      : "bg-slate-900 text-slate-400 hover:text-fg border border-slate-800"
                   }`}
                 >
                   {cat}
@@ -812,7 +812,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/40 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    <tr className="border-b border-slate-800 bg-slate-950/40 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       <th className="py-3 px-4">Feature</th>
                       <th className="py-3 px-4">Category</th>
                       <th className="py-3 px-4">Assigned Services</th>
@@ -830,9 +830,9 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                               {renderServiceIcon(feat.icon, "w-4 h-4")}
                             </span>
                             <div>
-                              <p className="font-semibold text-white">{feat.title}</p>
+                              <p className="font-semibold text-fg">{feat.title}</p>
                               {feat.description && (
-                                <p className="text-[11px] text-slate-400 max-w-sm line-clamp-1">
+                                <p className="text-xs text-slate-400 max-w-sm line-clamp-1">
                                   {feat.description}
                                 </p>
                               )}
@@ -840,12 +840,12 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
                             {feat.category || "General"}
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800/80 text-sky-400 border border-slate-700">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800/80 text-indigo-400 border border-slate-700">
                             {feat.serviceCount || 0} service{feat.serviceCount === 1 ? "" : "s"}
                           </span>
                         </td>
@@ -856,7 +856,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                           <button
                             type="button"
                             onClick={() => handleToggleFeatureEnabled(feat)}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded transition-colors ${
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded transition-colors ${
                               feat.enabled
                                 ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
                                 : "bg-slate-800 text-slate-400 hover:bg-slate-700"
@@ -905,21 +905,21 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
       {/* MODAL: SERVICE CREATE / EDIT                                         */}
       {/* ==================================================================== */}
       {isCreatingService && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200 overflow-y-auto">
           <div className="max-w-2xl w-full my-8 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400">
+                <span className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                   <Layers className="w-5 h-5" />
                 </span>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-fg">
                   {editingService ? "Edit Service" : "Create New Service"}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreatingService(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                className="p-2 text-slate-400 hover:text-fg rounded-lg hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -954,7 +954,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                       }));
                     }}
                     placeholder="e.g. Full-Stack Web Applications"
-                    className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
+                    className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -971,7 +971,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                           slug: generateSlug(prev.name || ""),
                         }))
                       }
-                      className="text-[10px] text-sky-400 hover:underline"
+                      className="text-xs text-indigo-400 hover:underline"
                     >
                       Generate from name
                     </button>
@@ -984,7 +984,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                       setServiceForm((prev) => ({ ...prev, slug: e.target.value }))
                     }
                     placeholder="e.g. full-stack-web-apps"
-                    className="w-full px-3.5 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
+                    className="w-full px-3.5 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -1002,7 +1002,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     setServiceForm((prev) => ({ ...prev, shortDescription: e.target.value }))
                   }
                   placeholder="Concise 1-2 sentence overview for cards and listings..."
-                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
+                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1018,7 +1018,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     setServiceForm((prev) => ({ ...prev, description: e.target.value }))
                   }
                   placeholder="Comprehensive description for the dedicated /services/[slug] page..."
-                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
+                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1031,7 +1031,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     onChange={(e) =>
                       setServiceForm((prev) => ({ ...prev, icon: e.target.value }))
                     }
-                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   >
                     {AVAILABLE_SERVICE_ICONS.map((iconKey) => (
                       <option key={iconKey} value={iconKey}>
@@ -1053,7 +1053,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         displayOrder: parseInt(e.target.value, 10) || 0,
                       }))
                     }
-                    className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -1075,7 +1075,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                       }))
                     }
                     placeholder="e.g. 24999"
-                    className="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -1090,11 +1090,11 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                       setServiceForm((prev) => ({ ...prev, priceLabel: e.target.value }))
                     }
                     placeholder="e.g. Starting at ₹24,999 or Custom Scope"
-                    className="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-                <p className="col-span-full text-[11px] text-slate-500">
-                  Informational marketing rate. Project estimates in the AI Consultant calculator remain calculated deterministically.
+                <p className="col-span-full text-xs text-slate-500">
+                  Shown on the site only. AI consultant estimates are calculated separately.
                 </p>
               </div>
 
@@ -1105,7 +1105,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                   <button
                     type="button"
                     onClick={() => setMediaPickerTarget("coverImage")}
-                    className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300"
+                    className="inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300"
                   >
                     <ImageIcon className="w-3.5 h-3.5" />
                     <span>Choose from Media Library</span>
@@ -1117,8 +1117,8 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                   onChange={(e) =>
                     setServiceForm((prev) => ({ ...prev, coverImage: e.target.value }))
                   }
-                  placeholder="https://... or choose from Supabase Media Library"
-                  className="w-full px-3.5 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-sky-500"
+                  placeholder="https://... or choose from the Media Library"
+                  className="w-full px-3.5 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1134,7 +1134,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         featureIds: prev.featureIds?.length === features.length ? [] : features.map((f) => f.id),
                       }))
                     }
-                    className="text-[10px] text-indigo-400 hover:underline"
+                    className="text-xs text-indigo-400 hover:underline"
                   >
                     {serviceForm.featureIds?.length === features.length ? "Deselect All" : "Select All"}
                   </button>
@@ -1145,7 +1145,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     return (
                       <label
                         key={feat.id}
-                        className="flex items-center justify-between pt-2 first:pt-0 cursor-pointer hover:text-white"
+                        className="flex items-center justify-between pt-2 first:pt-0 cursor-pointer hover:text-fg"
                       >
                         <div className="flex items-center gap-2">
                           <input
@@ -1160,11 +1160,11 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                                   : (prev.featureIds || []).filter((id) => id !== feat.id),
                               }));
                             }}
-                            className="rounded border-slate-700 text-sky-600 focus:ring-sky-500 bg-slate-900"
+                            className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900"
                           />
                           <span className="text-xs text-slate-200">{feat.title}</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                        <span className="text-xs text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
                           {feat.category || "General"}
                         </span>
                       </label>
@@ -1182,7 +1182,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     onChange={(e) =>
                       setServiceForm((prev) => ({ ...prev, published: e.target.checked }))
                     }
-                    className="rounded border-slate-700 text-sky-600 focus:ring-sky-500 bg-slate-900"
+                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900"
                   />
                   <span className="text-xs font-medium text-slate-300">Published</span>
                 </label>
@@ -1194,7 +1194,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     onChange={(e) =>
                       setServiceForm((prev) => ({ ...prev, showOnHome: e.target.checked }))
                     }
-                    className="rounded border-slate-700 text-sky-600 focus:ring-sky-500 bg-slate-900"
+                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900"
                   />
                   <span className="text-xs font-medium text-slate-300">Show on Home</span>
                 </label>
@@ -1206,7 +1206,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     onChange={(e) =>
                       setServiceForm((prev) => ({ ...prev, featured: e.target.checked }))
                     }
-                    className="rounded border-slate-700 text-sky-600 focus:ring-sky-500 bg-slate-900"
+                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900"
                   />
                   <span className="text-xs font-medium text-slate-300">Featured</span>
                 </label>
@@ -1219,7 +1219,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400">SEO Title Tag</label>
+                    <label className="text-xs text-slate-400">SEO Title Tag</label>
                     <input
                       type="text"
                       value={serviceForm.seoTitle || ""}
@@ -1227,12 +1227,12 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         setServiceForm((prev) => ({ ...prev, seoTitle: e.target.value }))
                       }
                       placeholder="e.g. Full-Stack Web Development | Webgent"
-                      className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-white"
+                      className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-fg"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400">SEO Meta Description</label>
+                    <label className="text-xs text-slate-400">SEO Meta Description</label>
                     <input
                       type="text"
                       value={serviceForm.seoDescription || ""}
@@ -1240,7 +1240,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         setServiceForm((prev) => ({ ...prev, seoDescription: e.target.value }))
                       }
                       placeholder="Concise search summary..."
-                      className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-white"
+                      className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-fg"
                     />
                   </div>
                 </div>
@@ -1251,14 +1251,14 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 <button
                   type="button"
                   onClick={() => setIsCreatingService(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-fg rounded-xl hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg shadow-sky-600/20 transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-accent-fg bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all disabled:opacity-50"
                 >
                   {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>{editingService ? "Update Service" : "Create Service"}</span>
@@ -1273,21 +1273,21 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
       {/* MODAL: FEATURE CREATE / EDIT                                         */}
       {/* ==================================================================== */}
       {isCreatingFeature && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="max-w-lg w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <span className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                   <Tag className="w-5 h-5" />
                 </span>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-fg">
                   {editingFeature ? "Edit Feature" : "Create Feature"}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreatingFeature(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                className="p-2 text-slate-400 hover:text-fg rounded-lg hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1312,8 +1312,8 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                   onChange={(e) =>
                     setFeatureForm((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  placeholder="e.g. Next.js 14 App Router & RSC"
-                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. Next.js App Router"
+                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1326,7 +1326,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     setFeatureForm((prev) => ({ ...prev, description: e.target.value }))
                   }
                   placeholder="Concise technical description or deliverable scope..."
-                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -1338,7 +1338,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     onChange={(e) =>
                       setFeatureForm((prev) => ({ ...prev, category: e.target.value }))
                     }
-                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   >
                     {FEATURE_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1355,7 +1355,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                     onChange={(e) =>
                       setFeatureForm((prev) => ({ ...prev, icon: e.target.value }))
                     }
-                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   >
                     {AVAILABLE_SERVICE_ICONS.map((iKey) => (
                       <option key={iKey} value={iKey}>
@@ -1379,7 +1379,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                         displayOrder: parseInt(e.target.value, 10) || 0,
                       }))
                     }
-                    className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3.5 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -1436,14 +1436,14 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 <button
                   type="button"
                   onClick={() => setIsCreatingFeature(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-fg rounded-xl hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-accent-fg bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all disabled:opacity-50"
                 >
                   {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>{editingFeature ? "Update Feature" : "Create Feature"}</span>
@@ -1458,20 +1458,20 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
       {/* MODAL: DELETE CONFIRMATION                                           */}
       {/* ==================================================================== */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <span className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
                 <Trash2 className="w-5 h-5" />
               </span>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-fg">
                 Delete {deleteTarget.type === "service" ? "Service" : "Feature"}?
               </h3>
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
               Are you sure you want to permanently delete{" "}
-              <strong className="text-white">&ldquo;{deleteTarget.title}&rdquo;</strong>?
+              <strong className="text-fg">&ldquo;{deleteTarget.title}&rdquo;</strong>?
               {deleteTarget.type === "service"
                 ? " This will remove the service and detach its feature assignments. Individual features will NOT be deleted."
                 : " This feature will be removed and unlinked from any assigned services."}
@@ -1481,7 +1481,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-fg rounded-xl hover:bg-slate-800 transition-colors"
               >
                 Cancel
               </button>
@@ -1489,7 +1489,7 @@ export function ServicesManager({ initialServices, initialFeatures }: ServicesMa
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-all disabled:opacity-50"
               >
                 {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Delete Permanently</span>

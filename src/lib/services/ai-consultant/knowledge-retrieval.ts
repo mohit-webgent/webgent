@@ -13,13 +13,7 @@
 import { prisma } from "@/lib/db";
 import { FOUNDER_PROFILE } from "@/data/founder-profile";
 import { siteConfig } from "@/config/site";
-import {
-  WEBSITE_TYPES,
-  COST_PER_EXTRA_PAGE,
-} from "@/lib/pricing.config";
-import {
-  MASTER_PACKAGES,
-} from "@/data/pricing-matrix-data";
+import { DEFAULT_BACKEND_PRICING_DATA, getPricingData } from "@/lib/services/pricing";
 import {
   MAINTENANCE_PLANS,
   DOMAIN_BLUEPRINTS,
@@ -56,6 +50,12 @@ export async function getWebgentKnowledgeIndex(): Promise<KnowledgeDocument[]> {
 
   const docs: KnowledgeDocument[] = [];
 
+  // Prices come from the admin-managed pricing so these documents match the estimator.
+  const pricing = await getPricingData().catch(() => DEFAULT_BACKEND_PRICING_DATA);
+  const MASTER_PACKAGES = pricing.matrixPackages;
+  const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+  const dynamicAddOn = pricing.types.find((t) => t.id === "dynamic")?.additionalCost ?? 0;
+
   // 1. Company Identity, Mission & Overview
   docs.push({
     id: "about_webgent",
@@ -63,12 +63,12 @@ export async function getWebgentKnowledgeIndex(): Promise<KnowledgeDocument[]> {
     category: "about",
     url: "/about",
     summary:
-      "Webgent is an elite next-generation web solutions and digital engineering agency founded by Mohit Verma.",
-    content: `Webgent (${siteConfig.url}) is a modern web development and digital engineering agency.
+      "Webgent is a web development studio founded and led by Mohit Verma.",
+    content: `Webgent (${siteConfig.url}) is a web development studio founded and led by Mohit Verma.
 Tagline: "${siteConfig.tagline}".
 Mission: Webgent designs, builds, and scales high-performance web applications, cloud infrastructure, and conversion-focused digital platforms for ambitious modern brands, local businesses, and fast-growing startups.
 Location: Gurugram / Noida, India.
-Contact: hello@webgent.com / direct contact form at /contact.
+Contact: ${FOUNDER_PROFILE.email} / direct contact form at /contact.
 Core philosophy: Milestone-based payments (50% upfront, 50% upon final launch review), 100% full source code ownership transferred to the client, zero platform lock-in, and 15 days of free post-launch bug-fix warranty.`,
     keywords: [
       "webgent",
@@ -209,16 +209,16 @@ Verified Profiles & Contact:
     category: "pricing",
     url: "/pricing",
     summary:
-      "Transparent pricing: Starter (₹9,999), Business (₹19,999), Pro (₹39,999). Static vs. Dynamic architecture (+₹8,000).",
+      `Transparent pricing: Starter (${formatINR(MASTER_PACKAGES.starter.startingPrice)}), Business (${formatINR(MASTER_PACKAGES.business.startingPrice)}), Pro (${formatINR(MASTER_PACKAGES.pro.startingPrice)}). Static vs. Dynamic architecture (+${formatINR(dynamicAddOn)}).`,
     content: `Webgent maintains transparent, milestone-based pricing packages:
 - Starter Package (₹${MASTER_PACKAGES.starter.startingPrice.toLocaleString("en-IN")}): ${MASTER_PACKAGES.starter.tagline}. Best for local businesses, portfolios, and marketing pages. Includes up to 5 static pages, contact form, WhatsApp chat, and 5–7 days delivery.
 - Business Package (₹${MASTER_PACKAGES.business.startingPrice.toLocaleString("en-IN")}): ${MASTER_PACKAGES.business.tagline}. Best for growing companies requiring dynamic content, lead capture, and SEO. Includes up to 8 pages, CMS integration, and 7–10 days delivery.
 - Pro / E-Commerce / SaaS (₹${MASTER_PACKAGES.pro.startingPrice.toLocaleString("en-IN")}): ${MASTER_PACKAGES.pro.tagline}. For online stores, platforms, and database-backed web apps with payment gateways, user accounts, and dashboards.
 - Architecture Options:
   * Static Website: ₹0 additional cost. Ultra-fast, zero database hosting cost.
-  * Dynamic Website: +₹${WEBSITE_TYPES.find((t) => t.id === "dynamic")?.additionalCost.toLocaleString("en-IN") || "8,000"}. Includes PostgreSQL database, editable backend, and dynamic user data storage.
-- Page Rules: Base 5 pages included. Extra pages at ₹${COST_PER_EXTRA_PAGE.toLocaleString("en-IN")}/page. Single landing page discount: -₹2,000.
-- Express Priority Delivery: Fast-track delivery (3–5 business days) available with dedicated senior engineering sprints (+20% priority fee).`,
+  * Dynamic Website: +${formatINR(dynamicAddOn)}. Includes PostgreSQL database, editable backend, and dynamic user data storage.
+- Page Rules: Base ${pricing.settings.basePagesIncluded} pages included. Extra pages at ${formatINR(pricing.settings.costPerExtraPage)}/page. Single landing page discount: -${formatINR(pricing.settings.discountForOnePage)}.
+- Express Priority Delivery: Fast-track delivery (3–5 business days) available for a priority fee (+${Math.round((pricing.settings.expressMultiplier ?? 0.2) * 100)}%).`,
     keywords: [
       "pricing",
       "cost",
@@ -579,4 +579,10 @@ export function formatRetrievedKnowledgeForPrompt(results: RetrievalResult[]): s
   }
 
   return output.trim();
+}
+
+/** Clears the cached index so pricing or content changes show up straight away. */
+export function clearKnowledgeIndexCache(): void {
+  cachedIndex = null;
+  lastIndexTimestamp = 0;
 }

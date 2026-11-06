@@ -2,10 +2,11 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 
 // Ensure GSAP plugins are registered safely on the client
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, SplitText);
 }
 
 /**
@@ -40,4 +41,4 @@ export function isReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export { gsap, ScrollTrigger };
+export { gsap, ScrollTrigger, SplitText };

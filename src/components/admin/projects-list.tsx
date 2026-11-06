@@ -1,5 +1,6 @@
 "use client";
 
+import { getApiErrorMessage } from "@/lib/api/client-error";
 import { useState, useEffect } from "react";
 import {
   Plus,
@@ -47,21 +48,24 @@ export function ProjectsList() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchProjects = async () => {
-    setLoading(true);
     try {
       const res = await fetch("/api/admin/projects");
+      const json = await res.json().catch(() => null);
       if (res.ok) {
-        const json = await res.json();
-        setProjects(json.data || []);
+        setProjects(json?.data || []);
+      } else {
+        setError(getApiErrorMessage(json, "Failed to load projects."));
       }
     } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProjects();
+    const timer = setTimeout(fetchProjects, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleTogglePublish = async (project: Project) => {
@@ -180,17 +184,17 @@ export function ProjectsList() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            Portfolio Project CMS
+          <h1 className="text-3xl font-extrabold text-fg tracking-tight">
+            Projects
           </h1>
           <p className="text-sm text-slate-400">
-            Manage case studies, showcase projects, and feature top engineering work
+            Manage the case studies shown in your portfolio.
           </p>
         </div>
 
         <Link
           href="/admin/projects/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent text-accent-fg font-semibold text-xs rounded-xl transition-all shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>New Project</span>
@@ -232,7 +236,7 @@ export function ProjectsList() {
             placeholder="Search projects by title, tagline, or category..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-fg text-xs placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
       </div>
@@ -283,13 +287,13 @@ export function ProjectsList() {
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="p-12 text-center space-y-3">
-            <p className="text-base font-semibold text-white">No projects found</p>
+            <p className="text-base font-semibold text-fg">No projects found</p>
             <p className="text-xs text-slate-400">
               Create your first project case study to populate the portfolio.
             </p>
             <Link
               href="/admin/projects/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent text-accent-fg font-semibold text-xs rounded-xl"
             >
               <Plus className="w-4 h-4" />
               <span>Create Project</span>
@@ -331,11 +335,11 @@ export function ProjectsList() {
                     </td>
 
                     <td className="py-4 px-4">
-                      <div className="font-bold text-white text-sm">{project.title}</div>
-                      <p className="text-slate-400 text-[11px] line-clamp-1 max-w-md mt-0.5">
+                      <div className="font-bold text-fg text-sm">{project.title}</div>
+                      <p className="text-slate-400 text-xs line-clamp-1 max-w-md mt-0.5">
                         {project.description}
                       </p>
-                      <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono mt-1">
+                      <div className="flex items-center gap-3 text-xs text-slate-500 font-mono mt-1">
                         <span>slug: /{project.slug}</span>
                         {project.demoUrl && (
                           <span className="flex items-center gap-0.5 text-indigo-400">
@@ -357,7 +361,7 @@ export function ProjectsList() {
                     <td className="py-4 px-4">
                       <button
                         onClick={() => handleToggleFeatured(project)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all ${
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
                           project.featured
                             ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                             : "bg-slate-950 text-slate-500 border-slate-800 hover:text-slate-300"
@@ -371,7 +375,7 @@ export function ProjectsList() {
                     <td className="py-4 px-4">
                       <button
                         onClick={() => handleTogglePublish(project)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
                           project.published
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                             : "bg-slate-950 text-slate-400 border-slate-800"
@@ -392,14 +396,14 @@ export function ProjectsList() {
                     <td className="py-4 px-4 text-right space-x-2">
                       <Link
                         href={`/admin/projects/${project.id}/edit`}
-                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-accent text-slate-300 hover:text-accent-fg rounded-lg transition-all"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </Link>
 
                       <button
                         onClick={() => setDeleteTarget(project)}
-                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                        className="inline-flex items-center gap-1 p-2 bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-fg rounded-lg transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -417,7 +421,7 @@ export function ProjectsList() {
           onClick={() => {
             if (!deleting) setDeleteTarget(null);
           }}
-          className="fixed inset-0 z-50 bg-transparent backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -429,14 +433,14 @@ export function ProjectsList() {
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Delete Project</h3>
+                  <h3 className="text-lg font-bold text-fg">Delete Project</h3>
                   <p className="text-xs text-slate-400">This action cannot be undone.</p>
                 </div>
               </div>
 
               <p className="text-sm text-slate-300 leading-relaxed">
                 Are you sure you want to delete{" "}
-                <strong className="text-white">&quot;{deleteTarget.title}&quot;</strong>? Attached
+                <strong className="text-fg">&quot;{deleteTarget.title}&quot;</strong>? Attached
                 media references will be cleaned up.
               </p>
 

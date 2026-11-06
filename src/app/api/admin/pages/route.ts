@@ -64,7 +64,7 @@ export async function PUT(req: NextRequest) {
     const validation = homePageContentUpdateSchema.safeParse(rawBody);
 
     if (!validation.success) {
-      const formattedErrors = validation.error.errors.map((err) => ({
+      const formattedErrors = validation.error.issues.map((err) => ({
         field: err.path.join("."),
         message: err.message,
       }));
@@ -143,7 +143,7 @@ export async function PUT(req: NextRequest) {
     });
 
     const statusMessage = cacheRefreshed
-      ? "Homepage content updated and public cache revalidated successfully"
+      ? "Your homepage changes are live on the site."
       : "Homepage content saved to database. Public cache revalidation encountered warnings; changes will propagate momentarily.";
 
     return ApiResponse.success(

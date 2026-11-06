@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, formatDateTime } from "@/lib/format-date";
 import { useState, useEffect, useCallback } from "react";
 import {
   Mail,
@@ -63,8 +64,10 @@ export function NewsletterManager() {
   }, [search, statusFilter, pagination.page]);
 
   useEffect(() => {
-    fetchSubscribers();
-  }, [fetchSubscribers]);
+    // A short wait while typing avoids one request per keystroke.
+    const timer = setTimeout(fetchSubscribers, search ? 300 : 0);
+    return () => clearTimeout(timer);
+  }, [fetchSubscribers, search]);
 
   const handleExportCsv = () => {
     try {
@@ -74,7 +77,7 @@ export function NewsletterManager() {
       if (statusFilter !== "ALL") params.set("status", statusFilter);
       params.set("format", "csv");
 
-      window.location.href = `/api/admin/newsletter/subscribers?${params.toString()}`;
+      window.open(`/api/admin/newsletter/subscribers?${params.toString()}`, "_blank", "noopener");
     } finally {
       setTimeout(() => setIsExporting(false), 1500);
     }
@@ -91,8 +94,8 @@ export function NewsletterManager() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <Mail className="w-6 h-6 text-violet-400" />
+          <h1 className="text-2xl font-bold text-fg tracking-tight flex items-center gap-2.5">
+            <Mail className="w-6 h-6 text-indigo-400" />
             <span>Newsletter Subscribers</span>
           </h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -103,7 +106,7 @@ export function NewsletterManager() {
         <button
           onClick={handleExportCsv}
           disabled={isExporting}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm shadow-lg shadow-violet-600/20 transition-all self-start sm:self-auto disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent text-accent-fg font-semibold text-sm transition-all self-start sm:self-auto disabled:opacity-50"
         >
           {isExporting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -119,7 +122,7 @@ export function NewsletterManager() {
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Total In View
           </p>
-          <p className="text-2xl font-extrabold text-white mt-1">{counts.total}</p>
+          <p className="text-2xl font-extrabold text-fg mt-1">{counts.total}</p>
         </div>
         <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-2xl p-4">
           <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
@@ -149,7 +152,7 @@ export function NewsletterManager() {
             placeholder="Search subscribers by email address or name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
 
@@ -163,7 +166,7 @@ export function NewsletterManager() {
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 statusFilter === status
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
+                  ? "bg-accent text-accent-fg"
                   : "bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
               }`}
             >
@@ -172,7 +175,7 @@ export function NewsletterManager() {
           ))}
           <button
             onClick={() => fetchSubscribers()}
-            className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors ml-1"
+            className="p-2 text-slate-400 hover:text-fg rounded-lg hover:bg-slate-800 transition-colors ml-1"
             title="Refresh List"
           >
             <RefreshCw className="w-4 h-4" />
@@ -182,13 +185,13 @@ export function NewsletterManager() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500 mb-2" />
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-500 mb-2" />
           <p className="text-sm">Fetching subscriber records...</p>
         </div>
       ) : subscribers.length === 0 ? (
         <div className="text-center py-16 bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8">
           <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-white">No subscribers found</h3>
+          <h3 className="text-base font-bold text-fg">No subscribers found</h3>
           <p className="text-sm text-slate-400 max-w-sm mx-auto mt-1">
             {search || statusFilter !== "ALL"
               ? "No subscriber records match your current search and filter criteria."
@@ -199,7 +202,7 @@ export function NewsletterManager() {
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/60 text-slate-400 font-semibold border-b border-slate-800 uppercase tracking-wider text-[10px]">
+              <thead className="bg-slate-950/60 text-slate-400 font-semibold border-b border-slate-800 uppercase tracking-wider text-xs">
                 <tr>
                   <th className="px-5 py-3.5">Subscriber</th>
                   <th className="px-5 py-3.5">Status</th>
@@ -212,13 +215,13 @@ export function NewsletterManager() {
                 {subscribers.map((sub) => (
                   <tr key={sub.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="px-5 py-4">
-                      <div className="font-semibold text-white text-sm">{sub.email}</div>
+                      <div className="font-semibold text-fg text-sm">{sub.email}</div>
                       {sub.name && <div className="text-slate-400 text-xs mt-0.5">{sub.name}</div>}
                     </td>
 
                     <td className="px-5 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                           sub.status === "ACTIVE"
                             ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
                             : sub.status === "PENDING"
@@ -249,12 +252,12 @@ export function NewsletterManager() {
                       )}
                     </td>
 
-                    <td className="px-5 py-4 text-slate-300 font-mono text-[11px]">
-                      {sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleString() : "—"}
+                    <td className="px-5 py-4 text-slate-300 font-mono text-xs">
+                      {sub.subscribedAt ? formatDateTime(sub.subscribedAt) : "—"}
                     </td>
 
-                    <td className="px-5 py-4 text-right text-slate-400 font-mono text-[11px]">
-                      {new Date(sub.createdAt).toLocaleDateString()}
+                    <td className="px-5 py-4 text-right text-slate-400 font-mono text-xs">
+                      {formatDate(sub.createdAt)}
                     </td>
                   </tr>
                 ))}

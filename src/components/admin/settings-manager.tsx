@@ -13,6 +13,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { getApiErrorMessage } from "@/lib/api/client-error";
 
 export function SettingsManager() {
   const toast = useToast();
@@ -73,10 +74,10 @@ export function SettingsManager() {
 
       if (res.ok) {
         setOriginalSettings(settings);
-        toast.success("Settings updated successfully");
+        toast.success("Settings saved");
       } else {
         const json = await res.json();
-        toast.error(json.error || "Failed to update settings");
+        toast.error(getApiErrorMessage(json, "Failed to update settings"));
       }
     } catch {
       toast.error("Network error while saving settings");
@@ -89,22 +90,22 @@ export function SettingsManager() {
     { id: "general", label: "General & Brand", icon: Globe },
     { id: "contact", label: "Contact Details", icon: Mail },
     { id: "social", label: "Social Media", icon: Share2 },
-    { id: "features", label: "Feature Flags", icon: Sliders },
-    { id: "seo", label: "SEO & Telemetry", icon: Search },
+    { id: "features", label: "Site Options", icon: Sliders },
+    { id: "seo", label: "SEO & Analytics", icon: Search },
   ] as const;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               <Settings className="w-6 h-6" />
             </div>
-            <span>System & Site Settings</span>
+            <span>Site Settings</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Global application parameters, branding identities, feature flags, and integrations
+            Your brand details, contact information, social links and site options.
           </p>
         </div>
 
@@ -113,7 +114,7 @@ export function SettingsManager() {
             type="button"
             onClick={handleReset}
             disabled={saving || loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-fg transition-all disabled:opacity-50"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Changes</span>
@@ -123,7 +124,7 @@ export function SettingsManager() {
             type="button"
             onClick={handleSave}
             disabled={saving || loading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-semibold transition-all disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -142,8 +143,8 @@ export function SettingsManager() {
 
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
         <div className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-slate-800 p-4 space-y-1 bg-slate-900/40">
-          <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Configuration Tabs
+          <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Sections
           </div>
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -155,7 +156,7 @@ export function SettingsManager() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   active
-                    ? "bg-indigo-600/20 text-white border border-indigo-500/30"
+                    ? "bg-indigo-600/20 text-fg border border-indigo-500/30"
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
                 }`}
               >
@@ -177,9 +178,9 @@ export function SettingsManager() {
               {activeTab === "general" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
-                    <h2 className="text-base font-bold text-white">General & Branding</h2>
+                    <h2 className="text-base font-bold text-fg">General & Branding</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Core brand names and display identities
+                      Saved here, but the public site doesn&apos;t read these yet. To change the name shown to visitors, use SEO & Meta Tags.
                     </p>
                   </div>
 
@@ -192,7 +193,7 @@ export function SettingsManager() {
                         type="text"
                         value={settings.site_name || ""}
                         onChange={(e) => handleChange("site_name", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -204,7 +205,7 @@ export function SettingsManager() {
                         type="text"
                         value={settings.site_tagline || ""}
                         onChange={(e) => handleChange("site_tagline", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -217,7 +218,7 @@ export function SettingsManager() {
                         placeholder="https://cdn.webgent.com/images/logo.png"
                         value={settings.logo_url || ""}
                         onChange={(e) => handleChange("logo_url", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>
@@ -227,7 +228,7 @@ export function SettingsManager() {
               {activeTab === "contact" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
-                    <h2 className="text-base font-bold text-white">Contact & Company</h2>
+                    <h2 className="text-base font-bold text-fg">Contact & Company</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Public inquiry email, support phone, and office details
                     </p>
@@ -242,7 +243,7 @@ export function SettingsManager() {
                         type="email"
                         value={settings.contact_email || ""}
                         onChange={(e) => handleChange("contact_email", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -254,7 +255,7 @@ export function SettingsManager() {
                         type="text"
                         value={settings.contact_phone || ""}
                         onChange={(e) => handleChange("contact_phone", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -266,7 +267,7 @@ export function SettingsManager() {
                         type="text"
                         value={settings.office_address || ""}
                         onChange={(e) => handleChange("office_address", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -278,7 +279,7 @@ export function SettingsManager() {
                         type="text"
                         value={settings.business_hours || ""}
                         onChange={(e) => handleChange("business_hours", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>
@@ -288,7 +289,7 @@ export function SettingsManager() {
               {activeTab === "social" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
-                    <h2 className="text-base font-bold text-white">Social Media Profiles</h2>
+                    <h2 className="text-base font-bold text-fg">Social Media Profiles</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Links featured on the public website footer and navigation
                     </p>
@@ -303,7 +304,7 @@ export function SettingsManager() {
                         type="url"
                         value={settings.github_url || ""}
                         onChange={(e) => handleChange("github_url", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -315,7 +316,7 @@ export function SettingsManager() {
                         type="url"
                         value={settings.twitter_url || ""}
                         onChange={(e) => handleChange("twitter_url", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -327,7 +328,7 @@ export function SettingsManager() {
                         type="url"
                         value={settings.linkedin_url || ""}
                         onChange={(e) => handleChange("linkedin_url", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -339,7 +340,7 @@ export function SettingsManager() {
                         type="url"
                         value={settings.discord_url || ""}
                         onChange={(e) => handleChange("discord_url", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>
@@ -349,22 +350,29 @@ export function SettingsManager() {
               {activeTab === "features" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
-                    <h2 className="text-base font-bold text-white">Feature Flags & Policies</h2>
+                    <h2 className="text-base font-bold text-fg">Site Options</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Toggle operational behaviors without redeploying
+                      Choices saved for this site.
                     </p>
+                  </div>
+
+                  <div className="p-3 rounded-none bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
+                    These switches are saved, but the public site doesn&apos;t read them yet, so changing them has no effect.
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
-                        <p className="text-xs font-bold text-white">Live AI Chat Widget</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Enable interactive AI assistant and live chat sessions for visitors
+                        <p className="text-xs font-bold text-fg">Live AI Chat Widget</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Offer the AI consultant to visitors.
                         </p>
                       </div>
                       <button
                         type="button"
+                        role="switch"
+                        aria-checked={settings.enable_ai_chat === "true"}
+                        aria-label="Live AI chat widget"
                         onClick={() => handleToggle("enable_ai_chat")}
                         className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
                           settings.enable_ai_chat === "true" ? "bg-indigo-600" : "bg-slate-800"
@@ -380,13 +388,16 @@ export function SettingsManager() {
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
-                        <p className="text-xs font-bold text-white">Newsletter Double Opt-In</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Enforce cryptographically signed email confirmation tokens
+                        <p className="text-xs font-bold text-fg">Newsletter Double Opt-In</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Ask new subscribers to confirm their email address.
                         </p>
                       </div>
                       <button
                         type="button"
+                        role="switch"
+                        aria-checked={settings.enable_newsletter_double_optin === "true"}
+                        aria-label="Newsletter double opt-in"
                         onClick={() => handleToggle("enable_newsletter_double_optin")}
                         className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
                           settings.enable_newsletter_double_optin === "true"
@@ -406,13 +417,16 @@ export function SettingsManager() {
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
-                        <p className="text-xs font-bold text-white">Custom Analytics Tracking</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Record anonymous page views and conversion funnel telemetry
+                        <p className="text-xs font-bold text-fg">Custom Analytics Tracking</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Record anonymous page views and conversions.
                         </p>
                       </div>
                       <button
                         type="button"
+                        role="switch"
+                        aria-checked={settings.analytics_tracking === "true"}
+                        aria-label="Analytics tracking"
                         onClick={() => handleToggle("analytics_tracking")}
                         className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
                           settings.analytics_tracking === "true" ? "bg-indigo-600" : "bg-slate-800"
@@ -430,13 +444,16 @@ export function SettingsManager() {
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
-                        <p className="text-xs font-bold text-white">Public Maintenance Mode</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Show a friendly under-construction banner across public pages
+                        <p className="text-xs font-bold text-fg">Public Maintenance Mode</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Show an under-construction banner on public pages.
                         </p>
                       </div>
                       <button
                         type="button"
+                        role="switch"
+                        aria-checked={settings.maintenance_mode === "true"}
+                        aria-label="Maintenance mode"
                         onClick={() => handleToggle("maintenance_mode")}
                         className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
                           settings.maintenance_mode === "true" ? "bg-amber-600" : "bg-slate-800"
@@ -456,7 +473,7 @@ export function SettingsManager() {
               {activeTab === "seo" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
-                    <h2 className="text-base font-bold text-white">SEO & Search Telemetry</h2>
+                    <h2 className="text-base font-bold text-fg">SEO & Analytics</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Default meta tags and third-party tracker configurations
                     </p>
@@ -471,7 +488,7 @@ export function SettingsManager() {
                         type="text"
                         value={settings.default_meta_title || ""}
                         onChange={(e) => handleChange("default_meta_title", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
@@ -483,7 +500,7 @@ export function SettingsManager() {
                         rows={3}
                         value={settings.default_meta_description || ""}
                         onChange={(e) => handleChange("default_meta_description", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors resize-none"
                       />
                     </div>
 
@@ -496,7 +513,7 @@ export function SettingsManager() {
                         placeholder="G-XXXXXXXXXX"
                         value={settings.google_analytics_id || ""}
                         onChange={(e) => handleChange("google_analytics_id", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>

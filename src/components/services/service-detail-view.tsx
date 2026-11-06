@@ -1,5 +1,9 @@
 "use client";
 
+import { RevealGroup } from "@/components/animations/reveal-group";
+import { TextReveal } from "@/components/animations/text-reveal";
+import { CtaBand } from "@/components/ui/cta-band";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,11 +11,9 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Check,
-  Star,
   Sparkles,
   ShieldCheck,
   Zap,
-  Clock,
   Layers,
   Cpu,
   Database,
@@ -78,239 +80,120 @@ export function ServiceDetailView({ service }: ServiceDetailViewProps) {
   }, [service]);
 
   return (
-    <div className="relative min-h-screen bg-[#070707] text-[#F5F5F3] pt-8 sm:pt-16 pb-24 overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 right-1/4 w-[700px] h-[400px] bg-gradient-to-b from-sky-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10" />
+    <>
+      <header className="relative isolate overflow-hidden pb-12 pt-10 sm:pt-14">
+        <div className="wrap">
+          <Link href="/services" className="inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg">
+            <ArrowLeft className="h-4 w-4" />
+            All services
+          </Link>
+          <div className="mt-8 flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              {renderServiceIcon(service.icon, "h-6 w-6")}
+            </span>
+          </div>
+          <TextReveal as="h1" immediate className="display-lg mt-6 max-w-4xl">
+            {service.name}
+          </TextReveal>
+          <p className="lede fade-up mt-5 max-w-2xl">{service.shortDescription}</p>
+        </div>
+      </header>
 
-      <div className="max-w-[1440px] w-full mx-auto px-5 sm:px-8 lg:px-12">
-        {/* Breadcrumb nav */}
-        <div className="flex items-center gap-2 text-xs font-mono text-[#808080] mb-8 sm:mb-12">
-          <Link href="/" className="hover:text-white transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link href="/services" className="hover:text-white transition-colors">
-            Services
-          </Link>
-          <span>/</span>
-          <span className="text-white truncate">{service.name}</span>
+      <div className="wrap grid gap-12 pb-20 lg:grid-cols-12 lg:gap-16">
+        <div className="min-w-0 space-y-12 lg:col-span-8">
+          {service.coverImage && (
+            <div className="relative aspect-[16/9] overflow-hidden rounded-[1.25rem] border border-line">
+              <Image
+                src={service.coverImage}
+                alt=""
+                fill
+                priority
+                unoptimized={!/^(\/|https:\/\/[^/]+\.supabase\.co\/|https:\/\/images\.unsplash\.com\/)/.test(service.coverImage)}
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 800px"
+              />
+            </div>
+          )}
+
+          {service.description && (
+            <section>
+              <h2 className="display-md">What&apos;s included</h2>
+              <p className="mt-5 whitespace-pre-line text-lg leading-relaxed text-fg-soft">{service.description}</p>
+            </section>
+          )}
+
+          {Object.keys(featuresByCategory).length > 0 && (
+            <RevealGroup as="section" className="space-y-5">
+              <h2 className="display-md">Features</h2>
+              <div className="grid gap-5 md:grid-cols-2">
+                {Object.entries(featuresByCategory).map(([category, items]) => (
+                  <div key={category} data-reveal className="card p-6">
+                    <h3 className="font-mono text-xs font-normal uppercase tracking-[0.14em] text-accent">{category}</h3>
+                    <ul className="mt-4 space-y-4">
+                      {items.map((feature) => (
+                        <li key={feature.id} className="flex items-start gap-2.5">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                          <div>
+                            <p className="font-medium">{feature.title}</p>
+                            {feature.description && <p className="mt-1 text-sm leading-relaxed text-fg-muted">{feature.description}</p>}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </RevealGroup>
+          )}
         </div>
 
-        {/* Back Link */}
-        <Link
-          href="/services"
-          className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-slate-400 hover:text-white mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to All Services</span>
-        </Link>
-
-        {/* Main Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start mb-16">
-          <div className="lg:col-span-8 space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-sky-400">
-                {renderServiceIcon(service.icon)}
-              </span>
-
-              {service.featured && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-amber-500/10 border border-amber-500/20 text-amber-400 uppercase tracking-wider">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  <span>Featured Discipline</span>
-                </span>
-              )}
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase leading-[1.1]">
-              {service.name}
-            </h1>
-
-            <p className="text-sm sm:text-lg text-[#A0A0A0] leading-relaxed">
-              {service.shortDescription}
-            </p>
-
-            {service.coverImage && (
-              <div className="relative w-full h-[260px] sm:h-[380px] rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl mt-6">
-                <Image
-                  src={service.coverImage}
-                  alt={service.name}
-                  fill
-                  priority
-                  className="object-cover object-center"
-                  sizes="(max-width: 1024px) 100vw, 800px"
-                />
-              </div>
-            )}
-
-            {/* Detailed Scope Section */}
-            {service.description && (
-              <div className="pt-8 border-t border-white/[0.08] space-y-4">
-                <h2 className="text-xl font-bold text-white tracking-tight">
-                  Architecture & Scope Overview
-                </h2>
-                <div className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line space-y-3">
-                  {service.description}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar Card */}
-          <div className="lg:col-span-4 sticky top-28 space-y-6">
-            <div className="rounded-2xl bg-[#0D0D0D] border border-white/[0.08] p-6 sm:p-7 space-y-6 shadow-xl">
-              <div className="space-y-1">
-                <p className="text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
-                  Investment Benchmark
-                </p>
-                <p className="text-2xl font-bold text-white font-mono">
-                  {service.priceLabel ||
-                    (service.startingPrice
-                      ? `Starting at ₹${service.startingPrice.toLocaleString("en-IN")}`
-                      : "Custom Scope")}
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-4 border-t border-white/[0.08] text-xs">
-                <div className="flex items-center gap-2 text-slate-300">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Production-tested Next.js architecture</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Zap className="w-4 h-4 text-sky-400 shrink-0" />
-                  <span>Sub-second TTFB & Core Web Vitals optimization</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Direct pair-engineering with founder</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-4 border-t border-white/[0.08]">
-                <Link
-                  href={`/contact?service=${encodeURIComponent(service.name)}`}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold text-black bg-[#F5F5F3] hover:bg-white rounded-xl transition-all shadow-md active:scale-95"
-                >
-                  <span>Initiate Project Consultation</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </Link>
-
-                <a
-                  href={buildWhatsAppUrl({ serviceName: service.name })}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  id={`service-whatsapp-${service.slug}`}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white hover:text-black bg-[#25D366]/15 hover:bg-[#25D366] border border-[#25D366]/40 hover:border-[#25D366] rounded-xl transition-all shadow-sm active:scale-95 group"
-                >
-                  <WhatsAppIcon className="w-4 h-4 text-[#25D366] group-hover:text-black fill-current transition-colors" />
-                  <span>Chat on WhatsApp about this Service</span>
-                </a>
-
-                <Link
-                  href="/pricing"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all"
-                >
-                  <span>Configure in Pricing Calculator</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Detailed Features Breakdown by Category */}
-        {Object.keys(featuresByCategory).length > 0 && (
-          <div className="pt-12 border-t border-white/[0.08] space-y-10">
+        <aside className="lg:col-span-4">
+          <div className="card space-y-6 p-6 sm:p-7 lg:sticky lg:top-24">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight uppercase">
-                Included Features & Technical Matrix
-              </h2>
-              <p className="text-xs sm:text-sm text-[#909090] mt-1">
-                Modular components and deliverables bundled with this service offering.
+              <p className="text-sm text-fg-muted">Investment</p>
+              <p className="mt-1 font-display text-3xl font-semibold">
+                {service.priceLabel ||
+                  (service.startingPrice ? `From ₹${service.startingPrice.toLocaleString("en-IN")}` : "Custom scope")}
               </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(featuresByCategory).map(([category, items]) => (
-                <div
-                  key={category}
-                  className="p-6 rounded-2xl bg-[#0D0D0D] border border-white/[0.08] space-y-4 shadow-lg"
-                >
-                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                    <span className="text-xs font-mono uppercase tracking-wider text-sky-400 font-semibold">
-                      {category}
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-500">
-                      {items.length} item{items.length === 1 ? "" : "s"}
-                    </span>
-                  </div>
-
-                  <ul className="space-y-3.5">
-                    {items.map((feat) => (
-                      <li key={feat.id} className="space-y-1">
-                        <div className="flex items-start gap-2">
-                          <span className="p-0.5 rounded bg-emerald-500/10 text-emerald-400 mt-0.5 shrink-0">
-                            <Check className="w-3 h-3" />
-                          </span>
-                          <span className="text-xs font-semibold text-white leading-snug">
-                            {feat.title}
-                          </span>
-                        </div>
-                        {feat.description && (
-                          <p className="text-[11px] text-slate-400 pl-5 leading-relaxed">
-                            {feat.description}
-                          </p>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <ul className="space-y-3 border-t border-line pt-6 text-sm text-fg-soft">
+              {["You own 100% of the source code", "Pay 50% to start, 50% after your final review", "Work directly with the developer"].map((point) => (
+                <li key={point} className="flex items-start gap-2.5">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  {point}
+                </li>
               ))}
+            </ul>
+            <div className="space-y-2.5 border-t border-line pt-6">
+              <Link href={`/contact?service=${encodeURIComponent(service.name)}`} className="btn btn-primary w-full">
+                <span>Discuss this service</span>
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <a
+                id={`service-whatsapp-${service.slug}`}
+                href={buildWhatsAppUrl({ serviceName: service.name })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary w-full"
+              >
+                <WhatsAppIcon className="h-4 w-4 fill-current text-whatsapp" />
+                <span>Chat on WhatsApp</span>
+              </a>
+              <Link href="/pricing" className="btn w-full text-fg-soft hover:text-fg">
+                <span>Build an estimate</span>
+              </Link>
             </div>
           </div>
-        )}
-
-        {/* Closing Action Banner */}
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-8 px-6 sm:px-10 text-center space-y-4 shadow-2xl">
-          {/* Subtle decorative radial vignette */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
-          />
-
-          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black tracking-tight uppercase">
-              Ready to deploy {service.name}?
-            </h3>
-            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
-              Let&apos;s evaluate your technical scope and deliver this capability with enterprise production quality.
-            </p>
-          </div>
-
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
-            <Link
-              href={`/contact?service=${encodeURIComponent(service.name)}`}
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-semibold text-white bg-black hover:bg-[#1E1E24] rounded-xl transition-all shadow-md active:scale-95"
-            >
-              <span>Initiate Consultation</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
-            <a
-              href={buildWhatsAppUrl({ serviceName: service.name })}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-[#25D366] hover:bg-[#20ba59] rounded-xl transition-all shadow-md active:scale-95"
-            >
-              <WhatsAppIcon className="w-4 h-4 fill-current" />
-              <span>Chat on WhatsApp</span>
-            </a>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-black bg-transparent hover:bg-black/[0.05] border border-black/25 hover:border-black/60 rounded-xl transition-all"
-            >
-              <span>Calculate Estimate</span>
-            </Link>
-          </div>
-        </div>
+        </aside>
       </div>
-    </div>
+
+      <CtaBand
+        title={`Ready to start on ${service.name}?`}
+        description="Tell me what you need and I'll come back with a clear scope, timeline and price."
+        primaryHref={`/contact?service=${encodeURIComponent(service.name)}`}
+        whatsappService={service.name}
+        analyticsName="Service Detail"
+      />
+    </>
   );
 }

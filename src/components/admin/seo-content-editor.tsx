@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import {
   Globe,
   Search,
@@ -35,6 +36,7 @@ const PUBLIC_ROUTES: Array<{ id: string; name: string; path: string }> = [
 ];
 
 export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
+  const confirm = useConfirm();
   const [settings, setSettings] = useState<SiteSeoSettings>(initialSettings);
   const [activeTab, setActiveTab] = useState<"global" | "pages" | "preview">("global");
   const [selectedRoute, setSelectedRoute] = useState<string>("/");
@@ -100,8 +102,13 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
   };
 
   // Reset all to default
-  const handleResetAll = () => {
-    if (confirm("Are you sure you want to restore standard production SEO defaults? This will overwrite your unsaved edits.")) {
+  const handleResetAll = async () => {
+    const confirmed = await confirm({
+      title: "Reset SEO to defaults?",
+      description: "This replaces your SEO settings with the defaults. Unsaved edits will be lost.",
+      confirmText: "Reset SEO",
+    });
+    if (confirmed) {
       setSettings(DEFAULT_SITE_SEO_SETTINGS);
       setHasUnsavedChanges(true);
     }
@@ -170,7 +177,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
           type: "success",
           message: data.meta?.cacheRefreshed
             ? "SEO configuration persisted and public cache purged successfully."
-            : "SEO saved to database. Warning: Redis cache refresh encountered notices.",
+            : "Saved. The public site may take a few minutes to update.",
         });
       } catch (err) {
         setNotification({
@@ -211,14 +218,14 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
   return (
     <div className="space-y-6">
       {/* 1. Header & Quick Status Strip */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/60 p-6 rounded-2xl border border-border/40 shadow-sm">
         <div>
           <div className="flex items-center gap-3">
             <span className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <Globe className="w-5 h-5" />
             </span>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Global SEO & Metadata Studio</h1>
+              <h1 className="text-2xl font-bold tracking-tight">SEO & Meta Tags</h1>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Manage search engine indexing, canonical origin, OpenGraph cards, and per-route metadata.
               </p>
@@ -254,9 +261,9 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
         <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-medium">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>You have unsaved SEO configuration changes. Click &apos;Save Changes&apos; to publish and purge cache.</span>
+            <span>You have unsaved changes. Click Save Changes to publish them.</span>
           </div>
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] uppercase font-bold tracking-wider">
+          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-xs uppercase font-bold tracking-wider">
             Unsaved
           </span>
         </div>
@@ -270,7 +277,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
               : notification.type === "error"
               ? "bg-destructive/10 border-destructive/20 text-destructive"
-              : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+              : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
           }`}
         >
           <div className="flex items-start gap-2.5">
@@ -282,7 +289,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
             <div className="space-y-1">
               <p className="font-semibold">{notification.message}</p>
               {notification.details && notification.details.length > 0 && (
-                <ul className="list-disc list-inside space-y-0.5 text-[11px] opacity-90 pl-1">
+                <ul className="list-disc list-inside space-y-0.5 text-xs opacity-90 pl-1">
                   {notification.details.map((d, i) => (
                     <li key={i}>{d}</li>
                   ))}
@@ -296,45 +303,45 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
       {/* Status Badges Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl border border-border/40 bg-card/40">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Search Indexing</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Search Indexing</span>
           <div className="flex items-center gap-2 mt-1.5">
             <span
               className={`w-2.5 h-2.5 rounded-full ${
-                settings.global.defaultRobotsIndex ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
+                settings.global.defaultRobotsIndex ? "bg-emerald-500" : "bg-rose-500"
               }`}
             />
             <span className="text-sm font-semibold">
               {settings.global.defaultRobotsIndex ? "Active (index, follow)" : "Paused (noindex)"}
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {settings.global.defaultRobotsIndex ? "Search crawlers allowed" : "Crawlers blocked site-wide"}
           </p>
         </div>
 
         <div className="p-4 rounded-xl border border-border/40 bg-card/40">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Canonical Base</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Canonical Base</span>
           <div className="text-sm font-semibold truncate mt-1.5 font-mono text-primary">
             {settings.global.canonicalBaseUrl || "Not configured"}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">Verified production origin</p>
+          <p className="text-xs text-muted-foreground mt-1">Verified production origin</p>
         </div>
 
         <div className="p-4 rounded-xl border border-border/40 bg-card/40">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Route Overrides</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Route Overrides</span>
           <div className="text-sm font-semibold mt-1.5">
             {Object.keys(settings.pages).length} Routes Configured
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">Per-page custom titles & meta</p>
+          <p className="text-xs text-muted-foreground mt-1">Per-page custom titles & meta</p>
         </div>
 
         <div className="p-4 rounded-xl border border-border/40 bg-card/40">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Social Card Format</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Social Card Format</span>
           <div className="text-sm font-semibold mt-1.5 flex items-center gap-1.5">
             <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="capitalize">{settings.global.twitterCard.replace(/_/g, " ")}</span>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">Twitter / X & OpenGraph tags</p>
+          <p className="text-xs text-muted-foreground mt-1">Twitter / X & OpenGraph tags</p>
         </div>
       </div>
 
@@ -345,7 +352,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
             <AlertTriangle className="w-4 h-4" />
             <span>WARNING: Site-Wide Indexing is Disabled (`noindex`)</span>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Search engines (Google, Bing, DuckDuckGo) are instructed not to index any page on this site.
             Enable &apos;Search Engine Indexing&apos; below once you are ready for production discovery.
           </p>
@@ -412,7 +419,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-foreground flex items-center justify-between">
                   <span>Site Brand Name</span>
-                  <span className="text-[10px] text-muted-foreground">Required</span>
+                  <span className="text-xs text-muted-foreground">Required</span>
                 </label>
                 <input
                   type="text"
@@ -426,16 +433,16 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-foreground flex items-center justify-between">
                   <span>Title Template</span>
-                  <span className="text-[10px] text-muted-foreground">Must contain &apos;%s&apos;</span>
+                  <span className="text-xs text-muted-foreground">Must contain &apos;%s&apos;</span>
                 </label>
                 <input
                   type="text"
                   value={settings.global.titleTemplate}
                   onChange={(e) => updateGlobal("titleTemplate", e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
                   placeholder="%s | Webgent"
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Preview: &quot;{settings.global.titleTemplate.replace("%s", "About Us")}&quot;
                 </p>
               </div>
@@ -443,7 +450,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-xs font-medium text-foreground flex items-center justify-between">
                   <span>Default Site Title (Root Fallback)</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {settings.global.defaultTitle.length}/150 chars
                   </span>
                 </label>
@@ -460,7 +467,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-foreground">Default Meta Description</label>
                   <span
-                    className={`text-[10px] font-mono ${
+                    className={`text-xs font-mono ${
                       settings.global.defaultDescription.length > 160
                         ? "text-amber-500 font-semibold"
                         : "text-muted-foreground"
@@ -492,16 +499,16 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-foreground flex items-center justify-between">
                   <span>Canonical Base URL</span>
-                  <span className="text-[10px] text-muted-foreground">Production Origin</span>
+                  <span className="text-xs text-muted-foreground">Site URL</span>
                 </label>
                 <input
                   type="text"
                   value={settings.global.canonicalBaseUrl}
                   onChange={(e) => updateGlobal("canonicalBaseUrl", e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
                   placeholder="https://webgent.vercel.app"
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Must be http(s) origin without trailing slash.
                 </p>
               </div>
@@ -509,7 +516,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-foreground flex items-center justify-between">
                   <span>Twitter / X Creator Handle</span>
-                  <span className="text-[10px] text-muted-foreground">e.g. @webgent</span>
+                  <span className="text-xs text-muted-foreground">e.g. @webgent</span>
                 </label>
                 <input
                   type="text"
@@ -523,14 +530,14 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-xs font-medium text-foreground flex items-center justify-between">
                   <span>Default OpenGraph Image URL</span>
-                  <span className="text-[10px] text-muted-foreground">1200 x 630 recommended</span>
+                  <span className="text-xs text-muted-foreground">1200 x 630 recommended</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={settings.global.defaultOgImage}
                     onChange={(e) => updateGlobal("defaultOgImage", e.target.value)}
-                    className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                    className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
                     placeholder="https://webgent.vercel.app/api/og?title=Webgent"
                   />
                   <button
@@ -572,7 +579,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="flex items-start justify-between p-4 rounded-xl border border-border/50 bg-background/50">
                 <div className="space-y-1">
                   <span className="text-xs font-medium text-foreground">Allow Search Indexing</span>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Instructs Google, Bing, and other crawlers to index this website (`robots: index`).
                   </p>
                 </div>
@@ -587,7 +594,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="flex items-start justify-between p-4 rounded-xl border border-border/50 bg-background/50">
                 <div className="space-y-1">
                   <span className="text-xs font-medium text-foreground">Allow Link Following</span>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Instructs crawlers to follow hyperlinks on the page (`robots: follow`).
                   </p>
                 </div>
@@ -633,16 +640,16 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   >
                     <div>
                       <div className="text-xs font-medium">{route.name}</div>
-                      <div className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                      <div className="text-xs font-mono text-muted-foreground mt-0.5">
                         {route.path}
                       </div>
                     </div>
                     {isCustom ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary font-medium">
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-primary/20 text-primary font-medium">
                         Custom
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-muted text-muted-foreground">
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
                         Default
                       </span>
                     )}
@@ -651,7 +658,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               })}
             </div>
 
-            <div className="p-3.5 rounded-xl border border-border/40 bg-muted/20 text-[11px] text-muted-foreground space-y-1">
+            <div className="p-3.5 rounded-xl border border-border/40 bg-muted/20 text-xs text-muted-foreground space-y-1">
               <div className="font-semibold text-foreground flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-primary" />
                 <span>Dynamic Project & Blog Pages</span>
@@ -687,7 +694,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-foreground">Custom Page Title</label>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {(currentOverride?.title || "").length}/150 chars
                   </span>
                 </div>
@@ -703,7 +710,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-foreground">Custom Meta Description</label>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {(currentOverride?.description || "").length}/300 chars
                   </span>
                 </div>
@@ -722,10 +729,10 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   type="text"
                   value={currentOverride?.canonicalUrl || ""}
                   onChange={(e) => updatePageOverride(selectedRoute, "canonicalUrl", e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
                   placeholder={`Default: ${settings.global.canonicalBaseUrl}${selectedRoute === "/" ? "" : selectedRoute}`}
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Leave blank to auto-generate from canonical base origin.
                 </p>
               </div>
@@ -738,7 +745,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                       type="text"
                       value={currentOverride?.ogImage || ""}
                       onChange={(e) => updatePageOverride(selectedRoute, "ogImage", e.target.value)}
-                      className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[11px]"
+                      className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
                       placeholder="Leave empty to use global default"
                     />
                     <button
@@ -755,7 +762,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/50 mt-auto">
                   <div className="space-y-0.5">
                     <span className="text-xs font-medium text-foreground">Disallow Indexing for Route</span>
-                    <p className="text-[10px] text-muted-foreground">Apply `noindex` only to this page</p>
+                    <p className="text-xs text-muted-foreground">Apply `noindex` only to this page</p>
                   </div>
                   <input
                     type="checkbox"
@@ -828,7 +835,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   Google SERP Search Snippet
                 </span>
                 <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                     isNoIndex
                       ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                       : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
@@ -839,37 +846,37 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
               </div>
 
               <div
-                className={`p-4 rounded-xl border border-border/50 bg-[#1f1f1f] text-white font-sans ${
+                className={`p-4 rounded-xl border border-border/50 bg-surface-3 text-fg font-sans ${
                   previewDevice === "mobile" ? "max-w-sm mx-auto" : "w-full"
                 }`}
               >
                 {/* Search Header */}
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
                     W
                   </div>
-                  <div className="text-[11px] leading-tight text-neutral-300 truncate">
-                    <span className="font-semibold text-white">{settings.global.siteName}</span>
-                    <span className="text-neutral-500 mx-1">›</span>
-                    <span className="font-mono text-[10px] text-neutral-400">
+                  <div className="text-xs leading-tight text-slate-300 truncate">
+                    <span className="font-semibold text-fg">{settings.global.siteName}</span>
+                    <span className="text-slate-500 mx-1">›</span>
+                    <span className="font-mono text-xs text-slate-400">
                       {effectiveCanonical.replace(/^https?:\/\//, "")}
                     </span>
                   </div>
                 </div>
 
                 {/* Search Title */}
-                <h3 className="text-base text-[#8ab4f8] hover:underline cursor-pointer font-medium leading-snug line-clamp-2">
+                <h3 className="text-base text-accent hover:underline cursor-pointer font-medium leading-snug line-clamp-2">
                   {effectiveTitle}
                 </h3>
 
                 {/* Search Description */}
-                <p className="text-xs text-neutral-400 mt-1 leading-relaxed line-clamp-3">
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-3">
                   {effectiveDescription}
                 </p>
               </div>
 
               {/* Quality Indicators */}
-              <div className="space-y-2 pt-2 border-t border-border/30 text-[11px]">
+              <div className="space-y-2 pt-2 border-t border-border/30 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Title length ({effectiveTitle.length} chars):</span>
                   <span
@@ -912,16 +919,15 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   <Share2 className="w-4 h-4 text-primary" />
                   Social Share Preview (OpenGraph / Twitter)
                 </span>
-                <span className="text-[10px] font-mono text-muted-foreground">
+                <span className="text-xs font-mono text-muted-foreground">
                   {settings.global.twitterCard}
                 </span>
               </div>
 
               <div className="rounded-xl overflow-hidden border border-border/60 bg-background/80 shadow-md">
                 {/* Social Image banner */}
-                <div className="aspect-[1200/630] w-full bg-neutral-900 relative overflow-hidden flex items-center justify-center">
+                <div className="aspect-[1200/630] w-full bg-slate-900 relative overflow-hidden flex items-center justify-center">
                   {effectiveOgImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={effectiveOgImage}
                       alt={effectiveTitle}
@@ -931,30 +937,30 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                       }}
                     />
                   ) : null}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-gradient-to-t from-black/80 to-transparent text-center">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-primary/30 text-primary-foreground border border-primary/40 font-mono mb-1">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-surface text-center">
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-primary/30 text-primary-foreground border border-primary/40 font-mono mb-1">
                       {settings.global.siteName}
                     </span>
-                    <span className="text-sm font-bold text-white max-w-sm line-clamp-1">{effectiveTitle}</span>
+                    <span className="text-sm font-bold text-fg max-w-sm line-clamp-1">{effectiveTitle}</span>
                   </div>
                 </div>
 
                 {/* Card meta text */}
                 <div className="p-3.5 space-y-1">
-                  <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                  <div className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
                     {settings.global.canonicalBaseUrl.replace(/^https?:\/\//, "")}
                   </div>
                   <div className="text-xs font-semibold text-foreground line-clamp-1">
                     {effectiveTitle}
                   </div>
-                  <div className="text-[11px] text-muted-foreground line-clamp-2">
+                  <div className="text-xs text-muted-foreground line-clamp-2">
                     {effectiveDescription}
                   </div>
                 </div>
               </div>
 
               {/* Tag inspector summary */}
-              <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-[10px] font-mono space-y-1 overflow-x-auto text-muted-foreground">
+              <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-xs font-mono space-y-1 overflow-x-auto text-muted-foreground">
                 <div>&lt;title&gt;{effectiveTitle}&lt;/title&gt;</div>
                 <div>&lt;link rel=&quot;canonical&quot; href=&quot;{effectiveCanonical}&quot; /&gt;</div>
                 <div>
@@ -970,7 +976,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
             <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-foreground">Search Engine Best Practices & Compliance</p>
-              <p className="text-[11px] mt-0.5">
+              <p className="text-xs mt-0.5">
                 Configuring complete meta tags, OpenGraph cards, Twitter handles, and canonical URLs adheres strictly
                 to modern web standards. Search engine ranking depends on dynamic page quality, domain authority, and
                 content relevance; metadata settings provide structured discoverability and crawler compliance.

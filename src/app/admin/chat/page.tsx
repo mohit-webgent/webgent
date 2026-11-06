@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth-utils";
+import { requireStrictAdmin } from "@/lib/auth-utils";
 import { ChatSessionsManager } from "@/components/admin/chat-sessions-manager";
 
 export const metadata = {
@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 export default async function AdminChatPage() {
-  await requireAdmin();
+  await requireStrictAdmin();
 
   return (
     <div className="animate-in fade-in duration-300">

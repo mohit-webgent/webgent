@@ -1,31 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { MainLayout } from "@/components/layout/main-layout";
 import { getNavigationMenu, getFooterConfig, getSiteSeoSettings } from "@/lib/services/cms";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const inter = Inter({
+const sans = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const mono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#080808",
+  themeColor: "#040405",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -57,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "SaaS Development",
       "Webgent",
     ],
-    authors: [{ name: "Webgent Engineering Team", url: baseUrl }],
+    authors: [{ name: "Mohit Verma", url: baseUrl }],
     creator: seo.global.siteName,
     publisher: seo.global.siteName,
     formatDetection: {
@@ -125,7 +133,7 @@ export default async function RootLayout({
         name: seoConfig.global.siteName,
         url: originUrl,
         logo: `${originUrl}/api/og?title=${encodeURIComponent(seoConfig.global.siteName)}`,
-        sameAs: [siteConfig.links.github, siteConfig.links.twitter, siteConfig.links.linkedin],
+        sameAs: [siteConfig.links.github, siteConfig.links.linkedin],
         description: seoConfig.global.defaultDescription,
       },
       {
@@ -148,11 +156,14 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
+      {/* Browser extensions such as ColorZilla add attributes to <body> before React loads.
+          This applies to <body>'s own attributes only, so real mismatches in the page still report. */}
       <body
-        className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${inter.className} font-sans bg-background text-foreground antialiased`}
+        suppressHydrationWarning
+        className={`${sans.variable} ${display.variable} ${serif.variable} ${mono.variable} font-sans bg-canvas text-fg antialiased`}
       >
         <MainLayout navItems={navConfig.items} footerData={footerConfig}>{children}</MainLayout>
-        <SpeedInsights />
+        {process.env.VERCEL && <SpeedInsights />}
       </body>
     </html>
   );

@@ -6,7 +6,8 @@ import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/api/response";
 import { logger } from "@/lib/logger";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(req: NextRequest, { params: routeParams }: { params: Promise<{ slug: string }> }) {
+  const params = await routeParams;
   try {
     const { slug } = params;
 

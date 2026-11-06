@@ -26,6 +26,16 @@ export async function getAuthSession(): Promise<Session | null> {
   }
 }
 
+/** True for an active account that may use the admin console. */
+export function canAccessAdminConsole(session: Session | null): boolean {
+  const user = session?.user;
+  return (
+    !!user &&
+    user.status === UserStatus.ACTIVE &&
+    (user.role === UserRole.ADMIN || user.role === UserRole.EDITOR)
+  );
+}
+
 export async function requireAuth() {
   const session = await getAuthSession();
 
@@ -72,4 +82,18 @@ export async function verifyAdminApiAccess() {
   }
 
   return { session };
+}
+
+/** Same as verifyAdminApiAccess, but rejects EDITOR accounts. */
+export async function verifyStrictAdminApiAccess() {
+  const guard = await verifyAdminApiAccess();
+  if (guard instanceof Response) {
+    return guard;
+  }
+
+  if (guard.session.user.role !== UserRole.ADMIN) {
+    return ApiResponse.forbidden("This action is restricted to administrators.");
+  }
+
+  return guard;
 }

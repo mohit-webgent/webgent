@@ -1,10 +1,12 @@
 "use client";
 
+import { formatDate } from "@/lib/format-date";
 import { useState, useEffect } from "react";
 import { User, KeyRound, Shield, Save, Loader2, Calendar, Clock, CheckCircle2 } from "lucide-react";
 import { ChangePasswordForm } from "./change-password-form";
 import { ImageUpload } from "./image-upload";
 import { useToast } from "@/components/ui/toast";
+import { getApiErrorMessage } from "@/lib/api/client-error";
 
 interface UserProfile {
   id: string;
@@ -76,7 +78,7 @@ export function ProfileManager({
         toast.success("Profile updated successfully");
       } else {
         const json = await res.json();
-        toast.error(json.error || "Failed to update profile");
+        toast.error(getApiErrorMessage(json, "Failed to update profile"));
       }
     } catch {
       toast.error("Network error while updating profile");
@@ -88,14 +90,14 @@ export function ProfileManager({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
             <User className="w-6 h-6" />
           </div>
           <span>Account Profile & Security</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Manage your administrative credentials, avatar identity, and access credentials
+          Manage your name, photo and password.
         </p>
       </div>
 
@@ -105,8 +107,8 @@ export function ProfileManager({
           onClick={() => setActiveTab("profile")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "profile"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-accent text-accent-fg"
+              : "text-slate-400 hover:text-accent-fg hover:bg-slate-900"
           }`}
         >
           <User className="w-4 h-4" />
@@ -118,8 +120,8 @@ export function ProfileManager({
           onClick={() => setActiveTab("security")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "security"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-900"
+              ? "bg-accent text-accent-fg"
+              : "text-slate-400 hover:text-accent-fg hover:bg-slate-900"
           }`}
         >
           <KeyRound className="w-4 h-4" />
@@ -136,7 +138,7 @@ export function ProfileManager({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-6">
             <div className="text-center space-y-3">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white text-2xl font-bold mx-auto shadow-xl shadow-indigo-600/20 overflow-hidden">
+              <div className="w-20 h-20 rounded-2xl bg-accent flex items-center justify-center text-accent-fg text-2xl font-bold mx-auto overflow-hidden">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
                 ) : (
@@ -144,11 +146,11 @@ export function ProfileManager({
                 )}
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">{name || "Admin"}</h3>
+                <h3 className="text-base font-bold text-fg">{name || "Admin"}</h3>
                 <p className="text-xs text-slate-400">{profile?.email}</p>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-[11px] font-semibold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold">
                 <Shield className="w-3.5 h-3.5" />
                 <span>{profile?.role || "ADMIN"}</span>
               </div>
@@ -162,10 +164,7 @@ export function ProfileManager({
                 </span>
                 <span className="text-slate-200 font-medium">
                   {profile?.createdAt
-                    ? new Date(profile.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        year: "numeric",
-                      })
+                    ? formatDate(profile.createdAt)
                     : "—"}
                 </span>
               </div>
@@ -177,12 +176,7 @@ export function ProfileManager({
                 </span>
                 <span className="text-slate-200 font-medium">
                   {profile?.lastLoginAt
-                    ? new Date(profile.lastLoginAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                    ? formatDate(profile.lastLoginAt)
                     : "Active session"}
                 </span>
               </div>
@@ -199,7 +193,7 @@ export function ProfileManager({
 
           <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
             <div>
-              <h2 className="text-base font-bold text-white">Edit Profile Details</h2>
+              <h2 className="text-base font-bold text-fg">Edit Profile Details</h2>
               <p className="text-xs text-slate-400 mt-0.5">
                 Update your display name and administrative avatar photo
               </p>
@@ -213,7 +207,7 @@ export function ProfileManager({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Alex Morgan"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>
 
@@ -227,7 +221,7 @@ export function ProfileManager({
                   disabled
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-500 cursor-not-allowed"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Primary authentication email is managed via environment seeds.
                 </p>
               </div>
@@ -247,7 +241,7 @@ export function ProfileManager({
                     placeholder="Or enter image URL directly..."
                     value={avatarUrl}
                     onChange={(e) => setAvatarUrl(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
               </div>
@@ -256,7 +250,7 @@ export function ProfileManager({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-semibold transition-all disabled:opacity-50"
                 >
                   {saving ? (
                     <>

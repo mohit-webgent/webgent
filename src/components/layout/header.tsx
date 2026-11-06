@@ -1,145 +1,181 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { siteConfig } from "@/config/site";
+import * as Dialog from "@radix-ui/react-dialog";
+import { useGSAP } from "@gsap/react";
+import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
+import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 import { CtaLink } from "@/components/ui/cta-link";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { siteConfig } from "@/config/site";
 import type { NavItem } from "@/lib/services/cms-shared";
 
 export interface HeaderProps {
   navItems?: NavItem[];
 }
 
-export function Header({ navItems }: HeaderProps = {}) {
-  const activeNav = navItems && navItems.length > 0 ? navItems : siteConfig.mainNav;
-  const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+function Logo() {
+  return (
+    <Link href="/" className="group flex items-center gap-2.5" aria-label={`${siteConfig.name} home`}>
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent font-display text-base font-bold text-accent-fg transition-transform duration-500 ease-expo-out group-hover:rotate-[-8deg]">
+        W
+      </span>
+      <span className="font-display text-base font-semibold tracking-tight">{siteConfig.name}</span>
+    </Link>
+  );
+}
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+function MobileMenu({ items, isActive }: { items: { title: string; href: string }[]; isActive: (href: string) => boolean }) {
+  const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  useGSAP(
+    () => {
+      if (!open || !panelRef.current || isReducedMotion()) return;
+      gsap.from(panelRef.current.querySelectorAll("[data-menu-item]"), {
+        yPercent: 60,
+        opacity: 0,
+        duration: 0.7,
+        stagger: 0.05,
+        ease: "expo.out",
+      });
+    },
+    { dependencies: [open] },
+  );
 
   return (
-    <header
-      className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-        isScrolled
-          ? "bg-[#080808]/90 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-          : "bg-transparent backdrop-blur-[2px]"
-      }`}
-    >
-      <div
-        className={`max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] w-full mx-auto flex items-center justify-between px-5 sm:px-8 lg:px-12 2xl:px-16 3xl:px-24 transition-all duration-300 ${
-          isScrolled ? "h-14" : "h-16 sm:h-20"
-        }`}
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger
+        aria-label="Open navigation menu"
+        className="flex h-10 w-10 items-center justify-center rounded-lg border border-line text-fg md:hidden"
       >
-        <div className="flex items-center gap-10">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 font-bold text-base text-[#F5F5F3] group shrink-0"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#161616] text-[#F5F5F3] font-bold text-xs tracking-wider transition-colors group-hover:bg-[#202020]">
-              W
-            </span>
-            <span className="tracking-tight font-bold text-[#F5F5F3] group-hover:text-white transition-colors">
-              {siteConfig.name}
-            </span>
-          </Link>
-
-          {/* Desktop Nav - Pure minimal text links (zero background) */}
-          <nav
-            aria-label="Main Navigation"
-            className="hidden md:flex items-center gap-7 lg:gap-8 text-xs font-medium"
-          >
-            {activeNav.map((item) => {
-              const isActive =
-                item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
-
-              return (
+        <Menu className="h-5 w-5" />
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Content
+          ref={panelRef}
+          data-lenis-prevent
+          aria-describedby={undefined}
+          className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-canvas p-5 focus:outline-none"
+        >
+          <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
+          <div className="flex items-center justify-between">
+            <Logo />
+            <Dialog.Close
+              aria-label="Close navigation menu"
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-line"
+            >
+              <X className="h-5 w-5" />
+            </Dialog.Close>
+          </div>
+          <nav aria-label="Mobile Navigation" className="mt-10 flex flex-1 flex-col">
+            {items.map((item) => (
+              <div key={item.href} data-menu-item className="border-b border-line">
                 <Link
-                  key={item.href}
                   href={item.href}
-                  className={`transition-colors py-1 ${
-                    isActive
-                      ? "text-white font-semibold"
-                      : "text-[#8A8A8A] hover:text-white"
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`flex items-center justify-between py-3.5 font-display text-2xl font-medium ${
+                    isActive(item.href) ? "text-accent" : "text-fg"
                   }`}
                 >
                   {item.title}
+                  <ArrowUpRight className="h-5 w-5 text-fg-muted" />
                 </Link>
-              );
-            })}
+              </div>
+            ))}
           </nav>
-        </div>
-
-        {/* Right CTA & Mobile Toggle */}
-        <div className="flex items-center gap-3">
-          <CtaLink
-            href="/contact"
-            label="Header Start Project"
-            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <span>Start Project</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </CtaLink>
-
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-            className="md:hidden p-2 rounded-lg bg-[#141414] text-[#909090] hover:text-[#F5F5F3] transition-colors"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu - Minimal text links (zero background on items) */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0A0A0A]/95 backdrop-blur-xl px-6 py-5 space-y-4 shadow-2xl border-b border-white/[0.08]">
-          <nav aria-label="Mobile Navigation" className="flex flex-col space-y-2">
-            {activeNav.map((item) => {
-              const isActive =
-                item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`py-1.5 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "text-white font-semibold"
-                      : "text-[#8A8A8A] hover:text-white"
-                  }`}
-                >
-                  {item.title}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="pt-2">
+          <div data-menu-item className="pt-8">
             <CtaLink
               href="/contact"
               label="Mobile Menu Start Project"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#E8E8E6] hover:bg-[#FFFFFF] text-[#080808] font-medium text-xs transition-colors"
+              magnetic={false}
+              onClick={() => setOpen(false)}
+              className="btn btn-primary w-full"
             >
-              <span>Start Your Project</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Start your project</span>
+              <ArrowRight className="h-4 w-4" />
             </CtaLink>
           </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+export function Header({ navItems }: HeaderProps = {}) {
+  const items = navItems && navItems.length > 0 ? navItems : siteConfig.mainNav;
+  const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const [marker, setMarker] = useState<{ left: number; width: number; visible: boolean }>({ left: 0, width: 0, visible: false });
+
+  const isActive = useCallback(
+    (href: string) => (href === "/" ? pathname === "/" : Boolean(pathname?.startsWith(href))),
+    [pathname],
+  );
+
+  const moveMarkerTo = useCallback((link: HTMLElement | null | undefined) => {
+    setMarker((current) => (link ? { left: link.offsetLeft, width: link.offsetWidth, visible: true } : { ...current, visible: false }));
+  }, []);
+
+  /** The marker rests on the current page and slides to whichever link is hovered. */
+  const restMarker = useCallback(() => {
+    moveMarkerTo(navRef.current?.querySelector<HTMLElement>('[aria-current="page"]'));
+  }, [moveMarkerTo]);
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    restMarker();
+    // Link widths change once the web font arrives.
+    void document.fonts?.ready.then(restMarker);
+    window.addEventListener("resize", restMarker);
+    return () => window.removeEventListener("resize", restMarker);
+  }, [restMarker, pathname]);
+
+  return (
+    <header className={`sticky top-0 z-40 w-full border-b transition-colors duration-300 ${isScrolled ? "border-line bg-canvas/85 backdrop-blur-md" : "border-transparent"}`}>
+      <div className="wrap flex h-14 items-center justify-between gap-4">
+        <Logo />
+
+        <nav ref={navRef} aria-label="Main Navigation" onMouseLeave={restMarker} className="relative hidden items-center md:flex">
+          <span
+            aria-hidden="true"
+            className={`absolute top-0 h-full rounded-lg bg-white/[0.07] transition-[left,width,opacity] duration-500 ease-expo-out ${marker.visible ? "opacity-100" : "opacity-0"}`}
+            style={{ left: marker.left, width: marker.width }}
+          />
+          {items.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                onMouseEnter={(event) => moveMarkerTo(event.currentTarget)}
+                onFocus={(event) => moveMarkerTo(event.currentTarget)}
+                className={`relative rounded-lg px-3 py-1.5 text-[0.8125rem] transition-colors duration-200 ${active ? "text-fg" : "text-fg-muted hover:text-fg"}`}
+              >
+                {item.title}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <CtaLink href="/contact" label="Header Start Project" magnetic={false} className="btn btn-light btn-sm hidden sm:inline-flex">
+            <span>Start a project</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </CtaLink>
+          <MobileMenu items={items} isActive={isActive} />
         </div>
-      )}
+      </div>
     </header>
   );
 }

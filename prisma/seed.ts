@@ -13,8 +13,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting development database seed...");
 
+  const isProduction = process.env.NODE_ENV === "production";
   const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@webgent.com";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || "ChangeMeInProduction123!";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    throw new Error("Set SEED_ADMIN_PASSWORD before seeding. There is no default password.");
+  }
 
   let adminUser = await prisma.user.findUnique({
     where: { email: adminEmail },
@@ -44,7 +49,7 @@ async function main() {
         "High-performance artisan silver jewellery online store with Razorpay payment gateway, shopping cart, and mobile-optimized catalog.",
       content:
         "### Project Overview\n\nFull production e-commerce website designed and developed for Edayaa Jewellery. Features dynamic product filtering, secure UPI and card payments, and fast mobile browsing.",
-      clientName: "Edayaa Jewellery Ltd.",
+      clientName: "Edayaa Jewellery",
       category: "E-Commerce & Retail",
       imageUrl:
         "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80",
@@ -61,79 +66,6 @@ async function main() {
       seoDescription: "Production e-commerce case study for Edayaa Jewellery built with Next.js and Razorpay.",
       authorId: adminUser.id,
     },
-    {
-      title: "Cloud Analytics Platform",
-      slug: "nextgen-enterprise-saas-platform",
-      description:
-        "High-performance multi-tenant cloud analytics dashboard designed for high-concurrency data reporting.",
-      content:
-        "### Technical Architecture Highlights\n\n- Multi-tenant architecture with tenant isolation\n- Real-time data processing pipeline\n- Micro-frontend architecture with Next.js App Router and TailwindCSS",
-      clientName: "Enterprise Cloud Systems",
-      category: "Cloud Architecture",
-      imageUrl:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
-      screenshots: JSON.stringify([
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
-      ]),
-      demoUrl: undefined,
-      githubUrl: "https://github.com/webgent/nextgen-saas",
-      technologies: "Next.js, TypeScript, PostgreSQL, Prisma, TailwindCSS, Docker",
-      featured: true,
-      published: true,
-      order: 2,
-      seoTitle: "Cloud Analytics Platform | Webgent Portfolio",
-      seoDescription: "Multi-tenant SaaS analytics architecture case study.",
-      authorId: adminUser.id,
-    },
-    {
-      title: "Real-Time Trading Interface",
-      slug: "fintech-realtime-trading-portal",
-      description:
-        "Responsive trading interface engineered with WebSockets and modular charting components.",
-      content:
-        "### Architecture Overview\n\nBuilt with WebSockets and custom charting components to render financial data updates with smooth frame rates.",
-      clientName: "Fintech Global Markets",
-      category: "Fintech Systems",
-      imageUrl:
-        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
-      screenshots: JSON.stringify([
-        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80",
-      ]),
-      demoUrl: undefined,
-      githubUrl: "https://github.com/webgent/fintech-portal",
-      technologies: "React, TypeScript, WebSockets, Node.js, Redis",
-      featured: true,
-      published: true,
-      order: 3,
-      seoTitle: "Real-Time Trading Interface Case Study",
-      seoDescription: "High-throughput WebSockets and real-time dashboard UI.",
-      authorId: adminUser.id,
-    },
-    {
-      title: "Patient Telemedicine Portal",
-      slug: "healthcare-digital-patient-portal",
-      description:
-        "Telemedicine and appointment scheduling interface for private clinics and healthcare practitioners.",
-      content:
-        "### Platform Architecture\n\nEncrypted record storage patterns, WebRTC consultation flows, and automated appointment reminders.",
-      clientName: "Telehealth Care Systems",
-      category: "Healthcare Technology",
-      imageUrl:
-        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
-      screenshots: JSON.stringify([
-        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
-      ]),
-      demoUrl: undefined,
-      githubUrl: undefined,
-      technologies: "Next.js, TailwindCSS, WebRTC, PostgreSQL",
-      featured: true,
-      published: true,
-      order: 4,
-      seoTitle: "Patient Telemedicine Portal Case Study",
-      seoDescription: "Clinic booking and telehealth consultation platform.",
-      authorId: adminUser.id,
-    },
   ];
 
   for (const proj of sampleProjects) {
@@ -143,8 +75,11 @@ async function main() {
       create: proj,
     });
   }
-  console.log("✅ Seeded sample portfolio projects.");
+  console.log("✅ Seeded portfolio projects.");
 
+  // Everything below this block is sample content for local development only.
+
+  if (!isProduction) {
   const sampleLeads = [
     {
       name: "Sarah Jenkins",
@@ -269,6 +204,7 @@ Database latency is often the primary bottleneck in web application throughput. 
     });
   }
   console.log("✅ Seeded sample blog posts.");
+  }
 
   const defaultSettings = [
     {
@@ -279,19 +215,19 @@ Database latency is often the primary bottleneck in web application throughput. 
     },
     {
       key: "site_tagline",
-      value: "Next-Gen Web Solutions & Enterprise Software",
+      value: "Next-Gen Web Solutions & Engineering",
       description: "Hero Tagline",
       isPublic: true,
     },
     {
       key: "contact_email",
-      value: "hello@webgent.com",
+      value: "mohitvermag75@gmail.com",
       description: "Primary Contact Email",
       isPublic: true,
     },
     {
       key: "contact_phone",
-      value: "+1 (800) 555-WEBGENT",
+      value: "+91 8800241462",
       description: "Support Phone Number",
       isPublic: true,
     },
@@ -309,6 +245,7 @@ Database latency is often the primary bottleneck in web application throughput. 
   // Testimonials: Empty by default. Real testimonials will be added by genuine clients.
   console.log("ℹ️ Testimonials: Zero fabricated testimonials seeded.");
 
+  if (!isProduction) {
   const sampleSubscribers = [
     {
       email: "subscriber@example.com",
@@ -327,6 +264,7 @@ Database latency is often the primary bottleneck in web application throughput. 
     });
   }
   console.log("✅ Seeded sample newsletter subscribers.");
+  }
 
   console.log("\n🎉 Database seed complete! All models populated.");
 }

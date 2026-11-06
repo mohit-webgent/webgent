@@ -23,6 +23,7 @@ declare global {
           "expired-callback"?: () => void;
           theme?: "light" | "dark" | "auto";
           size?: "normal" | "compact" | "flexible";
+          appearance?: "always" | "execute" | "interaction-only";
           retry?: "auto" | "never";
           "retry-interval"?: number;
           "refresh-expired"?: "auto" | "manual" | "never";
@@ -47,6 +48,8 @@ export interface TurnstileProps {
   onError?: (errorCode?: string) => void;
   theme?: "dark" | "light" | "auto";
   size?: "normal" | "compact" | "flexible";
+  /** "interaction-only" stays invisible unless Cloudflare needs the visitor to do something. */
+  appearance?: "always" | "execute" | "interaction-only";
   action?: string;
   cData?: string;
   className?: string;
@@ -104,6 +107,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
       onError,
       theme = "dark",
       size = "normal",
+      appearance = "always",
       action,
       cData,
       className = "",
@@ -187,6 +191,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
               sitekey: activeSiteKey,
               theme,
               size,
+              appearance,
               action,
               cData,
               retry: "auto",
@@ -234,18 +239,18 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
           widgetIdRef.current = null;
         }
       };
-    }, [activeSiteKey, theme, size, action, cData, isProduction]);
+    }, [activeSiteKey, theme, size, appearance, action, cData, isProduction]);
 
     // When site key is missing in development, render a subtle luxury badge
     if (!activeSiteKey && !isProduction) {
       return (
         <div
           id={id}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[11px] font-mono text-neutral-400 select-none ${className}`}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-line text-xs font-mono text-neutral-400 select-none ${className}`}
         >
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-accent shrink-0" />
           <span>Cloudflare Turnstile</span>
-          <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase font-semibold">
+          <span className="px-1.5 py-0.5 rounded text-xs bg-accent/10 text-accent border border-accent/20 uppercase font-semibold">
             Dev Bypass Active
           </span>
         </div>
@@ -273,7 +278,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
             <span>{loadError}</span>
           </div>
         )}
-        <div ref={containerRef} className="inline-block min-h-[65px]" />
+        <div ref={containerRef} className={appearance === "interaction-only" ? "inline-block" : "inline-block min-h-[65px]"} />
       </div>
     );
   },

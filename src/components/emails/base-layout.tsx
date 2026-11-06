@@ -1,15 +1,22 @@
 import * as React from "react";
-import {
-  Html,
-  Head,
-  Body,
-  Container,
-  Section,
-  Heading,
-  Text,
-  Link,
-  Preview,
-} from "@react-email/components";
+import { Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from "@react-email/components";
+import { parseClientMessage } from "./email-format";
+
+export const emailColors = {
+  text: "#18181b",
+  body: "#3f3f46",
+  muted: "#71717a",
+  rule: "#e4e4e7",
+  link: "#b84a0c",
+  accent: "#f26a1f",
+  accentText: "#140802",
+};
+
+const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+export function getAppUrl() {
+  return (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.vercel.app").replace(/\/$/, "");
+}
 
 export interface EmailBaseLayoutProps {
   previewText: string;
@@ -19,173 +26,176 @@ export interface EmailBaseLayoutProps {
   children: React.ReactNode;
 }
 
-export function EmailBaseLayout({
-  previewText,
-  heading,
-  subheading,
-  unsubscribeUrl,
-  children,
-}: EmailBaseLayoutProps) {
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
+export function EmailBaseLayout({ previewText, heading, subheading, unsubscribeUrl, children }: EmailBaseLayoutProps) {
+  const appUrl = getAppUrl();
 
   return (
     <Html lang="en">
-      <Head />
+      <Head>
+        {/* Asks mail apps to keep these colours rather than inverting them in dark mode. */}
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light only" />
+      </Head>
       <Preview>{previewText}</Preview>
-      <Body style={mainStyle}>
-        <Container style={containerStyle}>
-          <Section style={headerStyle}>
-            <Link href={appUrl} style={{ textDecoration: "none" }}>
-              <table align="center" border={0} cellPadding={0} cellSpacing={0}>
+      <Body style={{ backgroundColor: "#ffffff", color: emailColors.text, fontFamily, margin: 0, padding: 0 }}>
+        <Container style={{ maxWidth: "600px", margin: "0 auto", padding: "32px 24px" }}>
+          <Link href={appUrl} style={{ textDecoration: "none" }}>
+            <table role="presentation" border={0} cellPadding={0} cellSpacing={0}>
+              <tbody>
                 <tr>
-                  <td style={brandLogoBadge}>W</td>
-                  <td style={{ paddingLeft: "10px", verticalAlign: "middle" }}>
-                    <Text style={brandTextStyle}>WEBGENT</Text>
+                  <td
+                    width={28}
+                    height={28}
+                    align="center"
+                    style={{ backgroundColor: emailColors.accent, borderRadius: "6px", color: emailColors.accentText, fontSize: "15px", fontWeight: 700, lineHeight: "28px" }}
+                  >
+                    W
                   </td>
+                  <td style={{ paddingLeft: "10px", color: emailColors.text, fontSize: "16px", fontWeight: 700 }}>Webgent</td>
                 </tr>
-              </table>
+              </tbody>
+            </table>
+          </Link>
+
+          <Hr style={{ borderColor: emailColors.rule, margin: "20px 0 28px" }} />
+
+          {heading && (
+            <Heading as="h1" style={{ color: emailColors.text, fontSize: "24px", fontWeight: 700, lineHeight: "1.3", margin: "0 0 8px" }}>
+              {heading}
+            </Heading>
+          )}
+          {subheading && <Text style={{ color: emailColors.body, fontSize: "15px", lineHeight: "1.6", margin: "0 0 24px" }}>{subheading}</Text>}
+
+          {children}
+
+          <Hr style={{ borderColor: emailColors.rule, margin: "32px 0 16px" }} />
+
+          <Text style={{ color: emailColors.muted, fontSize: "12px", lineHeight: "1.6", margin: 0 }}>
+            Websites, online stores and web apps by Mohit Verma.
+            <br />
+            <Link href={appUrl} style={footerLink}>
+              Website
             </Link>
-          </Section>
-
-          <Section style={cardStyle}>
-            {heading && <Heading style={headingStyle}>{heading}</Heading>}
-            {subheading && <Text style={subheadingStyle}>{subheading}</Text>}
-            {children}
-          </Section>
-
-          <Section style={footerStyle}>
-            <Text style={footerTextStyle}>
-              &copy; {new Date().getFullYear()} Webgent Technologies Inc. All rights reserved.
-            </Text>
-            <Text style={footerSubTextStyle}>
-              High-performance web architecture, enterprise SaaS engineering, and AI digital
-              systems.
-            </Text>
-            <Text style={footerLinksStyle}>
-              <Link href={`${appUrl}`} style={footerLink}>
-                Website
-              </Link>
-              {" • "}
-              <Link href={`${appUrl}/work`} style={footerLink}>
-                Portfolio
-              </Link>
-              {" • "}
-              <Link href={`${appUrl}/blog`} style={footerLink}>
-                Blog
-              </Link>
-              {" • "}
-              <Link href={`${appUrl}/contact`} style={footerLink}>
-                Contact
-              </Link>
-              {unsubscribeUrl && (
-                <>
-                  {" • "}
-                  <Link href={unsubscribeUrl} style={footerLinkUnsubscribe}>
-                    Unsubscribe
-                  </Link>
-                </>
-              )}
-            </Text>
-          </Section>
+            {" · "}
+            <Link href={`${appUrl}/work`} style={footerLink}>
+              Work
+            </Link>
+            {" · "}
+            <Link href={`${appUrl}/contact`} style={footerLink}>
+              Contact
+            </Link>
+            {unsubscribeUrl && (
+              <>
+                {" · "}
+                <Link href={unsubscribeUrl} style={footerLink}>
+                  Unsubscribe
+                </Link>
+              </>
+            )}
+          </Text>
+          <Text style={{ color: emailColors.muted, fontSize: "12px", lineHeight: "1.6", margin: "4px 0 0" }}>
+            &copy; {new Date().getFullYear()} Webgent. All rights reserved.
+          </Text>
         </Container>
       </Body>
     </Html>
   );
 }
 
-const mainStyle: React.CSSProperties = {
-  backgroundColor: "#070a12",
-  color: "#f8fafc",
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-  margin: 0,
-  padding: "40px 16px",
-};
+const footerLink: React.CSSProperties = { color: emailColors.muted, textDecoration: "underline" };
 
-const containerStyle: React.CSSProperties = {
-  maxWidth: "580px",
-  margin: "0 auto",
-};
+export const emailText: React.CSSProperties = { color: emailColors.body, fontSize: "15px", lineHeight: "1.6", margin: "0 0 16px" };
 
-const headerStyle: React.CSSProperties = {
-  textAlign: "center",
-  paddingBottom: "24px",
-};
+export const emailLink: React.CSSProperties = { color: emailColors.link, textDecoration: "underline" };
 
-const brandLogoBadge: React.CSSProperties = {
-  backgroundColor: "#4f46e5",
-  color: "#ffffff",
-  fontWeight: 900,
-  fontSize: "18px",
-  width: "36px",
-  height: "36px",
-  borderRadius: "10px",
-  textAlign: "center",
-  lineHeight: "36px",
-};
+export function EmailSectionTitle({ children }: { children: React.ReactNode }) {
+  return <Text style={{ color: emailColors.text, fontSize: "15px", fontWeight: 700, lineHeight: "1.4", margin: "28px 0 10px" }}>{children}</Text>;
+}
 
-const brandTextStyle: React.CSSProperties = {
-  color: "#ffffff",
-  fontSize: "20px",
-  fontWeight: 800,
-  letterSpacing: "1.5px",
-  margin: 0,
-};
+export interface EmailDetail {
+  label: string;
+  value: React.ReactNode;
+}
 
-const cardStyle: React.CSSProperties = {
-  backgroundColor: "#0f172a",
-  border: "1px solid #1e293b",
-  borderRadius: "20px",
-  padding: "36px 32px",
-  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)",
-};
+/** Two-column details table. Empty rows are left out. */
+export function EmailDetails({ rows }: { rows: EmailDetail[] }) {
+  const visible = rows.filter((row) => row.value !== null && row.value !== undefined && row.value !== "");
+  return (
+    <table role="presentation" width="100%" border={0} cellPadding={0} cellSpacing={0} style={{ borderTop: `1px solid ${emailColors.rule}` }}>
+      <tbody>
+        {visible.map((row) => (
+          <tr key={row.label}>
+            <td width="34%" valign="top" style={{ borderBottom: `1px solid ${emailColors.rule}`, color: emailColors.muted, fontSize: "14px", lineHeight: "1.5", padding: "9px 12px 9px 0" }}>
+              {row.label}
+            </td>
+            <td valign="top" style={{ borderBottom: `1px solid ${emailColors.rule}`, color: emailColors.text, fontSize: "14px", lineHeight: "1.5", padding: "9px 0", wordBreak: "break-word" }}>
+              {row.value}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
-const headingStyle: React.CSSProperties = {
-  color: "#ffffff",
-  fontSize: "22px",
-  fontWeight: 700,
-  letterSpacing: "-0.5px",
-  marginTop: 0,
-  marginBottom: "8px",
-};
+/** Tables rather than a list element, because mail apps disagree about list spacing and bullets. */
+export function EmailPoints({ points, numbered = false }: { points: Array<{ label?: string; text: string }>; numbered?: boolean }) {
+  return (
+    <table role="presentation" width="100%" border={0} cellPadding={0} cellSpacing={0}>
+      <tbody>
+        {points.map((point, index) => (
+          <tr key={`${index}-${point.text.slice(0, 24)}`}>
+            <td width={22} valign="top" style={{ color: emailColors.link, fontSize: "14px", fontWeight: 700, lineHeight: "1.6", padding: "3px 0" }}>
+              {numbered ? `${index + 1}.` : "•"}
+            </td>
+            <td valign="top" style={{ color: emailColors.body, fontSize: "14px", lineHeight: "1.6", padding: "3px 0", wordBreak: "break-word" }}>
+              {point.label && <strong style={{ color: emailColors.text }}>{point.label}: </strong>}
+              {point.text}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
-const subheadingStyle: React.CSSProperties = {
-  color: "#94a3b8",
-  fontSize: "15px",
-  lineHeight: "1.6",
-  marginTop: 0,
-  marginBottom: "24px",
-};
+export function EmailClientMessage({ message }: { message?: string | null }) {
+  const groups = parseClientMessage(message);
+  if (groups.length === 0) return <Text style={{ ...emailText, color: emailColors.muted, margin: 0 }}>No message was included.</Text>;
 
-const footerStyle: React.CSSProperties = {
-  textAlign: "center",
-  paddingTop: "24px",
-};
+  return (
+    <>
+      {groups.map((group, index) => (
+        <div key={`${index}-${group.heading ?? "points"}`} style={{ marginTop: index === 0 ? 0 : "14px" }}>
+          {group.heading && <Text style={{ color: emailColors.text, fontSize: "14px", fontWeight: 600, lineHeight: "1.5", margin: "0 0 4px" }}>{group.heading}</Text>}
+          {group.points.length > 0 && <EmailPoints points={group.points} />}
+        </div>
+      ))}
+    </>
+  );
+}
 
-const footerTextStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: "12px",
-  margin: "0 0 4px 0",
-};
+export function EmailButton({ href, children, secondary = false }: { href: string; children: React.ReactNode; secondary?: boolean }) {
+  return (
+    <Button
+      href={href}
+      style={{
+        backgroundColor: secondary ? "#ffffff" : emailColors.accent,
+        border: `1px solid ${secondary ? emailColors.rule : emailColors.accent}`,
+        borderRadius: "8px",
+        color: secondary ? emailColors.text : emailColors.accentText,
+        display: "inline-block",
+        fontSize: "14px",
+        fontWeight: 600,
+        padding: "11px 20px",
+        textDecoration: "none",
+      }}
+    >
+      {children}
+    </Button>
+  );
+}
 
-const footerSubTextStyle: React.CSSProperties = {
-  color: "#475569",
-  fontSize: "11px",
-  margin: "0 0 12px 0",
-  lineHeight: "1.5",
-};
-
-const footerLinksStyle: React.CSSProperties = {
-  color: "#475569",
-  fontSize: "12px",
-  margin: 0,
-};
-
-const footerLink: React.CSSProperties = {
-  color: "#818cf8",
-  textDecoration: "none",
-};
-
-const footerLinkUnsubscribe: React.CSSProperties = {
-  color: "#ef4444",
-  textDecoration: "underline",
-};
+export function EmailActions({ children }: { children: React.ReactNode }) {
+  return <Section style={{ margin: "26px 0 0" }}>{children}</Section>;
+}

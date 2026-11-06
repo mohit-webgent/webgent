@@ -153,6 +153,10 @@ export async function savePricingOverrides(
     cacheErrors.push(msg);
   }
 
+  // Imported here because the knowledge index itself reads pricing from this module.
+  const { clearKnowledgeIndexCache } = await import("./ai-consultant/knowledge-retrieval");
+  clearKnowledgeIndexCache();
+
   const pathsToRevalidate = ["/pricing", "/admin/pricing"];
   for (const path of pathsToRevalidate) {
     try {

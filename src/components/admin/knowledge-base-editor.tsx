@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import {
   Sparkles,
   Plus,
@@ -27,12 +28,13 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
   about: { label: "Company & Identity", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
   credentials: { label: "Founder & Team", color: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
   pricing: { label: "Pricing & Scope", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  tech_stack: { label: "Tech Architecture", color: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
-  policy: { label: "Policy & SLA", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
+  tech_stack: { label: "Tech Architecture", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
+  policy: { label: "Policy & SLA", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
   custom: { label: "Custom Knowledge", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
 };
 
 export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps) {
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState<"knowledge" | "rules">("knowledge");
   const [knowledgeList, setKnowledgeList] = useState<ApprovedKnowledgeItem[]>(
     initialConfig.knowledge || [],
@@ -113,8 +115,14 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
     setEditingKnowledge(null);
   };
 
-  const handleDeleteKnowledge = (id: string) => {
-    if (!confirm("Remove this knowledge document?")) return;
+  const handleDeleteKnowledge = async (id: string) => {
+    const confirmed = await confirm({
+      title: "Remove this document?",
+      description: "The AI consultant will stop using it once you publish your changes.",
+      confirmText: "Remove",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
     setKnowledgeList((prev) => prev.filter((k) => k.id !== id));
   };
 
@@ -186,23 +194,23 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+            <span className="px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
               AI Consultant Ground Truth
             </span>
-            <span className="px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
               {knowledgeList.length} Facts · {rulesList.length} Rules
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <BookOpen className="w-6 h-6" />
             </div>
-            <span>Approved Knowledge & Prompt Rules</span>
+            <span>AI Knowledge Base</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-            Configure authoritative company facts, founder background, and custom prompt guardrails consumed directly by the Google Gemini AI Consultant.
+            The facts and rules the AI consultant uses when it answers visitors.
           </p>
         </div>
 
@@ -210,7 +218,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
           <button
             onClick={handleSaveAll}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? "Publishing Changes..." : "Publish to AI Consultant"}</span>
@@ -238,7 +246,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
         <button
           onClick={() => setActiveTab("knowledge")}
           className={`pb-3 text-xs font-bold transition-all relative ${
-            activeTab === "knowledge" ? "text-amber-400" : "text-slate-400 hover:text-white"
+            activeTab === "knowledge" ? "text-amber-400" : "text-slate-400 hover:text-fg"
           }`}
         >
           <span className="flex items-center gap-2">
@@ -253,7 +261,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
         <button
           onClick={() => setActiveTab("rules")}
           className={`pb-3 text-xs font-bold transition-all relative ${
-            activeTab === "rules" ? "text-amber-400" : "text-slate-400 hover:text-white"
+            activeTab === "rules" ? "text-amber-400" : "text-slate-400 hover:text-fg"
           }`}
         >
           <span className="flex items-center gap-2">
@@ -271,11 +279,11 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs text-slate-400">
-              These verified documents are retrieved into Google Gemini context during visitor consultations.
+              The AI consultant uses these documents when it answers visitors.
             </p>
             <button
               onClick={handleOpenAddKnowledge}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-200 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-200 hover:text-fg transition-colors"
             >
               <Plus className="w-3.5 h-3.5 text-amber-400" />
               <span>Add Knowledge Entry</span>
@@ -296,7 +304,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <span
-                      className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${catConfig.color}`}
+                      className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider border ${catConfig.color}`}
                     >
                       {catConfig.label}
                     </span>
@@ -305,7 +313,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                       <button
                         onClick={() => handleToggleKnowledge(item.id)}
                         title={item.enabled ? "Disable for AI retrieval" : "Enable for AI retrieval"}
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                        className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors ${
                           item.enabled
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                             : "bg-slate-800 text-slate-500 border-slate-700"
@@ -316,7 +324,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
 
                       <button
                         onClick={() => handleOpenEditKnowledge(item)}
-                        className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                        className="p-1 text-slate-400 hover:text-fg hover:bg-slate-800 rounded-lg transition-colors"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -330,7 +338,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                     </div>
                   </div>
 
-                  <h3 className="text-sm font-bold text-white mb-2">{item.title}</h3>
+                  <h3 className="text-sm font-bold text-fg mb-2">{item.title}</h3>
                   <p className="text-xs text-slate-300 leading-relaxed mb-3 line-clamp-4">
                     {item.content}
                   </p>
@@ -339,7 +347,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                     {item.keywords.map((kw, idx) => (
                       <span
                         key={idx}
-                        className="px-1.5 py-0.5 rounded bg-slate-950 text-[10px] font-mono text-slate-400 border border-slate-800"
+                        className="px-1.5 py-0.5 rounded bg-slate-950 text-xs font-mono text-slate-400 border border-slate-800"
                       >
                         #{kw}
                       </span>
@@ -356,7 +364,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
       {activeTab === "rules" && (
         <div className="space-y-6">
           <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white">Add New Prompt Rule or Guardrail</h3>
+            <h3 className="text-sm font-bold text-fg">Add a Rule</h3>
             <form onSubmit={handleAddRule} className="space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
@@ -365,13 +373,13 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                   value={newRuleText}
                   onChange={(e) => setNewRuleText(e.target.value)}
                   placeholder="e.g. Never recommend WordPress or Wix when user asks about scalability..."
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 />
 
                 <select
                   value={newRuleSeverity}
                   onChange={(e) => setNewRuleSeverity(e.target.value as "strict" | "preference")}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 >
                   <option value="strict">Strict Guardrail</option>
                   <option value="preference">Style / Preference</option>
@@ -389,7 +397,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-white">Active Prompt Directives</h3>
+            <h3 className="text-sm font-bold text-fg">Active Rules</h3>
             <div className="space-y-2.5">
               {rulesList.map((r, index) => (
                 <div
@@ -404,10 +412,10 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                     </span>
                     <div>
                       <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border mr-2 ${
+                        className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider border mr-2 ${
                           r.severity === "strict"
                             ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                            : "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                            : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
                         }`}
                       >
                         {r.severity}
@@ -419,7 +427,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleToggleRule(r.id)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                      className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors ${
                         r.enabled
                           ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                           : "bg-slate-800 text-slate-500 border-slate-700"
@@ -443,16 +451,16 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
 
       {/* Edit Knowledge Modal */}
       {editingKnowledge && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-fg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-400" />
                 <span>{isNewKnowledge ? "Add Knowledge Document" : "Edit Knowledge Document"}</span>
               </h3>
               <button
                 onClick={() => setEditingKnowledge(null)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-1.5 text-slate-400 hover:text-fg hover:bg-slate-800 rounded-xl transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -469,7 +477,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                   value={knowTitle}
                   onChange={(e) => setKnowTitle(e.target.value)}
                   placeholder="e.g. Core Milestone Payment Structure"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -481,7 +489,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                     onChange={(e) =>
                       setKnowCategory(e.target.value as ApprovedKnowledgeItem["category"])
                     }
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                   >
                     <option value="about">Company & Identity</option>
                     <option value="credentials">Founder & Team</option>
@@ -497,7 +505,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                   <select
                     value={knowEnabled ? "true" : "false"}
                     onChange={(e) => setKnowEnabled(e.target.value === "true")}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                   >
                     <option value="true">Active (Retrieve in AI)</option>
                     <option value="false">Disabled (Ignore)</option>
@@ -515,7 +523,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                   value={knowContent}
                   onChange={(e) => setKnowContent(e.target.value)}
                   placeholder="Explain factual requirements, timelines, technical specifications, or business boundaries clearly..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400 leading-relaxed font-sans"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-fg focus:outline-none focus:border-amber-400 leading-relaxed font-sans"
                 />
               </div>
 
@@ -528,7 +536,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                   value={knowKeywords}
                   onChange={(e) => setKnowKeywords(e.target.value)}
                   placeholder="payments, milestones, upfront, refund, warranty"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -536,7 +544,7 @@ export function KnowledgeBaseEditor({ initialConfig }: KnowledgeBaseEditorProps)
                 <button
                   type="button"
                   onClick={() => setEditingKnowledge(null)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-fg text-xs font-semibold rounded-xl"
                 >
                   Cancel
                 </button>

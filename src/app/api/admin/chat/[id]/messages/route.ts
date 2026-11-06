@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { verifyStrictAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
@@ -9,10 +9,11 @@ const sendMessageSchema = z.object({
   sender: z.string().default("admin"),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+export async function POST(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const validated = sendMessageSchema.safeParse(body);
     if (!validated.success) {
       return NextResponse.json(
-        { success: false, error: validated.error.errors[0]?.message },
+        { success: false, error: validated.error.issues[0]?.message },
         { status: 400 },
       );
     }

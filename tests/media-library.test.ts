@@ -64,7 +64,7 @@ describe("Media Library & Supabase Storage Suite", () => {
       const req = new NextRequest("http://localhost:3000/api/admin/media/test-id", {
         method: "DELETE",
       });
-      const res = await deleteMediaRoute(req, { params: { id: "test-id" } });
+      const res = await deleteMediaRoute(req, { params: Promise.resolve({ id: "test-id" }) });
       assert.equal(res.status, 401);
     });
   });

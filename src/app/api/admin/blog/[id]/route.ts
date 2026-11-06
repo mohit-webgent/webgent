@@ -12,7 +12,8 @@ import { ensureUniqueBlogSlug, calculateReadTime, formatTags } from "@/lib/blog/
 import { storageService } from "@/lib/services/storage";
 import { logger } from "@/lib/logger";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -48,7 +49,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -162,7 +164,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {

@@ -1,23 +1,25 @@
 import { prisma } from "@/lib/db";
+import { TextReveal } from "@/components/animations/text-reveal";
+import { CtaBand } from "@/components/ui/cta-band";
+import { MarkdownContent } from "@/components/ui/markdown-content";
 import { Project } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Github, Tag, Building, Sparkles, ArrowRight } from "lucide-react";
+import { ArrowLeft, Github, Building } from "lucide-react";
 import type { Metadata } from "next";
 import { DemoLink } from "@/components/work/demo-link";
 import { ProjectGallery } from "@/components/work/project-gallery";
 import { siteConfig } from "@/config/site";
-import { ClipReveal } from "@/components/animations/clip-reveal";
 import { ParallaxImage } from "@/components/animations/parallax-image";
-import { CtaLink } from "@/components/ui/cta-link";
 
 export const revalidate = 60;
 
 export async function generateMetadata({
-  params,
+  params: routeParams,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  const params = await routeParams;
   try {
     const project = await prisma.project.findUnique({
       where: { slug: params.slug },
@@ -71,7 +73,8 @@ export async function generateMetadata({
   }
 }
 
-export default async function PublicProjectDetailPage({ params }: { params: { slug: string } }) {
+export default async function PublicProjectDetailPage({ params: routeParams }: { params: Promise<{ slug: string }> }) {
+  const params = await routeParams;
   let project: Project | null = null;
   try {
     project = await prisma.project.findUnique({
@@ -97,145 +100,94 @@ export default async function PublicProjectDetailPage({ params }: { params: { sl
     }
   }
 
-  return (
-    <div className="min-h-screen bg-[#080808] text-[#D0D0CE] py-16 px-5 sm:px-8 lg:px-12 2xl:px-20 relative overflow-hidden font-sans">
-      <div className="max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto space-y-14 relative z-10 text-left">
-        {/* Navigation Return Link */}
-        <Link
-          href="/work"
-          className="inline-flex items-center gap-2 text-xs font-mono text-[#8A8A8A] hover:text-white transition-colors group"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-          <span>PORTFOLIO / RETURN TO INDEX</span>
-        </Link>
+  const technologies = project.technologies
+    ? project.technologies.split(",").map((tech) => tech.trim()).filter(Boolean)
+    : [];
+  const demoUrl = project.demoUrl?.trim();
+  const showDemo = Boolean(demoUrl) && !demoUrl?.includes("demo.webgent.com");
+  const githubUrl = project.githubUrl?.trim();
+  const showGithub = Boolean(githubUrl) && !githubUrl?.includes("github.com/webgent/");
 
-        {/* Hero Header Sequence */}
-        <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="px-2.5 py-1 bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-              Live Production Work
-            </span>
-            <span className="px-2.5 py-0.5 bg-[#141414] text-[#B5B5B3] border border-white/[0.08] text-[10px] font-mono font-medium rounded uppercase tracking-wider">
-              {project.category || "Case Study"}
-            </span>
+  return (
+    <>
+      <header className="relative isolate overflow-hidden pb-12 pt-10 sm:pt-14">
+        <div className="wrap">
+          <Link href="/work" className="inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg">
+            <ArrowLeft className="h-4 w-4" />
+            All work
+          </Link>
+
+          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-fg-muted">
+            {project.category && <span>{project.category}</span>}
             {project.clientName && (
-              <span className="flex items-center gap-1.5 text-xs text-[#8A8A8A] font-mono">
-                <Building className="w-3.5 h-3.5 text-[#666666]" />
+              <span className="inline-flex items-center gap-1.5">
+                <Building className="h-4 w-4" />
                 {project.clientName}
+              </span>
+            )}
+            {showDemo && (
+              <span className="inline-flex items-center gap-1.5 text-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                Live
               </span>
             )}
           </div>
 
-          <ClipReveal>
-            <h1 className="text-4xl sm:text-6xl font-bold text-[#F5F5F3] tracking-tight uppercase leading-tight">
-              {project.title}
-            </h1>
-          </ClipReveal>
+          <TextReveal as="h1" immediate className="display-xl mt-5 max-w-5xl">
+            {project.title}
+          </TextReveal>
+          <p className="lede fade-up mt-6 max-w-3xl">{project.description}</p>
 
-          <p className="text-base sm:text-xl text-[#909090] leading-relaxed max-w-3xl">
-            {project.description}
-          </p>
-
-          <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/[0.06]">
-            {project.technologies && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Tag className="w-3.5 h-3.5 text-[#8A8A8A] mr-1" />
-                {project.technologies.split(",").map((tech, i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 bg-[#141414] border border-white/[0.06] text-[#8A8A8A] text-[11px] font-mono rounded"
-                  >
-                    {tech.trim()}
-                  </span>
-                ))}
-              </div>
+          <div className="fade-up mt-8 flex flex-wrap items-center gap-3">
+            {showDemo && demoUrl && <DemoLink projectSlug={project.slug} demoUrl={demoUrl} />}
+            {showGithub && (
+              <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                <Github className="h-4 w-4" />
+                <span>View repository</span>
+              </a>
             )}
-
-            <div className="flex items-center gap-3">
-              {project.demoUrl && project.demoUrl.trim() !== "" && !project.demoUrl.includes("demo.webgent.com") ? (
-                <DemoLink projectSlug={project.slug} demoUrl={project.demoUrl.trim()} />
-              ) : null}
-              {project.githubUrl && project.githubUrl.trim() !== "" && !project.githubUrl.includes("github.com/webgent/") ? (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#141414] hover:bg-[#1E1E1E] text-[#D0D0CE] border border-white/[0.08] font-medium text-xs rounded-lg transition-colors"
-                >
-                  <Github className="w-3.5 h-3.5" />
-                  <span>View Repository</span>
-                </a>
-              ) : null}
-            </div>
           </div>
         </div>
+      </header>
 
-        {/* Hero Cover Image with subtle Parallax */}
+      <div className="wrap space-y-16 pb-20">
         {project.imageUrl && (
-          <ParallaxImage className="rounded-2xl border border-white/[0.08] shadow-2xl">
-            <img
-              src={project.imageUrl}
-              alt={project.title}
-              className="w-full h-auto max-h-[560px] object-cover"
-            />
+          <ParallaxImage className="overflow-hidden rounded-[1.25rem] border border-line">
+            <img src={project.imageUrl} alt={project.title} className="max-h-[720px] w-full object-cover object-top" />
           </ParallaxImage>
         )}
 
-        {/* Project Architecture & Content */}
-        {project.content && (
-          <div className="bg-[#0D0D0D] border border-white/[0.08] rounded-2xl p-8 sm:p-12 space-y-6 shadow-2xl">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F3] flex items-center gap-2.5 tracking-tight uppercase">
-              <Sparkles className="w-5 h-5 text-[#8A8A8A]" />
-              <span>Technical Architecture & Engineering Scope</span>
-            </h2>
-            <div className="prose prose-invert max-w-none text-[#B5B5B3] leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
-              {project.content}
-            </div>
-          </div>
-        )}
-
-        {/* Screenshot Gallery with interactive modal preview */}
-        {screenshotList.length > 0 && (
-          <ProjectGallery screenshots={screenshotList} projectTitle={project.title} />
-        )}
-
-        {/* Closing Action Banner */}
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-black/10 py-7 sm:py-9 px-6 sm:px-10 text-center space-y-4 sm:space-y-5 shadow-2xl">
-          {/* Subtle decorative radial vignette */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_70%)]"
-          />
-
-          <div className="relative z-10 space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-black tracking-tight uppercase">
-              Ready to Engineer a Similar Platform?
-            </h2>
-            <p className="text-xs sm:text-sm text-[#3A3A3C] leading-relaxed">
-              Let&apos;s evaluate your technical requirements and construct an enterprise system
-              engineered for high scale and longevity.
-            </p>
-          </div>
-
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-1">
-            <CtaLink
-              href="/contact"
-              label="Project Detail Discuss Architecture"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-[#1E1E24] text-white font-medium text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
-            >
-              <span>Discuss Your Architecture</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </CtaLink>
-            <CtaLink
-              href="/work"
-              label="Project Detail Browse More"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-black/[0.05] text-black border border-black/25 hover:border-black/60 font-medium text-xs rounded-xl transition-all"
-            >
-              <span>Browse More Projects</span>
-            </CtaLink>
-          </div>
+        <div className="grid gap-12 lg:grid-cols-12">
+          {project.content && (
+            <section className="lg:col-span-8">
+              <h2 className="display-md mb-6">About the project</h2>
+              <MarkdownContent content={project.content} />
+            </section>
+          )}
+          {technologies.length > 0 && (
+            <aside className="lg:col-span-4">
+              <h2 className="font-mono text-xs font-normal uppercase tracking-[0.14em] text-fg-muted">Built with</h2>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {technologies.map((tech) => (
+                  <li key={tech} className="chip">
+                    {tech}
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
         </div>
+
+        {screenshotList.length > 0 && <ProjectGallery screenshots={screenshotList} projectTitle={project.title} />}
       </div>
-    </div>
+
+      <CtaBand
+        title="Want something like this?"
+        description="Tell me about your project and I'll come back with a clear scope, timeline and price."
+        secondaryLabel="See all work"
+        secondaryHref="/work"
+        analyticsName="Project Detail"
+      />
+    </>
   );
 }

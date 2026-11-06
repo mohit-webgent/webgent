@@ -77,43 +77,43 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
   } = estimate;
 
   return (
-    <div className="mt-2.5 rounded-2xl bg-[#0F101A] border border-emerald-500/30 p-3 space-y-3 text-left shadow-lg">
+    <div className="mt-2.5 rounded-2xl bg-surface-2 border border-accent/30 p-3 space-y-3 text-left shadow-lg">
       {/* Header Badge & Category */}
-      <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-2">
+      <div className="flex items-center justify-between gap-2 border-b border-line pb-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span className="text-[11.5px] font-bold text-white truncate tracking-tight">
+          <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
+          <span className="text-xs font-bold text-white truncate tracking-tight">
             {categoryDisplayName} Blueprint
           </span>
         </div>
         <span
-          className={`text-[9.5px] px-2 py-0.5 rounded-full font-mono font-medium tracking-wide border ${
+          className={`text-xs px-2 py-0.5 rounded-full font-mono font-medium tracking-wide border ${
             architecture === "dynamic"
-              ? "bg-purple-950/40 text-purple-300 border-purple-500/30"
-              : "bg-emerald-950/40 text-emerald-300 border-emerald-500/30"
+              ? "bg-accent/40 text-accent border-accent/30"
+              : "bg-accent/40 text-accent border-accent/30"
           }`}
         >
-          {architecture === "dynamic" ? "Dynamic (PostgreSQL)" : "Static Website"}
+          <span className="whitespace-nowrap">{architecture === "dynamic" ? "Dynamic (PostgreSQL)" : "Static Website"}</span>
         </span>
       </div>
 
       {/* Main Pricing & Timeline Hero Metric */}
-      <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-[#141523] border border-white/[0.06]">
+      <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-surface-3 border border-line">
         <div>
-          <span className="text-[10px] text-[#8E8E8C] block uppercase tracking-wider font-semibold">
+          <span className="text-xs text-fg-muted block uppercase tracking-wider font-semibold">
             One-Time Dev Fee
           </span>
-          <span className="text-base sm:text-lg font-black text-emerald-400 tracking-tight">
+          <span className="text-base sm:text-lg font-black text-accent tracking-tight">
             {cost.currencySymbol}
             {cost.oneTimeTotalINR.toLocaleString("en-IN")}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-[#8E8E8C] block uppercase tracking-wider font-semibold flex items-center justify-end gap-1">
-            <Clock className="w-3 h-3 text-teal-400" />
+          <span className="text-xs text-fg-muted block uppercase tracking-wider font-semibold flex items-center justify-end gap-1">
+            <Clock className="w-3 h-3 text-accent" />
             <span>Timeline</span>
           </span>
-          <span className="text-xs sm:text-sm font-bold text-[#E5E5E3] block leading-snug">
+          <span className="text-xs sm:text-sm font-bold text-fg block leading-snug">
             {estimatedTimeline}
           </span>
         </div>
@@ -121,9 +121,9 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
 
       {/* Monthly Care (if applicable) */}
       {cost.recurringMonthlyTotalINR > 0 && (
-        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-teal-950/20 border border-teal-500/20 text-[10.5px]">
-          <span className="text-[#A5D6A7]">Optional Monthly Care / Retainer:</span>
-          <span className="font-bold text-teal-300">
+        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-accent/20 border border-accent/20 text-xs">
+          <span className="text-fg-soft">Optional Monthly Care / Retainer:</span>
+          <span className="font-bold text-accent">
             {cost.currencySymbol}
             {cost.recurringMonthlyTotalINR.toLocaleString("en-IN")}/mo
           </span>
@@ -133,9 +133,9 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
       {/* Budget Assessment Box (if user volunteered a budget) */}
       {budgetAnalysis && (
         <div
-          className={`p-2.5 rounded-xl border text-[11px] leading-relaxed ${
+          className={`p-2.5 rounded-xl border text-xs leading-relaxed ${
             budgetAnalysis.fitsBudget
-              ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"
+              ? "bg-accent/30 border-accent/30 text-accent"
               : "bg-amber-950/30 border-amber-500/30 text-amber-200"
           }`}
         >
@@ -147,9 +147,9 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
               {budgetAnalysis.fitsBudget ? "Within Budget" : "Exceeds Target"})
             </span>
           </div>
-          <p className="text-[10.5px] opacity-90">{budgetAnalysis.recommendation}</p>
+          <p className="text-xs opacity-90">{budgetAnalysis.recommendation}</p>
           {budgetAnalysis.compromiseOptions && budgetAnalysis.compromiseOptions.length > 0 && (
-            <ul className="mt-1.5 space-y-0.5 pl-3 list-disc text-[10px] opacity-85">
+            <ul className="mt-1.5 space-y-0.5 pl-3 list-disc text-xs opacity-85">
               {budgetAnalysis.compromiseOptions.map((opt, idx) => (
                 <li key={idx}>{opt}</li>
               ))}
@@ -159,31 +159,31 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
       )}
 
       {/* Collapsible: Recommended Pages */}
-      <div className="border border-white/[0.07] rounded-xl overflow-hidden bg-[#12131F]">
+      <div className="border border-line rounded-xl overflow-hidden bg-surface-2">
         <button
           type="button"
           onClick={() => setShowPages((prev) => !prev)}
-          className="w-full px-2.5 py-2 flex items-center justify-between text-[11px] text-[#D4D4D2] hover:text-white transition-colors cursor-pointer"
+          className="w-full px-2.5 py-2 flex items-center justify-between text-xs text-fg-soft hover:text-white transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-1.5 font-semibold">
-            <Layers className="w-3.5 h-3.5 text-emerald-400" />
+            <Layers className="w-3.5 h-3.5 text-accent" />
             <span>Recommended Pages ({pages.count})</span>
           </span>
           {showPages ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
 
         {showPages && (
-          <div className="p-2.5 pt-0 border-t border-white/[0.05] space-y-1.5 text-[10.5px]">
+          <div className="p-2.5 pt-0 border-t border-line space-y-1.5 text-xs">
             {pages.list.map((p, idx) => (
-              <div key={idx} className="p-1.5 rounded-lg bg-black/30 border border-white/[0.04]">
+              <div key={idx} className="p-1.5 rounded-lg bg-black/30 border border-line">
                 <div className="flex items-center justify-between gap-1">
                   <span className="font-semibold text-white flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                     <span>{p.name}</span>
                   </span>
-                  <span className="text-[9px] font-mono text-[#7A7A78]">{p.slug}</span>
+                  <span className="text-xs font-mono text-fg-muted">{p.slug}</span>
                 </div>
-                <p className="text-[10px] text-[#8E8E8C] mt-0.5 leading-snug">{p.purpose}</p>
+                <p className="text-xs text-fg-muted mt-0.5 leading-snug">{p.purpose}</p>
               </div>
             ))}
           </div>
@@ -191,14 +191,14 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
       </div>
 
       {/* Collapsible: Features Checklist */}
-      <div className="border border-white/[0.07] rounded-xl overflow-hidden bg-[#12131F]">
+      <div className="border border-line rounded-xl overflow-hidden bg-surface-2">
         <button
           type="button"
           onClick={() => setShowFeatures((prev) => !prev)}
-          className="w-full px-2.5 py-2 flex items-center justify-between text-[11px] text-[#D4D4D2] hover:text-white transition-colors cursor-pointer"
+          className="w-full px-2.5 py-2 flex items-center justify-between text-xs text-fg-soft hover:text-white transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-1.5 font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-accent" />
             <span>
               Features ({features.essential.length} Essential · {features.recommended.length} Recommended)
             </span>
@@ -207,16 +207,16 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
         </button>
 
         {showFeatures && (
-          <div className="p-2.5 pt-0 border-t border-white/[0.05] space-y-2 text-[10.5px]">
+          <div className="p-2.5 pt-0 border-t border-line space-y-2 text-xs">
             <div>
-              <span className="text-[9.5px] uppercase tracking-wider text-emerald-400 font-bold block mb-1">
+              <span className="text-xs uppercase tracking-wider text-accent font-bold block mb-1">
                 Essential for Launch
               </span>
               <div className="flex flex-wrap gap-1">
                 {features.essential.map((f) => (
                   <span
                     key={f.id}
-                    className="px-2 py-0.5 rounded-md bg-emerald-950/40 text-emerald-300 border border-emerald-500/20 text-[10px]"
+                    className="px-2 py-0.5 rounded-md bg-accent/40 text-accent border border-accent/20 text-xs"
                   >
                     ✓ {f.name}
                   </span>
@@ -226,14 +226,14 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
 
             {features.recommended.length > 0 && (
               <div>
-                <span className="text-[9.5px] uppercase tracking-wider text-teal-400 font-bold block mb-1">
+                <span className="text-xs uppercase tracking-wider text-accent font-bold block mb-1">
                   Recommended Drivers
                 </span>
                 <div className="flex flex-wrap gap-1">
                   {features.recommended.map((f) => (
                     <span
                       key={f.id}
-                      className="px-2 py-0.5 rounded-md bg-teal-950/40 text-teal-300 border border-teal-500/20 text-[10px]"
+                      className="px-2 py-0.5 rounded-md bg-accent/40 text-accent border border-accent/20 text-xs"
                     >
                       + {f.name}
                     </span>
@@ -247,31 +247,31 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
 
       {/* Collapsible: Market Benchmark Comparison */}
       {marketBenchmark && (
-        <div className="border border-white/[0.07] rounded-xl overflow-hidden bg-[#12131F]">
+        <div className="border border-line rounded-xl overflow-hidden bg-surface-2">
           <button
             type="button"
             onClick={() => setShowBenchmark((prev) => !prev)}
-            className="w-full px-2.5 py-2 flex items-center justify-between text-[11px] text-[#D4D4D2] hover:text-white transition-colors cursor-pointer"
+            className="w-full px-2.5 py-2 flex items-center justify-between text-xs text-fg-soft hover:text-white transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-1.5 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+              <TrendingUp className="w-3.5 h-3.5 text-accent" />
               <span>Market Benchmark Rates</span>
             </span>
             {showBenchmark ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
           {showBenchmark && (
-            <div className="p-2.5 pt-0 border-t border-white/[0.05] space-y-2 text-[10.5px]">
-              <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/[0.04]">
-                <span className="text-[#8E8E8C]">Indian Agency Market Range:</span>
+            <div className="p-2.5 pt-0 border-t border-line space-y-2 text-xs">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-line">
+                <span className="text-fg-muted">Indian Agency Market Range:</span>
                 <span className="font-bold text-white font-mono">
                   {cost.currencySymbol}
                   {marketBenchmark.marketRangeMinINR.toLocaleString("en-IN")} – {cost.currencySymbol}
                   {marketBenchmark.marketRangeMaxINR.toLocaleString("en-IN")}
                 </span>
               </div>
-              <p className="text-[10px] text-[#8E8E8C] leading-snug">{marketBenchmark.notes}</p>
-              <div className="text-[9px] text-[#666666] flex items-center gap-1 border-t border-white/[0.04] pt-1">
+              <p className="text-xs text-fg-muted leading-snug">{marketBenchmark.notes}</p>
+              <div className="text-xs text-fg-muted flex items-center gap-1 border-t border-line pt-1">
                 <span>Source: {marketBenchmark.sourceName}</span>
                 <span>·</span>
                 <span>{marketBenchmark.researchDate}</span>
@@ -285,7 +285,7 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
       <button
         type="button"
         onClick={onInquireNow}
-        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-accent to-accent hover:from-accent hover:to-accent active:scale-[0.99] text-black font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
       >
         <span>Prepare Project Inquiry with this Scope</span>
         <ArrowRight className="w-3.5 h-3.5" />

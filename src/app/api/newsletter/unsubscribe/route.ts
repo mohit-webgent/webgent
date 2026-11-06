@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { waitUntil } from "@vercel/functions";
 
 export const dynamic = "force-dynamic";
 
@@ -7,57 +8,70 @@ import { ApiResponse } from "@/lib/api/response";
 import { emailService } from "@/lib/services/email";
 import { SubscriberStatus } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { renderActionPage, renderStatusPage } from "@/lib/newsletter/status-page";
 
+const wantsHtml = (req: NextRequest) => (req.headers.get("accept") || "").includes("text/html");
+const readToken = (req: NextRequest) => new URL(req.url).searchParams.get("token")?.trim();
+
+/** Shows a confirmation page. Opening the link changes nothing, because email scanners open links too. */
 export async function GET(req: NextRequest) {
+  const token = readToken(req);
+
+  if (!token) {
+    return renderStatusPage(
+      "Missing Token",
+      "Unsubscribe token is missing. Please use the link provided in your newsletter email.",
+      false,
+    );
+  }
+
+  return renderActionPage({
+    title: "Unsubscribe from Webgent?",
+    message: "You will stop receiving the Webgent newsletter. You can subscribe again at any time.",
+    action: `/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    buttonLabel: "Unsubscribe",
+  });
+}
+
+export async function POST(req: NextRequest) {
+  const html = wantsHtml(req);
+
   try {
-    const { searchParams } = new URL(req.url);
-    const token = searchParams.get("token")?.trim();
-    const acceptHeader = req.headers.get("accept") || "";
-    const isHtmlRequest = acceptHeader.includes("text/html");
+    const token = readToken(req);
 
     if (!token) {
-      if (isHtmlRequest) {
-        return renderUnsubscribeHtml({
-          title: "Missing Token",
-          message:
+      return html
+        ? renderStatusPage(
+            "Missing Token",
             "Unsubscribe token is missing. Please use the link provided in your newsletter email.",
-          isSuccess: false,
-        });
-      }
-      return ApiResponse.badRequest("Unsubscribe token is required.", "MISSING_TOKEN");
+            false,
+          )
+        : ApiResponse.badRequest("Unsubscribe token is required.", "MISSING_TOKEN");
     }
 
-    const subscriber = await prisma.subscriber.findFirst({
-      where: {
-        OR: [{ unsubscribeToken: token }, { confirmationToken: token }],
-      },
-    });
+    const subscriber = await prisma.subscriber.findUnique({ where: { unsubscribeToken: token } });
 
     if (!subscriber) {
-      if (isHtmlRequest) {
-        return renderUnsubscribeHtml({
-          title: "Invalid Token",
-          message:
+      return html
+        ? renderStatusPage(
+            "Invalid Link",
             "We could not find an active subscription associated with this unsubscribe link.",
-          isSuccess: false,
-        });
-      }
-      return ApiResponse.notFound("Invalid or expired unsubscribe token.");
+            false,
+          )
+        : ApiResponse.notFound("Invalid or expired unsubscribe token.");
     }
 
     if (subscriber.status === SubscriberStatus.UNSUBSCRIBED) {
-      if (isHtmlRequest) {
-        return renderUnsubscribeHtml({
-          title: "Already Unsubscribed",
-          message:
+      return html
+        ? renderStatusPage(
+            "Already Unsubscribed",
             "You have already been unsubscribed from our newsletter. No further emails will be sent.",
-          isSuccess: true,
-        });
-      }
-      return ApiResponse.success({
-        status: "ALREADY_UNSUBSCRIBED",
-        message: "You are already unsubscribed from our newsletter.",
-      });
+            true,
+          )
+        : ApiResponse.success({
+            status: "ALREADY_UNSUBSCRIBED",
+            message: "You are already unsubscribed from our newsletter.",
+          });
     }
 
     const updated = await prisma.subscriber.update({
@@ -69,73 +83,23 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    logger.info("Subscriber unsubscribed successfully", {
-      subscriberId: updated.id,
-      email: updated.email,
-    });
+    logger.info("Subscriber unsubscribed successfully", { subscriberId: updated.id });
 
-    emailService.sendNewsletterUnsubscribed({ email: updated.email }).catch(() => {});
+    waitUntil(emailService.sendNewsletterUnsubscribed({ email: updated.email }).catch(() => {}));
 
-    if (isHtmlRequest) {
-      return renderUnsubscribeHtml({
-        title: "Unsubscribed Successfully",
-        message: `Your email (${updated.email}) has been removed from our active mailing list. We're sorry to see you go!`,
-        isSuccess: true,
-      });
-    }
-
-    return ApiResponse.success({
-      status: "UNSUBSCRIBED",
-      message: "You have been successfully unsubscribed from the Webgent newsletter.",
-      email: updated.email,
-    });
+    return html
+      ? renderStatusPage(
+          "Unsubscribed Successfully",
+          `Your email (${updated.email}) has been removed from our mailing list. We're sorry to see you go!`,
+          true,
+        )
+      : ApiResponse.success({
+          status: "UNSUBSCRIBED",
+          message: "You have been successfully unsubscribed from the Webgent newsletter.",
+          email: updated.email,
+        });
   } catch (error) {
-    logger.error("Error during newsletter unsubscription", {
-      error: String(error),
-    });
+    logger.error("Error during newsletter unsubscription", { error: String(error) });
     return ApiResponse.internalError("Failed to process unsubscribe request.");
   }
-}
-
-function renderUnsubscribeHtml({
-  title,
-  message,
-  isSuccess,
-}: {
-  title: string;
-  message: string;
-  isSuccess: boolean;
-}) {
-  const iconSvg = isSuccess
-    ? `<svg class="w-16 h-16 text-indigo-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
-    : `<svg class="w-16 h-16 text-rose-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
-
-  const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>${title} — Webgent</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-      </head>
-      <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
-        <div class="max-w-md w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl backdrop-blur-xl">
-          <div class="mb-6 p-4 ${isSuccess ? "bg-indigo-500/10" : "bg-rose-500/10"} rounded-2xl w-24 h-24 mx-auto flex items-center justify-center border ${isSuccess ? "border-indigo-500/20" : "border-rose-500/20"}">
-            ${iconSvg}
-          </div>
-          <h1 class="text-2xl font-extrabold text-white mb-3 tracking-tight">${title}</h1>
-          <p class="text-slate-400 text-sm leading-relaxed mb-8">${message}</p>
-          <a href="/" class="inline-flex items-center justify-center w-full px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition-all border border-slate-700">
-            Return to Homepage
-          </a>
-        </div>
-      </body>
-    </html>
-  `;
-
-  return new NextResponse(html, {
-    status: isSuccess ? 200 : 400,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
 }

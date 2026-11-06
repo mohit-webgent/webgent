@@ -7,10 +7,11 @@ import { ServiceDetailView } from "@/components/services/service-detail-view";
 export const revalidate = 60;
 
 interface ServicePageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
+export async function generateMetadata({ params: routeParams }: ServicePageProps): Promise<Metadata> {
+  const params = await routeParams;
   try {
     const service = await getPublicServiceBySlug(params.slug);
     if (!service) {
@@ -64,7 +65,8 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   }
 }
 
-export default async function SingleServicePage({ params }: ServicePageProps) {
+export default async function SingleServicePage({ params: routeParams }: ServicePageProps) {
+  const params = await routeParams;
   const resolvedParams = await Promise.resolve(params);
   const slug = resolvedParams?.slug;
   if (!slug) {

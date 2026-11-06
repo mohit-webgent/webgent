@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAdminApiAccess } from "@/lib/auth-utils";
+import { verifyAdminApiAccess, verifyStrictAdminApiAccess } from "@/lib/auth-utils";
 import {
   getPricingData,
   savePricingOverrides,
@@ -44,10 +44,10 @@ export async function GET() {
 /**
  * PUT /api/admin/pricing
  * Updates pricing tiers, categories, features, and calculation settings.
- * Protected: Requires active ADMIN or EDITOR session.
+ * Protected: Requires an active ADMIN session.
  */
 export async function PUT(req: NextRequest) {
-  const authCheck = await verifyAdminApiAccess();
+  const authCheck = await verifyStrictAdminApiAccess();
   if (authCheck instanceof NextResponse) {
     return authCheck;
   }

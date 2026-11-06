@@ -3,18 +3,13 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/api/response";
-import { verifyAdminApiAccess } from "@/lib/auth-utils";
+import { verifyStrictAdminApiAccess } from "@/lib/auth-utils";
+import { escapeCsvCell } from "@/lib/leads/csv";
 import { logger } from "@/lib/logger";
-
-function escapeCsvCell(cell: string | number | null | undefined): string {
-  if (cell === null || cell === undefined) return '""';
-  const str = String(cell).replace(/"/g, '""');
-  return `"${str}"`;
-}
 
 export async function GET() {
   try {
-    const authGuard = await verifyAdminApiAccess();
+    const authGuard = await verifyStrictAdminApiAccess();
     if (authGuard instanceof Response) {
       return authGuard;
     }

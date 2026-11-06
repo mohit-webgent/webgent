@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/contact/contact-form";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
 import { getContactInfo, resolveRouteMetadata } from "@/lib/services/cms";
-import { ContactPageSkeleton } from "./loading";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 
 export const revalidate = 3600;
 
@@ -45,17 +45,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const contactInfo = await getContactInfo();
   return (
-    <div className="min-h-[85vh] w-full bg-[#000000] text-white pt-8 pb-16 sm:pt-14 sm:pb-24 px-4 sm:px-8 lg:px-12 relative overflow-hidden font-sans">
-      <h1 className="sr-only">Contact Webgent — Web Architecture &amp; Development Consultation</h1>
-      {/* Subtle Ambient Radial Glows at Top */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[220px] bg-gradient-to-b from-blue-900/10 via-amber-500/5 to-transparent blur-3xl opacity-60"
-      />
-
-      <div className="w-full max-w-6xl mx-auto relative z-10">
+    <div className="relative isolate overflow-hidden pb-[var(--section-space)] pt-10 sm:pt-16">
+      <div className="wrap">
         {/* Main 2-Column Split: Contact Info Card (Left) & Form (Right) */}
-        <Suspense fallback={<ContactPageSkeleton />}>
+        <Suspense fallback={<PageSkeleton cards={2} />}>
           <ContactForm contactInfo={contactInfo} />
         </Suspense>
       </div>

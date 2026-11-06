@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "nodejs";
-export const alt = "Webgent — Elite Web Solutions & Engineering Architecture";
+export const alt = "Webgent — Modern Web Development";
 export const size = {
   width: 1200,
   height: 630,
@@ -17,7 +17,7 @@ export default async function OpenGraphImage() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        backgroundColor: "#030712",
+        backgroundColor: "#040405",
         padding: "60px 70px",
         fontFamily: "system-ui, -apple-system, sans-serif",
         position: "relative",
@@ -32,7 +32,7 @@ export default async function OpenGraphImage() {
           width: "600px",
           height: "600px",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(3, 7, 18, 0) 70%)",
+          background: "radial-gradient(circle, rgba(242, 106, 31, 0.25) 0%, rgba(4, 4, 5, 0) 70%)",
         }}
       />
       <div
@@ -43,7 +43,7 @@ export default async function OpenGraphImage() {
           width: "550px",
           height: "550px",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(3, 7, 18, 0) 70%)",
+          background: "radial-gradient(circle, rgba(255, 128, 56, 0.2) 0%, rgba(4, 4, 5, 0) 70%)",
         }}
       />
 
@@ -65,11 +65,11 @@ export default async function OpenGraphImage() {
               width: "52px",
               height: "52px",
               borderRadius: "16px",
-              background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+              background: "linear-gradient(135deg, #F26A1F 0%, #FF8038 100%)",
               color: "#ffffff",
               fontSize: "28px",
               fontWeight: 800,
-              boxShadow: "0 10px 25px rgba(99, 102, 241, 0.4)",
+              boxShadow: "0 10px 25px rgba(242, 106, 31, 0.4)",
             }}
           >
             W
@@ -92,16 +92,16 @@ export default async function OpenGraphImage() {
             alignItems: "center",
             padding: "8px 20px",
             borderRadius: "9999px",
-            backgroundColor: "rgba(99, 102, 241, 0.15)",
-            border: "1px solid rgba(99, 102, 241, 0.4)",
-            color: "#a5b4fc",
+            backgroundColor: "rgba(242, 106, 31, 0.15)",
+            border: "1px solid rgba(242, 106, 31, 0.4)",
+            color: "#FF9F57",
             fontSize: "16px",
             fontWeight: 600,
             letterSpacing: "0.05em",
             textTransform: "uppercase",
           }}
         >
-          Elite Web Architecture
+          Modern Web Development
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default async function OpenGraphImage() {
           style={{
             fontSize: "22px",
             lineHeight: 1.5,
-            color: "#94a3b8",
+            color: "#C4C2BC",
             fontWeight: 400,
           }}
         >
@@ -146,7 +146,7 @@ export default async function OpenGraphImage() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderTop: "1px solid rgba(51, 65, 85, 0.7)",
+          borderTop: "1px solid rgba(43, 43, 47, 0.7)",
           paddingTop: "24px",
           width: "100%",
           zIndex: 10,
@@ -157,16 +157,16 @@ export default async function OpenGraphImage() {
             display: "flex",
             alignItems: "center",
             gap: "12px",
-            color: "#e2e8f0",
+            color: "#F0EEE8",
           }}
         >
-          <span style={{ fontSize: "18px", fontWeight: 700, color: "#818cf8" }}>webgent.com</span>
+          <span style={{ fontSize: "18px", fontWeight: 700, color: "#F26A1F" }}>webgent.com</span>
         </div>
 
         <div
           style={{
             fontSize: "16px",
-            color: "#64748b",
+            color: "#96948E",
             fontWeight: 500,
           }}
         >

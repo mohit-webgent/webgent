@@ -102,7 +102,7 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     recommendedFeatures: ["booking_calendar", "gallery_showcase", "faq_accordion"],
     optionalAddons: ["payment_gateway", "user_login", "whatsapp_alerts"],
     defaultArchitecture: "static",
-    startingPriceINR: 11999,
+    startingPriceINR: 9999,
     typicalTimeline: "5–7 Business Days",
     commonIntegrations: ["Google Maps Embed", "WhatsApp Direct Chat", "Razorpay Payment Gateway (for passes)", "Google Analytics 4"],
   },
@@ -572,7 +572,7 @@ export const MAINTENANCE_PLANS: Record<string, MaintenancePlan> = {
     includedHours: 12,
     slaHours: "4 Hours (Business Days)",
     features: [
-      "Up to 12 hours of dedicated senior engineering sprints per month",
+      "Up to 12 hours of dedicated development time per month",
       "Priority 4-hour critical issue response SLA",
       "Feature enhancements, database indexing & ongoing conversion optimization",
       "Dedicated staging environment maintenance",

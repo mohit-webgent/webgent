@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 const createSessionSchema = z.object({
   visitorId: z.string().min(1, "Visitor ID is required"),
   initialMessage: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 function safeParseMetadata(val: string | null): Record<string, unknown> | null {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const validated = createSessionSchema.safeParse(body);
     if (!validated.success) {
-      return ApiResponse.badRequest(validated.error.errors[0]?.message || "Invalid payload");
+      return ApiResponse.badRequest(validated.error.issues[0]?.message || "Invalid payload");
     }
 
     const { visitorId, initialMessage, metadata } = validated.data;

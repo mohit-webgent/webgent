@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTime } from "@/lib/format-date";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -123,7 +124,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
       <div className="flex items-center justify-between">
         <Link
           href="/admin/leads"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-fg transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to All Leads</span>
@@ -152,7 +153,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-extrabold text-white">{initialLead.name}</h1>
+            <h1 className="text-2xl font-extrabold text-fg">{initialLead.name}</h1>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               <Star className="w-3.5 h-3.5" />
               Score: {initialLead.score}/100
@@ -163,7 +164,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
               Inquiry ID: <code className="font-mono text-slate-300">{initialLead.id}</code>
             </span>
             <span>•</span>
-            <span>Submitted {new Date(initialLead.createdAt).toLocaleString()}</span>
+            <span>Submitted {formatDateTime(initialLead.createdAt)}</span>
           </p>
         </div>
       </div>
@@ -191,7 +192,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <h3 className="text-base font-bold text-fg flex items-center gap-2">
               <FileText className="w-4 h-4 text-indigo-400" />
               <span>Project Description & Message</span>
             </h3>
@@ -201,63 +202,63 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4">
-            <h3 className="text-base font-bold text-white">Contact & Requirement Specs</h3>
+            <h3 className="text-base font-bold text-fg">Contact & Requirement Specs</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-slate-500 font-semibold uppercase text-[10px]">
+                <span className="text-slate-500 font-semibold uppercase text-xs">
                   Email Address
                 </span>
-                <p className="text-white font-medium flex items-center gap-2">
+                <p className="text-fg font-medium flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 text-indigo-400" />
                   {initialLead.email}
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-slate-500 font-semibold uppercase text-[10px]">
+                <span className="text-slate-500 font-semibold uppercase text-xs">
                   Phone Number
                 </span>
-                <p className="text-white font-medium flex items-center gap-2">
+                <p className="text-fg font-medium flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-indigo-400" />
                   {initialLead.phone || "Not provided"}
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-slate-500 font-semibold uppercase text-[10px]">
+                <span className="text-slate-500 font-semibold uppercase text-xs">
                   Company / Organization
                 </span>
-                <p className="text-white font-medium flex items-center gap-2">
+                <p className="text-fg font-medium flex items-center gap-2">
                   <Building2 className="w-3.5 h-3.5 text-indigo-400" />
                   {initialLead.company || "Individual"}
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-slate-500 font-semibold uppercase text-[10px]">
+                <span className="text-slate-500 font-semibold uppercase text-xs">
                   Requested Service
                 </span>
-                <p className="text-white font-medium flex items-center gap-2">
+                <p className="text-fg font-medium flex items-center gap-2">
                   <Tag className="w-3.5 h-3.5 text-indigo-400" />
                   {initialLead.service || "General Inquiry"}
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-slate-500 font-semibold uppercase text-[10px]">
+                <span className="text-slate-500 font-semibold uppercase text-xs">
                   Estimated Budget
                 </span>
-                <p className="text-white font-medium flex items-center gap-2">
+                <p className="text-fg font-medium flex items-center gap-2">
                   <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
                   {initialLead.budget || "Not specified"}
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-slate-500 font-semibold uppercase text-[10px]">
+                <span className="text-slate-500 font-semibold uppercase text-xs">
                   Client Metadata
                 </span>
-                <p className="text-slate-300 font-mono text-[11px] flex items-center gap-2 truncate">
+                <p className="text-slate-300 font-mono text-xs flex items-center gap-2 truncate">
                   <Globe className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                   IP: {initialLead.ipAddress || "Unknown"}
                 </p>
@@ -271,7 +272,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
             onSubmit={handleSave}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6"
           >
-            <h3 className="text-base font-bold text-white">Lead Operations</h3>
+            <h3 className="text-base font-bold text-fg">Lead Operations</h3>
 
             <div>
               <label
@@ -284,7 +285,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
                 id="lead-status-select"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as Lead["status"])}
-                className="w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="NEW">NEW</option>
                 <option value="CONTACTED">CONTACTED</option>
@@ -309,7 +310,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
                   type="date"
                   value={followUpDate}
                   onChange={(e) => setFollowUpDate(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-fg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
@@ -327,7 +328,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add internal call notes, meeting takeaways, proposal links..."
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
@@ -335,7 +336,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
               id="save-lead-button"
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              className="w-full py-3 px-4 bg-accent hover:bg-accent text-accent-fg font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -356,7 +357,7 @@ export function LeadDetailEditor({ initialLead }: { initialLead: Lead }) {
               <Clock className="w-3.5 h-3.5 text-indigo-400" />
               <span>Audit Trail</span>
             </div>
-            <p>Last modified: {new Date(initialLead.updatedAt).toLocaleString()}</p>
+            <p>Last modified: {formatDateTime(initialLead.updatedAt)}</p>
           </div>
         </div>
       </div>

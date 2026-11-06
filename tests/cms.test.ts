@@ -125,10 +125,10 @@ describe("Centralized CMS Data Access Layer Suite", () => {
   });
 
   describe("Navigation Menu Reader", () => {
-    it("returns default main navigation menu with 6 core destinations", async () => {
+    it("returns default main navigation menu with 7 core destinations", async () => {
       const nav = await getNavigationMenu();
       assert.ok(Array.isArray(nav.items), "Items must be an array");
-      assert.strictEqual(nav.items.length, 6, "Must provide 6 default navigation routes");
+      assert.strictEqual(nav.items.length, 7, "Must provide 7 default navigation routes");
 
       const hrefs = nav.items.map((i: { href: string }) => i.href);
       assert.ok(hrefs.includes("/"), "Includes Home link");
@@ -141,7 +141,7 @@ describe("Centralized CMS Data Access Layer Suite", () => {
 
     it("verifies item titles match default navigation specification", () => {
       const titles = DEFAULT_NAVIGATION_MENU.items.map((i: { title: string }) => i.title);
-      assert.deepStrictEqual(titles, ["Home", "Work", "About", "Blog", "Pricing", "Contact"]);
+      assert.deepStrictEqual(titles, ["Home", "Services", "Work", "About", "Blog", "Pricing", "Contact"]);
     });
   });
 
@@ -179,9 +179,9 @@ describe("Centralized CMS Data Access Layer Suite", () => {
     });
 
     it("verifies DEFAULT_CONTACT_INFO fields", () => {
-      assert.strictEqual(DEFAULT_CONTACT_INFO.email, "hello@webgent.com");
-      assert.strictEqual(DEFAULT_CONTACT_INFO.phone, "+1 (800) 555-WEBGENT");
-      assert.strictEqual(DEFAULT_CONTACT_INFO.businessHours, "Mon - Fri: 9:00 AM - 6:00 PM PST");
+      assert.strictEqual(DEFAULT_CONTACT_INFO.email, "mohitvermag75@gmail.com");
+      assert.strictEqual(DEFAULT_CONTACT_INFO.phone, "+91 8800241462");
+      assert.strictEqual(DEFAULT_CONTACT_INFO.officeAddress, "Gurugram / Noida, India");
     });
   });
 

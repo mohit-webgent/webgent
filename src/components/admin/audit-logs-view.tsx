@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTime } from "@/lib/format-date";
 import { useState, useCallback } from "react";
 import {
   ScrollText,
@@ -99,10 +100,10 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
   const getActionBadgeColor = (action: string) => {
     if (action.startsWith("AUTH")) return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     if (action.startsWith("USER")) return "bg-rose-500/10 text-rose-400 border-rose-500/20";
-    if (action.startsWith("PROJECT")) return "bg-sky-500/10 text-sky-400 border-sky-500/20";
+    if (action.startsWith("PROJECT")) return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
     if (action.startsWith("SERVICE")) return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
     if (action.startsWith("LEAD")) return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-    if (action.startsWith("KNOWLEDGE")) return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+    if (action.startsWith("KNOWLEDGE")) return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
     return "bg-slate-800 text-slate-300 border-slate-700";
   };
 
@@ -122,19 +123,19 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <span className="px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               System Audit
             </span>
-            <span className="px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
               {pagination.total} Logged Events
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               <ScrollText className="w-6 h-6" />
             </div>
-            <span>System Audit Logs</span>
+            <span>Audit Logs</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
             Chronological records of security events, administrative modifications, user role changes, and content mutations.
@@ -144,9 +145,9 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
         <button
           onClick={() => fetchLogs(pagination.page, selectedAction, search)}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-fg transition-all self-start sm:self-auto"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-purple-400" : ""}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-indigo-400" : ""}`} />
           <span>Refresh</span>
         </button>
       </div>
@@ -161,8 +162,8 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
               onClick={() => handleActionChange(cat.id)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
                 selectedAction === cat.id
-                  ? "bg-purple-600 text-white border-purple-500 shadow-sm shadow-purple-600/30"
-                  : "bg-slate-900/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-white"
+                  ? "bg-accent text-accent-fg border-indigo-500"
+                  : "bg-slate-900/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-accent-fg"
               }`}
             >
               {cat.label}
@@ -178,7 +179,7 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search action or metadata..."
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </form>
       </div>
@@ -233,7 +234,7 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold border ${getActionBadgeColor(
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold border ${getActionBadgeColor(
                               log.action,
                             )}`}
                           >
@@ -243,26 +244,26 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
                         </div>
                       </td>
                       <td className="py-3.5 px-4 text-slate-300">
-                        <div className="font-semibold text-white">{actor}</div>
-                        <div className="text-[11px] text-slate-400 truncate max-w-md">{details}</div>
+                        <div className="font-semibold text-fg">{actor}</div>
+                        <div className="text-xs text-slate-400 truncate max-w-md">{details}</div>
                       </td>
                       <td className="py-3.5 px-4 text-slate-400 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                        <div className="flex items-center gap-1.5 font-mono text-xs">
                           <Clock className="w-3 h-3 text-slate-500" />
-                          <span>{new Date(log.createdAt).toLocaleString()}</span>
+                          <span>{formatDateTime(log.createdAt)}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         {log.metadata ? (
                           <button
                             onClick={() => setSelectedLog(log)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-semibold transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-fg text-xs font-semibold transition-colors"
                           >
-                            <Code2 className="w-3 h-3 text-purple-400" />
+                            <Code2 className="w-3 h-3 text-indigo-400" />
                             <span>Inspect</span>
                           </button>
                         ) : (
-                          <span className="text-slate-600 text-[11px] italic">None</span>
+                          <span className="text-slate-600 text-xs italic">None</span>
                         )}
                       </td>
                     </tr>
@@ -289,21 +290,21 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400">
             <div>
-              Showing page <span className="text-white font-semibold">{pagination.page}</span> of{" "}
-              <span className="text-white font-semibold">{pagination.totalPages}</span>
+              Showing page <span className="text-fg font-semibold">{pagination.page}</span> of{" "}
+              <span className="text-fg font-semibold">{pagination.totalPages}</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => fetchLogs(pagination.page - 1, selectedAction, search)}
                 disabled={pagination.page <= 1 || loading}
-                className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => fetchLogs(pagination.page + 1, selectedAction, search)}
                 disabled={pagination.page >= pagination.totalPages || loading}
-                className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -314,18 +315,18 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
 
       {/* JSON Metadata Inspector Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-mono text-xs font-semibold border border-purple-500/20">
+                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-mono text-xs font-semibold border border-indigo-500/20">
                   {selectedLog.action}
                 </span>
-                <span className="text-xs text-slate-400">Metadata Payload</span>
+                <span className="text-xs text-slate-400">Details</span>
               </div>
               <button
                 onClick={() => setSelectedLog(null)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-1.5 text-slate-400 hover:text-fg hover:bg-slate-800 rounded-xl transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -346,7 +347,7 @@ export function AuditLogsView({ initialLogs, initialPagination }: AuditLogsViewP
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setSelectedLog(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition-colors"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-fg text-xs font-semibold rounded-xl transition-colors"
               >
                 Close
               </button>

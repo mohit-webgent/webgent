@@ -1,15 +1,15 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
-import { loginSchema } from "@/lib/validations/auth";
-import { env } from "@/lib/env";
 import { UserRole, UserStatus } from "@prisma/client";
+import { authorizeCredentials, refreshSessionToken } from "@/lib/auth-credentials";
+import { env } from "@/lib/env";
+
+const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   secret: env.AUTH_SECRET,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",
@@ -21,47 +21,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) {
-          return null;
-        }
-
-        const { email, password } = parsed.data;
-
-        const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
-        });
-
-        if (!user || !user.passwordHash) {
-          return null;
-        }
-
-        if (user.status !== UserStatus.ACTIVE) {
-          throw new Error("ACCOUNT_INACTIVE");
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        try {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { lastLoginAt: new Date() },
-          });
-        } catch {}
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status,
-          image: user.avatarUrl,
-        };
-      },
+      authorize: (credentials, request) => authorizeCredentials(credentials, request),
     }),
   ],
   callbacks: {
@@ -70,8 +30,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.status = user.status;
+        token.sessionFingerprint = user.sessionFingerprint;
+        return token;
       }
-      return token;
+      return refreshSessionToken(token);
     },
     async session({ session, token }) {
       if (token && session.user) {

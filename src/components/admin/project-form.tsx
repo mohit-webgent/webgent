@@ -292,9 +292,9 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             <FolderPlus className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">
-              {isEditing ? "Edit Project Details" : "Create New Portfolio Project"}
-            </h2>
+            <h1 className="text-xl font-bold text-fg">
+              {isEditing ? "Edit Project" : "New Project"}
+            </h1>
             <p className="text-xs text-slate-400">
               Fill out core project metadata, case study narrative, and external links
             </p>
@@ -316,7 +316,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. NextGen SaaS Dashboard"
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -333,7 +333,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               placeholder="nextgen-saas-dashboard"
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
             />
           </div>
         </div>
@@ -352,7 +352,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="A brief high-level summary displayed on portfolio cards..."
-            className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -370,7 +370,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="Web Development, Mobile, UI/UX..."
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -387,7 +387,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder="e.g. Acme Health Inc"
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -403,7 +403,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               type="number"
               value={order}
               onChange={(e) => setOrder(parseInt(e.target.value, 10) || 0)}
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -423,14 +423,14 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={technologies}
               onChange={(e) => setTechnologies(e.target.value)}
               placeholder="Next.js, TypeScript, TailwindCSS, PostgreSQL, Prisma"
-              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-        <h3 className="text-lg font-bold text-white">Media & External Links</h3>
+        <h3 className="text-lg font-bold text-fg">Media & External Links</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
@@ -459,7 +459,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                 value={demoUrl}
                 onChange={(e) => setDemoUrl(e.target.value)}
                 placeholder="https://example-demo.com"
-                className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
@@ -480,7 +480,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
               placeholder="https://github.com/organization/repository"
-              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -492,16 +492,16 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                 htmlFor="project-screenshots-input"
                 className="block text-xs font-mono font-semibold text-slate-200 uppercase tracking-wider"
               >
-                Interface &amp; Telemetry Gallery (Screenshots)
+                Screenshots
               </label>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5">
                 Add screenshots via normal direct link or choose directly from your Media Library
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowRawTextarea(!showRawTextarea)}
-              className="text-[11px] font-mono text-slate-400 hover:text-white underline self-start sm:self-auto cursor-pointer"
+              className="text-xs font-mono text-slate-400 hover:text-fg underline self-start sm:self-auto cursor-pointer"
             >
               {showRawTextarea ? "Hide Raw Textarea" : "Bulk Edit / Paste URLs"}
             </button>
@@ -523,7 +523,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                   }
                 }}
                 placeholder="Paste normal image link (https://...)"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-none text-white text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-emerald-400 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-none text-fg text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-emerald-400 transition-colors"
               />
             </div>
 
@@ -531,7 +531,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               type="button"
               onClick={() => handleAddScreenshotUrl()}
               disabled={!newScreenshotUrl.trim()}
-              className="px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-40 text-white border border-slate-700 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-40 text-fg border border-slate-700 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add URL</span>
@@ -576,7 +576,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             <button
               type="button"
               onClick={() => setIsGalleryPickerOpen(true)}
-              className="px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-white border border-slate-700 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              className="px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-fg border border-slate-700 rounded-none text-xs font-mono font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
               title="Choose one or more images from your existing Media Library"
             >
               <FolderOpen className="w-4 h-4 text-emerald-400" />
@@ -612,7 +612,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                   ? galleryUploadProgress || "Uploading screenshots from your system..."
                   : "Drag & drop multiple screenshot images here, or click to upload directly from computer"}
               </span>
-              <span className="text-[10px] text-slate-500">(PNG, JPG, WebP, AVIF up to 5MB each)</span>
+              <span className="text-xs text-slate-500">(PNG, JPG, WebP, AVIF up to 5MB each)</span>
             </div>
           </div>
 
@@ -649,7 +649,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                       alt={`Screenshot ${idx + 1}`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/80 text-[10px] font-mono text-emerald-400 border border-white/10">
+                    <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/80 text-xs font-mono text-emerald-400 border border-line">
                       #{idx + 1}
                     </span>
                     <button
@@ -658,20 +658,20 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                         e.stopPropagation();
                         handleRemoveScreenshot(idx);
                       }}
-                      className="absolute top-1 right-1 p-1 bg-rose-950/90 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 transition-colors cursor-pointer z-10"
+                      className="absolute top-1 right-1 p-1 bg-rose-950/90 hover:bg-rose-600 text-rose-300 hover:text-fg border border-rose-500/30 transition-colors cursor-pointer z-10"
                       title="Remove screenshot"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <span className="text-[10px] font-mono text-emerald-300 bg-black/80 px-2 py-0.5 border border-emerald-500/30 flex items-center gap-1 shadow-md">
+                      <span className="text-xs font-mono text-emerald-300 bg-black/80 px-2 py-0.5 border border-emerald-500/30 flex items-center gap-1 shadow-md">
                         <ZoomIn className="w-3 h-3 text-emerald-400" />
                         Preview
                       </span>
                     </div>
                   </div>
                   <div className="p-2 bg-slate-900 border-t border-slate-800/80">
-                    <p className="text-[10px] font-mono text-slate-400 truncate" title={url}>
+                    <p className="text-xs font-mono text-slate-400 truncate" title={url}>
                       {url}
                     </p>
                   </div>
@@ -690,14 +690,14 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               role="dialog"
               aria-modal="true"
               aria-label="Screenshot Preview Modal"
-              className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+              className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 animate-in fade-in duration-200"
               onClick={() => setPreviewModalIdx(null)}
             >
               <div
-                className="relative w-full max-w-4xl max-h-[90vh] bg-[#0D0D12] border border-white/[0.14] shadow-2xl flex flex-col rounded-none overflow-hidden"
+                className="relative w-full max-w-4xl max-h-[90vh] bg-surface border border-line-strong shadow-2xl flex flex-col rounded-none overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-[#09090D] shrink-0">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-canvas shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
                     <span className="text-xs font-mono text-emerald-400 font-semibold uppercase">
@@ -709,7 +709,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                       href={screenshotList[previewModalIdx]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 text-slate-400 hover:text-white transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-fg transition-colors"
                       title="Open link in new tab"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -717,7 +717,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                     <button
                       type="button"
                       onClick={() => setPreviewModalIdx(null)}
-                      className="p-1.5 text-slate-400 hover:text-white transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-fg transition-colors"
                       title="Close (Esc)"
                     >
                       <X className="w-4 h-4" />
@@ -729,7 +729,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                   <img
                     src={screenshotList[previewModalIdx]}
                     alt={`Screenshot preview ${previewModalIdx + 1}`}
-                    className="max-h-[66vh] max-w-full w-auto h-auto object-contain shadow-2xl border border-white/[0.08]"
+                    className="max-h-[66vh] max-w-full w-auto h-auto object-contain shadow-2xl border border-line"
                   />
 
                   {screenshotList.length > 1 && (
@@ -746,7 +746,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                               : null
                           );
                         }}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/80 hover:bg-black text-white border border-white/20 transition-all cursor-pointer"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/80 hover:bg-black text-fg border border-line-strong transition-all cursor-pointer"
                         title="Previous screenshot"
                       >
                         <ChevronLeft className="w-5 h-5" />
@@ -763,7 +763,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                               : null
                           );
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/80 hover:bg-black text-white border border-white/20 transition-all cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/80 hover:bg-black text-fg border border-line-strong transition-all cursor-pointer"
                         title="Next screenshot"
                       >
                         <ChevronRight className="w-5 h-5" />
@@ -772,7 +772,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                   )}
                 </div>
 
-                <div className="px-4 py-2 border-t border-slate-800 bg-[#09090D] flex items-center justify-between text-[11px] font-mono text-slate-400 shrink-0">
+                <div className="px-4 py-2 border-t border-slate-800 bg-canvas flex items-center justify-between text-xs font-mono text-slate-400 shrink-0">
                   <span className="truncate max-w-md">{screenshotList[previewModalIdx]}</span>
                   <span>ESC to close</span>
                 </div>
@@ -785,7 +785,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
             <div className="space-y-1.5 pt-2">
               <label
                 htmlFor="project-screenshots"
-                className="block text-[11px] font-mono text-slate-400"
+                className="block text-xs font-mono text-slate-400"
               >
                 Raw URLs List (One URL per line):
               </label>
@@ -795,7 +795,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
                 value={screenshots}
                 onChange={(e) => setScreenshots(e.target.value)}
                 placeholder="https://images.unsplash.com/screenshot1.png&#10;https://images.unsplash.com/screenshot2.png"
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-none text-white text-xs font-mono focus:outline-none focus:border-emerald-400"
+                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-none text-fg text-xs font-mono focus:outline-none focus:border-emerald-400"
               />
             </div>
           )}
@@ -803,7 +803,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <h3 className="text-lg font-bold text-fg flex items-center gap-2">
           <FileText className="w-5 h-5 text-indigo-400" />
           <span>Full Case Study Content (Markdown / HTML)</span>
         </h3>
@@ -813,12 +813,12 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="### Project Overview&#10;&#10;Explain challenge, solution architecture, engineering highlights, key features, and results..."
-          className="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder-slate-500 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-        <h3 className="text-lg font-bold text-white">Publishing & SEO Settings</h3>
+        <h3 className="text-lg font-bold text-fg">Publishing & SEO Settings</h3>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-4 rounded-2xl bg-slate-950 border border-slate-800">
           <label className="flex items-center gap-3 cursor-pointer">
@@ -828,7 +828,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               onChange={(e) => setPublished(e.target.checked)}
               className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
             />
-            <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+            <span className="text-sm font-semibold text-fg flex items-center gap-1.5">
               <Eye className="w-4 h-4 text-emerald-400" />
               Published (Visible on public site)
             </span>
@@ -841,7 +841,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               onChange={(e) => setFeatured(e.target.checked)}
               className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
             />
-            <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+            <span className="text-sm font-semibold text-fg flex items-center gap-1.5">
               <Star className="w-4 h-4 text-amber-400" />
               Featured Project (Max 3 allowed)
             </span>
@@ -862,7 +862,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={seoTitle}
               onChange={(e) => setSeoTitle(e.target.value)}
               placeholder="e.g. NextGen SaaS Platform Case Study | Webgent"
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -879,7 +879,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
               value={seoDescription}
               onChange={(e) => setSeoDescription(e.target.value)}
               placeholder="Detailed case study on how Webgent built NextGen SaaS Dashboard..."
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-fg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -889,7 +889,7 @@ export function ProjectForm({ initialData }: { initialData?: ProjectData }) {
         id="save-project-button"
         type="submit"
         disabled={loading}
-        className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-xl shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all disabled:opacity-50"
+        className="w-full py-4 px-6 bg-accent hover:bg-accent active:bg-indigo-700 text-accent-fg font-bold text-sm rounded-xl flex items-center justify-center gap-2.5 transition-all disabled:opacity-50"
       >
         {loading ? (
           <>

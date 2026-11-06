@@ -21,7 +21,8 @@ function safeParseMetadata(val: string | null): Record<string, unknown> | null {
   }
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -51,7 +52,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -61,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json().catch(() => ({}));
     const validated = updateSessionSchema.safeParse(body);
     if (!validated.success) {
-      return ApiResponse.badRequest(validated.error.errors[0]?.message || "Invalid status");
+      return ApiResponse.badRequest(validated.error.issues[0]?.message || "Invalid status");
     }
 
     const updated = await prisma.chatSession.update({
@@ -83,7 +85,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {

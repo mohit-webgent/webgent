@@ -22,6 +22,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import type { SiteFaqItem, SiteFaqsConfig } from "@/lib/services/cms-shared";
 import { DEFAULT_SITE_FAQS } from "@/lib/services/cms-shared";
 
@@ -41,6 +42,7 @@ const PRESET_CATEGORIES = [
 
 export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [faqs, setFaqs] = useState<SiteFaqItem[]>(() =>
     initialConfig.faqs.map((f, i) => ({
@@ -168,7 +170,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
     );
     setDeleteConfirmId(null);
     if (expandedFaqId === id) setExpandedFaqId(null);
-    toast.info("FAQ deleted", "Item removed from staging configuration.");
+    toast.info("FAQ deleted", "Save to publish this change.");
   };
 
   const handleDuplicateFaq = (faq: SiteFaqItem) => {
@@ -215,14 +217,16 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
     setCustomCategoryInput("");
     setNewPublished(true);
     setExpandedFaqId(newId);
-    toast.success("FAQ created", "New question added to staging configuration.");
+    toast.success("FAQ created", "Save to publish it.");
   };
 
-  const handleResetToDefaults = () => {
+  const handleResetToDefaults = async () => {
     if (
-      window.confirm(
-        "Are you sure you want to reset all FAQs to standard production defaults? Unsaved modifications will be lost.",
-      )
+      await confirm({
+        title: "Reset FAQs to defaults?",
+        description: "This replaces your FAQs with the default set. Unsaved edits will be lost.",
+        confirmText: "Reset FAQs",
+      })
     ) {
       setFaqs(
         DEFAULT_SITE_FAQS.faqs.map((f, i) => ({
@@ -232,7 +236,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
           category: f.category || "General",
         })),
       );
-      toast.info("Reset to defaults", "Default FAQs loaded into staging editor.");
+      toast.info("Reset to defaults", "Default FAQs loaded. Save to publish them.");
     }
   };
 
@@ -295,12 +299,12 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
       if (cacheRefreshed) {
         toast.success(
           "FAQs updated",
-          "All changes persisted and public Redis cache invalidated.",
+          "Your changes are live on the site.",
         );
       } else {
         toast.warning(
-          "FAQs saved with cache warning",
-          "Data persisted to PostgreSQL. Cache revalidation encountered warnings.",
+          "FAQs saved",
+          "The public site may take a few minutes to update.",
         );
       }
     } catch (err) {
@@ -315,22 +319,22 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#0E1015] border border-white/10 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface border border-line shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               <HelpCircle className="w-5 h-5" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
               Frequently Asked Questions
             </h1>
             {isDirty && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">
+              <span className="px-2 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 Unsaved Changes
               </span>
             )}
           </div>
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-slate-400">
             Create, categorize, reorder, and toggle visibility of customer Q&As across Webgent.
           </p>
         </div>
@@ -340,8 +344,8 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
             type="button"
             onClick={handleResetToDefaults}
             disabled={isSaving}
-            className="px-3.5 py-2 rounded-xl bg-[#14171F] hover:bg-[#1C212C] text-neutral-300 border border-white/10 text-xs font-medium transition-colors flex items-center gap-1.5"
-            title="Reset to default production questions"
+            className="px-3.5 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-slate-300 border border-line text-xs font-medium transition-colors flex items-center gap-1.5"
+            title="Reset to the default questions"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Defaults</span>
@@ -352,7 +356,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
               type="button"
               onClick={handleDiscardChanges}
               disabled={isSaving}
-              className="px-3.5 py-2 rounded-xl bg-[#14171F] hover:bg-[#1C212C] text-neutral-300 border border-white/10 text-xs font-medium transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-slate-300 border border-line text-xs font-medium transition-colors"
             >
               Discard
             </button>
@@ -362,7 +366,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
             type="button"
             onClick={() => setIsAddingFaq(true)}
             disabled={isSaving || isAddingFaq}
-            className="px-3.5 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New FAQ</span>
@@ -372,7 +376,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
             type="button"
             onClick={handleSave}
             disabled={isSaving || !isDirty}
-            className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-[0.99] text-white font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-5 py-2 rounded-xl bg-accent hover:bg-accent active:scale-[0.99] text-accent-fg font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <>
@@ -399,29 +403,29 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
 
       {/* Statistics Ribbon */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl bg-[#0E1015] border border-white/10 space-y-0.5">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+        <div className="p-3.5 rounded-xl bg-surface border border-line space-y-0.5">
+          <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
             Total Questions
           </span>
-          <div className="text-xl font-bold text-white">{stats.total}</div>
+          <div className="text-xl font-bold text-fg">{stats.total}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-[#0E1015] border border-white/10 space-y-0.5">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+        <div className="p-3.5 rounded-xl bg-surface border border-line space-y-0.5">
+          <span className="text-xs font-mono uppercase tracking-wider text-emerald-400">
             Published
           </span>
           <div className="text-xl font-bold text-emerald-400">{stats.published}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-[#0E1015] border border-white/10 space-y-0.5">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400">
+        <div className="p-3.5 rounded-xl bg-surface border border-line space-y-0.5">
+          <span className="text-xs font-mono uppercase tracking-wider text-amber-400">
             Drafts / Hidden
           </span>
           <div className="text-xl font-bold text-amber-400">{stats.drafts}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-[#0E1015] border border-white/10 space-y-0.5">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+        <div className="p-3.5 rounded-xl bg-surface border border-line space-y-0.5">
+          <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
             Categories
           </span>
-          <div className="text-xl font-bold text-white">{stats.categoriesCount}</div>
+          <div className="text-xl font-bold text-fg">{stats.categoriesCount}</div>
         </div>
       </div>
 
@@ -429,17 +433,17 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
       {isAddingFaq && (
         <form
           onSubmit={handleAddFaqSubmit}
-          className="p-5 rounded-2xl bg-[#0E1015] border border-purple-500/30 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200"
+          className="p-5 rounded-2xl bg-surface border border-indigo-500/30 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200"
         >
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center justify-between border-b border-line pb-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <h3 className="text-sm font-semibold text-white">Create New FAQ</h3>
+              <Sparkles className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-semibold text-fg">Create New FAQ</h3>
             </div>
             <button
               type="button"
               onClick={() => setIsAddingFaq(false)}
-              className="text-xs text-neutral-400 hover:text-white"
+              className="text-xs text-slate-400 hover:text-fg"
             >
               Cancel
             </button>
@@ -447,8 +451,8 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-neutral-300">Question *</label>
-              <span className="text-[10px] font-mono text-neutral-500">
+              <label className="text-xs font-medium text-slate-300">Question *</label>
+              <span className="text-xs font-mono text-slate-500">
                 {newQuestion.length}/300
               </span>
             </div>
@@ -459,14 +463,14 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
               placeholder="e.g. Do you support ongoing cloud maintenance?"
-              className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-neutral-300">Answer *</label>
-              <span className="text-[10px] font-mono text-neutral-500">
+              <label className="text-xs font-medium text-slate-300">Answer *</label>
+              <span className="text-xs font-mono text-slate-500">
                 {newAnswer.length}/3000
               </span>
             </div>
@@ -477,17 +481,17 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
               value={newAnswer}
               onChange={(e) => setNewAnswer(e.target.value)}
               placeholder="Detailed explanation answering the customer's question..."
-              className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500 transition-colors resize-y leading-relaxed"
+              className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500 transition-colors resize-y leading-relaxed"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-300">Category</label>
+              <label className="text-xs font-medium text-slate-300">Category</label>
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500"
+                className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500"
               >
                 {PRESET_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -503,13 +507,13 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                   placeholder="Enter custom category name..."
                   value={customCategoryInput}
                   onChange={(e) => setCustomCategoryInput(e.target.value)}
-                  className="w-full mt-2 px-3.5 py-1.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500"
+                  className="w-full mt-2 px-3.5 py-1.5 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500"
                 />
               )}
             </div>
 
             <div className="space-y-1.5 flex flex-col justify-end">
-              <label className="text-xs font-medium text-neutral-300 block">
+              <label className="text-xs font-medium text-slate-300 block">
                 Visibility Status
               </label>
               <button
@@ -518,7 +522,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                 className={`w-full py-2 px-3.5 rounded-xl border text-xs font-medium flex items-center justify-between transition-colors ${
                   newPublished
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                    : "bg-neutral-800/40 border-white/10 text-neutral-400"
+                    : "bg-slate-800/40 border-line text-slate-400"
                 }`}
               >
                 <span>{newPublished ? "Published (Visible)" : "Draft (Hidden)"}</span>
@@ -531,13 +535,13 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
             <button
               type="button"
               onClick={() => setIsAddingFaq(false)}
-              className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-medium"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold"
+              className="px-5 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-semibold"
             >
               Add Question
             </button>
@@ -546,27 +550,27 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
       )}
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#0E1015] border border-white/10">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface border border-line">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search questions, answers, categories..."
-            className="w-full pl-9 pr-3.5 py-1.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs placeholder-neutral-500 focus:outline-none focus:border-purple-500"
+            className="w-full pl-9 pr-3.5 py-1.5 bg-canvas border border-line rounded-xl text-fg text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500"
           />
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-            <Filter className="w-3.5 h-3.5 text-neutral-500" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
             <span>Category:</span>
           </div>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none"
+            className="px-2.5 py-1.5 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none"
           >
             <option value="all">All Categories</option>
             {allCategories.map((cat) => (
@@ -579,7 +583,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as "all" | "published" | "draft")}
-            className="px-2.5 py-1.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none"
+            className="px-2.5 py-1.5 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none"
           >
             <option value="all">All Status</option>
             <option value="published">Published</option>
@@ -590,10 +594,10 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
 
       {/* FAQ Items List */}
       {filteredFaqs.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-[#0E1015] border border-white/10 space-y-2">
-          <HelpCircle className="w-8 h-8 text-neutral-600 mx-auto" />
-          <div className="text-sm font-semibold text-white">No questions found</div>
-          <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+        <div className="p-12 text-center rounded-2xl bg-surface border border-line space-y-2">
+          <HelpCircle className="w-8 h-8 text-slate-600 mx-auto" />
+          <div className="text-sm font-semibold text-fg">No questions found</div>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
             {searchQuery || selectedCategory !== "all" || selectedStatus !== "all"
               ? "No FAQs match the current filter criteria. Clear filters to see all entries."
               : "No questions currently defined. Click 'New FAQ' to create one."}
@@ -610,20 +614,20 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                 key={faq.id}
                 className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                   faq.published !== false
-                    ? "bg-[#0E1015] border-white/10 hover:border-white/20"
-                    : "bg-[#090A0D] border-amber-500/20"
+                    ? "bg-surface border-line hover:border-line-strong"
+                    : "bg-canvas border-amber-500/20"
                 }`}
               >
                 {/* Header row */}
                 <div className="p-4 flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Order indicator */}
-                    <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-mono text-neutral-400">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 border border-line flex items-center justify-center text-xs font-mono text-slate-400">
                       #{faq.order ?? index + 1}
                     </span>
 
                     {/* Category pill */}
-                    <span className="flex-shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                    <span className="flex-shrink-0 px-2.5 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
                       {faq.category || "General"}
                     </span>
 
@@ -631,7 +635,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                     <button
                       type="button"
                       onClick={() => setExpandedFaqId(isExpanded ? null : faq.id)}
-                      className="text-left font-semibold text-xs sm:text-sm text-white hover:text-purple-300 transition-colors truncate"
+                      className="text-left font-semibold text-xs sm:text-sm text-fg hover:text-indigo-300 transition-colors truncate"
                     >
                       {faq.question}
                     </button>
@@ -643,7 +647,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                     <button
                       type="button"
                       onClick={() => handleTogglePublished(faq.id)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono flex items-center gap-1 border transition-colors cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1 border transition-colors cursor-pointer ${
                         faq.published !== false
                           ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
                           : "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
@@ -668,7 +672,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                       type="button"
                       onClick={() => handleMoveUp(index)}
                       disabled={index === 0}
-                      className="p-1.5 rounded-lg bg-[#14171F] hover:bg-[#1C212C] text-neutral-400 hover:text-white border border-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-slate-400 hover:text-fg border border-line transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Move Up"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
@@ -678,7 +682,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                       type="button"
                       onClick={() => handleMoveDown(index)}
                       disabled={index === faqs.length - 1}
-                      className="p-1.5 rounded-lg bg-[#14171F] hover:bg-[#1C212C] text-neutral-400 hover:text-white border border-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-slate-400 hover:text-fg border border-line transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Move Down"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
@@ -688,7 +692,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                     <button
                       type="button"
                       onClick={() => handleDuplicateFaq(faq)}
-                      className="p-1.5 rounded-lg bg-[#14171F] hover:bg-[#1C212C] text-neutral-400 hover:text-white border border-white/10 transition-colors"
+                      className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-slate-400 hover:text-fg border border-line transition-colors"
                       title="Duplicate Question"
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -698,7 +702,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                     <button
                       type="button"
                       onClick={() => setExpandedFaqId(isExpanded ? null : faq.id)}
-                      className="p-1.5 rounded-lg bg-[#14171F] hover:bg-[#1C212C] text-neutral-400 hover:text-white border border-white/10 transition-colors"
+                      className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-slate-400 hover:text-fg border border-line transition-colors"
                       title={isExpanded ? "Collapse" : "Expand to edit"}
                     >
                       {isExpanded ? (
@@ -711,18 +715,18 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                     {/* Delete button */}
                     {isDeleting ? (
                       <div className="flex items-center gap-1 bg-red-950/60 p-1 rounded-lg border border-red-500/40">
-                        <span className="text-[10px] text-red-300 font-mono pl-1">Confirm?</span>
+                        <span className="text-xs text-red-300 font-mono pl-1">Confirm?</span>
                         <button
                           type="button"
                           onClick={() => handleDeleteFaq(faq.id)}
-                          className="px-2 py-0.5 rounded bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold"
+                          className="px-2 py-0.5 rounded bg-red-600 hover:bg-red-500 text-white text-xs font-bold"
                         >
                           Yes
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeleteConfirmId(null)}
-                          className="px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 text-[10px]"
+                          className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-xs"
                         >
                           No
                         </button>
@@ -731,7 +735,7 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                       <button
                         type="button"
                         onClick={() => setDeleteConfirmId(faq.id)}
-                        className="p-1.5 rounded-lg bg-[#14171F] hover:bg-red-950/60 text-neutral-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 transition-colors"
+                        className="p-1.5 rounded-lg bg-surface-2 hover:bg-red-950/60 text-slate-400 hover:text-red-400 border border-line hover:border-red-500/30 transition-colors"
                         title="Delete Question"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -742,13 +746,13 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
 
                 {/* Expanded Edit Form */}
                 {isExpanded && (
-                  <div className="p-5 border-t border-white/10 bg-[#07080B] space-y-4 animate-in fade-in duration-150">
+                  <div className="p-5 border-t border-line bg-canvas space-y-4 animate-in fade-in duration-150">
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-medium text-neutral-300">
+                        <label className="text-xs font-medium text-slate-300">
                           Question *
                         </label>
-                        <span className="text-[10px] font-mono text-neutral-500">
+                        <span className="text-xs font-mono text-slate-500">
                           {faq.question.length}/300
                         </span>
                       </div>
@@ -757,16 +761,16 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                         maxLength={300}
                         value={faq.question}
                         onChange={(e) => handleUpdateFaq(faq.id, "question", e.target.value)}
-                        className="w-full px-3.5 py-2 bg-[#0E1015] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500 transition-colors"
+                        className="w-full px-3.5 py-2 bg-surface border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-medium text-neutral-300">
+                        <label className="text-xs font-medium text-slate-300">
                           Answer *
                         </label>
-                        <span className="text-[10px] font-mono text-neutral-500">
+                        <span className="text-xs font-mono text-slate-500">
                           {faq.answer.length}/3000
                         </span>
                       </div>
@@ -775,13 +779,13 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                         maxLength={3000}
                         value={faq.answer}
                         onChange={(e) => handleUpdateFaq(faq.id, "answer", e.target.value)}
-                        className="w-full px-3.5 py-2 bg-[#0E1015] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500 transition-colors resize-y leading-relaxed"
+                        className="w-full px-3.5 py-2 bg-surface border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500 transition-colors resize-y leading-relaxed"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-neutral-300">
+                        <label className="text-xs font-medium text-slate-300">
                           Category
                         </label>
                         <div className="flex gap-2">
@@ -790,20 +794,20 @@ export function FaqContentEditor({ initialConfig }: FaqContentEditorProps) {
                             value={faq.category || "General"}
                             onChange={(e) => handleUpdateFaq(faq.id, "category", e.target.value)}
                             placeholder="Category name"
-                            className="w-full px-3.5 py-2 bg-[#0E1015] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-purple-500"
+                            className="w-full px-3.5 py-2 bg-surface border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-neutral-300">
+                        <label className="text-xs font-medium text-slate-300">
                           Unique ID (Stable)
                         </label>
                         <input
                           type="text"
                           readOnly
                           value={faq.id}
-                          className="w-full px-3.5 py-2 bg-neutral-900/50 border border-white/5 rounded-xl text-neutral-400 text-xs font-mono select-all"
+                          className="w-full px-3.5 py-2 bg-slate-900/50 border border-line rounded-xl text-slate-400 text-xs font-mono select-all"
                         />
                       </div>
                     </div>

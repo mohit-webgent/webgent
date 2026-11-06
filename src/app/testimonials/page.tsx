@@ -2,21 +2,25 @@ import { prisma } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/redis";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { Star } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
+import { RevealGroup } from "@/components/animations/reveal-group";
+import { CtaBand } from "@/components/ui/cta-band";
+import { PageHero } from "@/components/ui/page-hero";
 import { resolveRouteMetadata } from "@/lib/services/cms";
 
 export const revalidate = 60;
 
 const defaultTestimonialsMetadata: Metadata = {
   title: "Client Testimonials & Feedback | Webgent",
-  description: "Verified reviews and client feedback on Webgent web engineering projects.",
+  description: "Client feedback on Webgent web development projects.",
   alternates: {
     canonical: "/testimonials",
   },
   openGraph: {
     title: "Client Testimonials & Feedback | Webgent",
-    description: "Verified reviews and client feedback on Webgent web engineering projects.",
+    description: "Client feedback on Webgent web development projects.",
     url: `${siteConfig.url}/testimonials`,
     siteName: siteConfig.name,
     type: "website",
@@ -32,7 +36,7 @@ const defaultTestimonialsMetadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Client Testimonials & Feedback | Webgent",
-    description: "Verified reviews and client feedback on Webgent web engineering projects.",
+    description: "Client feedback on Webgent web development projects.",
     images: [`${siteConfig.url}/api/og?title=Client+Testimonials&badge=Reviews`],
     creator: "@webgent",
   },
@@ -71,6 +75,7 @@ export default async function TestimonialsPage() {
           company: true,
           content: true,
           rating: true,
+          avatarUrl: true,
           createdAt: true,
         },
       });
@@ -89,37 +94,44 @@ export default async function TestimonialsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#DCDCDA] pt-12 pb-24 px-5 sm:px-8 2xl:px-20 w-full max-w-[1760px] 2xl:max-w-[1920px] 3xl:max-w-[2240px] mx-auto space-y-8">
-      <div className="space-y-2 text-left">
-        <h1 className="text-3xl sm:text-4xl 2xl:text-5xl font-bold text-white tracking-tight">Client Testimonials</h1>
-        <p className="text-sm 2xl:text-base text-[#888888]">Verified feedback from our partners and clients.</p>
-      </div>
+    <>
+      <PageHero eyebrow="Testimonials" title="What clients say." description="Feedback from people Webgent has worked with." />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 text-left">
-        {testimonials.map((t) => (
-          <div
-            key={t.id}
-            className="p-6 rounded-2xl bg-[#0D0D0D] border border-white/[0.08] space-y-4 shadow-xl"
-          >
-            <p className="text-sm text-[#B0B0AE] leading-relaxed">&ldquo;{t.content}&rdquo;</p>
-            <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs text-[#808080]">
-              <div className="flex items-center gap-2">
-                {t.avatarUrl && (
-                  <img
-                    src={t.avatarUrl}
-                    alt={t.clientName}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                )}
-                <span className="font-semibold text-white">{t.clientName}</span>
+      <section className="wrap pb-[var(--section-space)]">
+        <RevealGroup spotlight className="columns-1 gap-3 md:columns-2 lg:columns-3">
+          {testimonials.map((t) => (
+            <figure key={t.id} data-reveal className="card card-hover spotlight mb-3 break-inside-avoid p-5">
+              <div className="flex gap-0.5" role="img" aria-label={`Rated ${t.rating} out of 5`}>
+                {Array.from({ length: Math.max(0, Math.min(5, Math.round(t.rating))) }).map((_, index) => (
+                  <Star key={index} className="h-3 w-3 fill-accent text-accent" />
+                ))}
               </div>
-              <span>{t.company || t.clientTitle || ""}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+              <blockquote className="mt-3 text-[0.9375rem] leading-relaxed text-fg-soft">&ldquo;{t.content}&rdquo;</blockquote>
+              <figcaption className="mt-4 flex items-center gap-3 border-t border-line pt-4">
+                {t.avatarUrl ? (
+                  <img src={t.avatarUrl} alt="" loading="lazy" decoding="async" className="h-9 w-9 rounded-lg object-cover" />
+                ) : (
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-3 font-display text-sm font-semibold text-fg-soft">
+                    {t.clientName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{t.clientName}</p>
+                  {(t.company || t.clientTitle) && t.company !== t.clientName && (
+                    <p className="truncate text-[0.8125rem] text-fg-muted">{t.company || t.clientTitle}</p>
+                  )}
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </RevealGroup>
+      </section>
+
+      <CtaBand
+        title="Let's build something you'd recommend."
+        description="Tell me about your project and I'll come back with a clear scope, timeline and price."
+        analyticsName="Testimonials"
+      />
+    </>
   );
 }

@@ -227,17 +227,21 @@ describe("Protected Form Endpoints & Database Isolation Suite", () => {
       );
     });
 
-    it("ensures pricing-view.tsx dispatches turnstileToken in POST payload", () => {
-      const content = fs.readFileSync(
-        path.join(rootDir, "src/components/pricing/pricing-view.tsx"),
+    it("ensures the pricing plan modal sends turnstileToken in its POST payload", () => {
+      const hook = fs.readFileSync(
+        path.join(rootDir, "src/components/pricing/use-pricing-configurator.ts"),
+        "utf-8",
+      );
+      const modal = fs.readFileSync(
+        path.join(rootDir, "src/components/pricing/pricing-plan-modal.tsx"),
         "utf-8",
       );
       assert.ok(
-        content.includes("turnstileToken"),
-        "Pricing plan modal must include turnstileToken in request body",
+        hook.includes("turnstileToken"),
+        "Pricing plan submission must include turnstileToken in request body",
       );
       assert.ok(
-        content.includes("<Turnstile"),
+        modal.includes("<Turnstile"),
         "Pricing view must render Turnstile in modal",
       );
     });

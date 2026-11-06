@@ -23,6 +23,7 @@ import {
   Info,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import type {
   NavItem,
   NavigationMenuConfig,
@@ -45,6 +46,7 @@ export function NavigationContentEditor({
   initialFooter,
 }: NavigationContentEditorProps) {
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [activeTab, setActiveTab] = useState<"nav" | "footer" | "preview">("nav");
 
@@ -176,7 +178,7 @@ export function NavigationContentEditor({
     setNavItems((prev) =>
       prev.filter((item) => item.id !== id).map((item, i) => ({ ...item, order: i + 1 })),
     );
-    toast.info("Item removed", "Header link removed from staging configuration.");
+    toast.info("Item removed", "Save to publish this change.");
   };
 
   const handleMoveNavUp = (index: number) => {
@@ -244,7 +246,7 @@ export function NavigationContentEditor({
     const newItem: FooterLinkItem = {
       id: newId,
       title: "Social Profile",
-      href: "https://twitter.com/webgent",
+      href: "https://",
       isExternal: true,
       published: true,
     };
@@ -301,11 +303,13 @@ export function NavigationContentEditor({
   // --------------------------------------------------------------------------
   // Global Actions
   // --------------------------------------------------------------------------
-  const handleResetToDefaults = () => {
+  const handleResetToDefaults = async () => {
     if (
-      window.confirm(
-        "Are you sure you want to reset Header Navigation and Footer to production defaults? Unsaved modifications will be lost.",
-      )
+      await confirm({
+        title: "Reset navigation to defaults?",
+        description: "This replaces the header menu and footer with the defaults. Unsaved edits will be lost.",
+        confirmText: "Reset navigation",
+      })
     ) {
       setNavItems(
         DEFAULT_NAVIGATION_MENU.items.map((item, i) => ({
@@ -333,7 +337,7 @@ export function NavigationContentEditor({
         })),
         copyrightText: DEFAULT_FOOTER_CONFIG.copyrightText,
       });
-      toast.info("Reset to defaults", "Default navigation and footer loaded into staging editor.");
+      toast.info("Reset to defaults", "Default navigation and footer loaded. Save to publish them.");
     }
   };
 
@@ -411,12 +415,12 @@ export function NavigationContentEditor({
       if (cacheRefreshed) {
         toast.success(
           "Navigation & Footer updated",
-          "Settings saved and root layout & public caches revalidated.",
+          "Your changes are live on the site.",
         );
       } else {
         toast.warning(
-          "Navigation saved with cache warning",
-          "Data persisted to PostgreSQL. Cache revalidation encountered warnings.",
+          "Navigation saved",
+          "The public site may take a few minutes to update.",
         );
       }
     } catch (err) {
@@ -431,22 +435,22 @@ export function NavigationContentEditor({
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Top Action Ribbon */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#0E1015] border border-white/10 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface border border-line shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               <Compass className="w-5 h-5" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
               Navigation & Menus
             </h1>
             {isDirty && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">
+              <span className="px-2 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 Unsaved Changes
               </span>
             )}
           </div>
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-slate-400">
             Configure header navbar links, footer columns, core tech stack tags, and brand copyright.
           </p>
         </div>
@@ -456,7 +460,7 @@ export function NavigationContentEditor({
             type="button"
             onClick={handleResetToDefaults}
             disabled={isSaving}
-            className="px-3.5 py-2 rounded-xl bg-[#14171F] hover:bg-[#1C212C] text-neutral-300 border border-white/10 text-xs font-medium transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-slate-300 border border-line text-xs font-medium transition-colors flex items-center gap-1.5"
             title="Reset navigation and footer to default values"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -468,7 +472,7 @@ export function NavigationContentEditor({
               type="button"
               onClick={handleDiscardChanges}
               disabled={isSaving}
-              className="px-3.5 py-2 rounded-xl bg-[#14171F] hover:bg-[#1C212C] text-neutral-300 border border-white/10 text-xs font-medium transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-slate-300 border border-line text-xs font-medium transition-colors"
             >
               Discard
             </button>
@@ -478,7 +482,7 @@ export function NavigationContentEditor({
             type="button"
             onClick={handleSave}
             disabled={isSaving || !isDirty || urlValidationErrors.length > 0}
-            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-5 py-2 rounded-xl bg-accent hover:bg-accent active:scale-[0.99] text-accent-fg font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <>
@@ -501,7 +505,7 @@ export function NavigationContentEditor({
           <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <span className="font-semibold block">Unsafe URL Scheme Detected</span>
-            <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-red-300">
+            <ul className="list-disc pl-4 space-y-0.5 text-xs text-red-300">
               {urlValidationErrors.map((err, i) => (
                 <li key={i}>{err}</li>
               ))}
@@ -518,14 +522,14 @@ export function NavigationContentEditor({
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-white/10 gap-2">
+      <div className="flex border-b border-line gap-2">
         <button
           type="button"
           onClick={() => setActiveTab("nav")}
           className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
             activeTab === "nav"
-              ? "border-blue-500 text-blue-400"
-              : "border-transparent text-neutral-400 hover:text-white"
+              ? "border-indigo-500 text-indigo-400"
+              : "border-transparent text-slate-400 hover:text-fg"
           }`}
         >
           <Compass className="w-3.5 h-3.5" />
@@ -537,8 +541,8 @@ export function NavigationContentEditor({
           onClick={() => setActiveTab("footer")}
           className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
             activeTab === "footer"
-              ? "border-blue-500 text-blue-400"
-              : "border-transparent text-neutral-400 hover:text-white"
+              ? "border-indigo-500 text-indigo-400"
+              : "border-transparent text-slate-400 hover:text-fg"
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -550,8 +554,8 @@ export function NavigationContentEditor({
           onClick={() => setActiveTab("preview")}
           className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
             activeTab === "preview"
-              ? "border-blue-500 text-blue-400"
-              : "border-transparent text-neutral-400 hover:text-white"
+              ? "border-indigo-500 text-indigo-400"
+              : "border-transparent text-slate-400 hover:text-fg"
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
@@ -562,17 +566,17 @@ export function NavigationContentEditor({
       {/* TAB 1: HEADER NAVIGATION */}
       {activeTab === "nav" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl bg-[#0E1015] border border-white/10">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-surface border border-line">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-semibold text-white">Main Header Menu Items</h3>
-              <p className="text-xs text-neutral-400">
+              <h3 className="text-sm font-semibold text-fg">Main Header Menu Items</h3>
+              <p className="text-xs text-slate-400">
                 Ordered navigation links displayed in top navigation bar across all public pages.
               </p>
             </div>
             <button
               type="button"
               onClick={handleAddNavItem}
-              className="px-3 py-1.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Menu Item</span>
@@ -588,14 +592,14 @@ export function NavigationContentEditor({
                   key={item.id || index}
                   className={`p-4 rounded-xl border transition-all ${
                     item.published !== false
-                      ? "bg-[#0E1015] border-white/10"
-                      : "bg-[#090A0D] border-amber-500/20"
+                      ? "bg-surface border-line"
+                      : "bg-canvas border-amber-500/20"
                   }`}
                 >
                   <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                     {/* Position & Label Input */}
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-mono text-neutral-400 shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-white/5 border border-line flex items-center justify-center text-xs font-mono text-slate-400 shrink-0">
                         #{index + 1}
                       </span>
 
@@ -605,7 +609,7 @@ export function NavigationContentEditor({
                           value={item.title}
                           onChange={(e) => handleUpdateNavItem(item.id!, "title", e.target.value)}
                           placeholder="Menu Label (e.g. Work)"
-                          className="w-full px-3 py-1.5 bg-[#08090C] border border-white/10 rounded-lg text-white text-xs font-semibold focus:outline-none focus:border-blue-500"
+                          className="w-full px-3 py-1.5 bg-canvas border border-line rounded-lg text-fg text-xs font-semibold focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                     </div>
@@ -618,14 +622,14 @@ export function NavigationContentEditor({
                           value={item.href}
                           onChange={(e) => handleUpdateNavItem(item.id!, "href", e.target.value)}
                           placeholder="/work or https://..."
-                          className={`w-full px-3 py-1.5 bg-[#08090C] border rounded-lg text-xs font-mono focus:outline-none transition-colors ${
+                          className={`w-full px-3 py-1.5 bg-canvas border rounded-lg text-xs font-mono focus:outline-none transition-colors ${
                             isUrlSafe
-                              ? "border-white/10 text-white focus:border-blue-500"
+                              ? "border-line text-fg focus:border-indigo-500"
                               : "border-red-500 text-red-300"
                           }`}
                         />
                         {!isUrlSafe && (
-                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-red-400 font-sans">
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-red-400 font-sans">
                             Invalid URL
                           </span>
                         )}
@@ -637,10 +641,10 @@ export function NavigationContentEditor({
                       <button
                         type="button"
                         onClick={() => handleUpdateNavItem(item.id!, "isExternal", !item.isExternal)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-colors flex items-center gap-1 cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-mono border transition-colors flex items-center gap-1 cursor-pointer ${
                           item.isExternal
-                            ? "bg-purple-500/10 border-purple-500/30 text-purple-300"
-                            : "bg-white/5 border-white/10 text-neutral-400"
+                            ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                            : "bg-white/5 border-line text-slate-400"
                         }`}
                         title="External link opens in new tab"
                       >
@@ -651,7 +655,7 @@ export function NavigationContentEditor({
                       <button
                         type="button"
                         onClick={() => handleUpdateNavItem(item.id!, "published", !item.published)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-colors flex items-center gap-1 cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-mono border transition-colors flex items-center gap-1 cursor-pointer ${
                           item.published !== false
                             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                             : "bg-amber-500/10 border-amber-500/30 text-amber-400"
@@ -667,7 +671,7 @@ export function NavigationContentEditor({
                         type="button"
                         onClick={() => handleMoveNavUp(index)}
                         disabled={index === 0}
-                        className="p-1.5 rounded-lg bg-[#14171F] hover:bg-[#1C212C] text-neutral-400 hover:text-white border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-slate-400 hover:text-fg border border-line disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move Up"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
@@ -677,7 +681,7 @@ export function NavigationContentEditor({
                         type="button"
                         onClick={() => handleMoveNavDown(index)}
                         disabled={index === navItems.length - 1}
-                        className="p-1.5 rounded-lg bg-[#14171F] hover:bg-[#1C212C] text-neutral-400 hover:text-white border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-slate-400 hover:text-fg border border-line disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move Down"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
@@ -687,7 +691,7 @@ export function NavigationContentEditor({
                       <button
                         type="button"
                         onClick={() => handleDeleteNavItem(item.id!)}
-                        className="p-1.5 rounded-lg bg-[#14171F] hover:bg-red-950/60 text-neutral-400 hover:text-red-400 border border-white/10 transition-colors"
+                        className="p-1.5 rounded-lg bg-surface-2 hover:bg-red-950/60 text-slate-400 hover:text-red-400 border border-line transition-colors"
                         title="Delete Menu Item"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -705,16 +709,16 @@ export function NavigationContentEditor({
       {activeTab === "footer" && (
         <div className="space-y-6">
           {/* Brand Tagline & Copyright */}
-          <div className="p-5 rounded-2xl bg-[#0E1015] border border-white/10 space-y-4">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Globe className="w-4 h-4 text-blue-400" />
+          <div className="p-5 rounded-2xl bg-surface border border-line space-y-4">
+            <h3 className="text-sm font-semibold text-fg flex items-center gap-2">
+              <Globe className="w-4 h-4 text-indigo-400" />
               <span>Brand Presentation & Legal</span>
             </h3>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-neutral-300">Brand Tagline</label>
-                <span className="text-[10px] font-mono text-neutral-500">
+                <label className="text-xs font-medium text-slate-300">Brand Tagline</label>
+                <span className="text-xs font-mono text-slate-500">
                   {footerConfig.brandTagline.length}/500
                 </span>
               </div>
@@ -725,13 +729,13 @@ export function NavigationContentEditor({
                 onChange={(e) =>
                   setFooterConfig((prev) => ({ ...prev, brandTagline: e.target.value }))
                 }
-                className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500 resize-none leading-relaxed"
+                className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
                 placeholder="Designing and engineering high-performance digital platforms..."
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-300">Copyright Text Notice</label>
+              <label className="text-xs font-medium text-slate-300">Copyright Text Notice</label>
               <input
                 type="text"
                 value={footerConfig.copyrightText || ""}
@@ -739,27 +743,27 @@ export function NavigationContentEditor({
                   setFooterConfig((prev) => ({ ...prev, copyrightText: e.target.value }))
                 }
                 placeholder="All rights reserved."
-                className="w-full px-3.5 py-2 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500"
+                className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>
 
           {/* Systems Column Links */}
-          <div className="p-5 rounded-2xl bg-[#0E1015] border border-white/10 space-y-4">
+          <div className="p-5 rounded-2xl bg-surface border border-line space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Link2 className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-semibold text-fg flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-indigo-400" />
                   <span>Column 2: Systems Links ({footerConfig.systemsLinks.length})</span>
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-slate-400">
                   Internal product links displayed in the second column of the footer.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleAddSystemsLink}
-                className="px-3 py-1.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Link</span>
@@ -773,14 +777,14 @@ export function NavigationContentEditor({
                 return (
                   <div
                     key={item.id || index}
-                    className="p-3 rounded-xl bg-[#08090C] border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
+                    className="p-3 rounded-xl bg-canvas border border-line flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
                   >
                     <input
                       type="text"
                       value={item.title}
                       onChange={(e) => handleUpdateSystemsLink(item.id!, "title", e.target.value)}
                       placeholder="Title"
-                      className="px-3 py-1 bg-transparent border border-white/10 rounded-lg text-white text-xs flex-1"
+                      className="px-3 py-1 bg-transparent border border-line rounded-lg text-fg text-xs flex-1"
                     />
 
                     <div className="relative flex-1">
@@ -790,7 +794,7 @@ export function NavigationContentEditor({
                         onChange={(e) => handleUpdateSystemsLink(item.id!, "href", e.target.value)}
                         placeholder="/destination"
                         className={`w-full px-3 py-1 bg-transparent border rounded-lg text-xs font-mono ${
-                          isUrlSafe ? "border-white/10 text-neutral-300" : "border-red-500 text-red-300"
+                          isUrlSafe ? "border-line text-slate-300" : "border-red-500 text-red-300"
                         }`}
                       />
                     </div>
@@ -801,10 +805,10 @@ export function NavigationContentEditor({
                         onClick={() =>
                           handleUpdateSystemsLink(item.id!, "isExternal", !item.isExternal)
                         }
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                        className={`px-2 py-0.5 rounded text-xs font-mono border ${
                           item.isExternal
-                            ? "bg-purple-500/10 border-purple-500/30 text-purple-300"
-                            : "bg-white/5 border-white/10 text-neutral-400"
+                            ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                            : "bg-white/5 border-line text-slate-400"
                         }`}
                       >
                         {item.isExternal ? "External" : "Internal"}
@@ -815,7 +819,7 @@ export function NavigationContentEditor({
                         onClick={() =>
                           handleUpdateSystemsLink(item.id!, "published", !item.published)
                         }
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                        className={`px-2 py-0.5 rounded text-xs font-mono border ${
                           item.published !== false
                             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                             : "bg-amber-500/10 border-amber-500/30 text-amber-400"
@@ -827,7 +831,7 @@ export function NavigationContentEditor({
                       <button
                         type="button"
                         onClick={() => handleDeleteSystemsLink(item.id!)}
-                        className="p-1 rounded text-neutral-500 hover:text-red-400"
+                        className="p-1 rounded text-slate-500 hover:text-red-400"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -839,13 +843,13 @@ export function NavigationContentEditor({
           </div>
 
           {/* Core Stack Tags */}
-          <div className="p-5 rounded-2xl bg-[#0E1015] border border-white/10 space-y-4">
+          <div className="p-5 rounded-2xl bg-surface border border-line space-y-4">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-fg flex items-center gap-2">
                 <Tag className="w-4 h-4 text-emerald-400" />
                 <span>Column 3: Core Stack Technologies</span>
               </h3>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-slate-400">
                 Pill list highlighting Webgent&apos;s engineering foundation.
               </p>
             </div>
@@ -854,13 +858,13 @@ export function NavigationContentEditor({
               {footerConfig.coreStack.map((tech) => (
                 <span
                   key={tech}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-300 text-xs flex items-center gap-2 group"
+                  className="px-3 py-1.5 rounded-xl bg-white/5 border border-line text-slate-300 text-xs flex items-center gap-2 group"
                 >
                   <span>{tech}</span>
                   <button
                     type="button"
                     onClick={() => handleDeleteStackTag(tech)}
-                    className="text-neutral-500 hover:text-red-400 transition-colors"
+                    className="text-slate-500 hover:text-red-400 transition-colors"
                     title={`Remove ${tech}`}
                   >
                     <Trash2 className="w-3 h-3" />
@@ -881,12 +885,12 @@ export function NavigationContentEditor({
                   }
                 }}
                 placeholder="e.g. Redis & Upstash"
-                className="flex-1 px-3 py-1.5 bg-[#08090C] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500"
+                className="flex-1 px-3 py-1.5 bg-canvas border border-line rounded-xl text-fg text-xs focus:outline-none focus:border-indigo-500"
               />
               <button
                 type="button"
                 onClick={handleAddStackTag}
-                className="px-3.5 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-medium cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-fg text-xs font-medium cursor-pointer"
               >
                 Add Tech
               </button>
@@ -894,21 +898,21 @@ export function NavigationContentEditor({
           </div>
 
           {/* Connect / Social Links */}
-          <div className="p-5 rounded-2xl bg-[#0E1015] border border-white/10 space-y-4">
+          <div className="p-5 rounded-2xl bg-surface border border-line space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Share2 className="w-4 h-4 text-purple-400" />
+                <h3 className="text-sm font-semibold text-fg flex items-center gap-2">
+                  <Share2 className="w-4 h-4 text-indigo-400" />
                   <span>Column 4: Connect Links ({footerConfig.connectLinks.length})</span>
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-slate-400">
                   External social profiles and consultation inquiries.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleAddConnectLink}
-                className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Social Link</span>
@@ -922,14 +926,14 @@ export function NavigationContentEditor({
                 return (
                   <div
                     key={item.id || index}
-                    className="p-3 rounded-xl bg-[#08090C] border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
+                    className="p-3 rounded-xl bg-canvas border border-line flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
                   >
                     <input
                       type="text"
                       value={item.title}
                       onChange={(e) => handleUpdateConnectLink(item.id!, "title", e.target.value)}
                       placeholder="Title (e.g. GitHub)"
-                      className="px-3 py-1 bg-transparent border border-white/10 rounded-lg text-white text-xs flex-1"
+                      className="px-3 py-1 bg-transparent border border-line rounded-lg text-fg text-xs flex-1"
                     />
 
                     <div className="relative flex-1">
@@ -939,7 +943,7 @@ export function NavigationContentEditor({
                         onChange={(e) => handleUpdateConnectLink(item.id!, "href", e.target.value)}
                         placeholder="https://github.com/..."
                         className={`w-full px-3 py-1 bg-transparent border rounded-lg text-xs font-mono ${
-                          isUrlSafe ? "border-white/10 text-neutral-300" : "border-red-500 text-red-300"
+                          isUrlSafe ? "border-line text-slate-300" : "border-red-500 text-red-300"
                         }`}
                       />
                     </div>
@@ -950,10 +954,10 @@ export function NavigationContentEditor({
                         onClick={() =>
                           handleUpdateConnectLink(item.id!, "isExternal", !item.isExternal)
                         }
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                        className={`px-2 py-0.5 rounded text-xs font-mono border ${
                           item.isExternal
-                            ? "bg-purple-500/10 border-purple-500/30 text-purple-300"
-                            : "bg-white/5 border-white/10 text-neutral-400"
+                            ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                            : "bg-white/5 border-line text-slate-400"
                         }`}
                       >
                         {item.isExternal ? "External" : "Internal"}
@@ -964,7 +968,7 @@ export function NavigationContentEditor({
                         onClick={() =>
                           handleUpdateConnectLink(item.id!, "published", !item.published)
                         }
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                        className={`px-2 py-0.5 rounded text-xs font-mono border ${
                           item.published !== false
                             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                             : "bg-amber-500/10 border-amber-500/30 text-amber-400"
@@ -976,7 +980,7 @@ export function NavigationContentEditor({
                       <button
                         type="button"
                         onClick={() => handleDeleteConnectLink(item.id!)}
-                        className="p-1 rounded text-neutral-500 hover:text-red-400"
+                        className="p-1 rounded text-slate-500 hover:text-red-400"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -992,7 +996,7 @@ export function NavigationContentEditor({
       {/* TAB 3: LIVE PREVIEW */}
       {activeTab === "preview" && (
         <div className="space-y-6">
-          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs flex items-center gap-2">
             <Info className="w-4 h-4 shrink-0" />
             <span>
               This preview simulates how your active published links render across the public website layout.
@@ -1001,24 +1005,24 @@ export function NavigationContentEditor({
 
           {/* Simulated Header */}
           <div className="space-y-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+            <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
               Header Navbar Simulation (Published Only)
             </span>
-            <div className="p-4 rounded-2xl bg-[#080808] border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-white text-xs">
-                <span className="w-6 h-6 rounded bg-neutral-800 flex items-center justify-center font-mono">
+            <div className="p-4 rounded-2xl bg-canvas border border-line flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold text-fg text-xs">
+                <span className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center font-mono">
                   W
                 </span>
                 <span>Webgent</span>
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-medium text-neutral-400">
+              <div className="flex items-center gap-4 text-xs font-medium text-slate-400">
                 {navItems
                   .filter((item) => item.published !== false)
                   .map((item) => (
                     <span
                       key={item.id}
-                      className="hover:text-white transition-colors flex items-center gap-1 cursor-default"
+                      className="hover:text-fg transition-colors flex items-center gap-1 cursor-default"
                     >
                       {item.title}
                       {item.isExternal && <ExternalLink className="w-2.5 h-2.5 opacity-60" />}
@@ -1030,29 +1034,29 @@ export function NavigationContentEditor({
 
           {/* Simulated Footer */}
           <div className="space-y-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+            <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
               Footer Grid Simulation (Published Only)
             </span>
-            <div className="p-6 rounded-2xl bg-[#070707] border border-white/10 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-neutral-400">
+            <div className="p-6 rounded-2xl bg-canvas border border-line space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400">
                 {/* Brand */}
                 <div className="space-y-2">
-                  <div className="font-bold text-white">Webgent</div>
-                  <p className="text-[11px] leading-relaxed text-neutral-400">
+                  <div className="font-bold text-fg">Webgent</div>
+                  <p className="text-xs leading-relaxed text-slate-400">
                     {footerConfig.brandTagline}
                   </p>
                 </div>
 
                 {/* Systems */}
                 <div className="space-y-2">
-                  <div className="font-mono uppercase text-[10px] text-white font-semibold">
+                  <div className="font-mono uppercase text-xs text-fg font-semibold">
                     Systems
                   </div>
-                  <ul className="space-y-1.5 text-[11px]">
+                  <ul className="space-y-1.5 text-xs">
                     {footerConfig.systemsLinks
                       .filter((l) => l.published !== false)
                       .map((l) => (
-                        <li key={l.id} className="hover:text-white">
+                        <li key={l.id} className="hover:text-fg">
                           {l.title}
                         </li>
                       ))}
@@ -1061,12 +1065,12 @@ export function NavigationContentEditor({
 
                 {/* Core Stack */}
                 <div className="space-y-2">
-                  <div className="font-mono uppercase text-[10px] text-white font-semibold">
+                  <div className="font-mono uppercase text-xs text-fg font-semibold">
                     Core Stack
                   </div>
-                  <ul className="space-y-1.5 text-[11px]">
+                  <ul className="space-y-1.5 text-xs">
                     {footerConfig.coreStack.map((tech) => (
-                      <li key={tech} className="hover:text-white">
+                      <li key={tech} className="hover:text-fg">
                         {tech}
                       </li>
                     ))}
@@ -1075,14 +1079,14 @@ export function NavigationContentEditor({
 
                 {/* Connect */}
                 <div className="space-y-2">
-                  <div className="font-mono uppercase text-[10px] text-white font-semibold">
+                  <div className="font-mono uppercase text-xs text-fg font-semibold">
                     Connect
                   </div>
-                  <ul className="space-y-1.5 text-[11px]">
+                  <ul className="space-y-1.5 text-xs">
                     {footerConfig.connectLinks
                       .filter((l) => l.published !== false)
                       .map((l) => (
-                        <li key={l.id} className="hover:text-white flex items-center gap-1">
+                        <li key={l.id} className="hover:text-fg flex items-center gap-1">
                           <span>{l.title}</span>
                           {l.isExternal && <ExternalLink className="w-2.5 h-2.5 opacity-60" />}
                         </li>
@@ -1091,7 +1095,7 @@ export function NavigationContentEditor({
                 </div>
               </div>
 
-              <div className="border-t border-white/10 pt-4 flex items-center justify-between text-[10px] font-mono text-neutral-500">
+              <div className="border-t border-line pt-4 flex items-center justify-between text-xs font-mono text-slate-500">
                 <span>
                   &copy; {new Date().getFullYear()} Webgent. {footerConfig.copyrightText}
                 </span>

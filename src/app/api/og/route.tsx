@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const title = searchParams.get("title")?.slice(0, 100) || "Webgent — Elite Web Solutions";
+    const title = searchParams.get("title")?.slice(0, 100) || "Webgent — Modern Web Development";
     const badge = searchParams.get("badge")?.slice(0, 40) || "Engineering Architecture";
     const desc =
       searchParams.get("desc")?.slice(0, 180) ||
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#030712",
+          backgroundColor: "#040405",
           padding: "60px 70px",
           fontFamily: "system-ui, -apple-system, sans-serif",
           position: "relative",
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
             height: "600px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(3, 7, 18, 0) 70%)",
+              "radial-gradient(circle, rgba(242, 106, 31, 0.25) 0%, rgba(4, 4, 5, 0) 70%)",
           }}
         />
         <div
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
             height: "550px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(3, 7, 18, 0) 70%)",
+              "radial-gradient(circle, rgba(255, 128, 56, 0.2) 0%, rgba(4, 4, 5, 0) 70%)",
           }}
         />
 
@@ -73,11 +73,11 @@ export async function GET(req: NextRequest) {
                 width: "52px",
                 height: "52px",
                 borderRadius: "16px",
-                background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+                background: "linear-gradient(135deg, #F26A1F 0%, #FF8038 100%)",
                 color: "#ffffff",
                 fontSize: "28px",
                 fontWeight: 800,
-                boxShadow: "0 10px 25px rgba(99, 102, 241, 0.4)",
+                boxShadow: "0 10px 25px rgba(242, 106, 31, 0.4)",
               }}
             >
               W
@@ -100,9 +100,9 @@ export async function GET(req: NextRequest) {
               alignItems: "center",
               padding: "8px 20px",
               borderRadius: "9999px",
-              backgroundColor: "rgba(99, 102, 241, 0.15)",
-              border: "1px solid rgba(99, 102, 241, 0.4)",
-              color: "#a5b4fc",
+              backgroundColor: "rgba(242, 106, 31, 0.15)",
+              border: "1px solid rgba(242, 106, 31, 0.4)",
+              color: "#FF9F57",
               fontSize: "16px",
               fontWeight: 600,
               letterSpacing: "0.05em",
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: "22px",
               lineHeight: 1.5,
-              color: "#94a3b8",
+              color: "#C4C2BC",
               fontWeight: 400,
             }}
           >
@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderTop: "1px solid rgba(51, 65, 85, 0.7)",
+            borderTop: "1px solid rgba(43, 43, 47, 0.7)",
             paddingTop: "24px",
             width: "100%",
             zIndex: 10,
@@ -164,17 +164,17 @@ export async function GET(req: NextRequest) {
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              color: "#e2e8f0",
+              color: "#F0EEE8",
             }}
           >
-            <span style={{ fontSize: "18px", fontWeight: 700, color: "#818cf8" }}>webgent.com</span>
-            {author && <span style={{ fontSize: "16px", color: "#64748b" }}>• By {author}</span>}
+            <span style={{ fontSize: "18px", fontWeight: 700, color: "#F26A1F" }}>webgent.com</span>
+            {author && <span style={{ fontSize: "16px", color: "#96948E" }}>• By {author}</span>}
           </div>
 
           <div
             style={{
               fontSize: "16px",
-              color: "#64748b",
+              color: "#96948E",
               fontWeight: 500,
             }}
           >

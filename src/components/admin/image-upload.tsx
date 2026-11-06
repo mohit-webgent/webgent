@@ -117,14 +117,14 @@ export function ImageUpload({
 
           <div className="flex-1 min-w-0 pr-10">
             <p className="text-xs font-mono text-slate-300 truncate">{value}</p>
-            <p className="text-[11px] text-emerald-400 font-semibold mt-1">✓ Ready and loaded</p>
+            <p className="text-xs text-emerald-400 font-semibold mt-1">✓ Ready and loaded</p>
           </div>
 
           <div className="absolute top-3 right-3 flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setIsPickerOpen(true)}
-              className="p-1.5 bg-slate-900/90 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-lg border border-slate-700/80 transition-all shadow-md"
+              className="p-1.5 bg-slate-900/90 hover:bg-accent text-slate-400 hover:text-accent-fg rounded-lg border border-slate-700/80 transition-all shadow-md"
               title="Change from Media Library"
             >
               <FolderOpen className="w-4 h-4" />
@@ -132,7 +132,7 @@ export function ImageUpload({
             <button
               type="button"
               onClick={handleRemove}
-              className="p-1.5 bg-slate-900/90 hover:bg-rose-600 text-slate-400 hover:text-white rounded-lg border border-slate-700/80 transition-all shadow-md"
+              className="p-1.5 bg-slate-900/90 hover:bg-rose-600 text-slate-400 hover:text-fg rounded-lg border border-slate-700/80 transition-all shadow-md"
               title="Remove image"
             >
               <X className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function ImageUpload({
           <div className="flex flex-col items-center justify-center space-y-2">
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 cursor-pointer hover:text-white hover:border-indigo-500/50 transition-colors"
+              className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 cursor-pointer hover:text-fg hover:border-indigo-500/50 transition-colors"
             >
               {uploading ? (
                 <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
@@ -194,7 +194,7 @@ export function ImageUpload({
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Folder: <span className="font-mono text-slate-400">images/{folder}/</span>
             </p>
           </div>
@@ -216,7 +216,7 @@ export function ImageUpload({
         <button
           type="button"
           onClick={() => setIsPickerOpen(true)}
-          className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-slate-800 text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors"
+          className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-fg border border-slate-800 text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors"
         >
           <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
           <span>Library</span>

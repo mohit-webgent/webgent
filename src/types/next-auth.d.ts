@@ -9,6 +9,7 @@ declare module "next-auth" {
     role: UserRole;
     status: UserStatus;
     image?: string | null;
+    sessionFingerprint?: string;
   }
 
   interface Session {
@@ -25,5 +26,6 @@ declare module "next-auth/jwt" {
     id?: string;
     role?: UserRole;
     status?: UserStatus;
+    sessionFingerprint?: string;
   }
 }

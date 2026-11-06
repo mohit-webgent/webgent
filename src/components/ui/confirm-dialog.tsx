@@ -55,7 +55,7 @@ export function ConfirmDialog({
       onClick={() => {
         if (!isLoading) onClose();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-4 animate-in fade-in duration-200"
     >
       <div
         className="relative w-full max-w-md max-h-[min(88vh,560px)] flex flex-col rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto modal-scrollbar"
@@ -72,7 +72,7 @@ export function ConfirmDialog({
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 id="confirm-dialog-title" className="text-base font-bold text-white leading-tight">
+            <h3 id="confirm-dialog-title" className="text-base font-bold text-fg leading-tight">
               {title}
             </h3>
             <p
@@ -87,7 +87,7 @@ export function ConfirmDialog({
             disabled={isLoading}
             onClick={onClose}
             aria-label="Close dialog"
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="text-slate-400 hover:text-fg p-1 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -99,7 +99,7 @@ export function ConfirmDialog({
             variant="ghost"
             onClick={onClose}
             disabled={isLoading}
-            className="text-xs sm:text-sm text-slate-300 hover:text-white hover:bg-slate-800"
+            className="text-xs sm:text-sm text-slate-300 hover:text-fg hover:bg-slate-800"
           >
             {cancelText}
           </Button>
@@ -107,10 +107,10 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className={`text-xs sm:text-sm font-semibold gap-2 shadow-lg ${
+            className={`text-xs sm:text-sm font-semibold gap-2 ${
               isDestructive
-                ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/50"
-                : "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-950/50"
+                ? "bg-rose-600 hover:bg-rose-500 text-white"
+                : "bg-amber-600 hover:bg-amber-500 text-white"
             }`}
           >
             {isLoading ? (

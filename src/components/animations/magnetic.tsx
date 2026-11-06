@@ -60,11 +60,13 @@ export function Magnetic({ children, strength = 0.22, active = true }: MagneticP
     };
   }, [strength, active]);
 
-  return React.cloneElement(children, {
+  const child = children as React.ReactElement<{ ref?: React.Ref<HTMLElement> }>;
+
+  return React.cloneElement(child, {
     ref: (node: HTMLElement | null) => {
       elementRef.current = node;
       // Preserve existing child ref if any
-      const { ref } = children as unknown as { ref: React.Ref<HTMLElement> };
+      const { ref } = child.props;
       if (typeof ref === "function") {
         ref(node);
       } else if (ref && typeof ref === "object") {

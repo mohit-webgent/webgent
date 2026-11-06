@@ -184,13 +184,13 @@ export class SupabaseStorageService implements StorageService {
     const derivedProjectRef = (() => {
       const dbUrl = process.env.DATABASE_URL || "";
       const match = dbUrl.match(/postgres\.([a-z0-9_-]+):/i);
-      return match ? match[1] : "foprklanpxjxvuramabk";
+      return match ? match[1] : null;
     })();
 
     this.projectUrl = (
       process.env.SUPABASE_URL ||
       process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      `https://${derivedProjectRef}.supabase.co`
+      (derivedProjectRef ? `https://${derivedProjectRef}.supabase.co` : "")
     ).replace(/\/$/, "");
 
     this.serviceRoleKey = (
@@ -201,12 +201,12 @@ export class SupabaseStorageService implements StorageService {
 
     this.bucket = (
       process.env.SUPABASE_STORAGE_BUCKET ||
-      process.env.R2_BUCKET_NAME ||
       "webgent-media"
     ).trim();
 
     this.isConfigured = Boolean(
-      this.serviceRoleKey &&
+      this.projectUrl &&
+        this.serviceRoleKey &&
         !this.serviceRoleKey.includes("placeholder") &&
         !this.serviceRoleKey.includes("your_")
     );

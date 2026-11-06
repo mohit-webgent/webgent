@@ -183,14 +183,15 @@ async function runPhase15Tests() {
   // ----------------------------------------------------
   console.log("\n--- 6. Heading Hierarchy & Semantic HTML ---");
   // Check that each public page has exactly one main h1
-  const countH1 = (code: string) => (code.match(/<h1[\s>]/g) || []).length;
-  assert(countH1(homeCode) === 1, "Home page has exactly one <h1> element");
+  // Pages can also render their heading through PageHero or TextReveal.
+  const countH1 = (code: string) => (code.match(/<h1[\s>]|as="h1"|<PageHero\b/g) || []).length;
+  assert(countH1(homeCode) + countH1(fs.readFileSync("src/components/home/hero-section.tsx", "utf8")) === 1, "Home page has exactly one <h1> element");
   assert(countH1(workCode) === 1, "Work page has exactly one <h1> element");
   assert(countH1(projectDetailCode) === 1, "Project detail page has exactly one <h1> element");
   assert(countH1(blogCode) === 1, "Blog page has exactly one <h1> element");
   assert(countH1(blogDetailCode) === 1, "Blog detail page has exactly one <h1> element");
   assert(countH1(testimonialsCode) === 1, "Testimonials page has exactly one <h1> element");
-  assert(countH1(contactCode) === 1, "Contact page has exactly one <h1> element");
+  assert(countH1(contactCode) + countH1(fs.readFileSync("src/components/contact/contact-form.tsx", "utf8")) === 1, "Contact page has exactly one <h1> element");
   assert(countH1(thankYouCode) === 1, "Contact thank you page has exactly one <h1> element");
   pass("Every public page strictly follows heading hierarchy with exactly one <h1> element");
 
@@ -231,11 +232,11 @@ async function runPhase15Tests() {
   );
 
   assert(
-    projectDetailCode.includes('loading="lazy"'),
+    fs.readFileSync("src/components/work/project-gallery.tsx", "utf8").includes('loading="lazy"'),
     "Project detail screenshots use lazy loading",
   );
   assert(
-    projectDetailCode.includes('decoding="async"'),
+    fs.readFileSync("src/components/work/project-gallery.tsx", "utf8").includes('decoding="async"'),
     "Project detail screenshots use asynchronous decoding",
   );
   assert(testimonialsCode.includes('loading="lazy"'), "Testimonial avatars use lazy loading");

@@ -16,7 +16,10 @@ import {
   FeatureOption,
   BASE_PAGES_INCLUDED,
   COST_PER_EXTRA_PAGE,
+  DISCOUNT_FOR_ONE_PAGE,
+  EXPRESS_DELIVERY_MULTIPLIER,
   MIN_PROJECT_COST,
+  WEBSITE_CATEGORIES,
   WEBSITE_TYPES,
   EstimatorCalculationConfig,
 } from "@/lib/pricing.config";
@@ -242,7 +245,7 @@ export function calculateProjectEstimate(
   let baseCategoryPriceINR = canonicalResult.baseCategoryPrice;
   let oneTimeTotalINR = canonicalResult.grandTotal;
 
-  // Authoritative Gym Starter package alignment (₹11,999 with 5-7 business days timeline)
+  // Baseline gym sites are priced from the Business category, whatever the admin has set it to.
   const isBaselineGym =
     categoryKey === "gym" &&
     effectiveArch === "static" &&
@@ -269,7 +272,7 @@ export function calculateProjectEstimate(
     };
   }
 
-  // Authoritative E-Commerce Starter package alignment (₹28,999: ₹19,999 base + ₹8,000 dynamic + ₹1,000 extra page)
+  // Baseline e-commerce: category price + dynamic backend + extra pages, with blueprint features included.
   const isBaselineEcommerce =
     categoryKey === "ecommerce" &&
     effectiveArch === "dynamic" &&
@@ -354,43 +357,56 @@ export function calculateProjectEstimate(
 
     let recommendation = "";
     const compromiseOptions: string[] = [];
+    const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+    const starterPrice =
+      pricingConfig?.categories?.find((c) => c.id === "business")?.startingPrice ??
+      WEBSITE_CATEGORIES.find((c) => c.id === "business")?.startingPrice ??
+      MIN_PROJECT_COST;
+    const costPerExtraPage = pricingConfig?.pageSettings?.costPerExtraPage ?? COST_PER_EXTRA_PAGE;
+    const onePageDiscount = pricingConfig?.pageSettings?.discountForOnePage ?? DISCOUNT_FOR_ONE_PAGE;
+    const dynamicAddOn =
+      (pricingConfig?.types || WEBSITE_TYPES).find((t) => t.id === "dynamic")?.additionalCost ?? 0;
+    const expressPercent = Math.round(
+      (pricingConfig?.pricingSettings?.expressMultiplier ?? EXPRESS_DELIVERY_MULTIPLIER) * 100,
+    );
+    const featurePrice = (id: string) => featureCatalog.find((f) => f.id === id)?.price ?? 0;
 
     if (fitsBudget) {
       recommendation = `Great news! Your budget of ₹${userBudget.toLocaleString("en-IN")} fully covers the estimated scope of ₹${oneTimeTotalINR.toLocaleString("en-IN")}, leaving a surplus of ₹${difference.toLocaleString("en-IN")} that could be invested into post-launch monthly maintenance, marketing, or advanced SEO!`;
     } else {
       const deficit = Math.abs(difference);
-      if (userBudget < 9999) {
-        recommendation = `Webgent's minimum professional entry tier is our Starter Package at ₹9,999 (covering up to 5 custom pages, responsive design, contact form, WhatsApp chat, and basic SEO). Your target budget of ₹${userBudget.toLocaleString("en-IN")} is below this baseline, but we can prioritize an ultra-lean 1-page landing showcase (-₹2,000) or plan a Phase 1 launch when ready.`;
+      if (userBudget < starterPrice) {
+        recommendation = `Webgent's entry tier is our Starter Package at ${formatINR(starterPrice)} (covering up to 5 custom pages, responsive design, contact form, WhatsApp chat, and basic SEO). Your target budget of ${formatINR(userBudget)} is below this baseline, but we can prioritize a lean 1-page landing showcase (-${formatINR(onePageDiscount)}) or plan a Phase 1 launch when ready.`;
       } else {
         recommendation = `The recommended full-featured scope is ₹${oneTimeTotalINR.toLocaleString("en-IN")}, which is ₹${deficit.toLocaleString("en-IN")} above your target budget of ₹${userBudget.toLocaleString("en-IN")}. Here is how we can prioritize features to meet your budget:`;
       }
 
       if (categoryKey === "ecommerce") {
         compromiseOptions.push(
-          "Launch Phase 1 as an artisan catalogue with direct WhatsApp ordering and UPI QR (starts at ₹9,999 under Starter tier), explicitly deferring automated checkout, payment gateway integration, and order management to Phase 2.",
+          `Launch Phase 1 as a product catalogue with direct WhatsApp ordering and UPI QR (starts at ${formatINR(starterPrice)} under Starter tier), explicitly deferring automated checkout, payment gateway integration, and order management to Phase 2.`,
         );
         if (combinedFeatureIds.includes("invoice_generation")) {
-          compromiseOptions.push("Postpone automated PDF GST invoicing (-₹3,000 saving).");
+          compromiseOptions.push(`Postpone automated PDF GST invoicing (-${formatINR(featurePrice("invoice_generation"))} saving).`);
         }
         if (combinedFeatureIds.includes("inventory_stock")) {
-          compromiseOptions.push("Postpone real-time multi-location inventory syncing (-₹3,000 saving).");
+          compromiseOptions.push(`Postpone real-time inventory syncing (-${formatINR(featurePrice("inventory_stock"))} saving).`);
         }
         if (pageCount > blueprint.recommendedPageCount) {
           compromiseOptions.push(
-            `Consolidate content into ${blueprint.recommendedPageCount} standard e-commerce pages (-₹${((pageCount - blueprint.recommendedPageCount) * 1000).toLocaleString("en-IN")} saving).`,
+            `Consolidate content into ${blueprint.recommendedPageCount} standard e-commerce pages (-${formatINR((pageCount - blueprint.recommendedPageCount) * costPerExtraPage)} saving).`,
           );
         }
       } else {
         if (effectiveArch === "dynamic" && !hasDynamicFeature) {
-          compromiseOptions.push("Switch to a high-speed Static Architecture (-₹8,000 saving, zero hosting cost).");
+          compromiseOptions.push(`Switch to a high-speed Static Architecture (-${formatINR(dynamicAddOn)} saving, zero hosting cost).`);
         }
         if (pageCount > 5) {
-          compromiseOptions.push(`Consolidate content into ${Math.min(5, pageCount)} core pages (-₹${((pageCount - 5) * 1000).toLocaleString("en-IN")} saving).`);
+          compromiseOptions.push(`Consolidate content into ${Math.min(5, pageCount)} core pages (-${formatINR((pageCount - 5) * costPerExtraPage)} saving).`);
         }
         compromiseOptions.push("Launch Phase 1 with essential lead capture forms and add online payments or member portals in Phase 2 once initial client revenue starts flowing.");
       }
       if (input.deliverySpeed === "express") {
-        compromiseOptions.push("Choose Standard SLA delivery instead of Express Fast-Track (-20% saving).");
+        compromiseOptions.push(`Choose standard delivery instead of Express Fast-Track (-${expressPercent}% saving).`);
       }
     }
 
@@ -469,27 +485,36 @@ export interface Phase2UpgradeBreakdown {
 }
 
 /**
- * Calculates incremental upgrade cost from Phase 1 (Gym Starter) to Phase 2 (Online Booking & Deposits)
- * using authoritative configured pricing:
- * - Dynamic Backend (PostgreSQL + database): ₹8,000
- * - Online Booking Calendar: ₹4,000
- * - Payment Gateway (Razorpay/UPI for advance deposits): ₹4,500
+ * Calculates the cost of adding online booking (and optionally deposits) after launch,
+ * using the configured prices for whatever project the visitor has scoped.
  */
 export function calculatePhase2Upgrade({
-  currentTotalINR = 11999,
+  currentTotalINR = 0,
   includeDeposits = false,
+  pricingConfig,
+  currentProject = "Current Website (Phase 1)",
+  alreadyDynamic = false,
 }: {
   currentTotalINR?: number;
   includeDeposits?: boolean;
+  pricingConfig?: EstimatorCalculationConfig;
+  currentProject?: string;
+  alreadyDynamic?: boolean;
 } = {}): Phase2UpgradeBreakdown {
-  const dynamicBackendINR = 8000;
-  const bookingCalendarINR = 4000;
-  const paymentGatewayINR = includeDeposits ? 4500 : 0;
+  const catalog = pricingConfig?.features?.length ? pricingConfig.features : POPULAR_FEATURES;
+  const featurePrice = (id: string) => catalog.find((f) => f.id === id)?.price ?? 0;
+  const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+
+  const dynamicBackendINR = alreadyDynamic
+    ? 0
+    : ((pricingConfig?.types || WEBSITE_TYPES).find((t) => t.id === "dynamic")?.additionalCost ?? 0);
+  const bookingCalendarINR = featurePrice("booking_calendar");
+  const paymentGatewayINR = includeDeposits ? featurePrice("payment_gateway") : 0;
   const incrementalCostINR = dynamicBackendINR + bookingCalendarINR + paymentGatewayINR;
   const totalWithUpgradeINR = currentTotalINR + incrementalCostINR;
 
   return {
-    currentProject: "Gym Starter Website (Phase 1)",
+    currentProject,
     currentTotalINR,
     upgradeType: includeDeposits ? "booking_and_deposits" : "booking",
     upgradeTitle: includeDeposits
@@ -503,8 +528,6 @@ export function calculatePhase2Upgrade({
     upgradeCostINR: incrementalCostINR,
     newProjectTotalINR: totalWithUpgradeINR,
     timelineEstimate: "2–3 Weeks total engineering time",
-    explanation: includeDeposits
-      ? `Advance online deposits require a Dynamic Backend with PostgreSQL database (₹8,000) to manage member records and slot availability, an interactive Booking Calendar (₹4,000), and Razorpay/UPI payment gateway integration (₹4,500). Total Phase 2 upgrade: +₹16,500 (Project total: ₹${totalWithUpgradeINR.toLocaleString("en-IN")}).`
-      : `Online class/slot booking requires upgrading from Static to a Dynamic Backend with PostgreSQL database (₹8,000) and an interactive Booking Calendar (₹4,000). Total Phase 2 upgrade: +₹12,000 (Project total: ₹${totalWithUpgradeINR.toLocaleString("en-IN")}).`,
+    explanation: `Phase 2 adds ${formatINR(incrementalCostINR)} (project total ${formatINR(totalWithUpgradeINR)}).`,
   };
 }

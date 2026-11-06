@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { verifyStrictAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
@@ -9,10 +9,11 @@ const updateSessionSchema = z.object({
   status: z.enum(["ACTIVE", "CLOSED", "ARCHIVED"]),
 });
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+export async function GET(_req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {
@@ -48,10 +49,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+export async function PATCH(req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {
@@ -59,7 +61,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const validated = updateSessionSchema.safeParse(body);
     if (!validated.success) {
       return NextResponse.json(
-        { success: false, error: validated.error.errors[0]?.message },
+        { success: false, error: validated.error.issues[0]?.message },
         { status: 400 },
       );
     }
@@ -86,10 +88,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+export async function DELETE(_req: NextRequest, { params: routeParams }: { params: Promise<{ id: string }> }) {
+  const params = await routeParams;
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {

@@ -1,10 +1,10 @@
-import { getAuthSession } from "@/lib/auth-utils";
+import { canAccessAdminConsole, getAuthSession } from "@/lib/auth-utils";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { AdminShell } from "@/components/admin/admin-shell";
 
 export const metadata = {
   title: "Admin Console — Webgent",
-  description: "Secure production administrative management dashboard for Webgent.",
+  description: "Administrative dashboard for Webgent.",
   robots: {
     index: false,
     follow: false,
@@ -20,7 +20,7 @@ export const metadata = {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getAuthSession();
 
-  if (!session?.user) {
+  if (!session?.user || !canAccessAdminConsole(session)) {
     return <AuthProvider>{children}</AuthProvider>;
   }
 

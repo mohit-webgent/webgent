@@ -10,7 +10,15 @@ import {
   ProjectState,
 } from "@/lib/services/ai-consultant/orchestrator";
 import { detectPromptAbuse } from "@/lib/services/gemini";
+import { syncChatLead } from "@/lib/services/chat-leads";
+import { getClientIp } from "@/lib/client-ip";
+import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
+
+// Gemini's retry chain is capped at about 22 seconds, leaving room for database work.
+export const maxDuration = 30;
+
+const HISTORY_LIMIT = 20;
 
 const postMessageSchema = z.object({
   sessionId: z.string().min(1, "Session ID is required"),
@@ -30,10 +38,7 @@ const postMessageSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      req.headers.get("x-real-ip") ||
-      "127.0.0.1";
+    const ip = getClientIp(req.headers);
 
     const body = await req.json().catch(() => ({}));
     const validated = postMessageSchema.safeParse(body);
@@ -41,7 +46,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: validated.error.errors[0]?.message || "Invalid request",
+          error: validated.error.issues[0]?.message || "Invalid request",
         },
         { status: 400 },
       );
@@ -91,9 +96,10 @@ export async function POST(req: NextRequest) {
     const chatSession = await prisma.chatSession.findUnique({
       where: { id: sessionId },
       include: {
+        // Newest first so long chats keep their recent context. Reversed below.
         messages: {
-          orderBy: { createdAt: "asc" },
-          take: 20,
+          orderBy: { createdAt: "desc" },
+          take: HISTORY_LIMIT,
         },
       },
     });
@@ -102,6 +108,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
+          code: "SESSION_NOT_FOUND",
           error: "Chat session not found. Please start a new session.",
         },
         { status: 404 },
@@ -112,10 +119,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
+          code: "SESSION_CLOSED",
           error:
             "This chat conversation has concluded. Please start a new session to continue chatting.",
         },
-        { status: 400 },
+        { status: 410 },
       );
     }
 
@@ -128,7 +136,6 @@ export async function POST(req: NextRequest) {
       currentMetadata = {};
     }
 
-    const hadPriorEmail = Boolean(currentMetadata.email);
     if (visitorInfo?.name && visitorInfo.name.trim()) {
       currentMetadata.name = visitorInfo.name.trim();
     }
@@ -145,7 +152,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const history: ChatHistoryMessage[] = chatSession.messages.map((m) => ({
+    const history: ChatHistoryMessage[] = [...chatSession.messages].reverse().map((m) => ({
       role:
         m.sender === "visitor" || m.sender === "user" ? ("user" as const) : ("assistant" as const),
       content: m.content,
@@ -182,7 +189,7 @@ export async function POST(req: NextRequest) {
       const visitorName = (visitorInfo.name ||
         currentMetadata.name ||
         "Webgent Chat Visitor") as string;
-      const visitorEmail = visitorInfo.email.trim();
+      const visitorEmail = visitorInfo.email.trim().toLowerCase();
       const activeEstimate =
         consultantResult.estimate ||
         (currentMetadata.latestEstimate as import("@/lib/services/ai-consultant/calculator").ProjectEstimateResult | undefined);
@@ -220,52 +227,36 @@ export async function POST(req: NextRequest) {
         : undefined;
 
       try {
-        const existingLead = await prisma.lead.findFirst({
-          where: {
-            email: visitorEmail,
-            createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-          },
-          orderBy: { createdAt: "desc" },
+        const result = await syncChatLead({
+          sessionId: chatSession.id,
+          ownedLeadId: currentMetadata.leadId as string | undefined,
+          name: visitorName,
+          email: visitorEmail,
+          service: leadService,
+          budget: leadBudget,
+          notes: leadNotes,
+          message: `Latest chat inquiry: "${message}"`,
+          ipAddress: ip,
+          score: activeEstimate ? 75 : 60,
         });
 
-        if (existingLead) {
-          await prisma.lead.update({
-            where: { id: existingLead.id },
-            data: {
-              name: visitorName || existingLead.name,
-              service: leadService,
-              budget: leadBudget || existingLead.budget,
-              notes: leadNotes || existingLead.notes,
-              message: `${existingLead.message}\n---\nLatest Inquiry: "${message}"`,
-              updatedAt: new Date(),
-            },
-          });
-        } else {
-          await prisma.lead.create({
-            data: {
-              name: visitorName,
-              email: visitorEmail,
-              service: leadService,
-              budget: leadBudget,
-              notes: leadNotes,
-              message: `Captured via AI Consultant chat. Latest inquiry: "${message}"`,
-              ipAddress: ip,
-              status: "NEW",
-              score: activeEstimate ? 75 : 60,
-            },
-          });
-
-          if (!hadPriorEmail) {
-            await notificationService.sendNewLeadNotification({
-              id: `chat_${chatSession.id}`,
-              name: visitorName,
-              email: visitorEmail,
-              service: leadService,
-              message: `Visitor shared contact info during AI consultation.\nLatest message: "${message}"\nEstimated Total: ${
-                activeEstimate ? `₹${activeEstimate.cost.oneTimeTotalINR.toLocaleString("en-IN")}` : "N/A"
-              }`,
-            });
-          }
+        if (result.outcome === "created") {
+          currentMetadata.leadId = result.leadId;
+          waitUntil(
+            notificationService
+              .sendNewLeadNotification({
+                id: result.leadId,
+                name: visitorName,
+                email: visitorEmail,
+                service: leadService,
+                message: `Visitor shared contact info during AI consultation.\nLatest message: "${message}"\nEstimated Total: ${
+                  activeEstimate ? `₹${activeEstimate.cost.oneTimeTotalINR.toLocaleString("en-IN")}` : "N/A"
+                }`,
+              })
+              .catch((notifyErr) =>
+                logger.error("[Chat:Message] Lead notification failed", { error: String(notifyErr) }),
+              ),
+          );
         }
       } catch (leadErr) {
         logger.warn("[Chat:Message] Lead sync error", { error: leadErr });

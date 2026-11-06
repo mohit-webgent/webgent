@@ -8,14 +8,15 @@ import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
  * PUT /api/admin/features/[id]
  * Updates feature attributes and linked services.
  */
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   const authCheck = await verifyAdminApiAccess();
   if (authCheck instanceof NextResponse) {
     return authCheck;
@@ -54,7 +55,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
  * DELETE /api/admin/features/[id]
  * Deletes feature and cascades its service-feature links.
  */
-export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+export async function DELETE(_req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   const authCheck = await verifyAdminApiAccess();
   if (authCheck instanceof NextResponse) {
     return authCheck;

@@ -19,10 +19,10 @@ export function DemoLink({ projectSlug, demoUrl }: DemoLinkProps) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E8E8E6] hover:bg-white text-[#080808] font-medium text-xs rounded-lg transition-colors"
+      className="btn btn-primary"
     >
-      <ExternalLink className="w-3.5 h-3.5" />
-      <span>Launch Live Demo</span>
+      <ExternalLink className="h-4 w-4" />
+      <span>Visit live site</span>
     </a>
   );
 }

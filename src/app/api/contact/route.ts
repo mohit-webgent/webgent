@@ -7,22 +7,12 @@ import { verifyTurnstileToken } from "@/lib/turnstile";
 import { calculateLeadScore } from "@/lib/leads/scoring";
 import { notificationService } from "@/lib/services/notifications";
 import { logger } from "@/lib/logger";
-
-function getClientIp(req: NextRequest): string {
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0].trim();
-  }
-  const realIp = req.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-  return "127.0.0.1";
-}
+import { waitUntil } from "@vercel/functions";
+import { getClientIp } from "@/lib/client-ip";
 
 export async function POST(req: NextRequest) {
   try {
-    const ipAddress = getClientIp(req);
+    const ipAddress = getClientIp(req.headers);
     const userAgent = req.headers.get("user-agent") || undefined;
 
     const rateLimit = await checkRateLimit(`contact:${ipAddress}`, 3, 60 * 60 * 1000);
@@ -82,12 +72,15 @@ export async function POST(req: NextRequest) {
 
     logger.info("New lead created successfully", { leadId: lead.id, score });
 
-    notificationService.sendNewLeadNotification(lead).catch((err) => {
-      logger.error("Failed to dispatch new lead notification", {
-        leadId: lead.id,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    });
+    // waitUntil keeps the serverless function alive until alerts finish, without delaying the visitor.
+    waitUntil(
+      notificationService.sendNewLeadNotification(lead).catch((err) => {
+        logger.error("Failed to dispatch new lead notification", {
+          leadId: lead.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }),
+    );
 
     return ApiResponse.success(
       {

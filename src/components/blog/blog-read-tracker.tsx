@@ -16,6 +16,7 @@ export function BlogReadTracker({ slug, title, readTime }: BlogReadTrackerProps)
     if (!trackedRef.current) {
       trackedRef.current = true;
       trackBlogRead(slug, title, readTime || undefined);
+      fetch(`/api/blog/${encodeURIComponent(slug)}/view`, { method: "POST", keepalive: true }).catch(() => {});
     }
   }, [slug, title, readTime]);
 

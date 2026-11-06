@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth-utils";
+import { requireStrictAdmin } from "@/lib/auth-utils";
 import { getPricingData } from "@/lib/services/pricing";
 import { PricingContentEditor } from "@/components/admin/pricing-content-editor";
 
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function AdminPricingPage() {
-  await requireAdmin();
+  await requireStrictAdmin();
   const pricingData = await getPricingData();
 
   return <PricingContentEditor initialData={pricingData} />;

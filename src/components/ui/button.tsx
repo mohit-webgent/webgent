@@ -27,15 +27,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-[#E8E8E6] text-[#080808] hover:bg-[#D6D6D4] active:bg-[#FFFFFF] font-medium border border-transparent shadow-none",
+        "bg-accent text-accent-fg hover:bg-accent-hover active:bg-accent font-medium border border-transparent shadow-none",
       secondary:
-        "bg-transparent text-[#E5E5E5] border border-white/15 hover:bg-white/[0.06] hover:text-white shadow-none",
+        "bg-transparent text-fg border border-line-strong hover:bg-white/[0.06] hover:text-white shadow-none",
       outline:
-        "border border-white/10 bg-transparent text-[#D0D0CE] hover:bg-white/[0.04] hover:text-white",
-      ghost: "bg-transparent text-[#909090] hover:text-[#F5F5F3] hover:bg-white/[0.04]",
+        "border border-line bg-transparent text-fg-soft hover:bg-white/[0.04] hover:text-white",
+      ghost: "bg-transparent text-fg-muted hover:text-fg hover:bg-white/[0.04]",
       destructive:
         "bg-rose-950/80 text-rose-300 border border-rose-800/40 hover:bg-rose-900/80 shadow-none",
-      link: "bg-transparent text-[#E8E8E6] underline-offset-4 hover:underline p-0 focus:ring-0",
+      link: "bg-transparent text-fg underline-offset-4 hover:underline p-0 focus:ring-0",
     };
 
     const sizeStyles = {

@@ -129,6 +129,12 @@ async function runTests() {
   // -------------------------------------------------------------
   // 4. Valid Upload Tests across All Predictable Prefixes
   // -------------------------------------------------------------
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.log("\nSkipping live upload and deletion checks: Supabase credentials are not configured.");
+    console.log(`${passedTests}/${totalTests} checks passed.`);
+    return;
+  }
+
   console.log("\n▶ [4/6] Testing Valid Uploads under Predictable Prefixes...");
 
   const folders: AllowedFolder[] = ["projects", "blog", "testimonials"];

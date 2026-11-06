@@ -83,8 +83,10 @@ export function TestimonialsManager() {
   }, [search, statusFilter]);
 
   useEffect(() => {
-    fetchTestimonials();
-  }, [fetchTestimonials]);
+    // A short wait while typing avoids one request per keystroke.
+    const timer = setTimeout(fetchTestimonials, search ? 300 : 0);
+    return () => clearTimeout(timer);
+  }, [fetchTestimonials, search]);
 
   const handleOpenCreateModal = () => {
     setEditingItem(null);
@@ -238,8 +240,8 @@ export function TestimonialsManager() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <MessageSquareQuote className="w-6 h-6 text-pink-400" />
+          <h1 className="text-2xl font-bold text-fg tracking-tight flex items-center gap-2.5">
+            <MessageSquareQuote className="w-6 h-6 text-indigo-400" />
             <span>Testimonials & Reviews</span>
           </h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -249,7 +251,7 @@ export function TestimonialsManager() {
 
         <button
           onClick={handleOpenCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-semibold text-sm shadow-lg shadow-pink-600/20 transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent text-accent-fg font-semibold text-sm transition-all self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Add Testimonial</span>
@@ -259,7 +261,7 @@ export function TestimonialsManager() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
-          <p className="text-2xl font-extrabold text-white mt-1">{counts.total}</p>
+          <p className="text-2xl font-extrabold text-fg mt-1">{counts.total}</p>
         </div>
         <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-2xl p-4">
           <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
@@ -285,7 +287,7 @@ export function TestimonialsManager() {
             placeholder="Search by client, company, or quote..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-pink-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
 
@@ -296,7 +298,7 @@ export function TestimonialsManager() {
               onClick={() => setStatusFilter(status)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 statusFilter === status
-                  ? "bg-pink-600 text-white shadow-md shadow-pink-600/30"
+                  ? "bg-accent text-accent-fg"
                   : "bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
               }`}
             >
@@ -308,13 +310,13 @@ export function TestimonialsManager() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin text-pink-500 mb-2" />
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-500 mb-2" />
           <p className="text-sm">Loading testimonials...</p>
         </div>
       ) : testimonials.length === 0 ? (
         <div className="text-center py-16 bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8">
           <MessageSquareQuote className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-white">No testimonials found</h3>
+          <h3 className="text-base font-bold text-fg">No testimonials found</h3>
           <p className="text-sm text-slate-400 max-w-sm mx-auto mt-1">
             {search || statusFilter !== "ALL"
               ? "No testimonials match your current filters."
@@ -323,7 +325,7 @@ export function TestimonialsManager() {
           {!search && statusFilter === "ALL" && (
             <button
               onClick={handleOpenCreateModal}
-              className="mt-4 px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold transition-all"
+              className="mt-4 px-4 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg text-xs font-semibold transition-all"
             >
               Add First Testimonial
             </button>
@@ -341,18 +343,18 @@ export function TestimonialsManager() {
                   <button
                     disabled={index === 0}
                     onClick={() => handleMoveOrder(index, "up")}
-                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                    className="p-1 rounded text-slate-400 hover:text-fg hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all"
                     title="Move Up"
                   >
                     <ArrowUp className="w-4 h-4" />
                   </button>
-                  <span className="text-[11px] font-mono font-bold text-slate-500">
+                  <span className="text-xs font-mono font-bold text-slate-500">
                     #{item.order}
                   </span>
                   <button
                     disabled={index === testimonials.length - 1}
                     onClick={() => handleMoveOrder(index, "down")}
-                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                    className="p-1 rounded text-slate-400 hover:text-fg hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all"
                     title="Move Down"
                   >
                     <ArrowDown className="w-4 h-4" />
@@ -373,7 +375,7 @@ export function TestimonialsManager() {
 
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-bold text-white text-base leading-tight">
+                    <h3 className="font-bold text-fg text-base leading-tight">
                       {item.clientName}
                     </h3>
                     {(item.designation || item.clientTitle || item.company) && (
@@ -385,14 +387,14 @@ export function TestimonialsManager() {
                     )}
 
                     {item.featured && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-[10px] font-semibold">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
                         <Sparkles className="w-3 h-3" />
                         <span>Featured</span>
                       </span>
                     )}
 
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         item.status === "APPROVED"
                           ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
                           : item.status === "PENDING"
@@ -451,7 +453,7 @@ export function TestimonialsManager() {
 
                 <button
                   onClick={() => handleOpenEditModal(item)}
-                  className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
+                  className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-fg transition-all"
                   title="Edit Testimonial"
                 >
                   <Edit2 className="w-4 h-4" />
@@ -474,20 +476,20 @@ export function TestimonialsManager() {
       {isModalOpen && (
         <div
           onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 z-50 bg-transparent backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full max-h-[min(88vh,740px)] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200"
           >
             <div className="flex items-center justify-between border-b border-slate-800 p-6 pb-4 shrink-0">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <MessageSquareQuote className="w-5 h-5 text-pink-400" />
+              <h2 className="text-lg font-bold text-fg flex items-center gap-2">
+                <MessageSquareQuote className="w-5 h-5 text-indigo-400" />
                 <span>{editingItem ? "Edit Testimonial" : "Create Testimonial"}</span>
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className="text-slate-400 hover:text-fg p-1 rounded-lg hover:bg-slate-800"
               >
                 ✕
               </button>
@@ -504,7 +506,7 @@ export function TestimonialsManager() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-pink-400" />
+                    <User className="w-3.5 h-3.5 text-indigo-400" />
                     <span>Client Name *</span>
                   </label>
                   <input
@@ -513,13 +515,13 @@ export function TestimonialsManager() {
                     placeholder="e.g. Sarah Jenkins"
                     value={formData.clientName}
                     onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-                    <Building className="w-3.5 h-3.5 text-pink-400" />
+                    <Building className="w-3.5 h-3.5 text-indigo-400" />
                     <span>Designation / Role</span>
                   </label>
                   <input
@@ -527,7 +529,7 @@ export function TestimonialsManager() {
                     placeholder="e.g. VP of Product"
                     value={formData.designation}
                     onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -539,7 +541,7 @@ export function TestimonialsManager() {
                   placeholder="e.g. Apex Global Systems"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -554,7 +556,7 @@ export function TestimonialsManager() {
 
               <div className="space-y-1.5">
                 <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-                  <Quote className="w-3.5 h-3.5 text-pink-400" />
+                  <Quote className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Testimonial Quote / Content *</span>
                 </label>
                 <textarea
@@ -563,7 +565,7 @@ export function TestimonialsManager() {
                   placeholder="Share the client's detailed quote or review..."
                   value={formData.quote}
                   onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-pink-500 leading-relaxed"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-fg placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 leading-relaxed"
                 />
               </div>
 
@@ -600,7 +602,7 @@ export function TestimonialsManager() {
                         status: e.target.value as "APPROVED" | "PENDING" | "REJECTED",
                       })
                     }
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-pink-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-fg focus:outline-none focus:border-indigo-500"
                   >
                     <option value="APPROVED">Approved (Public)</option>
                     <option value="PENDING">Pending Approval</option>
@@ -614,7 +616,7 @@ export function TestimonialsManager() {
                     id="featuredCheckbox"
                     checked={formData.featured}
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-pink-600 focus:ring-0"
+                    className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0"
                   />
                   <label
                     htmlFor="featuredCheckbox"
@@ -636,7 +638,7 @@ export function TestimonialsManager() {
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="px-5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-semibold text-xs shadow-lg shadow-pink-600/30 transition-all flex items-center gap-2"
+                  className="px-5 py-2 rounded-xl bg-accent hover:bg-accent text-accent-fg font-semibold text-xs transition-all flex items-center gap-2"
                 >
                   {formSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>{editingItem ? "Save Changes" : "Create Testimonial"}</span>

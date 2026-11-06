@@ -8,10 +8,11 @@ import { storageService, mediaDb, AllowedFolder } from "@/lib/services/storage";
 import { logger } from "@/lib/logger";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -43,7 +44,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteParams) {
+export async function PATCH(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
@@ -92,7 +94,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {

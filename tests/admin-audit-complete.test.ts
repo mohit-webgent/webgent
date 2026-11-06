@@ -215,7 +215,7 @@ describe("Webgent Admin Console — Functional Audit & Verification Suite", () =
         },
       );
       const demoteRes = await updateUserRoute(selfDemoteReq, {
-        params: { id: testAdminId },
+        params: Promise.resolve({ id: testAdminId }),
       });
       assert.equal(demoteRes.status, 400);
       const demoteJson = await demoteRes.json();
@@ -231,7 +231,7 @@ describe("Webgent Admin Console — Functional Audit & Verification Suite", () =
         },
       );
       const suspendRes = await updateUserRoute(selfSuspendReq, {
-        params: { id: testAdminId },
+        params: Promise.resolve({ id: testAdminId }),
       });
       assert.equal(suspendRes.status, 400);
 
@@ -241,7 +241,7 @@ describe("Webgent Admin Console — Functional Audit & Verification Suite", () =
         { method: "DELETE" },
       );
       const deleteRes = await deleteUserRoute(selfDeleteReq, {
-        params: { id: testAdminId },
+        params: Promise.resolve({ id: testAdminId }),
       });
       assert.equal(deleteRes.status, 400);
       const deleteJson = await deleteRes.json();
@@ -264,7 +264,7 @@ describe("Webgent Admin Console — Functional Audit & Verification Suite", () =
         },
       );
 
-      const res = await updateUserRoute(updateReq, { params: { id: createdUserId! } });
+      const res = await updateUserRoute(updateReq, { params: Promise.resolve({ id: createdUserId! }) });
       assert.equal(res.status, 200);
       const json = await res.json();
       assert.equal(json.data.name, "Updated Staff Name");
@@ -280,7 +280,7 @@ describe("Webgent Admin Console — Functional Audit & Verification Suite", () =
         { method: "DELETE" },
       );
 
-      const res = await deleteUserRoute(deleteReq, { params: { id: createdUserId! } });
+      const res = await deleteUserRoute(deleteReq, { params: Promise.resolve({ id: createdUserId! }) });
       assert.equal(res.status, 200);
 
       // Verify user was deleted

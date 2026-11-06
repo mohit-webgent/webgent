@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import type {
   BackendPricingData,
   PackageDetails,
@@ -51,6 +52,7 @@ interface EditorSettingsState {
 
 export function PricingContentEditor({ initialData }: PricingContentEditorProps) {
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [activeTab, setActiveTab] = useState<
     "packages" | "categories" | "types" | "features" | "settings"
@@ -132,7 +134,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
   }, [isDirty]);
 
   // Keyboard shortcut Ctrl+S / Cmd+S
-  const handleSaveRef = useRef<() => void>();
+  const handleSaveRef = useRef<(() => void) | undefined>(undefined);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
@@ -184,12 +186,12 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       if (data.meta?.cacheRefreshed === false) {
         toast.warning(
           "Saved with Notice",
-          "Pricing saved to database. Warning: Public CDN cache revalidation encountered errors.",
+          "Saved. The public site may take a few minutes to update.",
         );
       } else {
         toast.success(
           "Pricing Updated",
-          "All pricing packages, rates, and calculator engines synchronized.",
+          "Your pricing changes are live on the site.",
         );
       }
     } catch (err) {
@@ -202,7 +204,9 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
     }
   };
 
-  handleSaveRef.current = handleSave;
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  });
 
   // Handle Refresh from Server
   const handleRefreshFromServer = async () => {
@@ -229,23 +233,25 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
             settings: d.settings,
           }),
         );
-        toast.success("Synchronized", "Reloaded current pricing data from server.");
+        toast.success("Reloaded", "Showing the latest saved pricing.");
       } else {
-        toast.error("Sync Failed", json.error?.message || "Unknown error.");
+        toast.error("Couldn't reload pricing", json.error?.message || "Unknown error.");
       }
     } catch (err) {
-      toast.error("Sync Error", err instanceof Error ? err.message : "Network error.");
+      toast.error("Couldn't reload pricing", err instanceof Error ? err.message : "Network error.");
     } finally {
       setRefreshing(false);
     }
   };
 
   // Reset to Defaults
-  const handleResetToDefaults = () => {
+  const handleResetToDefaults = async () => {
     if (
-      window.confirm(
-        "Are you sure you want to restore standard Webgent default pricing rates? All custom overrides will be reset.",
-      )
+      await confirm({
+        title: "Reset pricing to defaults?",
+        description: "This replaces your custom prices with the defaults. Nothing goes live until you save.",
+        confirmText: "Reset pricing",
+      })
     ) {
       setPackages({
         starter: { ...DEFAULT_PRICING_OVERRIDES_PAYLOAD.matrixPackages.starter },
@@ -349,21 +355,13 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Top Header Bar */}
-      <div className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-6 backdrop-blur-xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-surface border border-slate-800/80 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> Authoritative Configurator
-            </span>
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              Prisma: pricing_overrides
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            Pricing & Packages Manager
+          <h1 className="text-2xl font-bold text-fg tracking-tight flex items-center gap-2.5">
+            Pricing & Packages
           </h1>
-          <p className="text-sm text-zinc-400 mt-1 max-w-2xl">
-            Configure core package tiers, category base prices, architecture add-ons, feature rates, and calculation rules. Changes propagate to <code className="text-zinc-300">/pricing</code> and AI Consultant automatically.
+          <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+            Set your packages, base prices, add-ons, feature rates and calculation rules. Saved changes update the pricing page and the AI consultant.
           </p>
         </div>
 
@@ -372,7 +370,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
           <Link
             href="/pricing"
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-400 hover:text-fg bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all"
             title="Preview public pricing page"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -383,11 +381,11 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
             type="button"
             onClick={handleRefreshFromServer}
             disabled={refreshing || saving}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-400 hover:text-fg bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all disabled:opacity-50"
             title="Reload latest from server"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-            Sync Server
+            Reload
           </button>
 
           <button
@@ -404,7 +402,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
             type="button"
             onClick={handleSave}
             disabled={saving || !isDirty}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-black bg-white hover:bg-zinc-200 active:bg-zinc-300 rounded-xl transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-accent-fg bg-accent hover:bg-accent-hover rounded-xl transition-all shadow-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             {saving ? (
               <>
@@ -414,7 +412,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
             ) : (
               <>
                 <Save className="w-3.5 h-3.5" />
-                Save Changes {isDirty && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+                Save Changes
               </>
             )}
           </button>
@@ -426,13 +424,13 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-amber-200 animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>You have unsaved pricing edits. Click <strong>Save Changes</strong> (or press <strong>Ctrl+S</strong>) to persist.</span>
+            <span>You have unsaved changes. Click <strong>Save Changes</strong> or press <strong>Ctrl+S</strong> to publish them.</span>
           </div>
           <button
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="text-amber-300 underline font-semibold hover:text-white cursor-pointer"
+            className="text-amber-300 underline font-semibold hover:text-fg cursor-pointer"
           >
             Save now
           </button>
@@ -440,7 +438,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       )}
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-zinc-800 space-x-1 overflow-x-auto pb-px">
+      <div className="flex border-b border-slate-800 space-x-1 overflow-x-auto pb-px">
         {[
           { id: "packages", label: "Core Packages", icon: Package, count: "3 Tiers" },
           { id: "categories", label: "Category Rates", icon: Layers, count: `${categories.length}` },
@@ -457,13 +455,13 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? "border-emerald-500 text-white bg-zinc-900/40 rounded-t-xl"
-                  : "border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
+                  ? "border-indigo-500 text-fg bg-slate-900/40 rounded-t-xl"
+                  : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-zinc-500"}`} />
+              <Icon className={`w-4 h-4 ${isActive ? "text-indigo-400" : "text-slate-500"}`} />
               {tab.label}
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-zinc-800 text-zinc-400 font-mono">
+              <span className="text-xs px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400 font-mono">
                 {tab.count}
               </span>
             </button>
@@ -474,18 +472,18 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       {/* TAB 1: CORE PACKAGES (Starter, Business, Pro) */}
       {activeTab === "packages" && (
         <div className="space-y-6">
-          <div className="p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-xl flex items-start gap-3 text-xs text-zinc-400">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-slate-900/60 border border-slate-800 rounded-xl flex items-start gap-3 text-xs text-slate-400">
+            <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-zinc-200">Authoritative Package Tier Rates</p>
+              <p className="font-medium text-slate-200">Package Pricing</p>
               <p className="mt-0.5 leading-relaxed">
-                Configure commercial starting prices, badges, delivery timelines, and key highlights for the 3 main tiers. The 40-feature comparative deliverable matrix (<code className="text-zinc-300">MASTER_FEATURES</code>) provides the structural engineering baseline for multi-tier deliverables.
+                Set the starting price, badge, delivery time and highlights for each of the three packages.
               </p>
             </div>
           </div>
 
           {/* Sub-tab selector for the 3 tiers */}
-          <div className="flex gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {SUPPORTED_PACKAGE_TIERS.map((tier) => {
               const pkg = packages[tier];
               const isSelected = selectedPackageTier === tier;
@@ -494,27 +492,27 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                   key={tier}
                   type="button"
                   onClick={() => setSelectedPackageTier(tier)}
-                  className={`flex-1 p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`min-w-0 p-4 rounded-xl border text-left transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-zinc-900 border-emerald-500/60 ring-1 ring-emerald-500/20"
-                      : "bg-[#0f0f11] border-zinc-800/80 hover:border-zinc-700"
+                      ? "bg-slate-900 border-indigo-500/60 ring-1 ring-indigo-500/20"
+                      : "bg-surface border-slate-800/80 hover:border-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs uppercase font-bold tracking-wider text-zinc-400">
+                    <span className="text-xs uppercase font-bold tracking-wider text-slate-400">
                       {pkg.name} Tier
                     </span>
                     {pkg.badge && (
-                      <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <span className="px-2 py-0.5 text-xs font-semibold uppercase rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                         {pkg.badge}
                       </span>
                     )}
                   </div>
-                  <div className="text-2xl font-bold text-white flex items-center">
-                    <span className="text-sm text-zinc-400 font-normal mr-1">₹</span>
+                  <div className="text-2xl font-bold text-fg flex items-center">
+                    <span className="text-sm text-slate-400 font-normal mr-1">₹</span>
                     {pkg.startingPrice.toLocaleString("en-IN")}
                   </div>
-                  <div className="text-xs text-zinc-400 mt-1 truncate">{pkg.tagline}</div>
+                  <div className="text-xs text-slate-400 mt-1 truncate">{pkg.tagline}</div>
                 </button>
               );
             })}
@@ -524,41 +522,41 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
           {(() => {
             const currentPkg = packages[selectedPackageTier];
             return (
-              <div className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-6 space-y-6 shadow-xl">
-                <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+              <div className="bg-surface border border-slate-800/80 rounded-2xl p-6 space-y-6 shadow-xl">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-white">
+                    <h2 className="text-lg font-semibold text-fg">
                       Editing {currentPkg.name} Package
                     </h2>
-                    <p className="text-xs text-zinc-400 mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5">
                       Public pricing card presented on the homepage, pricing matrix, and comparison table.
                     </p>
                   </div>
-                  <span className="px-3 py-1 text-xs font-mono font-medium rounded-full bg-zinc-800 text-zinc-300">
+                  <span className="px-3 py-1 text-xs font-mono font-medium rounded-full bg-slate-800 text-slate-300">
                     Package ID: {currentPkg.id}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
                       Package Name
                     </label>
                     <input
                       type="text"
                       value={currentPkg.name}
                       onChange={(e) => updatePackageField(selectedPackageTier, "name", e.target.value)}
-                      className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                      className="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
                       <span>Starting Price (INR)</span>
-                      <span className="text-[10px] text-zinc-500 font-mono">Min ₹1,000</span>
+                      <span className="text-xs text-slate-500 font-mono">Min ₹1,000</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-2.5 text-zinc-500 text-sm">₹</span>
+                      <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
                       <input
                         type="number"
                         min="1000"
@@ -571,41 +569,41 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                             parseInt(e.target.value, 10) || 0,
                           )
                         }
-                        className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                        className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-fg font-mono focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
                       Delivery Timeline
                     </label>
                     <div className="relative">
-                      <Clock className="w-4 h-4 absolute left-3 top-3 text-zinc-500" />
+                      <Clock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                       <input
                         type="text"
                         value={currentPkg.deliveryTime}
                         onChange={(e) => updatePackageField(selectedPackageTier, "deliveryTime", e.target.value)}
                         placeholder="e.g. 5–7 Business Days"
-                        className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                        className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
                       Tagline
                     </label>
                     <input
                       type="text"
                       value={currentPkg.tagline}
                       onChange={(e) => updatePackageField(selectedPackageTier, "tagline", e.target.value)}
-                      className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                      className="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
                       Badge Text (Optional)
                     </label>
                     <input
@@ -613,51 +611,51 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                       value={currentPkg.badge || ""}
                       onChange={(e) => updatePackageField(selectedPackageTier, "badge", e.target.value || null)}
                       placeholder="e.g. MOST POPULAR"
-                      className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                      className="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div className="md:col-span-3">
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
                       Ideal For Description
                     </label>
                     <input
                       type="text"
                       value={currentPkg.idealFor}
                       onChange={(e) => updatePackageField(selectedPackageTier, "idealFor", e.target.value)}
-                      className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                      className="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div className="md:col-span-3">
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
                       Detailed Summary
                     </label>
                     <textarea
                       rows={2}
                       value={currentPkg.summary}
                       onChange={(e) => updatePackageField(selectedPackageTier, "summary", e.target.value)}
-                      className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+                      className="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors resize-none"
                     />
                   </div>
                 </div>
 
                 {/* Key Highlights List */}
-                <div className="border-t border-zinc-800/80 pt-5 space-y-3">
+                <div className="border-t border-slate-800/80 pt-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <h3 className="text-sm font-semibold text-fg flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-400" />
                         Key Package Deliverables & Highlights
                       </h3>
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <p className="text-xs text-slate-400 mt-0.5">
                         Bullet points presented on the card checklist.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => addPackageHighlight(selectedPackageTier)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-xl transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add Highlight
@@ -667,7 +665,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                   <div className="space-y-2">
                     {currentPkg.keyHighlights.map((highlight, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <span className="w-6 text-center text-xs font-mono text-zinc-500">
+                        <span className="w-6 text-center text-xs font-mono text-slate-500">
                           {idx + 1}.
                         </span>
                         <input
@@ -676,12 +674,12 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                           onChange={(e) =>
                             updatePackageHighlight(selectedPackageTier, idx, e.target.value)
                           }
-                          className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                          className="flex-1 bg-slate-900/80 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-fg focus:outline-none focus:border-indigo-500 transition-colors"
                         />
                         <button
                           type="button"
                           onClick={() => removePackageHighlight(selectedPackageTier, idx)}
-                          className="p-2 text-zinc-500 hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-500/10 cursor-pointer"
+                          className="p-2 text-slate-500 hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-500/10 cursor-pointer"
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -699,10 +697,10 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       {/* TAB 2: CATEGORY STARTING RATES */}
       {activeTab === "categories" && (
         <div className="space-y-4">
-          <div className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-5 mb-4">
-            <h2 className="text-sm font-semibold text-white">Project Category Starting Rates</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Defines the initial baseline scope and cost for each business discipline in the interactive budget calculator and AI Consultant quoting engine.
+          <div className="bg-surface border border-slate-800/80 rounded-2xl p-5 mb-4">
+            <h2 className="text-sm font-semibold text-fg">Project Category Starting Rates</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              The base cost for each business type, used by the budget calculator and the AI consultant.
             </p>
           </div>
 
@@ -710,25 +708,25 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
             {categories.map((cat, idx) => (
               <div
                 key={cat.id}
-                className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-5 space-y-4 shadow-md hover:border-zinc-700 transition-all"
+                className="bg-surface border border-slate-800/80 rounded-2xl p-5 space-y-4 shadow-md hover:border-slate-700 transition-all"
               >
-                <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-white">{cat.title}</h3>
-                    <span className="text-[10px] font-mono text-zinc-500">ID: {cat.id}</span>
+                    <h3 className="text-sm font-bold text-fg">{cat.title}</h3>
+                    <span className="text-xs font-mono text-slate-500">ID: {cat.id}</span>
                   </div>
-                  <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-zinc-800 text-zinc-300">
+                  <span className="px-2 py-0.5 text-xs font-mono rounded bg-slate-800 text-slate-300">
                     {cat.deliveryDays}
                   </span>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
                       Starting Price (₹)
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2 text-zinc-500 text-xs">₹</span>
+                      <span className="absolute left-3 top-2 text-slate-500 text-xs">₹</span>
                       <input
                         type="number"
                         min="1000"
@@ -742,13 +740,13 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                           };
                           setCategories(updated);
                         }}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
                       Subtitle
                     </label>
                     <input
@@ -759,13 +757,13 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         updated[idx] = { ...cat, subtitle: e.target.value };
                         setCategories(updated);
                       }}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-fg focus:outline-none focus:border-indigo-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Delivery Days
                       </label>
                       <input
@@ -776,11 +774,11 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                           updated[idx] = { ...cat, deliveryDays: e.target.value };
                           setCategories(updated);
                         }}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-fg focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Rec. Pages
                       </label>
                       <input
@@ -796,7 +794,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                           };
                           setCategories(updated);
                         }}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-fg focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
@@ -810,9 +808,9 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       {/* TAB 3: ARCHITECTURE TYPES (Static vs. Dynamic) */}
       {activeTab === "types" && (
         <div className="space-y-4">
-          <div className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-5 mb-4">
-            <h2 className="text-sm font-semibold text-white">Architecture Options & Add-on Fees</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
+          <div className="bg-surface border border-slate-800/80 rounded-2xl p-5 mb-4">
+            <h2 className="text-sm font-semibold text-fg">Architecture Options & Add-on Fees</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
               Static websites have 0 additional cost. Dynamic websites include database setup, server backend, and CMS/dashboard integration.
             </p>
           </div>
@@ -821,21 +819,21 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
             {types.map((typeOption, idx) => (
               <div
                 key={typeOption.id}
-                className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-xl"
+                className="bg-surface border border-slate-800/80 rounded-2xl p-6 space-y-4 shadow-xl"
               >
-                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div>
-                    <h3 className="text-base font-bold text-white capitalize">{typeOption.title}</h3>
-                    <span className="text-xs text-zinc-400">{typeOption.subtitle}</span>
+                    <h3 className="text-base font-bold text-fg capitalize">{typeOption.title}</h3>
+                    <span className="text-xs text-slate-400">{typeOption.subtitle}</span>
                   </div>
-                  <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-md bg-zinc-800 text-emerald-400">
+                  <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-md bg-slate-800 text-indigo-400">
                     {typeOption.id === "static" ? "Base (₹0)" : `+₹${typeOption.additionalCost.toLocaleString("en-IN")}`}
                   </span>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
                       Title
                     </label>
                     <input
@@ -846,12 +844,12 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         updated[idx] = { ...typeOption, title: e.target.value };
                         setTypes(updated);
                       }}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-fg focus:outline-none focus:border-indigo-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
                       Subtitle
                     </label>
                     <input
@@ -862,16 +860,16 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         updated[idx] = { ...typeOption, subtitle: e.target.value };
                         setTypes(updated);
                       }}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-fg focus:outline-none focus:border-indigo-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
                       Additional Architecture Cost (INR)
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-2.5 text-zinc-500 text-sm">₹</span>
+                      <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
                       <input
                         type="number"
                         min="0"
@@ -885,13 +883,13 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                           };
                           setTypes(updated);
                         }}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
                       Description
                     </label>
                     <textarea
@@ -902,12 +900,12 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         updated[idx] = { ...typeOption, description: e.target.value };
                         setTypes(updated);
                       }}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500 resize-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
                       Best For
                     </label>
                     <input
@@ -918,7 +916,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         updated[idx] = { ...typeOption, bestFor: e.target.value };
                         setTypes(updated);
                       }}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                 </div>
@@ -931,22 +929,22 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       {/* TAB 4: FEATURE CATALOG & ADD-ONS */}
       {activeTab === "features" && (
         <div className="space-y-4">
-          <div className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-surface border border-slate-800/80 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-sm font-semibold text-white">Popular Features & Add-on Prices</h2>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <h2 className="text-sm font-semibold text-fg">Popular Features & Add-on Prices</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
                 Manage standalone pricing for interactive features, payment gateways, booking calendars, and integrations.
               </p>
             </div>
             {/* Search Input */}
             <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
               <input
                 type="text"
                 placeholder="Search features..."
                 value={featureSearch}
                 onChange={(e) => setFeatureSearch(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>
@@ -957,17 +955,17 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
               return (
                 <div
                   key={feat.id}
-                  className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-4 space-y-3 shadow-md hover:border-zinc-700 transition-all"
+                  className="bg-surface border border-slate-800/80 rounded-2xl p-4 space-y-3 shadow-md hover:border-slate-700 transition-all"
                 >
-                  <div className="flex items-start justify-between gap-2 border-b border-zinc-800/80 pb-2.5">
+                  <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2.5">
                     <div>
-                      <h4 className="text-sm font-bold text-white leading-tight">{feat.name}</h4>
+                      <h4 className="text-sm font-bold text-fg leading-tight">{feat.name}</h4>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">
+                        <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
                           {feat.categoryTag}
                         </span>
                         {feat.includedInDynamic && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
                             Bundled Dynamic
                           </span>
                         )}
@@ -975,16 +973,16 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                     </div>
                   </div>
 
-                  <p className="text-xs text-zinc-400 line-clamp-2 min-h-[32px]">
+                  <p className="text-xs text-slate-400 line-clamp-2 min-h-[32px]">
                     {feat.simpleDescription}
                   </p>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
                       Add-on Rate (INR)
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2 text-zinc-500 text-xs">₹</span>
+                      <span className="absolute left-3 top-2 text-slate-500 text-xs">₹</span>
                       <input
                         type="number"
                         min="0"
@@ -998,7 +996,7 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                           };
                           setFeatures(updated);
                         }}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                   </div>
@@ -1012,19 +1010,19 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       {/* TAB 5: CALCULATION SETTINGS */}
       {activeTab === "settings" && (
         <div className="space-y-6">
-          <div className="bg-[#0f0f11] border border-zinc-800/80 rounded-2xl p-6 space-y-6 shadow-xl">
-            <div className="border-b border-zinc-800 pb-4">
-              <h2 className="text-base font-semibold text-white">
-                Global Cost Calculation Engine Rules
+          <div className="bg-surface border border-slate-800/80 rounded-2xl p-6 space-y-6 shadow-xl">
+            <div className="border-b border-slate-800 pb-4">
+              <h2 className="text-base font-semibold text-fg">
+                Cost Calculation Rules
               </h2>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5">
                 Defines page step increments, multi-page discounts, and express delivery surcharges across the entire platform.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Base Pages Included in Starting Price
                 </label>
                 <input
@@ -1038,17 +1036,17 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                       basePagesIncluded: parseInt(e.target.value, 10) || 1,
                     }))
                   }
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500"
                 />
-                <span className="text-[11px] text-zinc-500 mt-1 block">Default: 5 pages</span>
+                <span className="text-xs text-slate-500 mt-1 block">Default: 5 pages</span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Cost per Extra Page (INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-zinc-500 text-sm">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
                   <input
                     type="number"
                     min="0"
@@ -1060,18 +1058,18 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         costPerExtraPage: parseInt(e.target.value, 10) || 0,
                       }))
                     }
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-                <span className="text-[11px] text-zinc-500 mt-1 block">Default: ₹1,000 / page</span>
+                <span className="text-xs text-slate-500 mt-1 block">Default: ₹1,000 / page</span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Discount for 1-Page Landing Sites (INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-zinc-500 text-sm">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
                   <input
                     type="number"
                     min="0"
@@ -1083,20 +1081,20 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         discountForOnePage: parseInt(e.target.value, 10) || 0,
                       }))
                     }
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-                <span className="text-[11px] text-zinc-500 mt-1 block">
+                <span className="text-xs text-slate-500 mt-1 block">
                   Subtracted if pageCount = 1 (Default: ₹2,000)
                 </span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Minimum Project Floor Cost (INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-zinc-500 text-sm">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
                   <input
                     type="number"
                     min="1000"
@@ -1108,14 +1106,14 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                         minProjectCost: parseInt(e.target.value, 10) || 1000,
                       }))
                     }
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-                <span className="text-[11px] text-zinc-500 mt-1 block">Default: ₹4,999 floor</span>
+                <span className="text-xs text-slate-500 mt-1 block">Default: ₹4,999 floor</span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Express Delivery Surcharge (0.2 = 20%)
                 </label>
                 <input
@@ -1130,9 +1128,9 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                       expressMultiplier: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
                 />
-                <span className="text-[11px] text-zinc-500 mt-1 block">
+                <span className="text-xs text-slate-500 mt-1 block">
                   Multiplier added to subtotal for priority delivery (Default: 0.20)
                 </span>
               </div>

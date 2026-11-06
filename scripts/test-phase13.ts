@@ -101,7 +101,7 @@ async function runTests() {
   // 3. SEO & Open Graph Metadata
   // ----------------------------------------------------
   console.log("\n--- 3. SEO & Open Graph Metadata Validation ---");
-  assert(homeCode.includes("metadata: Metadata"), "Home page exports comprehensive Metadata");
+  assert(homeCode.includes("generateMetadata"), "Home page exports comprehensive Metadata");
   assert(homeCode.includes("openGraph:"), "Home page configures Open Graph metadata");
   assert(
     projectDetailCode.includes("openGraph:"),
@@ -210,7 +210,7 @@ async function runTests() {
   const headerCode = fs.readFileSync("src/components/layout/header.tsx", "utf8");
   const siteConfigCode = fs.readFileSync("src/config/site.ts", "utf8");
   assert(
-    headerCode.includes("mobileMenuOpen"),
+    headerCode.includes("MobileMenu"),
     "Header supports responsive mobile navigation drawer",
   );
   assert(

@@ -12,6 +12,7 @@ import {
   AdminLeadNotificationEmailProps,
 } from "@/components/emails/admin-lead-notification";
 import { NewsletterConfirmationEmail } from "@/components/emails/newsletter-confirmation";
+import { NewsletterWelcomeEmail } from "@/components/emails/newsletter-welcome";
 import {
   NewsletterUnsubscribedEmail,
   NewsletterUnsubscribedEmailProps,
@@ -171,13 +172,15 @@ class ResendEmailService implements EmailService {
       message: props.message,
     });
 
-    const plainText = `Hi ${props.name},\n\nThank you for reaching out to Webgent! We have received your project inquiry and a technical specialist will get in touch with you within 24 business hours.\n\nBest regards,\nThe Webgent Team`;
+    const plainText = `Hi ${props.name},\n\nThank you for reaching out to Webgent! We have received your project inquiry and Mohit will get in touch with you within 24 business hours.\n\nBest regards,\nWebgent`;
 
     return this.sendEmail({
       to: props.email,
       subject: "We've received your inquiry — Webgent",
       react: reactElement,
       text: plainText,
+      // The sending address has no inbox, so replies have to go to one that is read.
+      replyTo: this.getAdminEmail(),
     });
   }
 
@@ -186,11 +189,11 @@ class ResendEmailService implements EmailService {
 
     const reactElement = React.createElement(AdminLeadNotificationEmail, props);
 
-    const plainText = `[NEW LEAD INBOUND]\nClient: ${props.name}\nEmail: ${props.email}\nPhone: ${props.phone || "N/A"}\nCompany: ${props.company || "N/A"}\nService: ${props.service || "N/A"}\nBudget: ${props.budget || "N/A"}\nScore: ${props.score}/100\nMessage: ${props.message}`;
+    const plainText = `New project inquiry\n\nClient: ${props.name}\nEmail: ${props.email}\nPhone: ${props.phone || "N/A"}\nCompany: ${props.company || "N/A"}\nService: ${props.service || "N/A"}\nBudget: ${props.budget || "N/A"}\nScore: ${props.score}/100\nMessage: ${props.message}`;
 
     return this.sendEmail({
       to: adminTo,
-      subject: `⚡ New Lead: ${props.name} (${props.company || "Individual"}) — Score ${props.score}/100`,
+      subject: `New inquiry: ${props.name}${props.company ? ` (${props.company})` : ""}`,
       react: reactElement,
       text: plainText,
       replyTo: props.email,
@@ -211,7 +214,7 @@ class ResendEmailService implements EmailService {
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
     const confirmUrl = `${appUrl}/api/newsletter/confirm?token=${encodeURIComponent(token)}`;
 
-    const plainText = `Hello${name ? ` ${name}` : ""},\n\nPlease confirm your subscription to the Webgent Newsletter by visiting:\n${confirmUrl}\n\nThis verification link is valid for 24 hours.\n\nBest regards,\nThe Webgent Team`;
+    const plainText = `Hello${name ? ` ${name}` : ""},\n\nPlease confirm your subscription to the Webgent Newsletter by visiting:\n${confirmUrl}\n\nThis verification link is valid for 24 hours.\n\nBest regards,\nWebgent`;
 
     return this.sendEmail({
       to: email,
@@ -232,30 +235,12 @@ class ResendEmailService implements EmailService {
       : `${appUrl}/api/newsletter/unsubscribe`;
 
     const greeting = name ? `Hello ${name}` : "Hello";
-    const plainText = `${greeting},\n\nYour subscription to the Webgent Newsletter is now active! You will receive our latest engineering showcases and tech insights.\n\nTo unsubscribe at any time: ${unsubUrl}\n\nBest regards,\nThe Webgent Team`;
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <body style="font-family: sans-serif; background-color: #070a12; color: #f8fafc; padding: 40px 20px;">
-          <div style="max-width: 560px; margin: 0 auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 32px;">
-            <h1 style="color: #6366f1; margin-top: 0;">Welcome to Webgent Newsletter! 🎉</h1>
-            <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">${greeting},</p>
-            <p style="color: #94a3b8; font-size: 15px; line-height: 1.6;">
-              Your subscription is now confirmed. You are officially on the list to receive our latest engineering articles, architecture breakdowns, and tech updates.
-            </p>
-            <p style="color: #64748b; font-size: 12px; margin-top: 32px; border-top: 1px solid #1e293b; padding-top: 16px;">
-              You can <a href="${unsubUrl}" style="color: #818cf8;">unsubscribe here</a> at any time.
-            </p>
-          </div>
-        </body>
-      </html>
-    `;
+    const plainText = `${greeting},\n\nYour subscription to the Webgent Newsletter is now active! You will receive our latest engineering showcases and tech insights.\n\nTo unsubscribe at any time: ${unsubUrl}\n\nBest regards,\nWebgent`;
 
     return this.sendEmail({
       to: email,
       subject: "Welcome to Webgent Newsletter!",
-      html,
+      react: React.createElement(NewsletterWelcomeEmail, { name, unsubscribeUrl: unsubUrl }),
       text: plainText,
     });
   }
@@ -263,7 +248,7 @@ class ResendEmailService implements EmailService {
   async sendNewsletterUnsubscribed(props: NewsletterUnsubscribedEmailProps): Promise<boolean> {
     const reactElement = React.createElement(NewsletterUnsubscribedEmail, props);
 
-    const plainText = `Your email address (${props.email}) has been successfully unsubscribed from the Webgent Newsletter.\n\nBest regards,\nThe Webgent Team`;
+    const plainText = `Your email address (${props.email}) has been successfully unsubscribed from the Webgent Newsletter.\n\nBest regards,\nWebgent`;
 
     return this.sendEmail({
       to: props.email,

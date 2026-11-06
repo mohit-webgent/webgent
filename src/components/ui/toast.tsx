@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo, useState, useCallback } from "react";
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -14,7 +14,6 @@ export interface ToastItem {
 }
 
 interface ToastContextType {
-  toasts: ToastItem[];
   showToast: (toast: Omit<ToastItem, "id">) => string;
   dismissToast: (id: string) => void;
   success: (title: string, description?: string) => void;
@@ -78,18 +77,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     [showToast],
   );
 
+  // Must keep its identity while toasts come and go. Pages list `toast` as an effect dependency, so a
+  // new object here makes a failed load show a toast, re-run the load, and loop forever.
+  const value = useMemo(
+    () => ({ showToast, dismissToast, success, error, info, warning }),
+    [showToast, dismissToast, success, error, info, warning],
+  );
+
   return (
-    <ToastContext.Provider
-      value={{
-        toasts,
-        showToast,
-        dismissToast,
-        success,
-        error,
-        info,
-        warning,
-      }}
-    >
+    <ToastContext.Provider value={value}>
       {children}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </ToastContext.Provider>
@@ -136,41 +132,41 @@ function ToastItemCard({
   const getIcon = () => {
     switch (toast.type) {
       case "success":
-        return <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />;
+        return <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />;
       case "error":
         return <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />;
       case "warning":
         return <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />;
       case "info":
       default:
-        return <Info className="w-5 h-5 text-sky-400 shrink-0" />;
+        return <Info className="w-5 h-5 text-accent shrink-0" />;
     }
   };
 
   const getBorderColor = () => {
     switch (toast.type) {
       case "success":
-        return "border-emerald-500/40 bg-[#0D0D12] shadow-2xl";
+        return "border-accent/40 bg-surface shadow-2xl";
       case "error":
-        return "border-rose-500/40 bg-[#0D0D12] shadow-2xl";
+        return "border-rose-500/40 bg-surface shadow-2xl";
       case "warning":
-        return "border-amber-500/40 bg-[#0D0D12] shadow-2xl";
+        return "border-amber-500/40 bg-surface shadow-2xl";
       case "info":
       default:
-        return "border-sky-500/40 bg-[#0D0D12] shadow-2xl";
+        return "border-accent/40 bg-surface shadow-2xl";
     }
   };
 
   return (
     <div
       role="alert"
-      className={`pointer-events-auto flex items-start gap-3 p-4 rounded-none border shadow-2xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-bottom-3 ${getBorderColor()}`}
+      className={`pointer-events-auto flex items-start gap-3 p-4 rounded-none border shadow-2xl transition-all duration-300 animate-in slide-in-from-bottom-3 ${getBorderColor()}`}
     >
       {getIcon()}
       <div className="flex-1 min-w-0 pr-1">
-        <p className="text-xs sm:text-sm font-semibold text-white leading-tight">{toast.title}</p>
+        <p className="text-xs sm:text-sm font-semibold text-fg leading-tight">{toast.title}</p>
         {toast.description && (
-          <p className="text-xs text-[#D0D0CE] mt-1 leading-relaxed break-words font-sans">
+          <p className="text-xs text-fg-soft mt-1 leading-relaxed break-words font-sans">
             {toast.description}
           </p>
         )}
@@ -178,7 +174,7 @@ function ToastItemCard({
       <button
         type="button"
         onClick={() => onDismiss(toast.id)}
-        className="text-[#888888] hover:text-white p-1 rounded-none hover:bg-white/[0.05] transition-colors"
+        className="text-fg-muted hover:text-fg p-1 rounded-none hover:bg-white/[0.05] transition-colors"
         aria-label="Dismiss notification"
       >
         <X className="w-4 h-4" />

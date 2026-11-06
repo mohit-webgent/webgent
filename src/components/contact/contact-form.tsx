@@ -184,7 +184,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
       {/* =================================================================== */}
       {/* LEFT SIDE: CLEAN & AUTHENTIC AGENCY CONTACT CARD                   */}
       {/* =================================================================== */}
-      <div className="lg:col-span-5 bg-[#0F1014] border border-white/[0.08] rounded-[24px] p-7 sm:p-9 md:p-10 shadow-2xl text-left relative overflow-hidden space-y-8">
+      <div className="lg:col-span-5 bg-surface border border-line rounded-[24px] p-7 sm:p-9 md:p-10 shadow-2xl text-left relative overflow-hidden space-y-8">
         {/* Subtle Ambient Light Corner */}
         <div
           aria-hidden="true"
@@ -192,31 +192,29 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
         />
 
         <div className="space-y-4">
-          <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-white tracking-tight leading-[1.15]">
-            Have a Project in Mind? Let&apos;s Talk!
-          </h2>
-          <p className="text-sm sm:text-base text-neutral-400 leading-relaxed font-normal">
-            Have questions or need assistance? Contact us at Webgent for support or to discuss your project.
+          <h1 className="display-md">Have a project in mind? Let&apos;s talk.</h1>
+          <p className="text-sm sm:text-base text-fg-muted leading-relaxed font-normal">
+            Tell me what you&apos;re planning and I&apos;ll reply with next steps, usually within a day.
           </p>
         </div>
 
         {/* Contact Info List with Dark Squircle Badges */}
-        <div className="space-y-6 pt-4 border-t border-white/[0.06]">
+        <div className="space-y-6 pt-4 border-t border-line">
           {/* Email */}
           <div className="flex items-center gap-4 group">
             <button
               type="button"
               onClick={handleCopyEmail}
               title="Click to copy email"
-              className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-white/20 flex items-center justify-center text-white shrink-0 transition-all cursor-pointer shadow-sm"
+              className="w-12 h-12 rounded-xl bg-surface-3 border border-line group-hover:border-line-strong flex items-center justify-center text-white shrink-0 transition-all cursor-pointer shadow-sm"
             >
-              {copiedEmail ? <Check className="w-5 h-5 text-emerald-400" /> : <Mail className="w-5 h-5 text-white" />}
+              {copiedEmail ? <Check className="w-5 h-5 text-accent" /> : <Mail className="w-5 h-5 text-white" />}
             </button>
             <div className="min-w-0">
-              <span className="block text-xs text-neutral-400 font-medium">Email</span>
+              <span className="block text-xs text-fg-muted font-medium">Email</span>
               <a
                 href={`mailto:${contactEmail}`}
-                className="block text-sm sm:text-base text-white hover:text-neutral-200 font-medium truncate transition-colors"
+                className="block text-sm sm:text-base text-white hover:text-fg-soft font-medium truncate transition-colors"
               >
                 {contactEmail}
               </a>
@@ -230,17 +228,17 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Direct WhatsApp chat"
-              className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] group-hover:border-[#25D366]/40 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
+              className="w-12 h-12 rounded-xl bg-surface-3 border border-line group-hover:border-whatsapp/40 flex items-center justify-center text-white shrink-0 transition-all shadow-sm"
             >
-              <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
+              <WhatsAppIcon className="w-5 h-5 text-whatsapp" />
             </a>
             <div className="min-w-0">
-              <span className="block text-xs text-neutral-400 font-medium">WhatsApp / Phone</span>
+              <span className="block text-xs text-fg-muted font-medium">WhatsApp / Phone</span>
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-sm sm:text-base text-white hover:text-[#25D366] font-medium transition-colors"
+                className="block text-sm sm:text-base text-white hover:text-whatsapp font-medium transition-colors"
               >
                 {contactPhone}
               </a>
@@ -249,11 +247,11 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
 
           {/* Address */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#1A1C24] border border-white/[0.08] flex items-center justify-center text-white shrink-0 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-surface-3 border border-line flex items-center justify-center text-white shrink-0 shadow-sm">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <span className="block text-xs text-neutral-400 font-medium">Address</span>
+              <span className="block text-xs text-fg-muted font-medium">Address</span>
               <span className="block text-sm sm:text-base text-white font-medium">
                 {contactAddress}
               </span>
@@ -261,19 +259,19 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
           </div>
 
           {/* Clear Chat on WhatsApp Action Button */}
-          <div className="pt-2 border-t border-white/[0.06]">
+          <div className="pt-2 border-t border-line">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               id="contact-chat-on-whatsapp-button"
-              className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.99] text-black font-bold text-sm shadow-[0_4px_24px_rgba(37,211,102,0.3)] hover:shadow-[0_6px_30px_rgba(37,211,102,0.45)] transition-all cursor-pointer group"
+              className="btn btn-secondary w-full [&_svg]:text-whatsapp"
             >
               <WhatsAppIcon className="w-5 h-5 fill-current" />
               <span>Chat on WhatsApp</span>
             </a>
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 mt-2.5 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+            <div className="flex items-center justify-center gap-1.5 text-xs text-fg-muted mt-2.5 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-whatsapp animate-pulse" />
               <span>Direct WhatsApp chat · Instant connect</span>
             </div>
           </div>
@@ -287,9 +285,9 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
         {success ? (
           <div
             id="contact-form-success"
-            className="w-full bg-[#0F1014] border border-white/[0.08] rounded-[24px] p-8 sm:p-12 text-center space-y-5 shadow-2xl animate-in fade-in duration-300"
+            className="w-full bg-surface border border-line rounded-[24px] p-8 sm:p-12 text-center space-y-5 shadow-2xl animate-in fade-in duration-300"
           >
-            <div className="w-16 h-16 rounded-full bg-[#F27A1A]/15 text-[#F27A1A] border border-[#F27A1A]/30 flex items-center justify-center mx-auto shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-accent/15 text-accent border border-accent/30 flex items-center justify-center mx-auto shadow-lg">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
@@ -297,7 +295,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
               <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
                 Thank You for Reaching Out!
               </h3>
-              <p className="text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
+              <p className="text-sm text-fg-muted max-w-md mx-auto leading-relaxed">
                 Your inquiry has been received successfully. We will review your project requirements and get back to you promptly.
               </p>
             </div>
@@ -305,7 +303,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
             <button
               type="button"
               onClick={() => setSuccess(false)}
-              className="mt-4 px-8 py-3 rounded-xl bg-[#F27A1A] hover:bg-[#E06D12] active:scale-95 text-white font-semibold text-sm transition-all duration-200 shadow-[0_4px_20px_rgba(242,122,26,0.35)] cursor-pointer"
+              className="btn btn-primary mt-4"
             >
               Send Another Message
             </button>
@@ -324,13 +322,13 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
 
             {/* If coming from Pricing Matrix, show configured plan tag */}
             {prefilledService && (
-              <div className="p-3 rounded-xl bg-[#1A1C24] border border-white/10 flex items-center justify-between text-xs">
+              <div className="p-3 rounded-xl bg-surface-3 border border-line flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#F27A1A]" />
-                  <span className="text-neutral-400">Configured Plan:</span>
+                  <span className="w-2 h-2 rounded-full bg-accent" />
+                  <span className="text-fg-muted">Configured Plan:</span>
                   <span className="text-white font-semibold">{prefilledService}</span>
                 </div>
-                <span className="text-neutral-400 text-[11px] font-mono">Plan details attached</span>
+                <span className="text-fg-muted text-xs font-mono">Plan details attached</span>
               </div>
             )}
 
@@ -348,7 +346,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   onFocus={handleFieldFocus}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Rahul Sharma"
-                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
@@ -364,7 +362,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   onFocus={handleFieldFocus}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="rahul@company.com"
-                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
             </div>
@@ -381,13 +379,13 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="contact-company" className="block text-sm font-medium text-white flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-neutral-400" />
+                  <Building2 className="w-3.5 h-3.5 text-fg-muted" />
                   <span>Company / Brand (Optional)</span>
                 </label>
                 <input
@@ -396,7 +394,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="Acme Corp or Personal"
-                  className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
             </div>
@@ -404,7 +402,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
             {/* Project Type Selection */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-white flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-[#F27A1A]" />
+                <Layers className="w-4 h-4 text-accent" />
                 <span>Project Type</span>
               </label>
               <div className="flex flex-wrap gap-2">
@@ -417,8 +415,8 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                       onClick={() => setProjectType(type)}
                       className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#F27A1A]/15 text-[#F27A1A] border border-[#F27A1A] shadow-[0_0_12px_rgba(242,122,26,0.25)]"
-                          : "bg-[#0F1014] text-neutral-300 border border-white/[0.08] hover:border-white/20 hover:text-white"
+                          ? "bg-accent/15 text-accent border border-accent"
+                          : "bg-surface text-fg-soft border border-line hover:border-line-strong hover:text-white"
                       }`}
                     >
                       {type}
@@ -431,7 +429,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
             {/* Architecture: Static vs Dynamic */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-white flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#F27A1A]" />
+                <Sparkles className="w-4 h-4 text-accent" />
                 <span>Website Architecture</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -444,14 +442,14 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                       onClick={() => setArchitecture(arch.id)}
                       className={`p-3 rounded-xl text-left border transition-all cursor-pointer flex flex-col gap-1 ${
                         isSelected
-                          ? "bg-[#F27A1A]/10 border-[#F27A1A] text-white shadow-[0_0_12px_rgba(242,122,26,0.2)]"
-                          : "bg-[#0F1014] border-white/[0.08] hover:border-white/20 text-neutral-300"
+                          ? "bg-accent/10 border-accent text-white"
+                          : "bg-surface border-line hover:border-line-strong text-fg-soft"
                       }`}
                     >
-                      <span className={`text-xs font-bold ${isSelected ? "text-[#F27A1A]" : "text-white"}`}>
+                      <span className={`text-xs font-bold ${isSelected ? "text-accent" : "text-white"}`}>
                         {arch.label}
                       </span>
-                      <span className="text-[11px] text-neutral-400 leading-tight">
+                      <span className="text-xs text-fg-muted leading-tight">
                         {arch.desc}
                       </span>
                     </button>
@@ -463,7 +461,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
             {/* Budget Range */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-white flex items-center gap-1.5">
-                <Wallet className="w-4 h-4 text-[#F27A1A]" />
+                <Wallet className="w-4 h-4 text-accent" />
                 <span>Estimated Budget</span>
               </label>
               <div className="flex flex-wrap gap-2">
@@ -476,8 +474,8 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                       onClick={() => setBudget(opt)}
                       className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#F27A1A]/15 text-[#F27A1A] border border-[#F27A1A] shadow-[0_0_12px_rgba(242,122,26,0.25)]"
-                          : "bg-[#0F1014] text-neutral-300 border border-white/[0.08] hover:border-white/20 hover:text-white"
+                          ? "bg-accent/15 text-accent border border-accent"
+                          : "bg-surface text-fg-soft border border-line hover:border-line-strong hover:text-white"
                       }`}
                     >
                       {opt}
@@ -499,9 +497,9 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tell us about your project, timeline, target audience, and goals..."
-                className="w-full px-4 py-3.5 bg-[#0F1014] border border-white/[0.08] focus:border-white/30 rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200 resize-none min-h-[120px]"
+                className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200 resize-none min-h-[120px]"
               />
-              <span className={`block text-[11px] font-mono ${message.length >= 20 ? "text-neutral-500" : "text-neutral-600"}`}>
+              <span className={`block text-xs font-mono ${message.length >= 20 ? "text-neutral-500" : "text-neutral-600"}`}>
                 {message.length}/20 characters minimum
               </span>
             </div>
@@ -523,7 +521,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                 id="contact-submit-button"
                 type="submit"
                 disabled={loading}
-                className="px-9 py-3.5 rounded-xl bg-[#F27A1A] hover:bg-[#E06D12] active:scale-95 text-white font-semibold text-sm transition-all duration-200 shadow-[0_4px_24px_rgba(242,122,26,0.35)] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                className="btn btn-primary px-7"
               >
                 {loading ? (
                   <>

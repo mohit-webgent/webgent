@@ -10,7 +10,7 @@ describe("Supabase Storage Key Format & Upload Fix Suite", () => {
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
   const pngBuffer = Buffer.from(pngBase64, "base64");
 
-  test("storageService.uploadFile succeeds end-to-end and cleans up without JWS errors", async () => {
+  test("storageService.uploadFile succeeds end-to-end and cleans up without JWS errors", { skip: !process.env.SUPABASE_SERVICE_ROLE_KEY }, async () => {
     const uploadResult = await storageService.uploadFile(pngBuffer, {
       originalName: "test-auth-fix.png",
       mimeType: "image/png",
@@ -29,7 +29,7 @@ describe("Supabase Storage Key Format & Upload Fix Suite", () => {
     assert.equal(deleted, true);
   });
 
-  test("POST /api/admin/media route successfully uploads image with admin authorization", async () => {
+  test("POST /api/admin/media route successfully uploads image with admin authorization", { skip: !process.env.SUPABASE_SERVICE_ROLE_KEY }, async () => {
     setAuthSessionResolver(async () => ({
       user: {
         id: "admin-test-id",

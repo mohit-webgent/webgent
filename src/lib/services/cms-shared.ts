@@ -516,7 +516,7 @@ export const pageSeoOverrideSchema = z.object({
 
 export const siteSeoSettingsUpdateSchema = z.object({
   global: globalSeoSchema,
-  pages: z.record(pageSeoOverrideSchema),
+  pages: z.record(z.string(), pageSeoOverrideSchema),
 });
 
 // ============================================================================
@@ -550,6 +550,7 @@ export const DEFAULT_HOME_SECTIONS: HomeSectionsConfig = {
 export const DEFAULT_NAVIGATION_MENU: NavigationMenuConfig = {
   items: [
     { id: "nav-home", title: "Home", href: "/", order: 1, isExternal: false, published: true },
+    { id: "nav-services", title: "Services", href: "/services", order: 2, isExternal: false, published: true },
     { id: "nav-work", title: "Work", href: "/work", order: 2, isExternal: false, published: true },
     { id: "nav-about", title: "About", href: "/about", order: 3, isExternal: false, published: true },
     { id: "nav-blog", title: "Blog", href: "/blog", order: 4, isExternal: false, published: true },
@@ -570,9 +571,8 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
   ],
   coreStack: ["Next.js 14", "PostgreSQL & Prisma", "TypeScript", "Tailwind CSS", "GSAP Motion"],
   connectLinks: [
-    { id: "footer-github", title: "GitHub", href: "https://github.com/mohit-webgent/webgent", isExternal: true, published: true },
-    { id: "footer-twitter", title: "Twitter / X", href: "https://twitter.com/webgent", isExternal: true, published: true },
-    { id: "footer-linkedin", title: "LinkedIn", href: "https://linkedin.com/company/webgent", isExternal: true, published: true },
+    { id: "footer-github", title: "GitHub", href: "https://github.com/mohitvermag", isExternal: true, published: true },
+    { id: "footer-linkedin", title: "LinkedIn", href: "https://linkedin.com/in/webmohitverma", isExternal: true, published: true },
     { id: "footer-whatsapp", title: "WhatsApp", href: "https://wa.me/918800241462", isExternal: true, published: true },
     { id: "footer-inquiries", title: "Direct Inquiries", href: "/contact", isExternal: false, published: true },
   ],
@@ -580,14 +580,12 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
 };
 
 export const DEFAULT_CONTACT_INFO: ContactInfo = {
-  email: "hello@webgent.com",
-  phone: "+1 (800) 555-WEBGENT",
-  officeAddress: "548 Market St, Suite 342, San Francisco, CA 94104",
-  businessHours: "Mon - Fri: 9:00 AM - 6:00 PM PST",
-  githubUrl: "https://github.com/mohit-webgent/webgent",
-  twitterUrl: "https://twitter.com/webgent",
-  linkedinUrl: "https://linkedin.com/company/webgent",
-  discordUrl: "https://discord.gg/webgent",
+  email: "mohitvermag75@gmail.com",
+  phone: "+91 8800241462",
+  officeAddress: "Gurugram / Noida, India",
+  businessHours: "Replies by email or WhatsApp",
+  githubUrl: "https://github.com/mohitvermag",
+  linkedinUrl: "https://linkedin.com/in/webmohitverma",
 };
 
 export const DEFAULT_SITE_FAQS: SiteFaqsConfig = {
@@ -696,9 +694,9 @@ export const DEFAULT_PAGE_SEO_OVERRIDES: Record<string, PageSeoOverride> = {
   },
   "/testimonials": {
     route: "/testimonials",
-    title: "Client Testimonials & Verified Reviews",
+    title: "Client Testimonials",
     description:
-      "Read what founders, engineering leaders, and product managers say about partnering with Webgent for high-performance web engineering.",
+      "Read what clients say about working with Webgent on their web engineering.",
     canonicalUrl: "/testimonials",
     noIndex: false,
   },

@@ -4,24 +4,23 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { notificationService } from "@/lib/services/notifications";
 import { verifyTurnstileToken } from "@/lib/turnstile";
+import { syncChatLead } from "@/lib/services/chat-leads";
+import { getClientIp } from "@/lib/client-ip";
+import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 import crypto from "crypto";
 
 const startChatSchema = z.object({
-  visitorId: z.string().optional(),
+  visitorId: z.string().max(100).optional(),
   name: z.string().trim().max(100).optional(),
   email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
   initialMessage: z.string().trim().max(1000).optional(),
-  metadata: z.record(z.unknown()).optional(),
   turnstileToken: z.string().optional().or(z.literal("")),
 });
 
 export async function POST(req: NextRequest) {
   try {
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      req.headers.get("x-real-ip") ||
-      "127.0.0.1";
+    const ip = getClientIp(req.headers);
 
     const rateCheck = await checkRateLimit(`chat_start_${ip}`, 15, 10 * 60 * 1000);
     if (!rateCheck.success) {
@@ -41,13 +40,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: validated.error.errors[0]?.message || "Invalid request payload",
+          error: validated.error.issues[0]?.message || "Invalid request payload",
         },
         { status: 400 },
       );
     }
 
-    const { visitorId, name, email, initialMessage, metadata, turnstileToken } = validated.data;
+    const { visitorId, name, email, initialMessage, turnstileToken } = validated.data;
 
     const turnstileResult = await verifyTurnstileToken(turnstileToken, ip);
     if (!turnstileResult.success) {
@@ -62,8 +61,9 @@ export async function POST(req: NextRequest) {
 
     const finalVisitorId = visitorId?.trim() || `visitor_${crypto.randomUUID().slice(0, 12)}`;
 
+    // Built only from server-side values. Project state and estimates in here feed lead records,
+    // so the browser must not be able to set them.
     const sessionMetadata: Record<string, unknown> = {
-      ...(metadata || {}),
       userAgent: req.headers.get("user-agent") || undefined,
       ipAddress: ip,
       createdAt: new Date().toISOString(),
@@ -99,51 +99,41 @@ export async function POST(req: NextRequest) {
 
     if (name?.trim() && email?.trim()) {
       try {
-        await notificationService.sendNewLeadNotification({
-          id: `chat_${chatSession.id}`,
+        const userAgent = req.headers.get("user-agent") || undefined;
+        const message = initialMessage?.trim() || "Inbound inquiry captured via AI Chat Widget";
+        const result = await syncChatLead({
+          sessionId: chatSession.id,
           name: name.trim(),
           email: email.trim(),
           service: "AI Chat Inbound",
-          message:
-            initialMessage?.trim() ||
-            "Visitor initiated AI chat session and shared contact details.",
+          message,
+          ipAddress: ip,
+          userAgent,
+          score: 50,
         });
 
-        const existingLead = await prisma.lead.findFirst({
-          where: {
-            email: email.trim(),
-            createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-          },
-          orderBy: { createdAt: "desc" },
-        });
+        if (result.outcome === "created") {
+          await prisma.chatSession.update({
+            where: { id: chatSession.id },
+            data: { metadata: JSON.stringify({ ...sessionMetadata, leadId: result.leadId }) },
+          });
 
-        if (existingLead) {
-          await prisma.lead.update({
-            where: { id: existingLead.id },
-            data: {
-              name: name.trim(),
-              message: initialMessage?.trim()
-                ? `${existingLead.message}\n---\nFollow-up Chat Start: "${initialMessage.trim()}"`
-                : existingLead.message,
-              updatedAt: new Date(),
-            },
-          });
-        } else {
-          await prisma.lead.create({
-            data: {
-              name: name.trim(),
-              email: email.trim(),
-              service: "AI Chat Inbound",
-              message: initialMessage?.trim() || "Inbound inquiry captured via AI Chat Widget",
-              ipAddress: ip,
-              userAgent: req.headers.get("user-agent") || undefined,
-              status: "NEW",
-              score: 50,
-            },
-          });
+          waitUntil(
+            notificationService
+              .sendNewLeadNotification({
+                id: result.leadId,
+                name: name.trim(),
+                email: email.trim(),
+                service: "AI Chat Inbound",
+                message,
+              })
+              .catch((error) =>
+                logger.error("[Chat:Start] Lead notification failed", { error: String(error) }),
+              ),
+          );
         }
       } catch (notifyErr) {
-        logger.error("[Chat:Start] Admin notification error on chat start", {
+        logger.error("[Chat:Start] Could not record chat lead", {
           error: notifyErr,
         });
       }

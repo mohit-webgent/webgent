@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession } from "@/lib/auth-utils";
+import { verifyStrictAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { ChatStatus, Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
-  const session = await getAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ success: false, error: "Unauthorized access" }, { status: 401 });
+  const authGuard = await verifyStrictAdminApiAccess();
+  if (authGuard instanceof Response) {
+    return authGuard;
   }
 
   try {

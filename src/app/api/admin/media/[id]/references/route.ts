@@ -8,10 +8,11 @@ import { storageService, mediaDb } from "@/lib/services/storage";
 import { logger } from "@/lib/logger";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(req: NextRequest, { params: routeParams }: RouteParams) {
+  const params = await routeParams;
   try {
     const authGuard = await verifyAdminApiAccess();
     if (authGuard instanceof Response) {
