@@ -91,11 +91,11 @@ export function EstimatorSection({ pricing }: { pricing: BackendPricingData }) {
         description="Pick a package and add what you need. No forms and no call required."
       />
 
-      <div className="card mt-7 grid overflow-hidden lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+      <div className="card mt-7 grid grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
         <div className="space-y-5 p-5 sm:p-6">
           <fieldset>
             <legend className="text-[0.8125rem] font-medium text-fg-soft">Package</legend>
-            <div className="mt-2.5 grid gap-1.5 sm:grid-cols-3">
+            <div className="mt-2.5 grid grid-cols-1 gap-1.5 sm:grid-cols-3">
               {TIERS.map((id) => {
                 const item = pricing.matrixPackages[id];
                 const isActive = id === tier;
@@ -123,7 +123,7 @@ export function EstimatorSection({ pricing }: { pricing: BackendPricingData }) {
 
           <fieldset>
             <legend className="text-[0.8125rem] font-medium text-fg-soft">Add what you need</legend>
-            <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2">
+            <div className="mt-2.5 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {addons.map((feature) => {
                 const included = isIncluded(feature.id);
                 const isOn = included || selectedIds.includes(feature.id);

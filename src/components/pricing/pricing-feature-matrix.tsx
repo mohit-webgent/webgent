@@ -312,8 +312,8 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                                   >
                                     {/* Feature Name, Description Toggle & Badge */}
                                     <div className="flex-1 min-w-0 space-y-0.5 pr-2">
-                                      <div className="flex items-center gap-1.5 min-w-0">
-                                        <span className="font-medium text-fg hover:text-white transition-colors truncate">
+                                      <div className="flex items-start gap-1.5 min-w-0">
+                                        <span className="font-medium text-fg hover:text-white transition-colors line-clamp-2 sm:line-clamp-1">
                                           {feat.name}
                                         </span>
                                         <button
@@ -403,7 +403,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                                           ) : (
                                             <Plus className="w-3 h-3 text-accent" />
                                           )}
-                                          <span>+{formatCurrencyINR(feat.addonPrice)}</span>
+                                          <span>{formatCurrencyINR(feat.addonPrice)}</span>
                                         </button>
                                       ) : (
                                         <span className="text-fg-muted text-xs font-mono">—</span>

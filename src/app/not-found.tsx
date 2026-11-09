@@ -22,7 +22,7 @@ export default function NotFoundPage() {
           This page hasn&apos;t <span className="font-serif font-normal italic text-accent">assembled.</span>
         </h1>
         <p className="lede mx-auto mt-6 max-w-xl">It may have moved, or the link might be out of date.</p>
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+        <div className="cta-row mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link href="/" className="btn btn-primary">
             <ArrowLeft className="h-4 w-4" />
             <span>Back to home</span>

@@ -54,7 +54,7 @@ export function PricingCostLedger({ configurator }: { configurator: PricingConfi
                     </h2>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs sm:text-xs font-mono text-accent bg-accent/10 px-2.5 py-1 rounded-full border border-accent/30">
+                  <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-mono text-accent bg-accent/10 px-2.5 py-1 rounded-full border border-accent/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                     <span>Real-Time</span>
                   </div>

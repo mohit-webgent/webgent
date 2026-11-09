@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { isReducedMotion } from "@/components/animations/gsap-core";
 import type { HomeProject } from "@/lib/services/home-data";
 import type { PackageDetails } from "@/data/pricing-matrix-data";
@@ -102,7 +102,7 @@ export function HeroShowcase({ projects, starterPackage }: HeroShowcaseProps) {
         style={{ "--tilt-range": `${MAX_TILT_DEG}deg` } as React.CSSProperties}
       >
         {/* Real work, in a browser window */}
-        <div className="overflow-hidden rounded-xl border border-line-strong bg-surface shadow-lift">
+        <div className="hero-frame relative overflow-hidden rounded-2xl border border-line-strong bg-surface shadow-lift">
           <div className="flex items-center gap-3 border-b border-line bg-surface-2 px-3.5 py-2.5">
             <div aria-hidden="true" className="flex gap-1.5">
               <span className="h-2 w-2 rounded-full bg-white/25" />
@@ -166,47 +166,24 @@ export function HeroShowcase({ projects, starterPackage }: HeroShowcaseProps) {
           )}
         </div>
 
-        {/* Floating cards sit in front of the window and move further with the pointer. */}
-        {current && (
+        {starterPackage && (
           <Link
-            href={`/work/${current.slug}`}
-            className="group absolute -left-4 top-14 hidden w-52 rounded-xl border border-line-strong bg-surface-2 p-3 shadow-lift transition-colors hover:border-white/30 lg:block"
-            style={{ transform: "translateZ(50px)" }}
+            href="/pricing"
+            className="group absolute -left-4 bottom-10 hidden items-center gap-3 rounded-xl border border-line-strong bg-surface-2/95 py-2 pl-3 pr-2.5 shadow-lift backdrop-blur-md transition-colors hover:border-accent/40 sm:flex"
+            style={{ transform: "translateZ(70px)" }}
           >
-            <span key={current.id} className="anim-pop block">
-              <span className="block truncate text-[0.6875rem] text-fg-muted">{current.category || "Case study"}</span>
-              <span className="mt-0.5 flex items-center justify-between gap-2 text-[0.8125rem] font-medium">
-                <span className="truncate">View case study</span>
-                <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-accent transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            <span className="leading-tight">
+              <span className="block text-[0.8125rem] font-medium text-fg">
+                <span className="text-fg-muted">from</span> ₹{starterPackage.startingPrice.toLocaleString("en-IN")}
+              </span>
+              <span className="block text-[0.6875rem] text-fg-muted">
+                {starterPackage.name} · {starterPackage.deliveryTime.toLowerCase()}
               </span>
             </span>
+            <ArrowUpRight className="h-3.5 w-3.5 text-fg-muted transition-[color,transform] duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
           </Link>
         )}
 
-        {starterPackage && (
-          <div
-            className="absolute -left-4 bottom-14 hidden rounded-xl border border-line-strong bg-surface-2 px-3.5 py-3 shadow-lift sm:block"
-            style={{ transform: "translateZ(70px)" }}
-          >
-            <p className="text-[0.6875rem] text-fg-muted">{starterPackage.name} website</p>
-            <p className="mt-0.5 font-display text-xl font-semibold tracking-tight">
-              from ₹{starterPackage.startingPrice.toLocaleString("en-IN")}
-            </p>
-            <p className="mt-0.5 font-mono text-[0.6875rem] text-fg-muted">{starterPackage.deliveryTime}</p>
-          </div>
-        )}
-
-        <div
-          className="absolute -right-3 bottom-14 hidden w-48 space-y-1.5 rounded-xl border border-line-strong bg-surface-2 p-3 text-[0.75rem] text-fg-soft shadow-lift md:block"
-          style={{ transform: "translateZ(40px)" }}
-        >
-          {["Fixed quote upfront", "You own the source code", "Free bug fixes after launch"].map((item) => (
-            <p key={item} className="flex items-center gap-2">
-              <Check className="h-3.5 w-3.5 shrink-0 text-success" />
-              {item}
-            </p>
-          ))}
-        </div>
       </div>
     </div>
   );

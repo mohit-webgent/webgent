@@ -6,6 +6,8 @@ import {
   ArrowUpRight,
   BarChart3,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Code2,
   CreditCard,
   Database,
@@ -282,7 +284,7 @@ function EditorPreview({ images }: { images: ShowcaseImages }) {
   const slide = slides[index];
 
   return (
-    <div className="grid h-full gap-3 p-3 sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] sm:p-4">
+    <div className="grid grid-cols-1 h-full gap-3 p-3 sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] sm:p-4">
       <div className="flex min-h-0 flex-col gap-3 rounded-xl border border-line-strong bg-surface p-3.5 shadow-card">
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-1.5 text-[0.8125rem] font-semibold">
@@ -346,7 +348,7 @@ function IntegrationsPreview({ images }: { images: ShowcaseImages }) {
   ];
 
   return (
-    <div className="grid h-full items-center gap-0 p-4 sm:grid-cols-[minmax(0,6fr)_3rem_minmax(0,6fr)] sm:p-6">
+    <div className="grid grid-cols-1 h-full items-center gap-0 p-4 sm:grid-cols-[minmax(0,6fr)_3rem_minmax(0,6fr)] sm:p-6">
       <Browser url={images.services.domain} className="anim-pop h-full max-sm:hidden">
         <Shot src={images.services.detail} alt={`${images.services.title} website`} />
       </Browser>
@@ -377,7 +379,7 @@ function IntegrationsPreview({ images }: { images: ShowcaseImages }) {
 function SpeedPreview({ images }: { images: ShowcaseImages }) {
   const links = ["Shop all", "New arrivals", "Under ₹1,500", "Contact"];
   return (
-    <div className="grid h-full gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_10.5rem] sm:p-6">
+    <div className="grid grid-cols-1 h-full gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_10.5rem] sm:p-6">
       <div className="flex min-w-0 flex-col gap-3">
         <div className="anim-pop flex items-center gap-2.5 rounded-full border border-line-strong bg-surface-2 px-4 py-2.5 text-[0.8125rem]">
           <Search className="h-3.5 w-3.5 text-accent" />
@@ -447,6 +449,8 @@ export function CapabilitiesSection({ projects = [] }: { projects?: HomeProject[
   const [engaged, setEngaged] = useState(false);
   const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const touchStart = useRef<number | null>(null);
   const images = useMemo(() => resolveShowcase(projects), [projects]);
 
   useEffect(() => {
@@ -455,7 +459,7 @@ export function CapabilitiesSection({ projects = [] }: { projects?: HomeProject[
     const observer = new IntersectionObserver(
       ([entry]) => {
         setInView(Boolean(entry?.isIntersecting));
-        // Loads every demo's screenshots ahead of time, so switching tabs never shows an empty frame.
+        // Loads every demo's screenshots ahead of time, so switching never shows an empty frame.
         if (entry?.isIntersecting) {
           Object.values(images).forEach((project: ShowcaseProject) => {
             [project.main, project.detail].forEach((src) => {
@@ -476,24 +480,51 @@ export function CapabilitiesSection({ projects = [] }: { projects?: HomeProject[
     return () => clearTimeout(timer);
   }, [active, engaged, inView]);
 
-  const Preview = CAPABILITIES[active].preview;
+  // On phones the chips scroll sideways. Keep the chosen one in view without moving the page.
+  useEffect(() => {
+    const rail = railRef.current;
+    const chip = rail?.children[active] as HTMLElement | undefined;
+    if (!rail || !chip || rail.scrollWidth <= rail.clientWidth) return;
+    rail.scrollTo({ left: chip.offsetLeft - rail.clientWidth / 2 + chip.clientWidth / 2, behavior: isReducedMotion() ? "auto" : "smooth" });
+  }, [active]);
+
+  const go = (next: number) => {
+    setEngaged(true);
+    setActive((next + CAPABILITIES.length) % CAPABILITIES.length);
+  };
+
+  const onTouchEnd = (event: React.TouchEvent) => {
+    if (touchStart.current === null) return;
+    const distance = event.changedTouches[0].clientX - touchStart.current;
+    touchStart.current = null;
+    if (Math.abs(distance) > 40) go(active + (distance < 0 ? 1 : -1));
+  };
+
+  const current = CAPABILITIES[active];
+  const Preview = current.preview;
 
   return (
     <section ref={sectionRef} id="capabilities" className="wrap section">
-      <div className="mb-8 flex flex-col justify-between gap-5 lg:mb-10 lg:flex-row lg:items-end">
+      <div className="mb-7 flex flex-col justify-between gap-5 lg:mb-10 lg:flex-row lg:items-end">
         <SectionHeading
           eyebrow="What we build"
           title="From a first website to a full product."
           description="One developer, involved from the first conversation to launch day."
         />
-        <Link href="/services" className="btn btn-secondary shrink-0 self-start lg:self-auto">
+        <Link href="/services" className="btn btn-secondary hidden shrink-0 lg:inline-flex">
           <span>All services</span>
           <ArrowUpRight className="h-4 w-4" />
         </Link>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)}>
-        <div className="space-y-1" role="tablist" aria-label="Capabilities" aria-orientation="vertical">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-5" onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)}>
+        {/* Chips that scroll sideways on phones, a grid of tiles on desktop. */}
+        <div
+          ref={railRef}
+          role="tablist"
+          aria-label="Capabilities"
+          className="scrollbar-none relative -mx-[var(--gutter)] flex snap-x gap-2 overflow-x-auto px-[var(--gutter)] lg:order-2 lg:mx-0 lg:grid lg:snap-none lg:auto-rows-fr lg:grid-cols-2 lg:gap-3 lg:overflow-visible lg:px-0"
+        >
           {CAPABILITIES.map(({ icon: Icon, title, description }, index) => {
             const isActive = index === active;
             return (
@@ -504,38 +535,76 @@ export function CapabilitiesSection({ projects = [] }: { projects?: HomeProject[
                 id={`capability-tab-${index}`}
                 aria-selected={isActive}
                 aria-controls="capability-panel"
-                onClick={() => setActive(index)}
+                onClick={() => go(index)}
                 onMouseEnter={() => setActive(index)}
                 onFocus={() => setEngaged(true)}
-                className={`relative block w-full overflow-hidden rounded-xl border px-4 py-3 text-left transition-colors duration-300 ${
-                  isActive ? "border-accent/60 bg-surface" : "border-transparent hover:bg-surface/60"
+                className={`group relative flex shrink-0 snap-start items-center gap-2 overflow-hidden rounded-full border py-1.5 pl-1.5 pr-3.5 text-left transition-colors duration-300 lg:flex-col lg:items-start lg:gap-3 lg:rounded-2xl lg:p-4 ${
+                  isActive ? "border-accent/60 bg-surface" : "border-line hover:border-line-strong hover:bg-surface/60"
                 }`}
               >
-                <span className="flex items-center gap-3">
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 ${isActive ? "bg-accent text-accent-fg" : "bg-surface-2 text-fg-muted"}`}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className={`font-display text-[0.9375rem] font-semibold transition-colors duration-300 ${isActive ? "text-fg" : "text-fg-soft"}`}>{title}</span>
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-300 lg:h-9 lg:w-9 lg:rounded-lg ${
+                    isActive ? "bg-accent text-accent-fg" : "bg-surface-2 text-fg-muted group-hover:text-fg-soft"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                 </span>
-                <span className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-expo-out ${isActive ? "mt-2 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
-                  <span className="overflow-hidden pl-11 text-sm leading-relaxed text-fg-muted">{description}</span>
+                <span className="lg:space-y-1">
+                  <span className={`block whitespace-nowrap text-[0.8125rem] font-medium transition-colors duration-300 lg:whitespace-normal lg:font-display lg:text-[0.9375rem] lg:font-semibold ${isActive ? "text-fg" : "text-fg-soft"}`}>
+                    {title}
+                  </span>
+                  <span className="hidden text-[0.8125rem] leading-relaxed text-fg-muted lg:line-clamp-2">{description}</span>
                 </span>
                 {isActive && !engaged && inView && (
-                  <span key={active} aria-hidden="true" className="anim-progress absolute inset-x-0 bottom-0 h-0.5 bg-accent" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
+                  <span key={active} aria-hidden="true" className="anim-progress absolute inset-x-0 bottom-0 hidden h-0.5 bg-accent lg:block" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
                 )}
               </button>
             );
           })}
         </div>
 
-        <div
-          id="capability-panel"
-          role="tabpanel"
-          aria-labelledby={`capability-tab-${active}`}
-          className="card relative h-[32rem] overflow-hidden bg-surface sm:h-[28rem] lg:h-[29rem]"
-        >
-          <div key={active} className="h-full">
-            <Preview images={images} />
+        <div className="min-w-0 lg:order-1">
+          <div
+            id="capability-panel"
+            role="tabpanel"
+            aria-labelledby={`capability-tab-${active}`}
+            onTouchStart={(event) => {
+              touchStart.current = event.touches[0].clientX;
+            }}
+            onTouchEnd={onTouchEnd}
+            className="card relative h-[24rem] overflow-hidden bg-surface sm:h-[28rem] lg:h-full lg:min-h-[29rem]"
+          >
+            <div key={active} className="h-full">
+              <Preview images={images} />
+            </div>
+            {!engaged && inView && (
+              <span key={`bar-${active}`} aria-hidden="true" className="anim-progress absolute inset-x-0 bottom-0 h-0.5 bg-accent lg:hidden" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
+            )}
+          </div>
+
+          {/* Phone caption: what the preview shows, with arrows and a count. */}
+          <div className="mt-4 lg:hidden">
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-mono text-[0.6875rem] text-fg-muted">
+                <span className="text-accent">0{active + 1}</span> / 0{CAPABILITIES.length}
+              </span>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => go(active - 1)} aria-label="Previous capability" className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong text-fg-soft">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => go(active + 1)} aria-label="Next capability" className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong text-fg-soft">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div key={active} className="anim-pop mt-3 min-h-[4.5rem]">
+              <h3 className="font-display text-lg font-semibold">{current.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-fg-muted">{current.description}</p>
+            </div>
+            <Link href="/services" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-fg-soft transition-colors hover:text-fg">
+              All services
+              <ArrowUpRight className="h-3.5 w-3.5 text-accent" />
+            </Link>
           </div>
         </div>
       </div>

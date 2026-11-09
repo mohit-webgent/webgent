@@ -26,11 +26,11 @@ export function PricingPackageSection({ configurator }: { configurator: PricingC
         {flowMode !== "custom_only" && (
           <section aria-label="Core Engineering Packages" className="space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
                 <span className="text-xs font-mono uppercase tracking-widest text-fg-muted">
                   Step 2: Choose Your Base Package
                 </span>
-                <span className="text-xs text-fg-muted">/</span>
+                <span className="hidden text-xs text-fg-muted sm:inline">/</span>
                 <span className="text-xs text-fg-muted font-mono">
                   Active: <strong className="text-white uppercase">{packages[selectedTier].name}</strong> ({formatCurrencyINR(packages[selectedTier].startingPrice)})
                 </span>

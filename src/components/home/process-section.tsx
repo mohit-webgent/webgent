@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, CreditCard, Database, FileText, Lock, Mail, MessageSquare, Rocket } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, CreditCard, Database, FileText, Lock, Mail, MessageSquare, Rocket } from "lucide-react";
 import { isReducedMotion } from "@/components/animations/gsap-core";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
@@ -116,7 +116,7 @@ const CODE: Array<Array<[string, string]>> = [
 
 function BuildStage({ image }: { image: string }) {
   return (
-    <div className="grid h-full sm:grid-cols-2">
+    <div className="grid grid-cols-1 h-full sm:grid-cols-2">
       <div className="hidden min-w-0 flex-col border-r border-line bg-canvas sm:flex">
         <div className="flex border-b border-line text-[0.6875rem]">
           <span className="border-b-2 border-accent bg-surface px-3 py-1.5 font-mono">shop/page.tsx</span>
@@ -215,6 +215,35 @@ function LaunchStage({ image }: { image: string }) {
   );
 }
 
+function StageWindow({ step, children, className = "" }: { step: number; children: React.ReactNode; className?: string }) {
+  const isLaunch = step === STEPS.length - 1;
+  return (
+    <div className={`overflow-hidden rounded-xl border border-line-strong bg-surface shadow-lift ${className}`}>
+      <div className="flex items-center gap-2.5 border-b border-line bg-surface-2 px-3.5 py-2.5">
+        <span aria-hidden="true" className="flex gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-accent" />
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+        </span>
+        <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md bg-canvas px-2.5 py-1 font-mono text-[0.6875rem] text-fg-muted">
+          {isLaunch && <Lock className="h-2.5 w-2.5 shrink-0 text-accent" />}
+          <span className="truncate">{STEPS[step].url}</span>
+        </span>
+        {isLaunch && (
+          <span className="anim-pop flex items-center gap-1.5 text-[0.6875rem] font-medium text-accent">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            Live
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const roundButton =
+  "flex h-10 w-10 items-center justify-center rounded-full border border-line-strong text-fg-soft transition-colors hover:border-accent/50 hover:text-fg";
+
 export function ProcessSection({ projects = [] }: { projects?: HomeProject[] }) {
   const ref = useRef<HTMLElement | null>(null);
   const [step, setStep] = useState(0);
@@ -231,10 +260,16 @@ export function ProcessSection({ projects = [] }: { projects?: HomeProject[] }) 
   }, []);
 
   useEffect(() => {
-    if (engaged || !inView || isReducedMotion()) return;
+    // Phones show a timeline, where an opening step would shift the page under the reader, so only desktop plays on its own.
+    if (engaged || !inView || isReducedMotion() || !window.matchMedia("(min-width: 1024px)").matches) return;
     const timer = setTimeout(() => setStep((current) => (current + 1) % STEPS.length), AUTOPLAY_MS);
     return () => clearTimeout(timer);
   }, [step, engaged, inView]);
+
+  const go = (next: number) => {
+    setEngaged(true);
+    setStep((next + STEPS.length) % STEPS.length);
+  };
 
   const { main, detail } = images.jewellery;
   const stages = [
@@ -245,67 +280,119 @@ export function ProcessSection({ projects = [] }: { projects?: HomeProject[] }) 
     <RefineStage key="refine" image={detail} phone={main} />,
     <LaunchStage key="launch" image={main} />,
   ];
+  const progress = (step / (STEPS.length - 1)) * 100;
 
   return (
     <section ref={ref} id="process" className="border-y border-line bg-surface/40">
-      <div className="wrap section grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
-        <div>
+      <div className="wrap section">
+        <div className="flex items-end justify-between gap-6">
           <SectionHeading eyebrow="How it works" title="A clear path from idea to launch." />
+          <div className="hidden shrink-0 gap-2 lg:flex">
+            <button type="button" onClick={() => go(step - 1)} aria-label="Previous step" className={roundButton}>
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => go(step + 1)} aria-label="Next step" className={roundButton}>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
 
-          <ol className="mt-7 space-y-1" onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)}>
+        {/* Phone: a vertical timeline. The chosen step opens in place, with its preview. */}
+        <ol className="mt-8 lg:hidden">
+          {STEPS.map((item, index) => {
+            const active = index === step;
+            const done = index < step;
+            const last = index === STEPS.length - 1;
+            return (
+              <li key={item.title} className={`relative pl-12 ${last ? "" : "pb-5"}`}>
+                {!last && (
+                  <span aria-hidden="true" className="absolute bottom-0 left-[15px] top-9 w-px overflow-hidden bg-line">
+                    <span className={`block h-full w-full origin-top bg-accent transition-transform duration-500 ease-expo-out ${done ? "scale-y-100" : "scale-y-0"}`} />
+                  </span>
+                )}
+                <button type="button" onClick={() => go(index)} aria-expanded={active} className="block w-full text-left">
+                  <span
+                    aria-hidden="true"
+                    className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-colors duration-300 ${
+                      active ? "border-accent bg-accent text-accent-fg" : done ? "border-accent/50 bg-canvas text-accent" : "border-line-strong bg-canvas text-fg-muted"
+                    }`}
+                  >
+                    {done ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                  </span>
+                  <span className="flex min-h-8 items-center justify-between gap-3">
+                    <span className={`font-display text-base font-semibold transition-colors ${active ? "text-fg" : "text-fg-soft"}`}>{item.title}</span>
+                    <ChevronRight className={`h-4 w-4 text-fg-muted transition-transform duration-300 ${active ? "rotate-90 text-accent" : ""}`} />
+                  </span>
+                </button>
+                <div className={`grid transition-[grid-template-rows,opacity] duration-500 ease-expo-out ${active ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+                  <div className="min-h-0 overflow-hidden">
+                    <p className="pt-1.5 text-sm leading-relaxed text-fg-muted">{item.description}</p>
+                    {active && (
+                      <StageWindow step={index} className="mt-4">
+                        <div className="h-[15rem] sm:h-[20rem]">{stages[index]}</div>
+                      </StageWindow>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* Desktop: a horizontal stepper over the step's detail and preview. */}
+        <div className="hidden lg:block" onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)}>
+          <ol className="relative mt-12 grid grid-cols-6">
+            <li aria-hidden="true" className="absolute left-[calc(100%/12)] right-[calc(100%/12)] top-4 h-px bg-line">
+              <span className="block h-full bg-accent transition-[width] duration-700 ease-expo-out" style={{ width: `${progress}%` }} />
+            </li>
             {STEPS.map((item, index) => {
               const active = index === step;
               const done = index < step;
               return (
-                <li key={item.title}>
+                <li key={item.title} className="relative flex justify-center">
                   <button
                     type="button"
-                    onClick={() => setStep(index)}
+                    onClick={() => go(index)}
                     onFocus={() => setEngaged(true)}
                     aria-current={active ? "step" : undefined}
-                    className={`relative w-full overflow-hidden rounded-lg border px-3.5 py-2.5 text-left transition-colors duration-300 ${
-                      active ? "border-accent/60 bg-surface-2" : "border-transparent hover:bg-surface-2/60"
-                    }`}
+                    className="group flex flex-col items-center gap-3"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded font-mono text-[0.625rem] transition-colors duration-300 ${
-                        active ? "bg-accent text-accent-fg" : done ? "bg-accent/15 text-accent" : "bg-surface-3 text-fg-muted"
-                      }`}>
-                        {done ? <Check className="h-3 w-3" /> : index + 1}
-                      </span>
-                      <span className={`font-display text-[0.9375rem] font-semibold transition-colors duration-300 ${active ? "text-fg" : "text-fg-soft"}`}>{item.title}</span>
+                    <span
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-[color,background-color,border-color,transform] duration-300 ${
+                        active
+                          ? "scale-110 border-accent bg-accent text-accent-fg"
+                          : done
+                            ? "border-accent/50 bg-canvas text-accent"
+                            : "border-line-strong bg-canvas text-fg-muted group-hover:border-fg-muted"
+                      }`}
+                    >
+                      {done ? <Check className="h-3.5 w-3.5" /> : index + 1}
                     </span>
-                    {active && <span key={step} className="anim-pop mt-1.5 block pl-[1.875rem] text-sm leading-relaxed text-fg-muted">{item.description}</span>}
-                    {active && !engaged && inView && (
-                      <span key={`progress-${step}`} aria-hidden="true" className="anim-progress absolute inset-x-0 bottom-0 h-0.5 bg-accent" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
-                    )}
+                    <span className={`font-display text-sm font-semibold transition-colors ${active ? "text-fg" : "text-fg-muted group-hover:text-fg-soft"}`}>
+                      {item.title}
+                    </span>
                   </button>
                 </li>
               );
             })}
           </ol>
-        </div>
 
-        <div className="overflow-hidden rounded-xl border border-line-strong bg-surface shadow-lift">
-          <div className="flex items-center gap-2.5 border-b border-line bg-surface-2 px-3.5 py-2.5">
-            <span aria-hidden="true" className="flex gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-accent" />
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-            </span>
-            <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md bg-canvas px-2.5 py-1 font-mono text-[0.6875rem] text-fg-muted">
-              {step === STEPS.length - 1 && <Lock className="h-2.5 w-2.5 shrink-0 text-accent" />}
-              <span className="truncate">{STEPS[step].url}</span>
-            </span>
-            {step === STEPS.length - 1 && (
-              <span className="anim-pop flex items-center gap-1.5 text-[0.6875rem] font-medium text-accent">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                Live
-              </span>
-            )}
-          </div>
-          <div key={step} className="h-[22rem] sm:h-[26rem]">
-            {stages[step]}
+          <div className="mt-12 grid grid-cols-[minmax(0,4fr)_minmax(0,8fr)] items-center gap-12">
+            <div key={step} className="anim-pop">
+              <p className="font-display text-[4.5rem] font-semibold leading-none tracking-[-0.05em] text-white/10">0{step + 1}</p>
+              <h3 className="display-md mt-4">{STEPS[step].title}</h3>
+              <p className="lede mt-3">{STEPS[step].description}</p>
+              <div className="mt-8 h-0.5 w-full overflow-hidden rounded-full bg-line">
+                {!engaged && inView && (
+                  <span aria-hidden="true" className="anim-progress block h-full bg-accent" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
+                )}
+              </div>
+            </div>
+            <StageWindow step={step}>
+              <div key={step} className="h-[26rem]">
+                {stages[step]}
+              </div>
+            </StageWindow>
           </div>
         </div>
       </div>

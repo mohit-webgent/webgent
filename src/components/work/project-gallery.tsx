@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, X, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, X, ZoomIn } from "lucide-react";
 
 interface ProjectGalleryProps {
   screenshots: string[];
@@ -59,10 +59,7 @@ export function ProjectGallery({ screenshots, projectTitle }: ProjectGalleryProp
     <div className="space-y-6">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-fg flex items-center gap-2.5 tracking-tight uppercase">
-          <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
-          <span>Screens</span>
-        </h2>
+        <h2 className="display-md">Screens</h2>
         <div className="flex items-center gap-3">
           <span className="text-xs font-mono text-fg-muted flex items-center gap-1.5">
             <ZoomIn className="w-3.5 h-3.5 text-accent/80" />

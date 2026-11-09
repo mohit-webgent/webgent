@@ -38,7 +38,7 @@ export function CtaBand({
           <h2 className="display-md">{title}</h2>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-accent-fg/80">{description}</p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="cta-row flex shrink-0 flex-wrap items-center gap-2">
           <CtaLink href={primaryHref} label={`${analyticsName} CTA Primary`} className="btn btn-dark">
             <span>{primaryLabel}</span>
             <ArrowRight className="h-4 w-4" />

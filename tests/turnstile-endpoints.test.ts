@@ -261,22 +261,22 @@ describe("Protected Form Endpoints & Database Isolation Suite", () => {
       );
     });
 
-    it("ensures chat-widget.tsx dispatches turnstileToken in POST payload and enforces validation before submit", () => {
+    it("ensures chat-widget.tsx waits for a turnstileToken and sends it before starting a session", () => {
       const content = fs.readFileSync(
         path.join(rootDir, "src/components/chat/chat-widget.tsx"),
         "utf-8",
       );
       assert.ok(
-        content.includes("turnstileToken: activeToken || undefined"),
+        content.includes("turnstileToken: token"),
         "Chat widget must include turnstileToken in start payload",
       );
       assert.ok(
         content.includes("<Turnstile"),
-        "Chat widget must render Turnstile in details drawer",
+        "Chat widget must render the Turnstile widget",
       );
       assert.ok(
-        content.includes("disabled={!turnstileToken || initializing}"),
-        "Chat widget must disable submit action until a valid token is available",
+        /const token = await waitForToken\(\);\s*const response = await fetch\("\/api\/chat\/start"/.test(content),
+        "Chat widget must wait for a valid token before calling /api/chat/start",
       );
       assert.ok(
         !content.includes("if (nextOpen && !sessionId) {\n      await initSession();\n    }"),

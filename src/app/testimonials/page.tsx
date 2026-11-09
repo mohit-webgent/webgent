@@ -14,13 +14,13 @@ export const revalidate = 60;
 
 const defaultTestimonialsMetadata: Metadata = {
   title: "Client Testimonials & Feedback | Webgent",
-  description: "Client feedback on Webgent web development projects.",
+  description: "Client feedback on web development projects built by Mohit Verma.",
   alternates: {
     canonical: "/testimonials",
   },
   openGraph: {
     title: "Client Testimonials & Feedback | Webgent",
-    description: "Client feedback on Webgent web development projects.",
+    description: "Client feedback on web development projects built by Mohit Verma.",
     url: `${siteConfig.url}/testimonials`,
     siteName: siteConfig.name,
     type: "website",
@@ -36,7 +36,7 @@ const defaultTestimonialsMetadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Client Testimonials & Feedback | Webgent",
-    description: "Client feedback on Webgent web development projects.",
+    description: "Client feedback on web development projects built by Mohit Verma.",
     images: [`${siteConfig.url}/api/og?title=Client+Testimonials&badge=Reviews`],
     creator: "@webgent",
   },
@@ -95,7 +95,7 @@ export default async function TestimonialsPage() {
 
   return (
     <>
-      <PageHero eyebrow="Testimonials" title="What clients say." description="Feedback from people Webgent has worked with." />
+      <PageHero eyebrow="Testimonials" title="What clients say." description="Feedback from clients on projects built by Mohit Verma." />
 
       <section className="wrap pb-[var(--section-space)]">
         <RevealGroup spotlight className="columns-1 gap-3 md:columns-2 lg:columns-3">

@@ -61,7 +61,7 @@ async function runTests() {
     }),
   );
 
-  assert(contactHtml.includes("WEBGENT"), "Contact confirmation contains brand header");
+  assert(contactHtml.includes("Webgent"), "Contact confirmation contains brand header");
   assert(contactHtml.includes("Sarah"), "Contact confirmation addresses client by name");
   assert(
     contactHtml.includes("Enterprise Next.js Platform"),
@@ -93,14 +93,14 @@ async function runTests() {
   );
 
   assert(
-    adminLeadHtml.includes("New Inbound Client Lead"),
+    adminLeadHtml.includes("New project inquiry"),
     "Admin notification has clear alert header",
   );
   assert(
-    adminLeadHtml.includes("Lead Score") && adminLeadHtml.includes("92"),
+    adminLeadHtml.includes("Priority") && adminLeadHtml.includes("92/100"),
     "Admin notification renders calculated lead score",
   );
-  assert(adminLeadHtml.includes("High Intent"), "Admin notification categorizes score intent");
+  assert(adminLeadHtml.includes("High (92/100)"), "Admin notification categorizes score intent");
   assert(
     adminLeadHtml.includes("marcus@apexfintech.io"),
     "Admin notification includes client email",
@@ -122,7 +122,7 @@ async function runTests() {
   );
 
   assert(
-    newsletterOptInHtml.includes("Confirm Your Subscription"),
+    newsletterOptInHtml.includes("Confirm your subscription"),
     "Newsletter template includes confirmation heading",
   );
   assert(
@@ -134,7 +134,7 @@ async function runTests() {
     "Newsletter template specifies 24-hour expiration",
   );
   assert(
-    newsletterOptInHtml.includes("DOUBLE OPT-IN"),
+    newsletterOptInHtml.includes("ignore this email"),
     "Newsletter template explains double opt-in privacy",
   );
 
@@ -146,8 +146,8 @@ async function runTests() {
   );
 
   assert(
-    unsubscribedHtml.includes("You&#x27;ve Been Unsubscribed") ||
-      unsubscribedHtml.includes("You've Been Unsubscribed"),
+    unsubscribedHtml.includes("You&#x27;ve been unsubscribed") ||
+      unsubscribedHtml.includes("You've been unsubscribed"),
     "Unsubscribed template has clear confirmation title",
   );
   assert(
@@ -155,7 +155,7 @@ async function runTests() {
     "Unsubscribed template confirms target email address",
   );
   assert(
-    unsubscribedHtml.includes("Re-Subscribe"),
+    unsubscribedHtml.includes("Subscribe again"),
     "Unsubscribed template includes re-subscribe action",
   );
 

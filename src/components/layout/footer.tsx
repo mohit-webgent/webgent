@@ -40,8 +40,8 @@ export function Footer({ data }: FooterProps = {}) {
   return (
     <footer className="border-t border-line bg-surface/50">
       <div className="wrap pb-6 pt-10 sm:pt-12">
-        <div className="grid gap-9 md:grid-cols-2 lg:grid-cols-12">
-          <div className="lg:col-span-5">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-9 lg:grid-cols-12">
+          <div className="col-span-2 lg:col-span-5">
             <Link href="/" className="inline-flex items-center gap-2.5 font-display text-lg font-semibold tracking-tight">
               <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-sm font-bold text-accent-fg">
                 W

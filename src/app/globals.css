@@ -701,3 +701,40 @@ html {
 .admin-theme [class*="rounded"] {
   border-radius: 0 !important;
 }
+
+/* Home hero. */
+.hero-display {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+/* A hairline of orange along the top edge of the showcase window. */
+.hero-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0 12% auto;
+  z-index: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--color-accent) / 0.8), transparent);
+}
+
+/* Fieldsets default to min-width: min-content, which lets long labels push a form past the screen. */
+fieldset {
+  min-width: 0;
+}
+
+/* Button groups stack into equal, full-width buttons on phones instead of ragged widths. */
+@media (max-width: 639px) {
+  .cta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cta-row > * {
+    width: 100%;
+    justify-content: center;
+  }
+}

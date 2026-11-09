@@ -104,7 +104,7 @@ export function AboutView() {
               ))}
             </div>
 
-            <div className="fade-up mt-6 flex flex-wrap items-center gap-2.5" style={{ "--i": 3 } as React.CSSProperties}>
+            <div className="cta-row fade-up mt-6 flex flex-wrap items-center gap-2.5" style={{ "--i": 3 } as React.CSSProperties}>
               <Link href="/contact" className="btn btn-primary">
                 <span>Discuss a project</span>
                 <ArrowRight className="h-4 w-4" />

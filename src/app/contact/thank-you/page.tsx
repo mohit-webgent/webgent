@@ -42,7 +42,7 @@ export default function ContactThankYouPage() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.02] border border-line text-fg-muted text-xs font-mono uppercase tracking-wider">
             <span>Message sent</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-light text-fg tracking-tight">
+          <h1 className="display-lg text-fg">
             Thanks, your message is in.
           </h1>
           <p className="text-sm text-fg-muted leading-relaxed">

@@ -56,20 +56,22 @@ async function runTests() {
   // ----------------------------------------------------
   console.log("\n--- 2. Server Component Architecture & Separation ---");
   const homeCode = fs.readFileSync("src/app/page.tsx", "utf8");
+  // The home page loads its data through this service, so the query checks read both files.
+  const homeDataCode = homeCode + fs.readFileSync("src/lib/services/home-data.ts", "utf8");
   assert(
     !homeCode.startsWith('"use client"') && !homeCode.startsWith("'use client'"),
     "Home page is a Server Component for optimal SSR & SEO",
   );
   assert(
-    homeCode.includes("prisma.project.findMany"),
+    homeDataCode.includes("prisma.project.findMany"),
     "Home page fetches real featured projects from PostgreSQL",
   );
   assert(
-    homeCode.includes("prisma.testimonial.findMany"),
+    homeDataCode.includes("prisma.testimonial.findMany"),
     "Home page fetches real approved testimonials from PostgreSQL",
   );
   assert(
-    homeCode.includes("prisma.blogPost.findMany"),
+    homeDataCode.includes("prisma.blogPost.findMany"),
     "Home page fetches real published blog posts from PostgreSQL",
   );
 
