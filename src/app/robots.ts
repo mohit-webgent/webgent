@@ -1,8 +1,11 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
+import { getSiteSeoSettings } from "@/lib/services/cms";
 
-export default function robots(): MetadataRoute.Robots {
-  const baseUrl = siteConfig.url.replace(/\/+$/, "");
+// Uses the same origin as the sitemap and canonical tags, so search engines see one consistent address.
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const seo = await getSiteSeoSettings();
+  const baseUrl = (seo.global.canonicalBaseUrl || siteConfig.url).replace(/\/+$/, "");
 
   return {
     rules: [

@@ -5,8 +5,8 @@ const PUBLISHED_AUTH_SECRETS = new Set(["a_very_secret_32_character_long_auth_se
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://webgent.vercel.app"),
-  NEXT_PUBLIC_APP_URL: z.string().url().default("https://webgent.vercel.app"),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://www.webgent.online"),
+  NEXT_PUBLIC_APP_URL: z.string().url().default("https://www.webgent.online"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
@@ -37,9 +37,9 @@ function parseEnv() {
     // (such as DATABASE_URL and AUTH_SECRET) for security. Return client-safe values.
     return {
       NODE_ENV: (process.env.NODE_ENV as "development" | "production" | "test") || "development",
-      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "https://webgent.vercel.app",
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "https://www.webgent.online",
       NEXT_PUBLIC_APP_URL:
-        process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://webgent.vercel.app",
+        process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://www.webgent.online",
       DATABASE_URL: "",
       AUTH_SECRET: "",
       LOG_LEVEL: (process.env.LOG_LEVEL as "debug" | "info" | "warn" | "error") || "info",

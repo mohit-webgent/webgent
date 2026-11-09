@@ -1003,7 +1003,7 @@ export async function resolveRouteMetadata(
   try {
     const seo = await getSiteSeoSettings();
     const override = seo.pages[route];
-    const baseUrl = (seo.global.canonicalBaseUrl || "https://webgent.vercel.app").replace(/\/+$/, "");
+    const baseUrl = (seo.global.canonicalBaseUrl || "https://www.webgent.online").replace(/\/+$/, "");
 
     // 1. Resolve title
     let resolvedTitle = baseFallback.title;

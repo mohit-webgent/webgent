@@ -146,7 +146,7 @@ async function runPhase15Tests() {
     `Sitemap generated successfully with ${sitemapItems.length} routes including static and dynamic items`,
   );
 
-  const robotsData = robotsFn();
+  const robotsData = await robotsFn();
   assert(Array.isArray(robotsData.rules), "robots returns rules array");
   assert(robotsData.rules[0].allow === "/", "robots allows crawling root path");
   assert(Array.isArray(robotsData.rules[0].disallow), "robots defines disallow array");

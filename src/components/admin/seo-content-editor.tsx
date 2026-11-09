@@ -138,7 +138,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
       setNotification({
         type: "error",
         message:
-          "Canonical Base URL must match the configured production site origin or a trusted domain (e.g. 'https://webgent.vercel.app').",
+          "Canonical Base URL must match the configured production site origin or a trusted domain (e.g. 'https://www.webgent.online').",
       });
       return;
     }
@@ -506,7 +506,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   value={settings.global.canonicalBaseUrl}
                   onChange={(e) => updateGlobal("canonicalBaseUrl", e.target.value)}
                   className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
-                  placeholder="https://webgent.vercel.app"
+                  placeholder="https://www.webgent.online"
                 />
                 <p className="text-xs text-muted-foreground">
                   Must be http(s) origin without trailing slash.
@@ -538,7 +538,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                     value={settings.global.defaultOgImage}
                     onChange={(e) => updateGlobal("defaultOgImage", e.target.value)}
                     className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary font-mono text-xs"
-                    placeholder="https://webgent.vercel.app/api/og?title=Webgent"
+                    placeholder="https://www.webgent.online/api/og?title=Webgent"
                   />
                   <button
                     type="button"

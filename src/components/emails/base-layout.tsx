@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from "@react-email/components";
+import { resolveSiteUrl } from "@/config/site";
 import { parseClientMessage } from "./email-format";
 
 export const emailColors = {
@@ -15,7 +16,7 @@ export const emailColors = {
 const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 export function getAppUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.vercel.app").replace(/\/$/, "");
+  return resolveSiteUrl();
 }
 
 export interface EmailBaseLayoutProps {

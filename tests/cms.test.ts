@@ -1145,12 +1145,14 @@ describe("Centralized CMS Data Access Layer Suite", () => {
 
       it("enforces trusted canonical origin security (rejects untrusted hosts)", () => {
         // Trusted origins allowed
-        assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.vercel.app"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://www.webgent.online"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.com"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("http://localhost:3000"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("http://127.0.0.1:3000"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("https://subdomain.webgent.com"), true);
-        assert.strictEqual(isTrustedCanonicalOrigin("https://preview-deploy.vercel.app"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.online"), true);
+        // Shared hosting domains are not trusted, because anyone can publish on them.
+        assert.strictEqual(isTrustedCanonicalOrigin("https://preview-deploy.vercel.app"), false);
 
         // Untrusted / malicious hosts strictly rejected
         assert.strictEqual(isTrustedCanonicalOrigin("https://attacker.com"), false);

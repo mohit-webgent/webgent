@@ -84,7 +84,8 @@ export function isTrustedCanonicalOrigin(val: string): boolean {
     const candidates = [
       process.env.NEXT_PUBLIC_SITE_URL,
       process.env.NEXT_PUBLIC_APP_URL,
-      "https://webgent.vercel.app",
+      "https://www.webgent.online",
+      "https://webgent.online",
       "https://webgent.com",
     ].filter(Boolean) as string[];
 
@@ -108,11 +109,12 @@ export function isTrustedCanonicalOrigin(val: string): boolean {
       return true;
     }
 
-    // 4. Subdomains of verified project domains (e.g. *.webgent.com, *.vercel.app)
+    // 4. Subdomains of the project's own domains. Shared hosts such as *.vercel.app are not trusted:
+    //    anyone can publish there, and the old preview address must not win over the real domain.
     if (host.endsWith(".webgent.com") || host === "webgent.com") {
       return true;
     }
-    if (host.endsWith(".vercel.app")) {
+    if (host.endsWith(".webgent.online")) {
       return true;
     }
 
@@ -474,7 +476,7 @@ export const globalSeoSchema = z.object({
     .trim()
     .refine(
       isTrustedCanonicalOrigin,
-      "Canonical base URL must match the configured production site origin or a trusted domain (e.g. 'https://webgent.vercel.app')",
+      "Canonical base URL must match the configured production site origin or a trusted domain (e.g. 'https://www.webgent.online')",
     ),
   defaultOgImage: z
     .string()
@@ -635,8 +637,8 @@ export const DEFAULT_GLOBAL_SEO: GlobalSeoConfig = {
   titleTemplate: "%s | Webgent",
   defaultDescription:
     "Webgent designs and engineers high-performance web applications, scalable cloud backends, and digital platforms for growing businesses and modern brands.",
-  canonicalBaseUrl: "https://webgent.vercel.app",
-  defaultOgImage: "https://webgent.vercel.app/api/og?title=Webgent&badge=Web+Engineering",
+  canonicalBaseUrl: "https://www.webgent.online",
+  defaultOgImage: "https://www.webgent.online/api/og?title=Webgent&badge=Web+Engineering",
   twitterCard: "summary_large_image",
   twitterHandle: "@webgent",
   defaultRobotsIndex: true,

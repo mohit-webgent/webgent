@@ -1,11 +1,21 @@
 import { WHATSAPP_CONFIG, buildWhatsAppUrl } from "./whatsapp";
 
+export const PRODUCTION_URL = "https://www.webgent.online";
+
+/** The live deployment must never advertise a local or preview address to search engines or in emails. */
+export function resolveSiteUrl() {
+  const configured = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/+$/, "");
+  const isLiveDeployment = (process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV) === "production";
+  if (!configured || (isLiveDeployment && /localhost|127\.0\.0\.1|\.vercel\.app/.test(configured))) return PRODUCTION_URL;
+  return configured;
+}
+
 export const siteConfig = {
   name: "Webgent",
   tagline: "Next-Gen Web Solutions & Engineering",
   description:
     "Webgent builds high-performance web applications, scalable cloud software, and digital platforms for ambitious modern brands.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://webgent.vercel.app",
+  url: resolveSiteUrl(),
   mainNav: [
     { title: "Home", href: "/" },
     { title: "Services", href: "/services" },
