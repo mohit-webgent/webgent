@@ -12,6 +12,7 @@ import { siteConfig } from "@/config/site";
 import {
   getHomepageHeroContent,
   getHomepageSectionsConfig,
+  getSiteSwitches,
   resolveRouteMetadata,
   type HomeSectionId,
 } from "@/lib/services/cms";
@@ -59,11 +60,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [heroContent, sectionsConfig, home, pricing] = await Promise.all([
+  const [heroContent, sectionsConfig, home, pricing, switches] = await Promise.all([
     getHomepageHeroContent(),
     getHomepageSectionsConfig(),
     getHomeData(),
     getPricingData(),
+    getSiteSwitches(),
   ]);
 
   // Same figures as the /pricing page.
@@ -100,7 +102,7 @@ export default async function HomePage() {
     .filter(Boolean);
 
   const sections = orderedSections.length > 0 ? orderedSections : Object.values(sectionMap);
-  const estimator = <EstimatorSection key="estimator" pricing={pricing} />;
+  const estimator = <EstimatorSection key="estimator" pricing={pricing} chatEnabled={switches.aiChatEnabled} />;
 
   // The estimator sits directly before the closing call to action, wherever that has been ordered.
   const ctaIndex = sections.findIndex((section) => (section as React.ReactElement | null)?.key === "cta");

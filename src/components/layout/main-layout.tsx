@@ -7,6 +7,7 @@ import { Footer } from "./footer";
 import { AnalyticsTracker } from "@/components/analytics/analytics-tracker";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { WhatsAppFloatingButton } from "./whatsapp-floating-button";
+import { MaintenanceScreen } from "./maintenance-screen";
 
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { ScrollProgressBar } from "@/components/animations/scroll-progress";
@@ -17,11 +18,27 @@ export interface MainLayoutProps {
   children: React.ReactNode;
   navItems?: NavItem[];
   footerData?: FooterConfig;
+  /** Admin → Settings → AI chat */
+  chatEnabled?: boolean;
+  /** Admin → Settings → Maintenance mode. The admin console is never blocked, so it can be switched off. */
+  maintenanceMode?: boolean;
+  contact?: { email?: string; phone?: string };
 }
 
-export function MainLayout({ children, navItems, footerData }: MainLayoutProps) {
+export function MainLayout({
+  children,
+  navItems,
+  footerData,
+  chatEnabled = true,
+  maintenanceMode = false,
+  contact,
+}: MainLayoutProps) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+
+  if (maintenanceMode && !isAdmin) {
+    return <MaintenanceScreen email={contact?.email} phone={contact?.phone} />;
+  }
 
   if (isAdmin) {
     return (
@@ -53,7 +70,7 @@ export function MainLayout({ children, navItems, footerData }: MainLayoutProps) 
           <AnalyticsTracker />
         </Suspense>
         <WhatsAppFloatingButton />
-        <ChatWidget />
+        {chatEnabled && <ChatWidget />}
       </div>
     </SmoothScrollProvider>
   );

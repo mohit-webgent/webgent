@@ -3,6 +3,7 @@ import { verifyStrictAdminApiAccess } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { revalidatePath } from "next/cache";
 import {
   DEFAULT_HERO_CONTENT,
   DEFAULT_HOME_SECTIONS,
@@ -16,17 +17,6 @@ const updateSettingsSchema = z.record(z.string(), z.string());
 
 const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isPublic: boolean }> =
   {
-    site_name: {
-      value: "Webgent",
-      description: "Official Site Name",
-      isPublic: true,
-    },
-    site_tagline: {
-      value: "Next-Gen Web Solutions & Engineering",
-      description: "Hero Tagline",
-      isPublic: true,
-    },
-    logo_url: { value: "", description: "Brand Logo URL", isPublic: true },
     contact_email: {
       value: "mohitvermag75@gmail.com",
       description: "Primary Inbound Contact Email",
@@ -69,38 +59,12 @@ const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isP
     },
     enable_ai_chat: {
       value: "true",
-      description: "Enable visitor AI assistant and live chat widget",
+      description: "Show the AI consultant on the website",
       isPublic: true,
-    },
-    enable_newsletter_double_optin: {
-      value: "true",
-      description: "Require email token confirmation for newsletter subscriptions",
-      isPublic: false,
     },
     maintenance_mode: {
       value: "false",
-      description: "Render maintenance banner on public routes",
-      isPublic: true,
-    },
-    analytics_tracking: {
-      value: "true",
-      description: "Collect client-side page views and interaction telemetry",
-      isPublic: true,
-    },
-    default_meta_title: {
-      value: "Webgent — Modern Web Development",
-      description: "Default SEO Title Tag",
-      isPublic: true,
-    },
-    default_meta_description: {
-      value:
-        "Webgent designs and builds fast business websites and web applications.",
-      description: "Default SEO Meta Description",
-      isPublic: true,
-    },
-    google_analytics_id: {
-      value: "G-XXXXXXXXXX",
-      description: "Google Analytics 4 Measurement ID",
+      description: "Replace public pages with a maintenance screen (the admin console stays available)",
       isPublic: true,
     },
     home_hero_content: {
@@ -197,6 +161,8 @@ export async function PUT(req: NextRequest) {
 
     // Invalidate CMS cache and trigger Next.js ISR path revalidations
     await invalidateCmsCache();
+    // The AI chat and maintenance switches change every public page, not only the CMS ones.
+    revalidatePath("/", "layout");
 
     return NextResponse.json({
       success: true,

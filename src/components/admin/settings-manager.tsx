@@ -5,11 +5,9 @@ import {
   Settings,
   Save,
   Loader2,
-  Globe,
   Mail,
   Share2,
   Sliders,
-  Search,
   RotateCcw,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
@@ -17,9 +15,7 @@ import { getApiErrorMessage } from "@/lib/api/client-error";
 
 export function SettingsManager() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<"general" | "contact" | "social" | "features" | "seo">(
-    "general",
-  );
+  const [activeTab, setActiveTab] = useState<"contact" | "social" | "features">("contact");
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [originalSettings, setOriginalSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -87,11 +83,9 @@ export function SettingsManager() {
   };
 
   const tabs = [
-    { id: "general", label: "General & Brand", icon: Globe },
     { id: "contact", label: "Contact Details", icon: Mail },
     { id: "social", label: "Social Media", icon: Share2 },
-    { id: "features", label: "Site Options", icon: Sliders },
-    { id: "seo", label: "SEO & Analytics", icon: Search },
+    { id: "features", label: "Website Switches", icon: Sliders },
   ] as const;
 
   return (
@@ -105,7 +99,7 @@ export function SettingsManager() {
             <span>Site Settings</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Your brand details, contact information, social links and site options.
+            Your contact information, social links and website switches.
           </p>
         </div>
 
@@ -175,56 +169,6 @@ export function SettingsManager() {
             </div>
           ) : (
             <form onSubmit={handleSave} className="space-y-6">
-              {activeTab === "general" && (
-                <div className="space-y-5 animate-in fade-in duration-200">
-                  <div>
-                    <h2 className="text-base font-bold text-fg">General & Branding</h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Saved here, but the public site doesn&apos;t read these yet. To change the name shown to visitors, use SEO & Meta Tags.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-5">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Site Name
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.site_name || ""}
-                        onChange={(e) => handleChange("site_name", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Brand Tagline
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.site_tagline || ""}
-                        onChange={(e) => handleChange("site_tagline", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Logo Image URL (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="https://cdn.webgent.com/images/logo.png"
-                        value={settings.logo_url || ""}
-                        onChange={(e) => handleChange("logo_url", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {activeTab === "contact" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
@@ -350,22 +294,18 @@ export function SettingsManager() {
               {activeTab === "features" && (
                 <div className="space-y-5 animate-in fade-in duration-200">
                   <div>
-                    <h2 className="text-base font-bold text-fg">Site Options</h2>
+                    <h2 className="text-base font-bold text-fg">Website Switches</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Choices saved for this site.
+                      These take effect on the live website as soon as you save.
                     </p>
-                  </div>
-
-                  <div className="p-3 rounded-none bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
-                    These switches are saved, but the public site doesn&apos;t read them yet, so changing them has no effect.
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
-                        <p className="text-xs font-bold text-fg">Live AI Chat Widget</p>
+                        <p className="text-xs font-bold text-fg">AI Consultant Chat</p>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          Offer the AI consultant to visitors.
+                          Show the AI consultant on the website. When off, the chat button disappears and visitors are sent to the contact page.
                         </p>
                       </div>
                       <button
@@ -388,65 +328,9 @@ export function SettingsManager() {
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                       <div>
-                        <p className="text-xs font-bold text-fg">Newsletter Double Opt-In</p>
+                        <p className="text-xs font-bold text-fg">Maintenance Mode</p>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          Ask new subscribers to confirm their email address.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={settings.enable_newsletter_double_optin === "true"}
-                        aria-label="Newsletter double opt-in"
-                        onClick={() => handleToggle("enable_newsletter_double_optin")}
-                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
-                          settings.enable_newsletter_double_optin === "true"
-                            ? "bg-indigo-600"
-                            : "bg-slate-800"
-                        }`}
-                      >
-                        <span
-                          className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                            settings.enable_newsletter_double_optin === "true"
-                              ? "translate-x-6"
-                              : "translate-x-0"
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-                      <div>
-                        <p className="text-xs font-bold text-fg">Custom Analytics Tracking</p>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          Record anonymous page views and conversions.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={settings.analytics_tracking === "true"}
-                        aria-label="Analytics tracking"
-                        onClick={() => handleToggle("analytics_tracking")}
-                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
-                          settings.analytics_tracking === "true" ? "bg-indigo-600" : "bg-slate-800"
-                        }`}
-                      >
-                        <span
-                          className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                            settings.analytics_tracking === "true"
-                              ? "translate-x-6"
-                              : "translate-x-0"
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-                      <div>
-                        <p className="text-xs font-bold text-fg">Public Maintenance Mode</p>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          Show an under-construction banner on public pages.
+                          Replace every public page with a short &ldquo;back soon&rdquo; screen showing your email and WhatsApp. The admin console stays available so you can switch it off.
                         </p>
                       </div>
                       <button
@@ -470,55 +354,6 @@ export function SettingsManager() {
                 </div>
               )}
 
-              {activeTab === "seo" && (
-                <div className="space-y-5 animate-in fade-in duration-200">
-                  <div>
-                    <h2 className="text-base font-bold text-fg">SEO & Analytics</h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Default meta tags and third-party tracker configurations
-                    </p>
-                  </div>
-
-                  <div className="space-y-5">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Default Meta Title
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.default_meta_title || ""}
-                        onChange={(e) => handleChange("default_meta_title", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Default Meta Description
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={settings.default_meta_description || ""}
-                        onChange={(e) => handleChange("default_meta_description", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg focus:outline-none focus:border-indigo-500 transition-colors resize-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        Google Analytics 4 Measurement ID
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="G-XXXXXXXXXX"
-                        value={settings.google_analytics_id || ""}
-                        onChange={(e) => handleChange("google_analytics_id", e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-fg placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </form>
           )}
         </div>

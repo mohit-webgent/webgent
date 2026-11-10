@@ -466,6 +466,32 @@ export async function getContactInfo(): Promise<ContactInfo> {
   }
 }
 
+export interface SiteSwitches {
+  aiChatEnabled: boolean;
+  maintenanceMode: boolean;
+}
+
+/**
+ * The two Admin → Settings switches that change the public site. Read straight from the database
+ * (not Redis) so turning maintenance mode off can never be held back by a stale cache.
+ * If the database can't be read, the site stays up with the chat on.
+ */
+export async function getSiteSwitches(): Promise<SiteSwitches> {
+  try {
+    const settings = await prisma.siteSetting.findMany({
+      where: { key: { in: ["enable_ai_chat", "maintenance_mode"] } },
+    });
+    const value = (key: string) => settings.find((s) => s.key === key)?.value.trim().toLowerCase();
+    return {
+      aiChatEnabled: value("enable_ai_chat") !== "false",
+      maintenanceMode: value("maintenance_mode") === "true",
+    };
+  } catch (error) {
+    logger.warn("[CMS] Failed to load site switches, keeping the site up", { error: String(error) });
+    return { aiChatEnabled: true, maintenanceMode: false };
+  }
+}
+
 /**
  * Reads site FAQs from cache or SiteSetting (key: site_faqs).
  * By default (publishedOnly = true), filters out unpublished/draft entries for public consumers.

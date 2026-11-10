@@ -45,6 +45,18 @@ const nextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The old Vercel address still serves the site. Sending it to the real domain stops search engines
+  // listing two copies. Preview deployments use other *.vercel.app addresses and are unaffected.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "webgent.vercel.app" }],
+        destination: "https://www.webgent.online/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

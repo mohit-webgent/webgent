@@ -6,6 +6,7 @@ import { notificationService } from "@/lib/services/notifications";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import { syncChatLead } from "@/lib/services/chat-leads";
 import { getClientIp } from "@/lib/client-ip";
+import { getSiteSwitches } from "@/lib/services/cms";
 import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 import crypto from "crypto";
@@ -20,6 +21,14 @@ const startChatSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Admin → Settings → AI chat. When it is off, nothing new can be started or sent.
+    if (!(await getSiteSwitches()).aiChatEnabled) {
+      return NextResponse.json(
+        { success: false, error: "The AI consultant is turned off right now. Please use the contact page." },
+        { status: 503 },
+      );
+    }
+
     const ip = getClientIp(req.headers);
 
     const rateCheck = await checkRateLimit(`chat_start_${ip}`, 15, 10 * 60 * 1000);

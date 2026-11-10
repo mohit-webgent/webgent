@@ -2,8 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
+import { FOUNDER_PROFILE } from "@/data/founder-profile";
 import { MainLayout } from "@/components/layout/main-layout";
-import { getNavigationMenu, getFooterConfig, getSiteSeoSettings } from "@/lib/services/cms";
+import {
+  getContactInfo,
+  getFooterConfig,
+  getNavigationMenu,
+  getSiteSeoSettings,
+  getSiteSwitches,
+} from "@/lib/services/cms";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleTag } from "@/components/analytics/google-tag";
 
@@ -117,25 +124,62 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [navConfig, footerConfig, seoConfig] = await Promise.all([
+  const [navConfig, footerConfig, seoConfig, switches, contactInfo] = await Promise.all([
     getNavigationMenu(),
     getFooterConfig(),
     getSiteSeoSettings(),
+    getSiteSwitches(),
+    getContactInfo(),
   ]);
 
   const originUrl = (seoConfig.global.canonicalBaseUrl || siteConfig.url).replace(/\/+$/, "");
 
+  // Tells search engines who Webgent is: an Indian web development business founded by Mohit Verma.
+  // This is what separates it from unrelated businesses that share the name.
+  const founderId = `${originUrl}/#mohit-verma`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
+        "@type": "ProfessionalService",
         "@id": `${originUrl}/#organization`,
         name: seoConfig.global.siteName,
+        alternateName: `${seoConfig.global.siteName} by Mohit Verma`,
         url: originUrl,
         logo: `${originUrl}/api/og?title=${encodeURIComponent(seoConfig.global.siteName)}`,
-        sameAs: [siteConfig.links.github, siteConfig.links.linkedin],
+        image: seoConfig.global.defaultOgImage,
         description: seoConfig.global.defaultDescription,
+        email: contactInfo.email,
+        telephone: contactInfo.phone,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Gurugram",
+          addressRegion: "Haryana",
+          addressCountry: "IN",
+        },
+        areaServed: { "@type": "Country", name: "India" },
+        founder: { "@id": founderId },
+        sameAs: [siteConfig.links.github, siteConfig.links.linkedin],
+        knowsAbout: [
+          "Corporate websites",
+          "E-commerce websites",
+          "SaaS platforms",
+          "ERP and internal business tools",
+          "Custom web applications",
+          "Next.js",
+          "React",
+        ],
+      },
+      {
+        "@type": "Person",
+        "@id": founderId,
+        name: FOUNDER_PROFILE.name,
+        jobTitle: "Founder & Web Developer",
+        url: `${originUrl}/about`,
+        image: `${originUrl}${FOUNDER_PROFILE.avatarUrl}`,
+        worksFor: { "@id": `${originUrl}/#organization` },
+        address: { "@type": "PostalAddress", addressLocality: "Gurugram", addressCountry: "IN" },
+        sameAs: [FOUNDER_PROFILE.linkedinUrl, FOUNDER_PROFILE.githubUrl, FOUNDER_PROFILE.portfolioUrl],
       },
       {
         "@type": "WebSite",
@@ -163,7 +207,15 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${sans.variable} ${display.variable} ${serif.variable} ${mono.variable} font-sans bg-canvas text-fg antialiased`}
       >
-        <MainLayout navItems={navConfig.items} footerData={footerConfig}>{children}</MainLayout>
+        <MainLayout
+          navItems={navConfig.items}
+          footerData={footerConfig}
+          chatEnabled={switches.aiChatEnabled}
+          maintenanceMode={switches.maintenanceMode}
+          contact={{ email: contactInfo.email, phone: contactInfo.phone }}
+        >
+          {children}
+        </MainLayout>
         <GoogleTag />
         {process.env.VERCEL && <SpeedInsights />}
       </body>
