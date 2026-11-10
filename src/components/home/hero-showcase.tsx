@@ -120,7 +120,9 @@ export function HeroShowcase({ projects, starterPackage }: HeroShowcaseProps) {
             )}
           </div>
 
-          <div className="relative aspect-[16/10] overflow-hidden bg-surface-2">
+          {/* Matches the screenshots' wide browser-window shape (about 2.17:1), so they show in full.
+              object-contain keeps any differently shaped screenshot whole instead of cropping it. */}
+          <div className={`relative overflow-hidden bg-surface-2 ${total === 0 ? "aspect-[16/10]" : "aspect-[2.17/1]"}`}>
             {total === 0 && <PlaceholderScreen />}
             {shots.map((project, index) => (
               // Only the visible and next screenshots load, so the rest don't delay the page.
@@ -130,7 +132,7 @@ export function HeroShowcase({ projects, starterPackage }: HeroShowcaseProps) {
                   src={project.imageUrl as string}
                   alt={index === active ? `${project.title} website` : ""}
                   decoding="async"
-                  className={`absolute inset-0 h-full w-full object-cover object-top transition-[opacity,transform] duration-700 ease-expo-out ${
+                  className={`absolute inset-0 h-full w-full object-contain transition-[opacity,transform] duration-700 ease-expo-out ${
                     index === active ? "scale-100 opacity-100" : "scale-[1.03] opacity-0"
                   }`}
                 />
@@ -169,7 +171,7 @@ export function HeroShowcase({ projects, starterPackage }: HeroShowcaseProps) {
         {starterPackage && (
           <Link
             href="/pricing"
-            className="group absolute -left-4 bottom-10 hidden items-center gap-3 rounded-xl border border-line-strong bg-surface-2/95 py-2 pl-3 pr-2.5 shadow-lift backdrop-blur-md transition-colors hover:border-accent/40 sm:flex"
+            className="group absolute -bottom-10 -left-4 hidden items-center gap-3 rounded-xl border border-line-strong bg-surface-2/95 py-2 pl-3 pr-2.5 shadow-lift backdrop-blur-md transition-colors hover:border-accent/40 sm:flex"
             style={{ transform: "translateZ(70px)" }}
           >
             <span className="leading-tight">
