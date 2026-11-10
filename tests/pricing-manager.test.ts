@@ -8,6 +8,7 @@ import {
   getPricingCalculationConfig,
   pricingOverridesUpdateSchema,
   DEFAULT_PRICING_OVERRIDES_PAYLOAD,
+  DEFAULT_BACKEND_PRICING_DATA,
   PRICING_CACHE_KEY,
 } from "../src/lib/services/pricing";
 import {
@@ -18,7 +19,9 @@ import {
   PAGE_SETTINGS,
   PRICING_SETTINGS,
 } from "../src/lib/pricing.config";
-import { calculateProjectEstimate } from "../src/lib/services/ai-consultant/calculator";
+import { calculateProjectEstimate, packagePricingSource } from "../src/lib/services/ai-consultant/calculator";
+import { calculatePackageEstimate } from "../src/lib/package-pricing";
+import { MASTER_FEATURES, MASTER_PACKAGES } from "../src/data/pricing-matrix-data";
 import {
   GET as adminPricingGet,
   PUT as adminPricingPut,
@@ -416,18 +419,22 @@ describe("Pricing & Packages Manager (Step 3B) Suite", () => {
   // -------------------------------------------------------------------------
   // 4. Pricing & AI Consultant Estimator Consistency
   // -------------------------------------------------------------------------
-  describe("Pricing Engine & AI Consultant Calculator Consistency", () => {
-    it("ensures calculatePricing and calculateProjectEstimate calculate identical base rates", () => {
-      // Test baseline business project
-      const pricingRes = calculatePricing({
-        categoryId: "business",
-        typeId: "static",
-        pageCount: 5,
-        selectedFeatureIds: ["contact_form", "whatsapp_chat", "seo_basic"],
-        deliverySpeed: "standard",
-      });
+  describe("Pricing Page & AI Consultant Calculator Consistency", () => {
+    // The consultant must total a scope exactly as /pricing would for the same package and add-ons.
+    const totalOnPricingPage = (
+      estimate: ReturnType<typeof calculateProjectEstimate>,
+      source: { packages?: typeof MASTER_PACKAGES; features?: typeof MASTER_FEATURES; expressMultiplier?: number } = {},
+    ) =>
+      calculatePackageEstimate({
+        tier: estimate.pricingSelection.tier,
+        featureIds: estimate.pricingSelection.featureIds,
+        quantities: estimate.pricingSelection.quantities,
+        express: estimate.pricingSelection.express,
+        ...source,
+      }).totalINR;
 
-      const estimateRes = calculateProjectEstimate({
+    it("quotes a baseline business site at the Starter package price, with nothing extra", () => {
+      const estimate = calculateProjectEstimate({
         categoryKey: "business",
         architecture: "static",
         pageCount: 5,
@@ -435,142 +442,63 @@ describe("Pricing & Packages Manager (Step 3B) Suite", () => {
         deliverySpeed: "standard",
       });
 
-      assert.strictEqual(
-        pricingRes.baseCategoryPrice,
-        estimateRes.cost.baseCategoryPriceINR,
-        "Base category price must match between calculator and estimator",
-      );
-      assert.strictEqual(
-        pricingRes.grandTotal,
-        estimateRes.cost.oneTimeTotalINR,
-        "Total one-time cost must match between calculator and estimator",
-      );
+      assert.strictEqual(estimate.package.tier, "starter");
+      assert.strictEqual(estimate.cost.baseCategoryPriceINR, MASTER_PACKAGES.starter.startingPrice);
+      assert.strictEqual(estimate.cost.oneTimeTotalINR, MASTER_PACKAGES.starter.startingPrice);
+      assert.strictEqual(estimate.cost.oneTimeTotalINR, totalOnPricingPage(estimate));
     });
 
-    it("propagates custom category and feature rates to both calculator and AI Consultant", () => {
-      // Define custom configuration with updated E-Commerce starting price
-      const customConfig = getPricingCalculationConfig({
-        ...DEFAULT_PRICING_OVERRIDES_PAYLOAD,
-        matrixCategories: [],
-        matrixFeatures: [],
-        categories: DEFAULT_PRICING_OVERRIDES_PAYLOAD.categories.map((c) =>
-          c.id === "ecommerce" ? { ...c, startingPrice: 24999 } : c,
-        ),
-        features: DEFAULT_PRICING_OVERRIDES_PAYLOAD.features.map((f) =>
-          f.id === "ai_chatbot" ? { ...f, price: 10000 } : f,
-        ),
-      });
+    it("follows admin package price and add-on price edits", () => {
+      const packages = {
+        ...MASTER_PACKAGES,
+        pro: { ...MASTER_PACKAGES.pro, startingPrice: 45000 },
+      };
+      const features = MASTER_FEATURES.map((f) =>
+        f.id === "integrations_ai_support_chatbot" ? { ...f, addonPrice: 10000 } : f,
+      );
+      const source = packagePricingSource({ ...DEFAULT_BACKEND_PRICING_DATA, matrixPackages: packages, matrixFeatures: features });
 
-      // Calculate via pure pricing engine
-      const pricingRes = calculatePricing(
-        {
-          categoryId: "ecommerce",
-          typeId: "dynamic",
-          pageCount: 5,
-          selectedFeatureIds: ["ai_chatbot"],
-        },
-        customConfig,
+      const estimate = calculateProjectEstimate(
+        { categoryKey: "ecommerce", architecture: "dynamic", pageCount: 5, selectedFeatureIds: ["ai_chatbot"] },
+        source,
       );
 
-      // Calculate via AI Consultant estimator passing the same config
-      const estimateRes = calculateProjectEstimate(
-        {
-          categoryKey: "ecommerce",
-          architecture: "dynamic",
-          pageCount: 5,
-          selectedFeatureIds: ["ai_chatbot"],
-        },
-        customConfig,
-      );
-
-      // Verify base category price reflects the ₹24,999 override in both
-      assert.strictEqual(pricingRes.baseCategoryPrice, 24999);
-      assert.strictEqual(estimateRes.cost.baseCategoryPriceINR, 24999);
-
-      // Verify grand total matches between both engines
-      assert.strictEqual(pricingRes.grandTotal, estimateRes.cost.oneTimeTotalINR);
+      assert.strictEqual(estimate.cost.oneTimeTotalINR, totalOnPricingPage(estimate, { packages, features }));
+      const chatbotLine = estimate.cost.lineItems.find((line) => line.name === "AI Customer Support Chatbot");
+      assert.ok(chatbotLine, "The chatbot is an add-on on every package");
+      assert.strictEqual(chatbotLine.amountINR, 10000);
+      if (estimate.package.tier === "pro") assert.strictEqual(estimate.package.priceINR, 45000);
     });
 
     it("guarantees deterministic auto-switch to dynamic cannot be bypassed by price edits", () => {
-      // Even if an admin sets dynamic cost or features, choosing payment_gateway
-      // must deterministically enforce dynamic architecture
       const result = calculateProjectEstimate({
         categoryKey: "business",
-        architecture: "static", // User asked for static
-        selectedFeatureIds: ["payment_gateway"], // Requires dynamic
+        architecture: "static",
+        selectedFeatureIds: ["payment_gateway"],
       });
 
-      assert.strictEqual(
-        result.architecture,
-        "dynamic",
-        "Deterministic dependency check must auto-switch static to dynamic",
-      );
+      assert.strictEqual(result.architecture, "dynamic", "Deterministic dependency check must auto-switch static to dynamic");
       assert.strictEqual(result.autoSwitchedToDynamic, true);
+      assert.ok(result.pricingSelection.featureIds.includes("backend_database_prisma_schema"), "A database is priced in");
     });
 
-    it("produces strictly identical calculations across pure engine and AI Consultant when tuning architecture, page counts, floors, and express multipliers", () => {
-      const tunedConfig = getPricingCalculationConfig({
-        ...DEFAULT_PRICING_OVERRIDES_PAYLOAD,
-        matrixCategories: [],
-        matrixFeatures: [],
-        categories: DEFAULT_PRICING_OVERRIDES_PAYLOAD.categories.map((c) =>
-          c.id === "saas" ? { ...c, startingPrice: 40000 } : c,
-        ),
-        types: DEFAULT_PRICING_OVERRIDES_PAYLOAD.types.map((t) =>
-          t.id === "dynamic" ? { ...t, additionalCost: 12000 } : t,
-        ),
-        features: DEFAULT_PRICING_OVERRIDES_PAYLOAD.features.map((f) =>
-          f.id === "ai_chatbot" ? { ...f, price: 9000 } : f,
-        ),
-        settings: {
-          basePagesIncluded: 6,
-          costPerExtraPage: 2000,
-          discountForOnePage: 2500,
-          currency: "INR",
-          currencySymbol: "₹",
-          minProjectCost: 20000,
-          expressMultiplier: 0.3,
-        },
-      });
-
-      // Saas with express delivery, 8 pages (2 extra pages * 2000 = 4000), dynamic (12000), ai_chatbot (9000)
-      // Base: 40000 + Type: 12000 + Pages: 4000 + Feats: 9000 = Subtotal: 65000.
-      // Express: 65000 * 0.3 = 19500. GrandTotal = 84500.
-      const pricingRes = calculatePricing(
-        {
-          categoryId: "saas",
-          typeId: "dynamic",
-          pageCount: 8,
-          selectedFeatureIds: ["ai_chatbot"],
-          deliverySpeed: "express",
-        },
-        tunedConfig,
+    it("prices extra pages and express delivery exactly as /pricing does", () => {
+      const source = { expressMultiplier: 0.3 };
+      const estimate = calculateProjectEstimate(
+        { categoryKey: "saas", architecture: "dynamic", pageCount: 18, selectedFeatureIds: ["ai_chatbot"], deliverySpeed: "express" },
+        source,
       );
 
-      const estimateRes = calculateProjectEstimate(
-        {
-          categoryKey: "saas",
-          architecture: "dynamic",
-          pageCount: 8,
-          selectedFeatureIds: ["ai_chatbot"],
-          deliverySpeed: "express",
-        },
-        tunedConfig,
+      const extraPages = 18 - estimate.package.pageLimit;
+      assert.ok(extraPages > 0);
+      assert.strictEqual(estimate.cost.pagesPriceINR, extraPages * 1000);
+      assert.strictEqual(
+        estimate.cost.expressDeliveryPriceINR,
+        Math.round((estimate.cost.oneTimeTotalINR - estimate.cost.expressDeliveryPriceINR) * 0.3),
       );
-
-      assert.strictEqual(pricingRes.baseCategoryPrice, 40000);
-      assert.strictEqual(estimateRes.cost.baseCategoryPriceINR, 40000);
-      assert.strictEqual(pricingRes.typePrice, 12000);
-      assert.strictEqual(estimateRes.cost.architectureTypePriceINR, 12000);
-      assert.strictEqual(pricingRes.pagesPrice, 4000);
-      assert.strictEqual(estimateRes.cost.pagesPriceINR, 4000);
-      assert.strictEqual(pricingRes.featuresCost, 9000);
-      assert.strictEqual(estimateRes.cost.featuresTotalINR, 9000);
-      assert.strictEqual(pricingRes.expressPrice, 19500);
-      assert.strictEqual(estimateRes.cost.expressDeliveryPriceINR, 19500);
-      assert.strictEqual(pricingRes.grandTotal, 84500);
-      assert.strictEqual(estimateRes.cost.oneTimeTotalINR, 84500);
-      assert.strictEqual(pricingRes.grandTotal, estimateRes.cost.oneTimeTotalINR);
+      assert.strictEqual(estimate.cost.oneTimeTotalINR, totalOnPricingPage(estimate, source));
+      assert.ok(estimate.pricingUrl.includes(`qty=website_pages_additional_pages%3A${extraPages}`));
+      assert.ok(estimate.pricingUrl.includes("speed=express"));
     });
   });
 });

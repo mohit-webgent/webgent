@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { invalidateKnowledgeRetrievalCache } from "./ai-consultant/knowledge-retrieval";
+import { describeWarrantyByPackage } from "@/lib/package-pricing";
 import { recordAuditLog } from "./audit-log";
 
 export interface ApprovedKnowledgeItem {
@@ -61,7 +62,7 @@ export const DEFAULT_APPROVED_KNOWLEDGE: ApprovedKnowledgeItem[] = [
     title: "Warranty & Post-Launch Bug Fix SLA",
     category: "policy",
     content:
-      "Every custom project delivered by Webgent includes 15 days of free post-launch bug-fix warranty. Any defects or deviations from agreed scope are repaired promptly without additional charge. Ongoing maintenance and support packages are available on request.",
+      `Every custom project delivered by Webgent includes a free post-launch bug-fix warranty that depends on the package: ${describeWarrantyByPackage()}. Any defects or deviations from agreed scope are repaired promptly without additional charge. Ongoing maintenance and support packages are available on request.`,
     keywords: ["warranty", "sla", "support", "maintenance", "bug fixes", "post launch"],
     enabled: true,
     updatedAt: new Date().toISOString(),

@@ -18,6 +18,15 @@ import {
   MAINTENANCE_PLANS,
   DOMAIN_BLUEPRINTS,
 } from "./knowledge-base";
+import { calculateProjectEstimate, packagePricingSource } from "./calculator";
+import type { MasterPackageTier } from "@/data/pricing-matrix-data";
+import {
+  describeWarrantyByPackage,
+  EXTRA_PAGES_FEATURE_ID,
+  getPackagePageLimit,
+  getPackageWarrantyDays,
+  PACKAGE_TIERS,
+} from "@/lib/package-pricing";
 import { logger } from "@/lib/logger";
 
 export interface KnowledgeDocument {
@@ -54,7 +63,13 @@ export async function getWebgentKnowledgeIndex(): Promise<KnowledgeDocument[]> {
   const pricing = await getPricingData().catch(() => DEFAULT_BACKEND_PRICING_DATA);
   const MASTER_PACKAGES = pricing.matrixPackages;
   const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
-  const dynamicAddOn = pricing.types.find((t) => t.id === "dynamic")?.additionalCost ?? 0;
+  const warrantySummary = describeWarrantyByPackage(MASTER_PACKAGES, pricing.matrixFeatures);
+  const extraPagePrice =
+    pricing.matrixFeatures.find((f) => f.id === EXTRA_PAGES_FEATURE_ID)?.addonPrice ?? 0;
+  const describePackage = (tier: MasterPackageTier) => {
+    const pkg = MASTER_PACKAGES[tier];
+    return `- ${pkg.name} Package (${formatINR(pkg.startingPrice)}): ${pkg.tagline}. Ideal for ${pkg.idealFor}. Up to ${getPackagePageLimit(tier, MASTER_PACKAGES)} pages, delivered in ${pkg.deliveryTime}, with a ${getPackageWarrantyDays(tier, MASTER_PACKAGES, pricing.matrixFeatures)}-day bug-fix warranty. Includes: ${pkg.keyHighlights.join("; ")}.`;
+  };
 
   // 1. Company Identity, Mission & Overview
   docs.push({
@@ -69,7 +84,7 @@ Tagline: "${siteConfig.tagline}".
 Mission: Webgent designs, builds, and scales high-performance web applications, cloud infrastructure, and conversion-focused digital platforms for ambitious modern brands, local businesses, and fast-growing startups.
 Location: Gurugram / Noida, India.
 Contact: ${FOUNDER_PROFILE.email} / direct contact form at /contact.
-Core philosophy: Milestone-based payments (50% upfront, 50% upon final launch review), 100% full source code ownership transferred to the client, zero platform lock-in, and 15 days of free post-launch bug-fix warranty.`,
+Core philosophy: Milestone-based payments (50% upfront, 50% upon final launch review), 100% full source code ownership transferred to the client, zero platform lock-in, and a free post-launch bug-fix warranty of ${warrantySummary}.`,
     keywords: [
       "webgent",
       "company",
@@ -209,16 +224,12 @@ Verified Profiles & Contact:
     category: "pricing",
     url: "/pricing",
     summary:
-      `Transparent pricing: Starter (${formatINR(MASTER_PACKAGES.starter.startingPrice)}), Business (${formatINR(MASTER_PACKAGES.business.startingPrice)}), Pro (${formatINR(MASTER_PACKAGES.pro.startingPrice)}). Static vs. Dynamic architecture (+${formatINR(dynamicAddOn)}).`,
-    content: `Webgent maintains transparent, milestone-based pricing packages:
-- Starter Package (₹${MASTER_PACKAGES.starter.startingPrice.toLocaleString("en-IN")}): ${MASTER_PACKAGES.starter.tagline}. Best for local businesses, portfolios, and marketing pages. Includes up to 5 static pages, contact form, WhatsApp chat, and 5–7 days delivery.
-- Business Package (₹${MASTER_PACKAGES.business.startingPrice.toLocaleString("en-IN")}): ${MASTER_PACKAGES.business.tagline}. Best for growing companies requiring dynamic content, lead capture, and SEO. Includes up to 8 pages, CMS integration, and 7–10 days delivery.
-- Pro / E-Commerce / SaaS (₹${MASTER_PACKAGES.pro.startingPrice.toLocaleString("en-IN")}): ${MASTER_PACKAGES.pro.tagline}. For online stores, platforms, and database-backed web apps with payment gateways, user accounts, and dashboards.
-- Architecture Options:
-  * Static Website: ₹0 additional cost. Ultra-fast, zero database hosting cost.
-  * Dynamic Website: +${formatINR(dynamicAddOn)}. Includes PostgreSQL database, editable backend, and dynamic user data storage.
-- Page Rules: Base ${pricing.settings.basePagesIncluded} pages included. Extra pages at ${formatINR(pricing.settings.costPerExtraPage)}/page. Single landing page discount: -${formatINR(pricing.settings.discountForOnePage)}.
-- Express Priority Delivery: Fast-track delivery (3–5 business days) available for a priority fee (+${Math.round((pricing.settings.expressMultiplier ?? 0.2) * 100)}%).`,
+      `Transparent pricing: Starter (${formatINR(MASTER_PACKAGES.starter.startingPrice)}), Business (${formatINR(MASTER_PACKAGES.business.startingPrice)}), Pro (${formatINR(MASTER_PACKAGES.pro.startingPrice)}), plus add-ons a package doesn't include.`,
+    content: `Webgent prices every project the same way as the /pricing page: a package, plus add-ons that package doesn't include.
+${PACKAGE_TIERS.map(describePackage).join("\n")}
+- Add-ons: Each feature on /pricing is either included in a package or available as a fixed-price add-on. Features that store data or logins (online payments, user accounts, booking, dashboards) need a database and editable backend, which Pro includes and the other packages add.
+- Extra pages: Pages beyond a package's limit are ${formatINR(extraPagePrice)} each.
+- Express Priority Delivery: Fast-track delivery for a priority fee of +${Math.round((pricing.settings.expressMultiplier ?? 0.2) * 100)}% of the total.`,
     keywords: [
       "pricing",
       "cost",
@@ -243,9 +254,9 @@ Verified Profiles & Contact:
     category: "pricing",
     url: "/pricing",
     summary:
-      "15 days of free bug-fix warranty on all projects. Optional Monthly Care: Basic (₹2,000/mo), Standard (₹5,000/mo), Advanced (₹10,000/mo).",
+      `Free post-launch bug-fix warranty by package: ${warrantySummary}. Optional Monthly Care: Basic (₹2,000/mo), Standard (₹5,000/mo), Advanced (₹10,000/mo).`,
     content: `Every Webgent project comes standard with:
-- Standard 15-Day Post-Launch Warranty: 100% free bug-fix warranty, DNS setup, and deployment assistance.
+- Post-launch bug-fix warranty, free, for ${warrantySummary}, plus DNS setup and deployment assistance.
 Optional ongoing Monthly Care plans:
 1. Monthly Care Basic (₹${MAINTENANCE_PLANS.basic.priceMonthlyINR.toLocaleString("en-IN")}/month): Weekly security updates, 24/7 uptime monitoring, database backup integrity checks, up to 2 hours of monthly content updates. SLA: 24h.
 2. Monthly Care Standard (₹${MAINTENANCE_PLANS.standard.priceMonthlyINR.toLocaleString("en-IN")}/month - Most Popular): Dedicated engineering hours (up to 5 hrs/mo), Google Core Web Vitals audits, direct developer WhatsApp channel. SLA: 12h.
@@ -416,6 +427,8 @@ Live Project Link: /work/${proj.slug}`,
 
   // 12. Domain Blueprints (Gym, E-Commerce, Booking, SaaS, Restaurant, etc.)
   for (const [key, bp] of Object.entries(DOMAIN_BLUEPRINTS)) {
+    // The typical scope priced on the live packages, so these figures match what the consultant quotes.
+    const typical = calculateProjectEstimate({ categoryKey: key }, packagePricingSource(pricing));
     docs.push({
       id: `blueprint_${key}`,
       title: `${bp.displayName} Website Blueprint`,
@@ -427,8 +440,8 @@ Typical Pages (${bp.recommendedPageCount}): ${bp.pages.map((p) => `${p.name} (${
 Essential Features: ${bp.essentialFeatures.join(", ")}
 Recommended Conversion Features: ${bp.recommendedFeatures.join(", ")}
 Default Architecture: ${bp.defaultArchitecture === "dynamic" ? "Dynamic (PostgreSQL + Backend)" : "Static Website"}
-Typical Webgent Delivery Timeline: ${bp.typicalTimeline}
-Starting Webgent Development Rate: ₹${bp.startingPriceINR.toLocaleString("en-IN")}`,
+Typical package: ${typical.package.name}, delivered in ${typical.estimatedTimeline}
+Typical Webgent Development Estimate: ${formatINR(typical.cost.oneTimeTotalINR)}`,
       keywords: [
         key,
         bp.displayName.toLowerCase(),

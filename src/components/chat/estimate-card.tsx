@@ -29,10 +29,15 @@ export interface EstimateCardProps {
       recommended: { id: string; name: string; price: number }[];
       optional: { id: string; name: string; price: number }[];
     };
+    /** Older saved estimates predate packages, so these are optional. */
+    package?: { name: string; priceINR: number; warrantyDays: number; pageLimit: number };
+    pricingUrl?: string;
     cost: {
       currencySymbol: string;
       oneTimeTotalINR: number;
       baseCategoryPriceINR: number;
+      lineItems?: { name: string; amountINR: number }[];
+      quoteItems?: string[];
       recurringMonthlyTotalINR: number;
       recurringBreakdown: { name: string; costINR: number; frequency: string; note?: string }[];
       thirdPartyNotes: string[];
@@ -74,7 +79,10 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
     cost,
     marketBenchmark,
     budgetAnalysis,
+    package: pkg,
+    pricingUrl,
   } = estimate;
+  const formatAmount = (amount: number) => `${cost.currencySymbol}${amount.toLocaleString("en-IN")}`;
 
   return (
     <div className="mt-2.5 rounded-2xl bg-surface-2 border border-accent/30 p-3 space-y-3 text-left shadow-lg">
@@ -118,6 +126,33 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
           </span>
         </div>
       </div>
+
+      {/* How the total is made up: the same package and add-on prices as /pricing */}
+      {pkg && cost.lineItems && cost.lineItems.length > 0 && (
+        <div className="space-y-1 rounded-xl border border-line p-2.5 text-xs">
+          {cost.lineItems.map((line, index) => (
+            <div key={`${line.name}-${index}`} className="flex items-start justify-between gap-3">
+              <span className={index === 0 ? "font-semibold text-fg" : "text-fg-muted"}>
+                {index === 0 ? line.name : `+ ${line.name}`}
+              </span>
+              <span className="shrink-0 font-mono text-fg-soft">{formatAmount(line.amountINR)}</span>
+            </div>
+          ))}
+          {cost.quoteItems && cost.quoteItems.length > 0 && (
+            <p className="pt-1 text-fg-muted">Quoted separately: {cost.quoteItems.join(", ")}</p>
+          )}
+          <p className="flex items-center gap-1.5 border-t border-line pt-1.5 text-fg-soft">
+            <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+            {pkg.warrantyDays}-day bug-fix warranty · up to {pkg.pageLimit} pages
+          </p>
+          {pricingUrl && (
+            <a href={pricingUrl} className="inline-flex items-center gap-1 pt-0.5 font-semibold text-accent hover:underline">
+              Open this scope on the pricing page
+              <ArrowRight className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Monthly Care (if applicable) */}
       {cost.recurringMonthlyTotalINR > 0 && (

@@ -1,4 +1,5 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
+import { MASTER_PACKAGES } from "../src/data/pricing-matrix-data";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import {
@@ -146,7 +147,7 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
       assert.equal(estimate.cost.oneTimeTotalINR, 9999 + 3000);
     });
 
-    it("auto-switches to dynamic architecture and surcharges ₹8,000 when dynamic features are selected", () => {
+    it("auto-switches to dynamic architecture and prices the database and add-ons from the packages", () => {
       const estimate = calculateProjectEstimate({
         categoryKey: "business",
         pagesCount: 5,
@@ -158,8 +159,9 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
 
       assert.equal(estimate.architecture, "dynamic");
       assert.equal(estimate.autoSwitchedToDynamic, true);
-      // Base: 9,999 + Dynamic surcharge 8,000 + Payment gateway 4,500 = 22,499
-      assert.equal(estimate.cost.oneTimeTotalINR, 9999 + 8000 + 4500);
+      // Starter 9,999 + payment gateway 5,999 + database & backend 7,999 + editable content 4,999, as on /pricing
+      assert.equal(estimate.package.tier, "starter");
+      assert.equal(estimate.cost.oneTimeTotalINR, 9999 + 5999 + 7999 + 4999);
     });
 
     it("applies express delivery 20% multiplier correctly", () => {
@@ -638,7 +640,9 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
         userBudgetINR: 15000,
       });
 
-      assert.equal(estimate.cost.oneTimeTotalINR, 28999, "Authoritative e-commerce starter cost must be ₹28,999");
+      // Pro includes the catalogue, cart, checkout, payments, WhatsApp alerts and database, so it is the cheapest fit.
+      assert.equal(estimate.package.tier, "pro");
+      assert.equal(estimate.cost.oneTimeTotalINR, 40000, "A standard online store is quoted at the Pro package price");
       assert.equal(estimate.pages.count, 6, "E-commerce blueprint must include 6 pages");
       assert.ok(estimate.budgetAnalysis, "Budget analysis should be present");
       assert.equal(estimate.budgetAnalysis.fitsBudget, false);
@@ -657,10 +661,10 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
         "Must not claim ₹1,000 savings for 5 pages on standard 6-page e-commerce blueprint",
       );
 
-      // Must offer the reduced ₹9,999 Starter catalogue option with explicitly deferred features
-      const starterOption = options.find((opt) => opt.includes("₹9,999") || opt.includes("Starter"));
+      // Must offer the reduced ₹9,999 Starter catalogue option, saying what moves to Phase 2
+      const starterOption = options.find((opt) => opt.includes("₹9,999") && opt.includes("Starter"));
       assert.ok(starterOption, "Must offer reduced Starter catalogue alternative at ₹9,999");
-      assert.ok(starterOption.includes("explicitly deferring"), "Must explicitly note deferred features");
+      assert.ok(starterOption.includes("Phase 2"), "Must say what is deferred to Phase 2");
     });
 
     it("handles the complete 3-turn reproduction sequence accurately", async () => {
@@ -705,7 +709,7 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
         priorProjectState: t1.updatedProjectState,
       });
       assert.equal(t2.categoryKey, "ecommerce", "Category must switch to ecommerce");
-      assert.equal(t2.estimate?.cost?.oneTimeTotalINR, 28999, "Estimate card must quote ₹28,999");
+      assert.equal(t2.estimate?.cost?.oneTimeTotalINR, 40000, "Estimate card must quote the Pro package, ₹40,000");
 
       // Turn 3: Prepare Project Inquiry with this Scope
       const t3 = await processConsultantMessage({
@@ -732,10 +736,10 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
       assert.ok(reply.includes("/policies"), "Must include /policies page");
 
       // 2. Timeline and pricing
-      assert.ok(reply.includes("28,999"), "Must quote authoritative development fee of ₹28,999");
+      assert.ok(reply.includes("40,000"), "Must quote the Pro package development fee of ₹40,000");
       assert.ok(
-        reply.includes("2–3 Weeks") || reply.includes("2-3 Weeks") || reply.includes("2–3 weeks"),
-        "Must quote exact timeline of 2–3 Weeks",
+        reply.includes(MASTER_PACKAGES.pro.deliveryTime),
+        `Must quote the Pro package delivery time, ${MASTER_PACKAGES.pro.deliveryTime}`,
       );
 
       // 3. Must not claim unsupported ₹8,000 or ₹1,000 savings
@@ -790,7 +794,7 @@ describe("AI Website Consultant, Cost Estimator & Lead Assistant Suite", () => {
       });
       assert.equal(scopingResponse.categoryKey, "ecommerce");
       assert.ok(scopingResponse.estimate, "Ordinary project scoping message must generate and attach an estimate card");
-      assert.equal(scopingResponse.estimate.cost.oneTimeTotalINR, 28999, "Estimate card must quote ₹28,999");
+      assert.equal(scopingResponse.estimate.cost.oneTimeTotalINR, 40000, "Estimate card must quote the Pro package, ₹40,000");
     });
   });
 });

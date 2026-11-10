@@ -33,6 +33,9 @@ export type VisitorLanguage = "hinglish" | "english";
 /** Prices quoted in conversation, read from the admin-managed pricing so replies can never drift from it. */
 export interface PricingFacts {
   startingPriceINR: number;
-  dynamicAddOnINR: number;
   expressPercent: number;
+  /** One line per package: price, pages, delivery and warranty, exactly as on /pricing. */
+  packagesSummary: string;
+  /** "14 days (Starter), 30 days (Business), 60 days (Pro)" */
+  warrantySummary: string;
 }

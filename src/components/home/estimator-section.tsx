@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { openChat } from "@/lib/chat-events";
 import type { MasterPackageTier } from "@/data/pricing-matrix-data";
 import type { BackendPricingData } from "@/lib/services/pricing-shared";
+import { calculatePackageEstimate, DEFAULT_EXPRESS_MULTIPLIER } from "@/lib/package-pricing";
 
 const TIERS: MasterPackageTier[] = ["starter", "business", "pro"];
 const MAX_FEATURES = 8;
@@ -46,7 +47,7 @@ function AnimatedPrice({ value }: { value: number }) {
 }
 
 /** A quick version of the /pricing configurator, using its packages and add-on prices. */
-export function EstimatorSection({ pricing }: { pricing: BackendPricingData }) {
+export function EstimatorSection({ pricing, chatEnabled = true }: { pricing: BackendPricingData; chatEnabled?: boolean }) {
   const [tier, setTier] = useState<MasterPackageTier>("starter");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [express, setExpress] = useState(false);
@@ -64,10 +65,14 @@ export function EstimatorSection({ pricing }: { pricing: BackendPricingData }) {
 
   // A feature that the chosen package already includes is never charged as an add-on.
   const chosen = addons.filter((feature) => selectedIds.includes(feature.id) && !isIncluded(feature.id));
-  const addonsCost = chosen.reduce((sum, feature) => sum + (feature.addonPrice ?? 0), 0);
-  const subtotal = activePackage.startingPrice + addonsCost;
-  const expressFee = express ? Math.round(subtotal * (pricing.settings?.expressMultiplier ?? 0.2)) : 0;
-  const total = subtotal + expressFee;
+  const { expressFeeINR: expressFee, totalINR: total } = calculatePackageEstimate({
+    tier,
+    featureIds: chosen.map((feature) => feature.id),
+    express,
+    packages: pricing.matrixPackages,
+    features: pricing.matrixFeatures,
+    expressMultiplier: pricing.settings?.expressMultiplier ?? DEFAULT_EXPRESS_MULTIPLIER,
+  });
 
   const toggle = (id: string) =>
     setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
@@ -193,10 +198,12 @@ export function EstimatorSection({ pricing }: { pricing: BackendPricingData }) {
               <span>Continue with this estimate</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <button type="button" onClick={askConsultant} className="btn btn-secondary w-full">
-              <Sparkles className="h-4 w-4" />
-              <span>Check this scope with AI</span>
-            </button>
+            {chatEnabled && (
+              <button type="button" onClick={askConsultant} className="btn btn-secondary w-full">
+                <Sparkles className="h-4 w-4" />
+                <span>Check this scope with AI</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -1,16 +1,14 @@
-import type { EstimatorCalculationConfig } from "@/lib/pricing.config";
 /**
  * System prompts for Gemini. Prices are injected from the calculator and admin pricing, never written here.
  */
 
-import type { ProjectEstimateResult } from "./calculator";
+import type { PackagePricingSource, ProjectEstimateResult } from "./calculator";
 import { calculatePhase2Upgrade, type CalculatorInput } from "./calculator";
 import { formatINR } from "./responses";
 import type { PricingFacts, VisitorLanguage } from "./types";
 
 export function buildConsultantSystemPrompt(facts: PricingFacts): string {
   const from = formatINR(facts.startingPriceINR);
-  const dynamic = formatINR(facts.dynamicAddOnINR);
 
   return `You are the Webgent AI Consultant, an AI assistant for Webgent, a web development studio.
 
@@ -29,7 +27,7 @@ export function buildConsultantSystemPrompt(facts: PricingFacts): string {
 ### CONVERSATIONAL RULES & GUIDELINES:
 1. **NATURAL TONE & CONCISENESS**: Keep answers to 2–4 short paragraphs or clean bullet points unless asked for detail. Do not re-introduce yourself. Greet briefly.
 2. **MATCH THE VISITOR'S LANGUAGE**: Reply in warm, professional Hinglish to Hindi or Hinglish messages, and in English otherwise.
-3. **PRICING TRUTH**: Only quote figures given in this prompt or in a server-calculated estimate below. Websites start from ${from}; the dynamic backend add-on is ${dynamic}. Never invent discounts, competitor prices or savings.
+3. **PRICING TRUTH**: Only quote figures given in this prompt or in a server-calculated estimate below. Pricing works exactly like the /pricing page: a package plus add-ons it doesn't include, plus ${facts.expressPercent}% for express delivery. Packages: ${facts.packagesSummary}. Websites start from ${from}. Never invent discounts, competitor prices or savings, and never quote a different warranty than the package's.
 4. **NO COMMITMENTS**: All figures are estimates. You cannot confirm a contract, accept payment, or promise a start date. Mohit reviews every project and confirms the final scope and milestone agreement (50% advance, 50% after final staging review).
 5. **GENERAL QUESTIONS**: Answer directly from the knowledge provided. If something isn't known, say so and point to /contact.
 6. **FOUNDER QUESTIONS**: Answer from the verified facts only, and do not attach an estimate.
@@ -48,8 +46,14 @@ function describeEstimate(estimate: ProjectEstimateResult): string {
 ${estimate.pages.list.map((p) => `  * ${p.name} (${p.slug}): ${p.purpose}`).join("\n")}
 - Essential Features: ${estimate.features.essential.map((f) => f.name).join(", ") || "None listed"}
 - Recommended Features: ${estimate.features.recommended.map((f) => f.name).join(", ") || "None listed"}
+- Package: ${estimate.package.name} (${formatINR(estimate.package.priceINR)}, up to ${estimate.package.pageLimit} pages)
+- Price breakdown: ${estimate.cost.lineItems.map((line) => `${line.name} ${formatINR(line.amountINR)}`).join(" + ")}
 - Estimated Development Fee: ${formatINR(estimate.cost.oneTimeTotalINR)}
-- Estimated Delivery: ${estimate.estimatedTimeline}`;
+- Estimated Delivery: ${estimate.estimatedTimeline}
+- Bug-fix warranty: ${estimate.package.warrantyDays} days after launch${
+    estimate.cost.quoteItems.length > 0 ? `\n- Quoted separately after a call: ${estimate.cost.quoteItems.join(", ")}` : ""
+  }
+- Pricing page link for this exact scope: ${estimate.pricingUrl}`;
 }
 
 export function buildGreetingNote(message: string, language: VisitorLanguage): string {
@@ -62,9 +66,9 @@ export function buildCompanyNote(message: string, language: VisitorLanguage): st
 The visitor is asking about Webgent generally ("${message}"). Answer in ${languageName(language)} using the facts above, in 2–3 short paragraphs. End with ONE question about what they are planning. Do not provide an estimate.`;
 }
 
-export function buildComparisonNote(message: string, language: VisitorLanguage): string {
+export function buildComparisonNote(message: string, language: VisitorLanguage, facts: PricingFacts): string {
   return `### CONTEXT NOTE:
-The visitor is asking how Webgent compares with others ("${message}"). Answer in ${languageName(language)} with 3 concise points: clear milestone pricing, custom Next.js builds rather than off-the-shelf templates, and 100% source code ownership with 15 days of free bug fixes. Do not state competitor prices or disparage anyone.`;
+The visitor is asking how Webgent compares with others ("${message}"). Answer in ${languageName(language)} with 3 concise points: clear milestone pricing, custom Next.js builds rather than off-the-shelf templates, and 100% source code ownership with free post-launch bug fixes (${facts.warrantySummary}). Do not state competitor prices or disparage anyone.`;
 }
 
 export function buildBiographyNote(message: string, language: VisitorLanguage): string {
@@ -92,7 +96,7 @@ The visitor asked to prepare an inquiry ("${message}") but no scope exists yet. 
   return `### CONTEXT NOTE: PREPARE PROJECT INQUIRY SUMMARY
 The visitor asked to prepare a project inquiry ("${message}").
 ${describeEstimate(estimate)}
-Terms: 100% source code ownership and 15 days of free post-launch bug fixes.${budgetNote}
+Terms: 100% source code ownership and ${estimate.package.warrantyDays} days of free post-launch bug fixes.${budgetNote}
 
 INSTRUCTIONS:
 1. Write a clear Project Inquiry Summary, listing every page with its path and purpose.
@@ -127,15 +131,9 @@ export function buildFeatureNote(
   estimate: ProjectEstimateResult | undefined,
   includeDeposits: boolean,
   language: VisitorLanguage,
-  pricingConfig: EstimatorCalculationConfig | undefined,
+  source: PackagePricingSource | undefined,
 ): string {
-  const upgrade = calculatePhase2Upgrade({
-    currentTotalINR: estimate?.cost.oneTimeTotalINR ?? 0,
-    includeDeposits,
-    pricingConfig,
-    currentProject: estimate?.categoryDisplayName,
-    alreadyDynamic: estimate?.architecture === "dynamic",
-  });
+  const upgrade = calculatePhase2Upgrade({ estimate, includeDeposits, source });
 
   return `### CONTEXT NOTE:
 The visitor asks whether online booking or advance deposits can be added later ("${message}").

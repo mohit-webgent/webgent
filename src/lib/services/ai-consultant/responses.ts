@@ -1,11 +1,15 @@
-import type { EstimatorCalculationConfig } from "@/lib/pricing.config";
 /**
  * Replies built without the language model. They are used when no API key is configured or when
  * Gemini is unavailable. Every price comes from the calculator, so these can never disagree with
  * the estimate card or with the pricing managed in the admin panel.
  */
 
-import { calculatePhase2Upgrade, type CalculatorInput, type ProjectEstimateResult } from "./calculator";
+import {
+  calculatePhase2Upgrade,
+  type CalculatorInput,
+  type PackagePricingSource,
+  type ProjectEstimateResult,
+} from "./calculator";
 import { isInquiryPreparationQuery } from "./intents";
 import type { PricingFacts, VisitorInfo, VisitorLanguage } from "./types";
 
@@ -95,8 +99,17 @@ export function buildDeterministicConsultantResponse(
   text += `- **Architecture**: **${estimate.architecture === "dynamic" ? "Dynamic (PostgreSQL + Editable Backend)" : "Static Website (Ultra-Fast, Zero DB Cost)"}**\n`;
 
   text += `\n### Estimated Cost & Timeline\n`;
+  text += `- **Package**: **${estimate.package.name}** (${formatINR(estimate.package.priceINR)})\n`;
+  estimate.cost.lineItems.slice(1).forEach((line) => {
+    text += `  - ${line.name}: +${formatINR(line.amountINR)}\n`;
+  });
   text += `- **Development Fee**: **${formatINR(estimate.cost.oneTimeTotalINR)}** (Milestone: 50% upfront, 50% upon final launch)\n`;
   text += `- **Estimated Delivery**: **${estimate.estimatedTimeline}**\n`;
+  text += `- **Bug-Fix Warranty**: ${estimate.package.warrantyDays} days after launch\n`;
+  if (estimate.cost.quoteItems.length > 0) {
+    text += `- **Quoted separately**: ${estimate.cost.quoteItems.join(", ")}\n`;
+  }
+  text += `- See or adjust this scope on the pricing page: ${estimate.pricingUrl}\n`;
 
   if (estimate.budgetAnalysis) {
     text += `\n### Budget Assessment\n`;
@@ -128,9 +141,10 @@ export function buildDeterministicInquiryResponse(
     `- **Architecture**: ${estimate.architecture === "dynamic" ? "Dynamic Next.js" : "Static Next.js"}\n` +
     `- **Included Pages (${estimate.pages.count})**:\n${pages}\n` +
     (features.length > 0 ? `- **Key Features**: ${features.join(", ")}\n` : "") +
+    `- **Package**: ${estimate.package.name}\n` +
     `- **Estimated Development Fee**: ${formatINR(total)} (Milestone: 50% advance, 50% upon launch review)\n` +
     `- **Estimated Delivery**: ${estimate.estimatedTimeline}\n` +
-    `- **Ownership & Support**: 100% source code ownership and 15 days of free post-launch bug fixes.\n\n`;
+    `- **Ownership & Support**: 100% source code ownership and ${estimate.package.warrantyDays} days of free post-launch bug fixes.\n\n`;
 
   const budget = extractedParams.userBudgetINR;
   const options = estimate.budgetAnalysis?.compromiseOptions ?? [];
@@ -180,20 +194,16 @@ export function buildFeatureInquiryResponse(
   estimate: ProjectEstimateResult | undefined,
   includeDeposits: boolean,
   language: VisitorLanguage,
-  pricingConfig: EstimatorCalculationConfig | undefined,
+  source: PackagePricingSource | undefined,
 ): string {
   const currentTotalINR = estimate?.cost.oneTimeTotalINR ?? 0;
-  const upgrade = calculatePhase2Upgrade({
-    currentTotalINR,
-    includeDeposits,
-    pricingConfig,
-    currentProject: estimate?.categoryDisplayName,
-    alreadyDynamic: estimate?.architecture === "dynamic",
-  });
+  const upgrade = calculatePhase2Upgrade({ estimate, includeDeposits, source });
 
   const lines = [
     upgrade.dynamicBackendINR > 0 ? `* **Dynamic Backend & Database**: +${formatINR(upgrade.dynamicBackendINR)}` : null,
-    `* **Booking Calendar**: +${formatINR(upgrade.bookingCalendarINR)}`,
+    upgrade.bookingCalendarINR > 0
+      ? `* **Booking Calendar**: +${formatINR(upgrade.bookingCalendarINR)}`
+      : `* **Booking Calendar**: included in your ${estimate?.package.name ?? "current"} package`,
     upgrade.paymentGatewayINR > 0 ? `* **Razorpay/UPI Payment Gateway**: +${formatINR(upgrade.paymentGatewayINR)}` : null,
   ].filter(Boolean);
 
@@ -233,10 +243,10 @@ export function buildBiographyResponse(language: VisitorLanguage): string {
     : "Webgent was founded by Mohit Verma. He holds a Master of Computer Applications (MCA, 2022–2024) from Dr. A.P.J. Abdul Kalam Technical University (AKTU) and a B.Sc in Computer Science (2019–2022) from CCSU. He currently works as a Software Developer at DBA Lounge and builds web applications through Webgent. How can we help with your web project?";
 }
 
-export function buildComparisonResponse(language: VisitorLanguage): string {
+export function buildComparisonResponse(language: VisitorLanguage, facts: PricingFacts): string {
   return language === "hinglish"
-    ? "Webgent mein aapko ye milta hai:\n1. **Clear Milestone Pricing**: 50% upfront aur 50% final launch review par.\n2. **Custom Next.js Build**: Templates ki jagah aapke business ke liye banaya gaya fast website.\n3. **100% Code Ownership**: Poora source code aapka, plus 15 din ke free post-launch bug fixes.\n\nKya aap chahenge ki hum aapke project ke requirements discuss karein?"
-    : "Here's how Webgent works:\n1. **Clear Milestone Pricing**: 50% upfront and 50% after the final launch review.\n2. **Custom Next.js Build**: A fast site built for your business rather than an off-the-shelf template.\n3. **100% Code Ownership**: You own all the source code, plus 15 days of free post-launch bug fixes.\n\nWould you like to explore what scope suits your project?";
+    ? `Webgent mein aapko ye milta hai:\n1. **Clear Milestone Pricing**: 50% upfront aur 50% final launch review par.\n2. **Custom Next.js Build**: Templates ki jagah aapke business ke liye banaya gaya fast website.\n3. **100% Code Ownership**: Poora source code aapka, plus free post-launch bug fixes: ${facts.warrantySummary}.\n\nKya aap chahenge ki hum aapke project ke requirements discuss karein?`
+    : `Here's how Webgent works:\n1. **Clear Milestone Pricing**: 50% upfront and 50% after the final launch review.\n2. **Custom Next.js Build**: A fast site built for your business rather than an off-the-shelf template.\n3. **100% Code Ownership**: You own all the source code, plus free post-launch bug fixes: ${facts.warrantySummary}.\n\nWould you like to explore what scope suits your project?`;
 }
 
 export function buildDefaultResponse(language: VisitorLanguage, facts: PricingFacts): string {

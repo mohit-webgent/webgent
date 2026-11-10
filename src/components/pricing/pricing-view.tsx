@@ -8,6 +8,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { BackendPricingData } from "@/lib/services/pricing";
+import { describeWarrantyByPackage } from "@/lib/package-pricing";
 import { CtaBand } from "@/components/ui/cta-band";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { PageHero } from "@/components/ui/page-hero";
@@ -162,7 +163,10 @@ export function PricingView({ initialData, faqs = [] }: PricingViewProps) {
             </div>
             <div className="space-y-1">
               <strong className="text-fg block">Guaranteed Warranty Period</strong>
-              <p>Every deployment includes post-launch bug-fix warranty support (14 days for Starter, 30 days for Business, 60 days for Pro).</p>
+              <p>
+                Every deployment includes post-launch bug-fix warranty support:{" "}
+                {describeWarrantyByPackage(initialData?.matrixPackages, initialData?.matrixFeatures)}.
+              </p>
             </div>
           </div>
         </section>

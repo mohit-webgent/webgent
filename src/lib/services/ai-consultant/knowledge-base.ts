@@ -9,6 +9,8 @@
  * - Explicitly tagged [REQUIRES_OWNER_INPUT] items for unconfigured business details
  */
 
+import { describeWarrantyByPackage } from "@/lib/package-pricing";
+
 
 export interface PageDefinition {
   name: string;
@@ -525,13 +527,13 @@ export interface MaintenancePlan {
 export const MAINTENANCE_PLANS: Record<string, MaintenancePlan> = {
   none: {
     id: "none",
-    name: "Standard 15-Day Post-Launch Warranty (Included Free)",
+    name: "Included Post-Launch Bug-Fix Warranty",
     priceMonthlyINR: 0,
-    description: "Every Webgent project includes 15 days of free bug-fix warranty and handover assistance.",
+    description: `Every Webgent project includes a free bug-fix warranty (${describeWarrantyByPackage()}) and handover assistance.`,
     includedHours: 0,
     slaHours: "48 Hours",
     features: [
-      "15 days of functional bug fixes included at zero extra cost",
+      `Functional bug fixes at zero extra cost: ${describeWarrantyByPackage()}`,
       "Full source code handover to your private Git repository",
       "DNS connection and live deployment setup included",
     ],

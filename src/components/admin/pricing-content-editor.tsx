@@ -9,15 +9,11 @@ import {
   ExternalLink,
   Loader2,
   Package,
-  Layers,
-  Database,
-  Sparkles,
   Sliders,
   Plus,
   Trash2,
   CheckCircle2,
   AlertCircle,
-  Search,
   Clock,
   ShieldCheck,
 } from "lucide-react";
@@ -106,7 +102,6 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
 
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [featureSearch, setFeatureSearch] = useState("");
   const [selectedPackageTier, setSelectedPackageTier] = useState<"starter" | "business" | "pro">(
     "starter",
   );
@@ -344,14 +339,6 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
     });
   };
 
-  // Filtered features
-  const filteredFeatures = features.filter(
-    (f) =>
-      f.name.toLowerCase().includes(featureSearch.toLowerCase()) ||
-      f.categoryTag.toLowerCase().includes(featureSearch.toLowerCase()) ||
-      f.id.toLowerCase().includes(featureSearch.toLowerCase()),
-  );
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Top Header Bar */}
@@ -441,9 +428,6 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
       <div className="flex border-b border-slate-800 space-x-1 overflow-x-auto pb-px">
         {[
           { id: "packages", label: "Core Packages", icon: Package, count: "3 Tiers" },
-          { id: "categories", label: "Category Rates", icon: Layers, count: `${categories.length}` },
-          { id: "types", label: "Architecture Add-ons", icon: Database, count: `${types.length}` },
-          { id: "features", label: "Feature Catalog", icon: Sparkles, count: `${features.length}` },
           { id: "settings", label: "Calculation Rules", icon: Sliders, count: "Settings" },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -694,319 +678,6 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
         </div>
       )}
 
-      {/* TAB 2: CATEGORY STARTING RATES */}
-      {activeTab === "categories" && (
-        <div className="space-y-4">
-          <div className="bg-surface border border-slate-800/80 rounded-2xl p-5 mb-4">
-            <h2 className="text-sm font-semibold text-fg">Project Category Starting Rates</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              The base cost for each business type, used by the budget calculator and the AI consultant.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((cat, idx) => (
-              <div
-                key={cat.id}
-                className="bg-surface border border-slate-800/80 rounded-2xl p-5 space-y-4 shadow-md hover:border-slate-700 transition-all"
-              >
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-fg">{cat.title}</h3>
-                    <span className="text-xs font-mono text-slate-500">ID: {cat.id}</span>
-                  </div>
-                  <span className="px-2 py-0.5 text-xs font-mono rounded bg-slate-800 text-slate-300">
-                    {cat.deliveryDays}
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">
-                      Starting Price (₹)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-slate-500 text-xs">₹</span>
-                      <input
-                        type="number"
-                        min="1000"
-                        step="500"
-                        value={cat.startingPrice}
-                        onChange={(e) => {
-                          const updated = [...categories];
-                          updated[idx] = {
-                            ...cat,
-                            startingPrice: parseInt(e.target.value, 10) || 0,
-                          };
-                          setCategories(updated);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">
-                      Subtitle
-                    </label>
-                    <input
-                      type="text"
-                      value={cat.subtitle}
-                      onChange={(e) => {
-                        const updated = [...categories];
-                        updated[idx] = { ...cat, subtitle: e.target.value };
-                        setCategories(updated);
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-fg focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Delivery Days
-                      </label>
-                      <input
-                        type="text"
-                        value={cat.deliveryDays}
-                        onChange={(e) => {
-                          const updated = [...categories];
-                          updated[idx] = { ...cat, deliveryDays: e.target.value };
-                          setCategories(updated);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-fg focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Rec. Pages
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="30"
-                        value={cat.recommendedPages}
-                        onChange={(e) => {
-                          const updated = [...categories];
-                          updated[idx] = {
-                            ...cat,
-                            recommendedPages: parseInt(e.target.value, 10) || 1,
-                          };
-                          setCategories(updated);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-fg focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: ARCHITECTURE TYPES (Static vs. Dynamic) */}
-      {activeTab === "types" && (
-        <div className="space-y-4">
-          <div className="bg-surface border border-slate-800/80 rounded-2xl p-5 mb-4">
-            <h2 className="text-sm font-semibold text-fg">Architecture Options & Add-on Fees</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Static websites have 0 additional cost. Dynamic websites include database setup, server backend, and CMS/dashboard integration.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {types.map((typeOption, idx) => (
-              <div
-                key={typeOption.id}
-                className="bg-surface border border-slate-800/80 rounded-2xl p-6 space-y-4 shadow-xl"
-              >
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div>
-                    <h3 className="text-base font-bold text-fg capitalize">{typeOption.title}</h3>
-                    <span className="text-xs text-slate-400">{typeOption.subtitle}</span>
-                  </div>
-                  <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-md bg-slate-800 text-indigo-400">
-                    {typeOption.id === "static" ? "Base (₹0)" : `+₹${typeOption.additionalCost.toLocaleString("en-IN")}`}
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={typeOption.title}
-                      onChange={(e) => {
-                        const updated = [...types];
-                        updated[idx] = { ...typeOption, title: e.target.value };
-                        setTypes(updated);
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-fg focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Subtitle
-                    </label>
-                    <input
-                      type="text"
-                      value={typeOption.subtitle}
-                      onChange={(e) => {
-                        const updated = [...types];
-                        updated[idx] = { ...typeOption, subtitle: e.target.value };
-                        setTypes(updated);
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-fg focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Additional Architecture Cost (INR)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="500"
-                        value={typeOption.additionalCost}
-                        onChange={(e) => {
-                          const updated = [...types];
-                          updated[idx] = {
-                            ...typeOption,
-                            additionalCost: parseInt(e.target.value, 10) || 0,
-                          };
-                          setTypes(updated);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={typeOption.description}
-                      onChange={(e) => {
-                        const updated = [...types];
-                        updated[idx] = { ...typeOption, description: e.target.value };
-                        setTypes(updated);
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Best For
-                    </label>
-                    <input
-                      type="text"
-                      value={typeOption.bestFor}
-                      onChange={(e) => {
-                        const updated = [...types];
-                        updated[idx] = { ...typeOption, bestFor: e.target.value };
-                        setTypes(updated);
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: FEATURE CATALOG & ADD-ONS */}
-      {activeTab === "features" && (
-        <div className="space-y-4">
-          <div className="bg-surface border border-slate-800/80 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-sm font-semibold text-fg">Popular Features & Add-on Prices</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Manage standalone pricing for interactive features, payment gateways, booking calendars, and integrations.
-              </p>
-            </div>
-            {/* Search Input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search features..."
-                value={featureSearch}
-                onChange={(e) => setFeatureSearch(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredFeatures.map((feat) => {
-              const originalIndex = features.findIndex((f) => f.id === feat.id);
-              return (
-                <div
-                  key={feat.id}
-                  className="bg-surface border border-slate-800/80 rounded-2xl p-4 space-y-3 shadow-md hover:border-slate-700 transition-all"
-                >
-                  <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2.5">
-                    <div>
-                      <h4 className="text-sm font-bold text-fg leading-tight">{feat.name}</h4>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
-                          {feat.categoryTag}
-                        </span>
-                        {feat.includedInDynamic && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
-                            Bundled Dynamic
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-400 line-clamp-2 min-h-[32px]">
-                    {feat.simpleDescription}
-                  </p>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">
-                      Add-on Rate (INR)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-slate-500 text-xs">₹</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="500"
-                        value={feat.price}
-                        onChange={(e) => {
-                          const updated = [...features];
-                          updated[originalIndex] = {
-                            ...feat,
-                            price: parseInt(e.target.value, 10) || 0,
-                          };
-                          setFeatures(updated);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* TAB 5: CALCULATION SETTINGS */}
       {activeTab === "settings" && (
         <div className="space-y-6">
@@ -1016,102 +687,11 @@ export function PricingContentEditor({ initialData }: PricingContentEditorProps)
                 Cost Calculation Rules
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Defines page step increments, multi-page discounts, and express delivery surcharges across the entire platform.
+                The express delivery surcharge used by /pricing, the home estimator and the AI consultant. Package prices are set under Core Packages; add-on prices come from the /pricing feature list.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Base Pages Included in Starting Price
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={settings.basePagesIncluded}
-                  onChange={(e) =>
-                    setSettings((prev) => ({
-                      ...prev,
-                      basePagesIncluded: parseInt(e.target.value, 10) || 1,
-                    }))
-                  }
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-fg focus:outline-none focus:border-indigo-500"
-                />
-                <span className="text-xs text-slate-500 mt-1 block">Default: 5 pages</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Cost per Extra Page (INR)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="500"
-                    value={settings.costPerExtraPage}
-                    onChange={(e) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        costPerExtraPage: parseInt(e.target.value, 10) || 0,
-                      }))
-                    }
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <span className="text-xs text-slate-500 mt-1 block">Default: ₹1,000 / page</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Discount for 1-Page Landing Sites (INR)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="500"
-                    value={settings.discountForOnePage}
-                    onChange={(e) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        discountForOnePage: parseInt(e.target.value, 10) || 0,
-                      }))
-                    }
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <span className="text-xs text-slate-500 mt-1 block">
-                  Subtracted if pageCount = 1 (Default: ₹2,000)
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Minimum Project Floor Cost (INR)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">₹</span>
-                  <input
-                    type="number"
-                    min="1000"
-                    step="500"
-                    value={settings.minProjectCost ?? 4999}
-                    onChange={(e) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        minProjectCost: parseInt(e.target.value, 10) || 1000,
-                      }))
-                    }
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm font-mono text-fg focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <span className="text-xs text-slate-500 mt-1 block">Default: ₹4,999 floor</span>
-              </div>
-
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Express Delivery Surcharge (0.2 = 20%)

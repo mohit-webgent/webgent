@@ -4,13 +4,20 @@
  */
 
 import { logger } from "@/lib/logger";
-import { calculateProjectEstimate, resolveCategoryKey, type ProjectEstimateResult } from "./calculator";
 import {
-  getPricingCalculationConfig,
-  getPricingData,
-  DEFAULT_BACKEND_PRICING_DATA,
-} from "@/lib/services/pricing";
-import type { EstimatorCalculationConfig } from "@/lib/pricing.config";
+  calculateProjectEstimate,
+  packagePricingSource,
+  resolveCategoryKey,
+  type PackagePricingSource,
+  type ProjectEstimateResult,
+} from "./calculator";
+import { getPricingData, DEFAULT_BACKEND_PRICING_DATA } from "@/lib/services/pricing";
+import {
+  describeWarrantyByPackage,
+  getPackagePageLimit,
+  getPackageWarrantyDays,
+  PACKAGE_TIERS,
+} from "@/lib/package-pricing";
 import { detectPromptAbuse, generateGeminiReply, isGeminiConfigured } from "@/lib/services/gemini";
 import { formatRetrievedKnowledgeForPrompt, retrieveRelevantKnowledge } from "./knowledge-retrieval";
 import {
@@ -66,7 +73,7 @@ export {
   generateFollowUpSuggestions,
 } from "./responses";
 
-async function loadPricing(): Promise<{ config: EstimatorCalculationConfig; facts: PricingFacts }> {
+async function loadPricing(): Promise<{ config: PackagePricingSource; facts: PricingFacts }> {
   let pricing = DEFAULT_BACKEND_PRICING_DATA;
   try {
     pricing = await getPricingData();
@@ -74,12 +81,19 @@ async function loadPricing(): Promise<{ config: EstimatorCalculationConfig; fact
     logger.warn("[AIConsultant] Could not load live pricing, using defaults", { error: String(err) });
   }
 
+  const packages = pricing.matrixPackages;
+  const packagesSummary = PACKAGE_TIERS.map((tier) => {
+    const pkg = packages[tier];
+    return `${pkg.name}: from ₹${pkg.startingPrice.toLocaleString("en-IN")}, up to ${getPackagePageLimit(tier, packages)} pages, ${pkg.deliveryTime}, ${getPackageWarrantyDays(tier, packages, pricing.matrixFeatures)}-day bug-fix warranty`;
+  }).join("; ");
+
   return {
-    config: getPricingCalculationConfig(pricing),
+    config: packagePricingSource(pricing),
     facts: {
-      startingPriceINR: pricing.categories.find((c) => c.id === "business")?.startingPrice ?? 0,
-      dynamicAddOnINR: pricing.types.find((t) => t.id === "dynamic")?.additionalCost ?? 0,
+      startingPriceINR: packages.starter.startingPrice,
       expressPercent: Math.round((pricing.settings.expressMultiplier ?? 0.2) * 100),
+      packagesSummary,
+      warrantySummary: describeWarrantyByPackage(packages, pricing.matrixFeatures),
     },
   };
 }
@@ -177,7 +191,7 @@ export async function processConsultantMessage({
     if (isGreeting) return respond(buildGreetingResponse(language));
     if (isGeneralCompany) return respond(buildCompanyResponse(language, facts));
     if (isBiography) return respond(buildBiographyResponse(language));
-    if (isComparison) return respond(buildComparisonResponse(language));
+    if (isComparison) return respond(buildComparisonResponse(language, facts));
     return respond(buildDefaultResponse(language, facts));
   };
 
@@ -189,7 +203,7 @@ export async function processConsultantMessage({
   let contextNote = "";
   if (isGreeting) contextNote = buildGreetingNote(lastUserMessage, language);
   else if (isGeneralCompany) contextNote = buildCompanyNote(lastUserMessage, language);
-  else if (isComparison) contextNote = buildComparisonNote(lastUserMessage, language);
+  else if (isComparison) contextNote = buildComparisonNote(lastUserMessage, language, facts);
   else if (isBiography) contextNote = buildBiographyNote(lastUserMessage, language);
   else if (isInquiry) contextNote = buildInquiryNote(lastUserMessage, estimate, extractedParams);
   else if (isAcceptance) contextNote = buildAcceptanceNote(lastUserMessage, estimate, language);

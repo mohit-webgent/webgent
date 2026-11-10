@@ -1,45 +1,57 @@
 /**
- * Deterministic Project Cost Calculator for AI Consultant
- * Enforces pure server-side calculation rules:
- * - Never allows the language model to invent, hallucinate, or override prices.
- * - Integrates with Webgent's canonical pricing engine in pricing.config.ts.
- * - Separates one-time development fees from recurring monthly maintenance and third-party actuals.
- * - Provides budget feasibility analysis and scope prioritization.
- * - Attaches verifiable market benchmark comparisons.
+ * Deterministic project cost calculator for the AI consultant.
+ * - Prices come only from the /pricing packages and feature matrix, through the shared package calculation,
+ *   so the consultant, the pricing page and the home estimator always agree on the same scope.
+ * - The language model never invents or overrides a price.
+ * - One-time development fees are kept apart from monthly care plans and third-party costs.
  */
 
+import { featureRequiresDynamic, normalizeFeatureId, POPULAR_FEATURES, type FeatureOption } from "@/lib/pricing.config";
+import { MASTER_FEATURES, MASTER_PACKAGES, type MasterPackageTier, type MatrixFeatureItem } from "@/data/pricing-matrix-data";
 import {
-  calculatePricing,
-  featureRequiresDynamic,
-  normalizeFeatureId,
-  POPULAR_FEATURES,
-  FeatureOption,
-  BASE_PAGES_INCLUDED,
-  COST_PER_EXTRA_PAGE,
-  DISCOUNT_FOR_ONE_PAGE,
-  EXPRESS_DELIVERY_MULTIPLIER,
-  MIN_PROJECT_COST,
-  WEBSITE_CATEGORIES,
-  WEBSITE_TYPES,
-  EstimatorCalculationConfig,
-} from "@/lib/pricing.config";
-import {
-  DOMAIN_BLUEPRINTS,
-  MAINTENANCE_PLANS,
-  PageDefinition,
-  UNCONFIGURED_BUSINESS_ITEMS,
-} from "./knowledge-base";
+  buildPricingUrl,
+  calculatePackageEstimate,
+  DEFAULT_EXPRESS_MULTIPLIER,
+  EXTRA_PAGES_FEATURE_ID,
+  getPackagePageLimit,
+  recommendPackage,
+  type PackageCatalog,
+  type PackageEstimate,
+} from "@/lib/package-pricing";
+import type { BackendPricingData } from "@/lib/services/pricing-shared";
+import { DOMAIN_BLUEPRINTS, MAINTENANCE_PLANS, PageDefinition, UNCONFIGURED_BUSINESS_ITEMS } from "./knowledge-base";
 import { getMarketBenchmark, MarketBenchmark } from "./market-benchmarks";
+import { CONSULTANT_FEATURE_TO_MATRIX, DATABASE_BACKEND_ID, EDITABLE_CONTENT_ID, mapConsultantFeatures } from "./package-mapping";
+
+/** The admin-managed packages and feature matrix the consultant prices from. */
+export interface PackagePricingSource {
+  packages?: PackageCatalog;
+  features?: MatrixFeatureItem[];
+  expressMultiplier?: number;
+}
+
+export function packagePricingSource(data?: BackendPricingData): PackagePricingSource {
+  if (!data) return {};
+  return {
+    packages: data.matrixPackages,
+    features: data.matrixFeatures,
+    expressMultiplier: data.settings?.expressMultiplier,
+  };
+}
 
 export interface ProjectCostBreakdown {
   currency: string;
   currencySymbol: string;
   oneTimeTotalINR: number;
+  /** The package price. Kept under its original name for the chat UI and stored leads. */
   baseCategoryPriceINR: number;
   architectureTypePriceINR: number;
   pagesPriceINR: number;
   featuresTotalINR: number;
   expressDeliveryPriceINR: number;
+  lineItems: { name: string; amountINR: number }[];
+  /** Requested items with no fixed price, confirmed by Mohit after a short call. */
+  quoteItems: string[];
   recurringMonthlyTotalINR: number;
   recurringBreakdown: {
     name: string;
@@ -59,6 +71,15 @@ export interface BudgetAnalysis {
   compromiseOptions?: string[];
 }
 
+export interface EstimatePackage {
+  tier: MasterPackageTier;
+  name: string;
+  priceINR: number;
+  deliveryTime: string;
+  warrantyDays: number;
+  pageLimit: number;
+}
+
 export interface ProjectEstimateResult {
   isEstimateReliable: boolean;
   categoryKey: string;
@@ -67,6 +88,11 @@ export interface ProjectEstimateResult {
   autoSwitchedToDynamic: boolean;
   deliverySpeed: "standard" | "express";
   estimatedTimeline: string;
+  package: EstimatePackage;
+  /** Opens /pricing with exactly this package and these add-ons. */
+  pricingUrl: string;
+  /** What was priced, so follow-up questions can be priced on the same package. */
+  pricingSelection: { tier: MasterPackageTier; featureIds: string[]; quantities: Record<string, number>; express: boolean };
   pages: {
     count: number;
     list: PageDefinition[];
@@ -98,6 +124,8 @@ export interface CalculatorInput {
 }
 
 export type EstimateInput = CalculatorInput;
+
+const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
 
 /**
  * Normalizes input category key to a supported domain blueprint or standard category.
@@ -137,17 +165,43 @@ export function resolveCategoryKey(rawKey?: string | null): string {
   return "business";
 }
 
+/** What a consultant feature would cost on a package: nothing when included, its add-on price otherwise. */
+function priceOnPackage(featureId: string, tier: MasterPackageTier, features: MatrixFeatureItem[]): number {
+  const mapped = CONSULTANT_FEATURE_TO_MATRIX[normalizeFeatureId(featureId)];
+  if (!mapped) return 0;
+  return mapped.reduce((sum, id) => {
+    const feature = features.find((f) => f.id === id);
+    if (!feature || feature.availability[tier] === "included") return sum;
+    return sum + (feature.addonPrice ?? 0);
+  }, 0);
+}
+
+function toLineItems(estimate: PackageEstimate): { name: string; amountINR: number }[] {
+  return [
+    { name: `${estimate.packageName} package`, amountINR: estimate.packagePriceINR },
+    ...estimate.addons.map((line) => ({
+      name: line.quantity > 1 ? `${line.name} × ${line.quantity}` : line.name,
+      amountINR: line.totalINR,
+    })),
+    ...(estimate.expressFeeINR > 0 ? [{ name: "Express delivery", amountINR: estimate.expressFeeINR }] : []),
+  ];
+}
+
 /**
- * Pure deterministic cost calculation function for AI Consultant.
+ * Pure deterministic cost calculation for the AI consultant, priced on the /pricing packages.
  */
 export function calculateProjectEstimate(
   input: CalculatorInput = {},
-  pricingConfig?: EstimatorCalculationConfig,
+  source: PackagePricingSource = {},
 ): ProjectEstimateResult {
+  const packages = source.packages ?? MASTER_PACKAGES;
+  const matrix = source.features ?? MASTER_FEATURES;
+  const expressMultiplier = source.expressMultiplier ?? DEFAULT_EXPRESS_MULTIPLIER;
+
   const categoryKey = resolveCategoryKey(input.categoryKey);
   const blueprint = DOMAIN_BLUEPRINTS[categoryKey] || DOMAIN_BLUEPRINTS.business;
 
-  // 1. Resolve Pages
+  // 1. Pages
   let resolvedPages: PageDefinition[] = [];
   if (Array.isArray(input.requestedPages) && input.requestedPages.length > 0) {
     resolvedPages = input.requestedPages.map((pageName, idx) => {
@@ -164,7 +218,6 @@ export function calculateProjectEstimate(
       };
     });
   } else {
-    // Only resolve the essential core pages for the starter blueprint
     const essentialPages = blueprint.pages.filter((p) => p.isEssential);
     resolvedPages = essentialPages.length >= blueprint.recommendedPageCount
       ? essentialPages.slice(0, blueprint.recommendedPageCount)
@@ -176,138 +229,61 @@ export function calculateProjectEstimate(
     : typeof input.pagesCount === "number" && !isNaN(input.pagesCount)
       ? input.pagesCount
       : blueprint.recommendedPageCount;
-
   const pageCount = Math.max(1, Math.min(30, Math.round(rawPageCount)));
 
-  // 2. Resolve Features (Use explicit caller features, or default ONLY to essential features)
-  // CRITICAL: Do NOT auto-bundle recommendedFeatures into the starter estimate!
+  // 2. Features: the visitor's own choice, or the blueprint's essentials when they haven't named any.
+  //    Recommendations are never bundled in.
   const userFeatureIds = Array.isArray(input.selectedFeatureIds)
     ? input.selectedFeatureIds.map((id) => normalizeFeatureId(id))
     : null;
+  const combinedFeatureIds =
+    userFeatureIds !== null && userFeatureIds.length > 0 ? userFeatureIds : [...blueprint.essentialFeatures];
 
-  const combinedFeatureIds = userFeatureIds !== null
-    ? userFeatureIds
-    : [...blueprint.essentialFeatures];
-
-  // Group features into Essential, Recommended, Optional
-  const essentialList: FeatureOption[] = [];
-  const recommendedList: FeatureOption[] = [];
-  const optionalList: FeatureOption[] = [];
-
-  const featureCatalog =
-    pricingConfig?.features && pricingConfig.features.length > 0
-      ? pricingConfig.features
-      : POPULAR_FEATURES;
-
-  featureCatalog.forEach((feat) => {
-    if (blueprint.essentialFeatures.includes(feat.id)) {
-      essentialList.push(feat);
-    } else if (blueprint.recommendedFeatures.includes(feat.id) || combinedFeatureIds.includes(feat.id)) {
-      recommendedList.push(feat);
-    } else if (blueprint.optionalAddons.includes(feat.id)) {
-      optionalList.push(feat);
-    }
-  });
-
-  // 3. Resolve Architecture (Static vs. Dynamic)
+  // 3. Architecture: anything that stores data or logins needs a database and an editable backend.
   const requestedArch = input.architecture === "dynamic" || input.architecture === "static"
     ? input.architecture
     : blueprint.defaultArchitecture;
-
   const hasDynamicFeature = combinedFeatureIds.some((fId) => featureRequiresDynamic(fId));
   const autoSwitchedToDynamic = requestedArch === "static" && hasDynamicFeature;
   const effectiveArch: "static" | "dynamic" = hasDynamicFeature || requestedArch === "dynamic" ? "dynamic" : "static";
 
-  // Map category to pricing.config categoryId
-  const mappedPricingCategoryId =
-    categoryKey === "gym" ? "business" :
-    categoryKey === "booking_platform" ? "healthcare" :
-    categoryKey === "employee_management" ? "saas" :
-    categoryKey;
-
-  const effectiveDeliverySpeed =
-    input.deliverySpeed === "express" || input.expressDelivery === true
-      ? "express"
-      : "standard";
-
-  // 4. Run Canonical Pricing Calculation
-  let canonicalResult = calculatePricing(
-    {
-      categoryId: mappedPricingCategoryId,
-      typeId: effectiveArch,
-      pageCount,
-      deliverySpeed: effectiveDeliverySpeed,
-      selectedFeatureIds: combinedFeatureIds,
-    },
-    pricingConfig,
-  );
-
-  let baseCategoryPriceINR = canonicalResult.baseCategoryPrice;
-  let oneTimeTotalINR = canonicalResult.grandTotal;
-
-  // Baseline gym sites are priced from the Business category, whatever the admin has set it to.
-  const isBaselineGym =
-    categoryKey === "gym" &&
-    effectiveArch === "static" &&
-    pageCount <= 5 &&
-    (!userFeatureIds || userFeatureIds.length === 0 || userFeatureIds.every((f) => blueprint.essentialFeatures.includes(f)));
-
-  if (isBaselineGym) {
-    const configuredCat = pricingConfig?.categories?.find((c) => c.id === "business");
-    const baseGymPrice = configuredCat ? configuredCat.startingPrice : blueprint.startingPriceINR;
-    baseCategoryPriceINR = baseGymPrice;
-    const minCostGym = pricingConfig?.pricingSettings?.minProjectCost ?? MIN_PROJECT_COST;
-    const subtotal = Math.max(minCostGym, baseGymPrice);
-    const expressMultiplier = pricingConfig?.pricingSettings?.expressMultiplier ?? 0.2;
-    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * expressMultiplier) : 0;
-    oneTimeTotalINR = subtotal + expressPrice;
-    canonicalResult = {
-      ...canonicalResult,
-      baseCategoryPrice: baseGymPrice,
-      typePrice: 0,
-      pagesPrice: 0,
-      featuresCost: 0,
-      expressPrice,
-      grandTotal: oneTimeTotalINR,
-    };
+  const { matrixIds, quoteOnly } = mapConsultantFeatures(combinedFeatureIds, matrix);
+  if (effectiveArch === "dynamic") {
+    matrixIds.push(DATABASE_BACKEND_ID);
+    if (!combinedFeatureIds.includes("admin_dashboard")) matrixIds.push(EDITABLE_CONTENT_ID);
   }
 
-  // Baseline e-commerce: category price + dynamic backend + extra pages, with blueprint features included.
-  const isBaselineEcommerce =
-    categoryKey === "ecommerce" &&
-    effectiveArch === "dynamic" &&
-    pageCount <= 6 &&
-    (!userFeatureIds || userFeatureIds.length === 0 || userFeatureIds.every((f) => blueprint.essentialFeatures.includes(f)));
+  const deliverySpeed: "standard" | "express" =
+    input.deliverySpeed === "express" || input.expressDelivery === true ? "express" : "standard";
+  const express = deliverySpeed === "express";
 
-  if (isBaselineEcommerce) {
-    const configuredCat = pricingConfig?.categories?.find((c) => c.id === "ecommerce");
-    const baseEcommercePrice = configuredCat ? configuredCat.startingPrice : blueprint.startingPriceINR;
-    const dynamicType = (pricingConfig?.types || WEBSITE_TYPES).find((t) => t.id === "dynamic");
-    const typePrice = dynamicType ? dynamicType.additionalCost : 8000;
-    const basePagesInc = pricingConfig?.pageSettings?.basePagesIncluded ?? BASE_PAGES_INCLUDED;
-    const costExtra = pricingConfig?.pageSettings?.costPerExtraPage ?? COST_PER_EXTRA_PAGE;
-    const pagesPrice = Math.max(0, pageCount - basePagesInc) * costExtra;
-    baseCategoryPriceINR = baseEcommercePrice;
-    const minCostEcom = pricingConfig?.pricingSettings?.minProjectCost ?? MIN_PROJECT_COST;
-    const subtotal = Math.max(minCostEcom, baseEcommercePrice + typePrice + pagesPrice);
-    const expressMultiplier = pricingConfig?.pricingSettings?.expressMultiplier ?? 0.2;
-    const expressPrice = effectiveDeliverySpeed === "express" ? Math.round(subtotal * expressMultiplier) : 0;
-    oneTimeTotalINR = subtotal + expressPrice;
-    canonicalResult = {
-      ...canonicalResult,
-      baseCategoryPrice: baseEcommercePrice,
-      typePrice,
-      pagesPrice,
-      featuresCost: 0,
-      expressPrice,
-      grandTotal: oneTimeTotalINR,
-    };
-  }
+  // 4. The cheapest package that delivers the whole scope, exactly as /pricing would total it.
+  const priced = recommendPackage({ featureIds: matrixIds, pageCount, express, packages, features: matrix, expressMultiplier });
+  const tier = priced.tier;
+  const extraPagesLine = priced.addons.find((line) => line.id === EXTRA_PAGES_FEATURE_ID);
+  const pagesPriceINR = extraPagesLine?.totalINR ?? 0;
+  const quoteItems = [
+    ...priced.quoteItems.map((item) => item.name),
+    ...quoteOnly.map((id) => POPULAR_FEATURES.find((f) => f.id === id)?.name ?? id),
+  ];
 
-  // 5. Maintenance / Recurring Breakdown
+  // Feature lists carry the price on the chosen package, so the card and the total agree.
+  const withPackagePrice = (feature: FeatureOption): FeatureOption => ({
+    ...feature,
+    price: priceOnPackage(feature.id, tier, matrix),
+  });
+  const essentialList: FeatureOption[] = [];
+  const recommendedList: FeatureOption[] = [];
+  const optionalList: FeatureOption[] = [];
+  POPULAR_FEATURES.forEach((feat) => {
+    if (blueprint.essentialFeatures.includes(feat.id)) essentialList.push(withPackagePrice(feat));
+    else if (blueprint.recommendedFeatures.includes(feat.id) || combinedFeatureIds.includes(feat.id)) recommendedList.push(withPackagePrice(feat));
+    else if (blueprint.optionalAddons.includes(feat.id)) optionalList.push(withPackagePrice(feat));
+  });
+
+  // 5. Monthly care is optional and billed separately from the one-time fee.
   const rawMaintKey = (input.maintenancePlan || input.maintenancePlanId || "none") as string;
   const maintPlan = MAINTENANCE_PLANS[rawMaintKey] || MAINTENANCE_PLANS.none;
-
   const recurringBreakdown = [];
   if (maintPlan.priceMonthlyINR > 0) {
     recurringBreakdown.push({
@@ -322,97 +298,68 @@ export function calculateProjectEstimate(
     "Domain Registration: Client-owned (~₹800–₹1,200/year via Namecheap/GoDaddy at actuals).",
     "Cloud Hosting & CDN: Hosted on Vercel / Cloudflare Edge (Free Tier suitable for launch; upgraded tiers billed directly at actuals).",
   ];
-
   if (combinedFeatureIds.includes("payment_gateway")) {
     thirdPartyNotes.push("Payment Gateway: Razorpay/Stripe charges standard transaction fees (approx. 2% per successful transaction) directly to merchant account.");
   }
-
   if (combinedFeatureIds.includes("whatsapp_alerts")) {
     thirdPartyNotes.push("WhatsApp Business API: Official Meta Cloud API conversation charges billed at actuals directly to your Meta billing account.");
   }
-
   if (combinedFeatureIds.includes("ai_chatbot")) {
     thirdPartyNotes.push("AI Model Tokens: Google Gemini / OpenAI API usage fees billed directly to your provider account at actual usage.");
   }
 
-  // 6. Timeline Determination
-  let estimatedTimeline = blueprint.typicalTimeline;
-  if (input.deliverySpeed === "express") {
-    estimatedTimeline = "Fast-Track Priority (3–5 Business Days)";
-  } else if (effectiveArch === "dynamic" || pageCount > 6 || combinedFeatureIds.length > 5) {
-    estimatedTimeline = "2–3 Weeks";
-  }
+  // 6. Timeline follows the package, as on /pricing.
+  const estimatedTimeline = express ? "Fast-track priority delivery" : priced.deliveryTime;
 
-  // 7. Market Benchmark Retrieval
+  // 7. Market benchmark
   const scopeTier: "starter" | "standard" | "advanced" =
     effectiveArch === "dynamic" || pageCount > 7 ? "standard" : "starter";
   const marketBenchmark = getMarketBenchmark(categoryKey, scopeTier);
 
-  // 8. Budget Analysis (if user specified a budget)
-  let budgetAnalysis: BudgetAnalysis | undefined = undefined;
+  // 8. Budget analysis, with savings worked out on the same package.
+  let budgetAnalysis: BudgetAnalysis | undefined;
   if (typeof input.userBudgetINR === "number" && input.userBudgetINR > 0) {
     const userBudget = input.userBudgetINR;
-    const difference = userBudget - oneTimeTotalINR;
+    const difference = userBudget - priced.totalINR;
     const fitsBudget = difference >= 0;
-
-    let recommendation = "";
+    const starter = packages.starter;
+    let recommendation: string;
     const compromiseOptions: string[] = [];
-    const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
-    const starterPrice =
-      pricingConfig?.categories?.find((c) => c.id === "business")?.startingPrice ??
-      WEBSITE_CATEGORIES.find((c) => c.id === "business")?.startingPrice ??
-      MIN_PROJECT_COST;
-    const costPerExtraPage = pricingConfig?.pageSettings?.costPerExtraPage ?? COST_PER_EXTRA_PAGE;
-    const onePageDiscount = pricingConfig?.pageSettings?.discountForOnePage ?? DISCOUNT_FOR_ONE_PAGE;
-    const dynamicAddOn =
-      (pricingConfig?.types || WEBSITE_TYPES).find((t) => t.id === "dynamic")?.additionalCost ?? 0;
-    const expressPercent = Math.round(
-      (pricingConfig?.pricingSettings?.expressMultiplier ?? EXPRESS_DELIVERY_MULTIPLIER) * 100,
-    );
-    const featurePrice = (id: string) => featureCatalog.find((f) => f.id === id)?.price ?? 0;
 
     if (fitsBudget) {
-      recommendation = `Great news! Your budget of ₹${userBudget.toLocaleString("en-IN")} fully covers the estimated scope of ₹${oneTimeTotalINR.toLocaleString("en-IN")}, leaving a surplus of ₹${difference.toLocaleString("en-IN")} that could be invested into post-launch monthly maintenance, marketing, or advanced SEO!`;
+      recommendation = `Your budget of ${formatINR(userBudget)} covers the estimated scope of ${formatINR(priced.totalINR)} on the ${priced.packageName} package, leaving ${formatINR(difference)} for post-launch care, marketing or extra features.`;
     } else {
-      const deficit = Math.abs(difference);
-      if (userBudget < starterPrice) {
-        recommendation = `Webgent's entry tier is our Starter Package at ${formatINR(starterPrice)} (covering up to 5 custom pages, responsive design, contact form, WhatsApp chat, and basic SEO). Your target budget of ${formatINR(userBudget)} is below this baseline, but we can prioritize a lean 1-page landing showcase (-${formatINR(onePageDiscount)}) or plan a Phase 1 launch when ready.`;
+      if (userBudget < starter.startingPrice) {
+        recommendation = `Webgent's entry package is ${starter.name} at ${formatINR(starter.startingPrice)} (up to ${getPackagePageLimit("starter", packages)} pages, ${starter.deliveryTime}). Your budget of ${formatINR(userBudget)} is below this, so the best route is a lean Phase 1 on the ${starter.name} package, with the rest added later.`;
       } else {
-        recommendation = `The recommended full-featured scope is ₹${oneTimeTotalINR.toLocaleString("en-IN")}, which is ₹${deficit.toLocaleString("en-IN")} above your target budget of ₹${userBudget.toLocaleString("en-IN")}. Here is how we can prioritize features to meet your budget:`;
+        recommendation = `The full scope comes to ${formatINR(priced.totalINR)} on the ${priced.packageName} package, ${formatINR(Math.abs(difference))} above your budget of ${formatINR(userBudget)}. Here is how the scope can be phased to fit:`;
       }
 
-      if (categoryKey === "ecommerce") {
+      if (categoryKey === "ecommerce" && tier !== "starter") {
         compromiseOptions.push(
-          `Launch Phase 1 as a product catalogue with direct WhatsApp ordering and UPI QR (starts at ${formatINR(starterPrice)} under Starter tier), explicitly deferring automated checkout, payment gateway integration, and order management to Phase 2.`,
+          `Launch Phase 1 as a product catalogue with WhatsApp ordering on the ${starter.name} package (${formatINR(starter.startingPrice)}), and add checkout and online payments in Phase 2.`,
         );
-        if (combinedFeatureIds.includes("invoice_generation")) {
-          compromiseOptions.push(`Postpone automated PDF GST invoicing (-${formatINR(featurePrice("invoice_generation"))} saving).`);
-        }
-        if (combinedFeatureIds.includes("inventory_stock")) {
-          compromiseOptions.push(`Postpone real-time inventory syncing (-${formatINR(featurePrice("inventory_stock"))} saving).`);
-        }
-        if (pageCount > blueprint.recommendedPageCount) {
-          compromiseOptions.push(
-            `Consolidate content into ${blueprint.recommendedPageCount} standard e-commerce pages (-${formatINR((pageCount - blueprint.recommendedPageCount) * costPerExtraPage)} saving).`,
-          );
-        }
-      } else {
-        if (effectiveArch === "dynamic" && !hasDynamicFeature) {
-          compromiseOptions.push(`Switch to a high-speed Static Architecture (-${formatINR(dynamicAddOn)} saving, zero hosting cost).`);
-        }
-        if (pageCount > 5) {
-          compromiseOptions.push(`Consolidate content into ${Math.min(5, pageCount)} core pages (-${formatINR((pageCount - 5) * costPerExtraPage)} saving).`);
-        }
-        compromiseOptions.push("Launch Phase 1 with essential lead capture forms and add online payments or member portals in Phase 2 once initial client revenue starts flowing.");
+      } else if (tier !== "starter" && priced.totalINR > starter.startingPrice) {
+        compromiseOptions.push(
+          `Launch Phase 1 on the ${starter.name} package (${formatINR(starter.startingPrice)}, up to ${getPackagePageLimit("starter", packages)} pages) and add the remaining features in Phase 2.`,
+        );
       }
-      if (input.deliverySpeed === "express") {
-        compromiseOptions.push(`Choose standard delivery instead of Express Fast-Track (-${expressPercent}% saving).`);
+      const deferrable = priced.addons
+        .filter((line) => line.id !== EXTRA_PAGES_FEATURE_ID)
+        .sort((a, b) => b.totalINR - a.totalINR)
+        .slice(0, 3);
+      deferrable.forEach((line) => compromiseOptions.push(`Move ${line.name} to Phase 2 (saves ${formatINR(line.totalINR)}).`));
+      if (extraPagesLine) {
+        compromiseOptions.push(`Keep to ${priced.pageLimit} pages, the ${priced.packageName} package limit (saves ${formatINR(extraPagesLine.totalINR)}).`);
+      }
+      if (express) {
+        compromiseOptions.push(`Choose standard delivery instead of express (saves ${formatINR(priced.expressFeeINR)}).`);
       }
     }
 
     budgetAnalysis = {
       userBudgetINR: userBudget,
-      calculatedCostINR: oneTimeTotalINR,
+      calculatedCostINR: priced.totalINR,
       differenceINR: difference,
       fitsBudget,
       recommendation,
@@ -420,20 +367,37 @@ export function calculateProjectEstimate(
     };
   }
 
-  // 9. Check for Unconfigured Items
+  // 9. Unconfigured items
   const unconfiguredItems: string[] = [];
   if (categoryKey === "custom" || categoryKey === "custom_app") {
     unconfiguredItems.push(UNCONFIGURED_BUSINESS_ITEMS[0].note);
   }
 
+  const quantities: Record<string, number> = extraPagesLine ? { [EXTRA_PAGES_FEATURE_ID]: extraPagesLine.quantity } : {};
+
   return {
-    isEstimateReliable: true,
+    isEstimateReliable: quoteItems.length === 0,
     categoryKey,
     categoryDisplayName: blueprint.displayName,
     architecture: effectiveArch,
     autoSwitchedToDynamic,
-    deliverySpeed: input.deliverySpeed === "express" ? "express" : "standard",
+    deliverySpeed,
     estimatedTimeline,
+    package: {
+      tier,
+      name: priced.packageName,
+      priceINR: priced.packagePriceINR,
+      deliveryTime: priced.deliveryTime,
+      warrantyDays: priced.warrantyDays,
+      pageLimit: priced.pageLimit,
+    },
+    pricingUrl: buildPricingUrl(priced, express),
+    pricingSelection: {
+      tier,
+      featureIds: extraPagesLine ? [...matrixIds, EXTRA_PAGES_FEATURE_ID] : matrixIds,
+      quantities,
+      express,
+    },
     pages: {
       count: pageCount,
       list: resolvedPages,
@@ -446,12 +410,14 @@ export function calculateProjectEstimate(
     cost: {
       currency: "INR",
       currencySymbol: "₹",
-      oneTimeTotalINR,
-      baseCategoryPriceINR,
-      architectureTypePriceINR: canonicalResult.typePrice,
-      pagesPriceINR: canonicalResult.pagesPrice,
-      featuresTotalINR: canonicalResult.featuresCost,
-      expressDeliveryPriceINR: canonicalResult.expressPrice,
+      oneTimeTotalINR: priced.totalINR,
+      baseCategoryPriceINR: priced.packagePriceINR,
+      architectureTypePriceINR: 0,
+      pagesPriceINR,
+      featuresTotalINR: priced.addonsTotalINR - pagesPriceINR,
+      expressDeliveryPriceINR: priced.expressFeeINR,
+      lineItems: toLineItems(priced),
+      quoteItems,
       recurringMonthlyTotalINR: maintPlan.priceMonthlyINR,
       recurringBreakdown,
       thirdPartyNotes,
@@ -463,6 +429,7 @@ export function calculateProjectEstimate(
       "Domain and cloud hosting accounts are owned directly by client with zero agency markup.",
       "Includes 2 rounds of design revisions on private staging deployment before final production release.",
       "100% intellectual property and full source code ownership transferred upon final milestone settlement.",
+      `Includes ${priced.warrantyDays} days of free post-launch bug fixes (${priced.packageName} package warranty).`,
     ],
     unconfiguredItems: unconfiguredItems.length > 0 ? unconfiguredItems : undefined,
   };
@@ -484,37 +451,46 @@ export interface Phase2UpgradeBreakdown {
   explanation: string;
 }
 
+const BOOKING_CALENDAR_ID = "booking_scheduling_appointment_calendar";
+const PAYMENT_GATEWAY_ID = "payments_subscriptions_gateway";
+
 /**
- * Calculates the cost of adding online booking (and optionally deposits) after launch,
- * using the configured prices for whatever project the visitor has scoped.
+ * Prices adding online booking (and optionally deposits) after launch, on the package already scoped,
+ * by re-running the same calculation with the extra features. Without a scoped project it uses Starter.
  */
 export function calculatePhase2Upgrade({
-  currentTotalINR = 0,
+  estimate,
   includeDeposits = false,
-  pricingConfig,
-  currentProject = "Current Website (Phase 1)",
-  alreadyDynamic = false,
+  source = {},
 }: {
-  currentTotalINR?: number;
+  estimate?: ProjectEstimateResult;
   includeDeposits?: boolean;
-  pricingConfig?: EstimatorCalculationConfig;
-  currentProject?: string;
-  alreadyDynamic?: boolean;
+  source?: PackagePricingSource;
 } = {}): Phase2UpgradeBreakdown {
-  const catalog = pricingConfig?.features?.length ? pricingConfig.features : POPULAR_FEATURES;
-  const featurePrice = (id: string) => catalog.find((f) => f.id === id)?.price ?? 0;
-  const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+  const packages = source.packages ?? MASTER_PACKAGES;
+  const features = source.features ?? MASTER_FEATURES;
+  const expressMultiplier = source.expressMultiplier ?? DEFAULT_EXPRESS_MULTIPLIER;
+  const selection = estimate?.pricingSelection ?? { tier: "starter" as MasterPackageTier, featureIds: [], quantities: {}, express: false };
 
-  const dynamicBackendINR = alreadyDynamic
-    ? 0
-    : ((pricingConfig?.types || WEBSITE_TYPES).find((t) => t.id === "dynamic")?.additionalCost ?? 0);
-  const bookingCalendarINR = featurePrice("booking_calendar");
-  const paymentGatewayINR = includeDeposits ? featurePrice("payment_gateway") : 0;
-  const incrementalCostINR = dynamicBackendINR + bookingCalendarINR + paymentGatewayINR;
-  const totalWithUpgradeINR = currentTotalINR + incrementalCostINR;
+  const run = (featureIds: string[]) =>
+    calculatePackageEstimate({ tier: selection.tier, featureIds, quantities: selection.quantities, express: selection.express, packages, features, expressMultiplier });
+
+  const current = run(selection.featureIds);
+  const withBackend = run(Array.from(new Set([...selection.featureIds, DATABASE_BACKEND_ID])));
+  const withCalendar = run(Array.from(new Set([...withBackendIds(selection.featureIds), BOOKING_CALENDAR_ID])));
+  const withDeposits = run(Array.from(new Set([...withBackendIds(selection.featureIds), BOOKING_CALENDAR_ID, PAYMENT_GATEWAY_ID])));
+  const upgraded = includeDeposits ? withDeposits : withCalendar;
+
+  const currentTotalINR = estimate ? current.totalINR : 0;
+  const baseline = estimate ? current.totalINR : current.packagePriceINR;
+  const dynamicBackendINR = withBackend.totalINR - current.totalINR;
+  const bookingCalendarINR = withCalendar.totalINR - withBackend.totalINR;
+  const paymentGatewayINR = includeDeposits ? withDeposits.totalINR - withCalendar.totalINR : 0;
+  const incrementalCostINR = upgraded.totalINR - current.totalINR;
+  const totalWithUpgradeINR = (estimate ? upgraded.totalINR : upgraded.totalINR - baseline);
 
   return {
-    currentProject,
+    currentProject: estimate?.categoryDisplayName ?? "Current Website (Phase 1)",
     currentTotalINR,
     upgradeType: includeDeposits ? "booking_and_deposits" : "booking",
     upgradeTitle: includeDeposits
@@ -530,4 +506,8 @@ export function calculatePhase2Upgrade({
     timelineEstimate: "2–3 Weeks total engineering time",
     explanation: `Phase 2 adds ${formatINR(incrementalCostINR)} (project total ${formatINR(totalWithUpgradeINR)}).`,
   };
+}
+
+function withBackendIds(ids: string[]): string[] {
+  return Array.from(new Set([...ids, DATABASE_BACKEND_ID]));
 }

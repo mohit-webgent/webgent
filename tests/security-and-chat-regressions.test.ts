@@ -9,8 +9,8 @@ import {
   isScopingOrBudgetQuery,
   processConsultantMessage,
 } from "../src/lib/services/ai-consultant/orchestrator";
-import { calculatePhase2Upgrade, calculateProjectEstimate } from "../src/lib/services/ai-consultant/calculator";
-import { getPricingCalculationConfig, DEFAULT_BACKEND_PRICING_DATA } from "../src/lib/services/pricing";
+import { calculatePhase2Upgrade, calculateProjectEstimate, packagePricingSource } from "../src/lib/services/ai-consultant/calculator";
+import { DEFAULT_BACKEND_PRICING_DATA } from "../src/lib/services/pricing";
 import { setGeminiClientFactory } from "../src/lib/services/gemini";
 import { escapeCsvCell } from "../src/lib/leads/csv";
 import {
@@ -93,7 +93,7 @@ describe("Chat replies use the visitor's actual project", () => {
     const { messageText } = await replyTo("I accept, let's go with this", "restaurant");
     const expected = calculateProjectEstimate(
       { categoryKey: "restaurant", selectedFeatureIds: [] },
-      getPricingCalculationConfig(DEFAULT_BACKEND_PRICING_DATA),
+      packagePricingSource(DEFAULT_BACKEND_PRICING_DATA),
     );
     assert.ok(!/gym/i.test(messageText), messageText);
     assert.ok(messageText.includes(expected.categoryDisplayName), messageText);
@@ -121,16 +121,20 @@ describe("Chat replies use the visitor's actual project", () => {
     assert.ok(messageText.includes("₹50,000"), messageText);
   });
 
-  it("upgrade prices come from admin-managed pricing", () => {
-    const config = getPricingCalculationConfig({
+  it("upgrade prices come from admin-managed pricing, on the package already scoped", () => {
+    const source = packagePricingSource({
       ...DEFAULT_BACKEND_PRICING_DATA,
-      features: DEFAULT_BACKEND_PRICING_DATA.features.map((f) =>
-        f.id === "booking_calendar" ? { ...f, price: 7777 } : f,
+      matrixFeatures: DEFAULT_BACKEND_PRICING_DATA.matrixFeatures.map((f) =>
+        f.id === "booking_scheduling_appointment_calendar" ? { ...f, addonPrice: 7777 } : f,
       ),
     });
-    const upgrade = calculatePhase2Upgrade({ currentTotalINR: 10000, pricingConfig: config, alreadyDynamic: true });
+    // A dynamic Starter site already has its database, so only the calendar is added.
+    const estimate = calculateProjectEstimate({ categoryKey: "business", architecture: "dynamic" }, source);
+    assert.equal(estimate.package.tier, "starter");
+    const upgrade = calculatePhase2Upgrade({ estimate, source });
+    assert.equal(upgrade.dynamicBackendINR, 0);
     assert.equal(upgrade.upgradeCostINR, 7777);
-    assert.equal(upgrade.newProjectTotalINR, 17777);
+    assert.equal(upgrade.newProjectTotalINR, estimate.cost.oneTimeTotalINR + 7777);
   });
 });
 

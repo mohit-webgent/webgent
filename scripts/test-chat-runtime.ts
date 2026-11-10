@@ -62,14 +62,14 @@ async function run() {
       prompt: "Mujhe jewellery store banwani hai", 
       expectEstimate: true, 
       expectedCategory: "ecommerce", 
-      expectedCost: 28999,
+      expectedCost: 40000,
       desc: "Explicit project switch from Gym to Jewellery Store" 
     },
     { 
       prompt: "Iska budget ₹25,000 hai", 
       expectEstimate: true, 
       expectedCategory: "ecommerce", 
-      expectedCost: 28999,
+      expectedCost: 40000,
       desc: "Budget update for new jewellery project" 
     },
   ];

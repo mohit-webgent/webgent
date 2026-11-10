@@ -13,6 +13,7 @@ import {
   formatCurrencyINR,
   normalizeMatrixFeatureId,
 } from "@/data/pricing-matrix-data";
+import { calculatePackageEstimate, DEFAULT_EXPRESS_MULTIPLIER } from "@/lib/package-pricing";
 
 export type PricingFlowMode = "package" | "package_plus_addons" | "custom_only";
 
@@ -69,11 +70,21 @@ export function usePricingConfigurator(initialData?: BackendPricingData) {
   const [selectedTier, setSelectedTier] = useState<MasterPackageTier>(initialTier);
   const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>(initialAddons);
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
-  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({
-    website_pages_additional_pages: 1,
-    deployment_maintenance_monthly_hours: 1,
-    design_frontend_additional_website_pages: 1,
-    testing_maintenance_monthly_development_hours: 1,
+  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>(() => {
+    const quantities: Record<string, number> = {
+      website_pages_additional_pages: 1,
+      deployment_maintenance_monthly_hours: 1,
+      design_frontend_additional_website_pages: 1,
+      testing_maintenance_monthly_development_hours: 1,
+    };
+    // "qty=feature_id:3,other_id:2" lets a shared link, such as one from the AI consultant, carry quantities.
+    for (const pair of (searchParams.get("qty") ?? "").split(",")) {
+      const [rawId, rawQty] = pair.split(":");
+      const id = normalizeMatrixFeatureId((rawId ?? "").trim());
+      const qty = Number(rawQty);
+      if (id && Number.isInteger(qty) && qty >= 1 && qty <= 100) quantities[id] = qty;
+    }
+    return quantities;
   });
   const [deliverySpeed, setDeliverySpeed] = useState<"standard" | "express">(initialDelivery);
 
@@ -122,6 +133,12 @@ export function usePricingConfigurator(initialData?: BackendPricingData) {
     if (selectedAddonIds.length > 0) {
       params.set("addons", selectedAddonIds.join(","));
     }
+    const chosenQuantities = selectedAddonIds
+      .filter((id) => (addonQuantities[id] ?? 1) > 1)
+      .map((id) => `${id}:${addonQuantities[id]}`);
+    if (chosenQuantities.length > 0) {
+      params.set("qty", chosenQuantities.join(","));
+    }
     if (selectedQuoteIds.length > 0) {
       params.set("quotes", selectedQuoteIds.join(","));
     }
@@ -134,7 +151,7 @@ export function usePricingConfigurator(initialData?: BackendPricingData) {
     const newQuery = params.toString();
     const currentUrl = window.location.pathname + (newQuery ? `?${newQuery}` : "");
     window.history.replaceState(null, "", currentUrl);
-  }, [flowMode, selectedTier, selectedAddonIds, selectedQuoteIds, deliverySpeed, activeCategoryKey]);
+  }, [flowMode, selectedTier, selectedAddonIds, selectedQuoteIds, addonQuantities, deliverySpeed, activeCategoryKey]);
 
   // Addons remain preserved across flow mode transitions
 
@@ -312,29 +329,27 @@ export function usePricingConfigurator(initialData?: BackendPricingData) {
     return list;
   }, [selectedQuoteIds, features]);
 
-  // One-time addons vs Monthly ongoing services
-  const onetimeAddonsCost = useMemo(() => {
-    return activeSelectedAddons
-      .filter((f) => f.billingType === "onetime")
-      .reduce((sum, f) => {
-        const qty = f.hasQuantity ? addonQuantities[f.id] || 1 : 1;
-        return sum + (f.addonPrice || 0) * qty;
-      }, 0);
-  }, [activeSelectedAddons, addonQuantities]);
+  // Totals come from the shared calculation, so the AI consultant and home estimator quote the same amounts.
+  const estimate = useMemo(
+    () =>
+      calculatePackageEstimate({
+        tier: selectedTier,
+        featureIds: activeSelectedAddons.map((f) => f.id),
+        quantities: addonQuantities,
+        express: deliverySpeed === "express",
+        includePackagePrice: flowMode !== "custom_only",
+        packages,
+        features,
+        expressMultiplier: initialData?.settings?.expressMultiplier ?? DEFAULT_EXPRESS_MULTIPLIER,
+      }),
+    [selectedTier, activeSelectedAddons, addonQuantities, deliverySpeed, flowMode, packages, features, initialData],
+  );
 
-  const monthlyServicesCost = useMemo(() => {
-    return activeSelectedAddons
-      .filter((f) => f.billingType === "monthly")
-      .reduce((sum, f) => {
-        const qty = f.hasQuantity ? addonQuantities[f.id] || 1 : 1;
-        return sum + (f.addonPrice || 0) * qty;
-      }, 0);
-  }, [activeSelectedAddons, addonQuantities]);
-
-  // Base + Onetime subtotal
-  const onetimeBaseSubtotal = basePackagePrice + onetimeAddonsCost;
-  const expressFee = deliverySpeed === "express" ? Math.round(onetimeBaseSubtotal * (initialData?.settings?.expressMultiplier ?? 0.2)) : 0;
-  const grandTotalOnetime = onetimeBaseSubtotal + expressFee;
+  const onetimeAddonsCost = estimate.addonsTotalINR;
+  const monthlyServicesCost = estimate.monthlyTotalINR;
+  const onetimeBaseSubtotal = estimate.subtotalINR;
+  const expressFee = estimate.expressFeeINR;
+  const grandTotalOnetime = estimate.totalINR;
 
   // Features included free in package count
   const includedCountInTier = useMemo(() => {
