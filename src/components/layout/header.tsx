@@ -57,7 +57,7 @@ function MobileMenu({ items, isActive }: { items: { title: string; href: string 
           ref={panelRef}
           data-lenis-prevent
           aria-describedby={undefined}
-          className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-canvas p-5 focus:outline-none"
+          className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-canvas textured p-5 focus:outline-none"
         >
           <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
           <div className="flex items-center justify-between">

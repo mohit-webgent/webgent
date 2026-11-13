@@ -52,7 +52,7 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg max-h-[min(88vh,720px)] rounded-2xl bg-surface border border-line-strong shadow-2xl relative text-left overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+              className="w-full max-w-lg max-h-[min(88vh,720px)] rounded-2xl bg-surface textured border border-line-strong shadow-2xl relative text-left overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
             >
               {/* Close Button */}
               <button

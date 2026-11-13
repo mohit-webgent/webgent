@@ -184,7 +184,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
       {/* =================================================================== */}
       {/* LEFT SIDE: CLEAN & AUTHENTIC AGENCY CONTACT CARD                   */}
       {/* =================================================================== */}
-      <div className="lg:col-span-5 bg-surface border border-line rounded-[24px] p-7 sm:p-9 md:p-10 shadow-2xl text-left relative overflow-hidden space-y-8">
+      <div className="lg:col-span-5 bg-surface textured border border-line rounded-[24px] p-7 sm:p-9 md:p-10 shadow-2xl text-left relative overflow-hidden space-y-8">
         {/* Subtle Ambient Light Corner */}
         <div
           aria-hidden="true"
@@ -285,7 +285,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
         {success ? (
           <div
             id="contact-form-success"
-            className="w-full bg-surface border border-line rounded-[24px] p-8 sm:p-12 text-center space-y-5 shadow-2xl animate-in fade-in duration-300"
+            className="w-full bg-surface textured border border-line rounded-[24px] p-8 sm:p-12 text-center space-y-5 shadow-2xl animate-in fade-in duration-300"
           >
             <div className="w-16 h-16 rounded-full bg-accent/15 text-accent border border-accent/30 flex items-center justify-center mx-auto shadow-lg">
               <CheckCircle2 className="w-8 h-8" />

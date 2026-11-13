@@ -205,7 +205,7 @@ export default async function RootLayout({
           This applies to <body>'s own attributes only, so real mismatches in the page still report. */}
       <body
         suppressHydrationWarning
-        className={`${sans.variable} ${display.variable} ${serif.variable} ${mono.variable} font-sans bg-canvas text-fg antialiased`}
+        className={`${sans.variable} ${display.variable} ${serif.variable} ${mono.variable} font-sans bg-canvas textured text-fg antialiased`}
       >
         <MainLayout
           navItems={navConfig.items}

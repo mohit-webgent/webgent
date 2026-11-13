@@ -81,7 +81,7 @@ export function PricingView({ initialData, faqs = [] }: PricingViewProps) {
                   className={`relative p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 border flex items-start gap-3.5 select-none group ${
                     isActive
                       ? "bg-surface-2 border-accent/90 ring-1 ring-accent/50"
-                      : "bg-surface border-line hover:border-line-strong hover:bg-surface-2"
+                      : "bg-surface textured border-line hover:border-line-strong hover:bg-surface-2"
                   }`}
                 >
                   <span
@@ -140,7 +140,7 @@ export function PricingView({ initialData, faqs = [] }: PricingViewProps) {
         {/* ========================================================================= */}
         {/* TRANSPARENCY & QUALITY ASSURANCE DISCLAIMERS                               */}
         {/* ========================================================================= */}
-        <section aria-label="Pricing Standards" className="rounded-2xl p-5 sm:p-6 bg-surface border border-line space-y-4">
+        <section aria-label="Pricing Standards" className="rounded-2xl p-5 sm:p-6 bg-surface textured border border-line space-y-4">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-accent" />
             <h3 className="text-sm font-semibold text-white tracking-tight uppercase">

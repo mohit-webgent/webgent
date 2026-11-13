@@ -85,7 +85,7 @@ export function ServicesView({ services }: ServicesViewProps) {
               <article
                 key={service.id}
                 data-reveal
-                className={`overflow-hidden rounded-xl border transition-colors duration-300 ${isOpen ? "border-line-strong bg-surface" : "border-line hover:bg-surface/60"}`}
+                className={`overflow-hidden rounded-xl border transition-colors duration-300 ${isOpen ? "border-line-strong bg-surface textured" : "border-line hover:bg-surface/60"}`}
               >
                 <h2>
                   <button

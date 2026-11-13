@@ -52,7 +52,7 @@ export function PricingPackageSection({ configurator }: { configurator: PricingC
                     className={`relative p-5 sm:p-6 rounded-2xl cursor-pointer transition-all duration-200 border flex flex-col justify-between gap-4 text-left select-none ${
                       isSelected
                         ? "bg-surface-2 border-accent/90 ring-1 ring-accent/50 -translate-y-0.5"
-                        : "bg-surface border-line hover:border-line-strong hover:bg-surface-2"
+                        : "bg-surface textured border-line hover:border-line-strong hover:bg-surface-2"
                     }`}
                   >
                     {/* Top Badges */}

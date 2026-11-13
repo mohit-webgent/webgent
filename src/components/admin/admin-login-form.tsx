@@ -71,7 +71,7 @@ export function AdminLoginForm({ callbackUrl, initialError }: AdminLoginFormProp
   };
 
   return (
-    <div className="admin-theme min-h-screen bg-canvas flex flex-col justify-center items-center px-4 py-10 sm:px-6">
+    <div className="admin-theme min-h-screen bg-canvas textured flex flex-col justify-center items-center px-4 py-10 sm:px-6">
       <main className="w-full max-w-sm space-y-7">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent/10 text-accent border border-accent/30">

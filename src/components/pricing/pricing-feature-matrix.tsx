@@ -86,7 +86,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
               </div>
 
               {/* Control Bar: Search + Category Pills + View Toggles */}
-              <div className="rounded-2xl p-4 space-y-3 bg-canvas border border-line shadow-lg">
+              <div className="rounded-2xl p-4 space-y-3 bg-canvas textured border border-line shadow-lg">
                 {/* Row 1: Search & Controls */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
                   <div className="relative flex-1">
@@ -200,7 +200,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
               {/* =================================================================== */}
               <div
                 ref={scrollContainerRef}
-                className="rounded-2xl border border-line bg-canvas overflow-hidden shadow-2xl"
+                className="rounded-2xl border border-line bg-canvas textured overflow-hidden shadow-2xl"
               >
                 {/* Sticky Table Header */}
                 <div className="sticky top-0 z-20 bg-surface-2 border-b border-line shadow-md">

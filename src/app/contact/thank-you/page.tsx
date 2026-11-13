@@ -32,8 +32,8 @@ export const metadata: Metadata = {
 
 export default function ContactThankYouPage() {
   return (
-    <div className="min-h-screen bg-canvas text-fg py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans flex items-center justify-center">
-      <div className="max-w-xl w-full bg-surface border border-line rounded-xl p-8 sm:p-12 text-center shadow-2xl relative z-10 space-y-8">
+    <div className="min-h-screen bg-canvas textured text-fg py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans flex items-center justify-center">
+      <div className="max-w-xl w-full bg-surface textured border border-line rounded-xl p-8 sm:p-12 text-center shadow-2xl relative z-10 space-y-8">
         <div className="p-4 bg-surface-2 text-fg border border-line rounded-xl w-16 h-16 mx-auto flex items-center justify-center">
           <CheckCircle2 className="w-8 h-8 text-fg" />
         </div>

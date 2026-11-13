@@ -34,7 +34,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
     <div className="admin-theme">
       <ToastProvider>
         <ConfirmProvider>
-          <div className="min-h-screen bg-canvas text-fg flex font-sans">
+          <div className="min-h-screen bg-canvas textured text-fg flex font-sans">
           <AdminSidebar
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}

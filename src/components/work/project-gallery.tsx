@@ -78,7 +78,7 @@ export function ProjectGallery({ screenshots, projectTitle }: ProjectGalleryProp
             key={idx}
             type="button"
             onClick={() => setActiveIdx(idx)}
-            className="group relative bg-surface border border-line rounded-none overflow-hidden shadow-xl hover:border-accent/50 transition-all text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent"
+            className="group relative bg-surface textured border border-line rounded-none overflow-hidden shadow-xl hover:border-accent/50 transition-all text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent"
             aria-label={`Open screenshot ${idx + 1} of ${total} in modal`}
           >
             <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
@@ -118,11 +118,11 @@ export function ProjectGallery({ screenshots, projectTitle }: ProjectGalleryProp
         >
           {/* Centered Modal Container */}
           <div
-            className="relative w-full max-w-4xl lg:max-w-5xl max-h-[90vh] bg-surface border border-line-strong shadow-2xl flex flex-col rounded-none overflow-hidden animate-in zoom-in-95 duration-200"
+            className="relative w-full max-w-4xl lg:max-w-5xl max-h-[90vh] bg-surface textured border border-line-strong shadow-2xl flex flex-col rounded-none overflow-hidden animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-line bg-canvas shrink-0">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-line bg-canvas textured shrink-0">
               <div className="flex items-center gap-2.5 min-w-0 pr-3">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse shrink-0" />
                 <span className="text-xs font-mono text-accent font-semibold tracking-wider uppercase shrink-0">
@@ -196,7 +196,7 @@ export function ProjectGallery({ screenshots, projectTitle }: ProjectGalleryProp
             </div>
 
             {/* Modal Footer with Thumbnail Strip & Shortcuts */}
-            <div className="px-4 sm:px-6 py-2.5 border-t border-line bg-canvas flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
+            <div className="px-4 sm:px-6 py-2.5 border-t border-line bg-canvas textured flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
               {/* Mini Thumbnails Strip if multiple images */}
               {total > 1 ? (
                 <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-full scrollbar-thin">

@@ -95,7 +95,7 @@ export function TestimonialsSection({ initialTestimonials = [] }: { initialTesti
                   onClick={() => setActive(index)}
                   aria-current={isActive ? "true" : undefined}
                   className={`relative flex min-w-[14rem] flex-1 items-center gap-3 overflow-hidden rounded-xl border p-3 text-left transition-colors duration-300 lg:min-w-0 ${
-                    isActive ? "border-line-strong bg-surface" : "border-line hover:bg-surface/60"
+                    isActive ? "border-line-strong bg-surface textured" : "border-line hover:bg-surface/60"
                   }`}
                 >
                   <Avatar name={clientName} url={testimonial.avatarUrl} size="h-9 w-9" />

@@ -32,7 +32,7 @@ export function ProjectCard({ project, className = "" }: { project: ProjectItem;
 
   return (
     <article data-reveal className={`group relative ${className}`}>
-      <div className="overflow-hidden rounded-xl border border-line bg-surface shadow-card transition-[border-color,transform] duration-500 ease-expo-out group-hover:-translate-y-1 group-hover:border-line-strong">
+      <div className="overflow-hidden rounded-xl border border-line bg-surface textured shadow-card transition-[border-color,transform] duration-500 ease-expo-out group-hover:-translate-y-1 group-hover:border-line-strong">
         <div className="flex items-center gap-2 border-b border-line bg-surface-2 px-3 py-2">
           <span aria-hidden="true" className="flex gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
@@ -103,7 +103,7 @@ function ProjectAccordion({ projects }: { projects: ProjectItem[] }) {
             onMouseEnter={() => setActive(index)}
             onFocus={() => setActive(index)}
             style={{ flexGrow: isActive ? 5 : 1, flexBasis: 0 }}
-            className={`group relative min-w-0 overflow-hidden rounded-xl border bg-surface transition-[flex-grow,border-color] duration-700 ease-expo-out ${isActive ? "border-line-strong" : "border-line"}`}
+            className={`group relative min-w-0 overflow-hidden rounded-xl border bg-surface textured transition-[flex-grow,border-color] duration-700 ease-expo-out ${isActive ? "border-line-strong" : "border-line"}`}
           >
             <div className={`absolute inset-0 transition-[filter,opacity] duration-700 ${isActive ? "" : "opacity-50 saturate-[0.35]"}`}>
               <ProjectScreen project={project} />

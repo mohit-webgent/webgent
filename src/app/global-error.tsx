@@ -15,8 +15,8 @@ export default function GlobalError({
 
   return (
     <html lang="en" className="dark">
-      <body className="bg-canvas text-fg min-h-screen flex items-center justify-center p-6 font-sans">
-        <div className="max-w-md w-full bg-surface border border-line rounded-xl p-8 text-center space-y-6">
+      <body className="bg-canvas textured text-fg min-h-screen flex items-center justify-center p-6 font-sans">
+        <div className="max-w-md w-full bg-surface textured border border-line rounded-xl p-8 text-center space-y-6">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/[0.02] border border-line text-fg-muted text-xs font-mono uppercase tracking-wider">
             Critical Root Failure
           </div>

@@ -14,7 +14,7 @@ export function PostCard({ post, large = false, className = "" }: { post: PostCa
   return (
     <article
       data-reveal
-      className={`group relative flex overflow-hidden rounded-xl border border-line bg-surface transition-[border-color,transform] duration-500 ease-expo-out hover:-translate-y-1 hover:border-line-strong ${
+      className={`group relative flex overflow-hidden rounded-xl border border-line bg-surface textured transition-[border-color,transform] duration-500 ease-expo-out hover:-translate-y-1 hover:border-line-strong ${
         large ? "flex-col lg:flex-row" : "flex-col"
       } ${className}`}
     >

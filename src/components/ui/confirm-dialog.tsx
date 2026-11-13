@@ -58,7 +58,7 @@ export function ConfirmDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-4 animate-in fade-in duration-200"
     >
       <div
-        className="relative w-full max-w-md max-h-[min(88vh,560px)] flex flex-col rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto modal-scrollbar"
+        className="relative w-full max-w-md max-h-[min(88vh,560px)] flex flex-col rounded-2xl border border-slate-800 bg-slate-900 textured p-6 text-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto modal-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">

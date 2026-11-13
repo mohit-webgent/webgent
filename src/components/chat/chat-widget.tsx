@@ -395,7 +395,7 @@ export function ChatWidget() {
           id="webgent-chat-window"
           role="dialog"
           aria-label="Webgent AI consultant"
-          className="anim-pop fixed inset-0 z-[60] flex flex-col overflow-hidden bg-surface sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[38rem] sm:max-h-[calc(100svh-3rem)] sm:w-[25.5rem] sm:rounded-2xl sm:border sm:border-line-strong sm:shadow-lift"
+          className="anim-pop fixed inset-0 z-[60] flex flex-col overflow-hidden bg-surface textured sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[38rem] sm:max-h-[calc(100svh-3rem)] sm:w-[25.5rem] sm:rounded-2xl sm:border sm:border-line-strong sm:shadow-lift"
         >
           <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-surface-2 px-3.5 py-3">
             <div className="flex min-w-0 items-center gap-2.5">
