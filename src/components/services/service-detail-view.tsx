@@ -110,7 +110,7 @@ export function ServiceDetailView({ service }: ServiceDetailViewProps) {
                 priority
                 unoptimized={!/^(\/|https:\/\/[^/]+\.supabase\.co\/|https:\/\/images\.unsplash\.com\/)/.test(service.coverImage)}
                 className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 800px"
+                sizes="(max-width: 1024px) 100vw, (max-width: 1440px) 800px, 56vw"
               />
             </div>
           )}

@@ -101,7 +101,7 @@ export function PricingPackageSection({ configurator }: { configurator: PricingC
                         </span>
                       </div>
                       <ul
-                        className="space-y-2 text-xs sm:text-[13px] text-fg-soft max-h-56 overflow-y-auto pr-1"
+                        className="space-y-2 text-xs sm:text-[0.8125rem] text-fg-soft max-h-56 overflow-y-auto pr-1"
                         style={{
                           scrollbarWidth: "thin",
                           scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",

@@ -21,13 +21,13 @@
      white veil over the element's own background colour, so it stays black and works on canvas
      and surface alike. Grain and fibre are small fractal-noise tiles the browser renders once.
      The clouds are soft gradients on tiles of unrelated sizes, so their pattern never visibly repeats. */
-  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2 0 0 0 -0.085'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
-  --texture-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.045 0.085' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.045 0 0 0 -0.012'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
-  --texture-cloud-a: radial-gradient(34% 30% at 28% 36%, rgb(255 255 255 / 0.034), rgb(255 255 255 / 0.017) 45%, transparent);
-  --texture-cloud-b: radial-gradient(30% 36% at 66% 62%, rgb(255 255 255 / 0.029), rgb(255 255 255 / 0.013) 45%, transparent);
-  --texture-cloud-c: radial-gradient(40% 28% at 50% 50%, rgb(255 255 255 / 0.025), rgb(255 255 255 / 0.011) 45%, transparent);
+  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.08 0 0 0 -0.031'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  --texture-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.045 0.085' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.028 0 0 0 -0.006'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  --texture-cloud-a: radial-gradient(34% 30% at 28% 36%, rgb(255 255 255 / 0.016), rgb(255 255 255 / 0.008) 45%, transparent);
+  --texture-cloud-b: radial-gradient(30% 36% at 66% 62%, rgb(255 255 255 / 0.014), rgb(255 255 255 / 0.006) 45%, transparent);
+  --texture-cloud-c: radial-gradient(40% 28% at 50% 50%, rgb(255 255 255 / 0.012), rgb(255 255 255 / 0.005) 45%, transparent);
 
-  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --gutter: clamp(1.25rem, 4.5vw, 4.5rem);
   --section-space: clamp(3rem, 5vw, 4.5rem);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -39,7 +39,11 @@
     box-sizing: border-box;
   }
 
+  /* Above 1440px everything grows with the screen, so wide monitors are filled edge to edge instead
+     of showing a narrow column. The base size climbs from 16px at 1440px to 24px at 2400px and wider;
+     Tailwind spacing and type are in rem, so the whole layout keeps its proportions. */
   html {
+    font-size: clamp(100%, calc(1rem + (100vw - 90rem) / 120), 150%);
     color-scheme: dark;
     background: rgb(var(--color-canvas));
     -webkit-text-size-adjust: 100%;
@@ -94,7 +98,8 @@
 @layer components {
   .wrap {
     width: 100%;
-    max-width: 1280px;
+    /* Fills the screen at every width; the cap only stops ultra-wide monitors from over-stretching. */
+    max-width: 160rem;
     margin-inline: auto;
     padding-inline: var(--gutter);
   }

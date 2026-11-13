@@ -153,7 +153,7 @@ export function AboutView() {
                 alt="Mohit Verma, Software Developer at DBA Lounge and Founder of Webgent Studio"
                 fill
                 priority
-                sizes="(max-width: 1024px) 100vw, 480px"
+                sizes="(max-width: 1024px) 100vw, (max-width: 1440px) 480px, 34vw"
                 className="object-cover object-center saturate-[0.8] transition-[filter,transform] duration-700 ease-expo-out group-hover:scale-[1.03] group-hover:saturate-100"
               />
               <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-canvas/85 to-transparent to-50%" />

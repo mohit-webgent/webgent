@@ -113,7 +113,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
         blocks.push(
           <p
             key={`p_${idx}_${blocks.length}`}
-            className={`text-[12.5px] leading-relaxed break-words ${
+            className={`text-[0.78125rem] leading-relaxed break-words ${
               isUser ? "text-accent-fg" : "text-fg"
             }`}
           >
@@ -136,7 +136,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
           {currentList.items.map((item, itemIdx) => (
             <li
               key={`item_${itemIdx}`}
-              className="flex items-start gap-2 text-[12px] text-fg-soft leading-relaxed"
+              className="flex items-start gap-2 text-[0.75rem] text-fg-soft leading-relaxed"
             >
               {isOrdered ? (
                 <span className="font-mono text-accent font-semibold text-xs shrink-0 mt-0.5">
@@ -173,7 +173,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
       blocks.push(
         <h4
           key={`h4_${idx}`}
-          className="text-[12px] font-bold text-white tracking-wide uppercase mt-2 mb-1 text-accent/90"
+          className="text-[0.75rem] font-bold text-white tracking-wide uppercase mt-2 mb-1 text-accent/90"
         >
           {parseInline(trimmed.slice(4), isUser)}
         </h4>,
@@ -187,7 +187,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
       blocks.push(
         <h3
           key={`h3_${idx}`}
-          className="text-[13px] font-bold text-white tracking-tight mt-2.5 mb-1"
+          className="text-[0.8125rem] font-bold text-white tracking-tight mt-2.5 mb-1"
         >
           {parseInline(trimmed.slice(3), isUser)}
         </h3>,
@@ -201,7 +201,7 @@ export function FormattedMessage({ content, isUser = false }: FormattedMessagePr
       blocks.push(
         <h2
           key={`h2_${idx}`}
-          className="text-[13.5px] font-bold text-white tracking-tight mt-3 mb-1.5"
+          className="text-[0.84375rem] font-bold text-white tracking-tight mt-3 mb-1.5"
         >
           {parseInline(trimmed.slice(2), isUser)}
         </h2>,
