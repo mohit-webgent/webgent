@@ -71,10 +71,25 @@ class ResendEmailService implements EmailService {
     return process.env.EMAIL_FROM || "Webgent <onboarding@resend.dev>";
   }
 
-  private getAdminEmail(): string {
-    return (
-      process.env.ADMIN_NOTIFICATION_EMAIL || process.env.SEED_ADMIN_EMAIL || "admin@webgent.com"
-    );
+  /**
+   * Where new-lead alerts go. ADMIN_NOTIFICATION_EMAIL wins; without it, the contact email from
+   * Admin → Settings is used, which is a real inbox, instead of a made-up address nobody reads.
+   */
+  private async getAdminEmail(): Promise<string> {
+    const configured = process.env.ADMIN_NOTIFICATION_EMAIL?.trim();
+    if (configured) return configured;
+
+    try {
+      const { getContactInfo } = await import("@/lib/services/cms");
+      const { email } = await getContactInfo();
+      if (email?.trim()) return email.trim();
+    } catch (error) {
+      logger.warn("[Email Service] Could not read the contact email for admin alerts", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    return process.env.SEED_ADMIN_EMAIL?.trim() || "admin@webgent.com";
   }
 
   private maskEmail(email: string): string {
@@ -141,6 +156,16 @@ class ResendEmailService implements EmailService {
         return true;
       }
 
+      // On the live site a missing key used to "simulate" the send and report success, so lost
+      // emails left no trace. Fail loudly there; keep the simulation for local work and tests.
+      if (process.env.NODE_ENV === "production") {
+        logger.error(
+          "[Email Service] RESEND_API_KEY is missing or invalid, so the email was NOT sent",
+          { subject: options.subject, recipients: recipients.map((r) => this.maskEmail(r)) },
+        );
+        return false;
+      }
+
       logger.info(
         `[Email Service Simulation] Mock email dispatched for subject: "${options.subject}"`,
         {
@@ -180,12 +205,12 @@ class ResendEmailService implements EmailService {
       react: reactElement,
       text: plainText,
       // The sending address has no inbox, so replies have to go to one that is read.
-      replyTo: this.getAdminEmail(),
+      replyTo: await this.getAdminEmail(),
     });
   }
 
   async sendAdminNewLeadNotification(props: AdminLeadNotificationEmailProps): Promise<boolean> {
-    const adminTo = this.getAdminEmail();
+    const adminTo = await this.getAdminEmail();
 
     const reactElement = React.createElement(AdminLeadNotificationEmail, props);
 
