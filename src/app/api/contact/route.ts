@@ -10,18 +10,14 @@ import { logger } from "@/lib/logger";
 import { waitUntil } from "@vercel/functions";
 import { getClientIp } from "@/lib/client-ip";
 
+const CONTACT_LIMIT_PER_EMAIL = 3;
+const CONTACT_LIMIT_PER_IP = 10;
+const CONTACT_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+
 export async function POST(req: NextRequest) {
   try {
     const ipAddress = getClientIp(req.headers);
     const userAgent = req.headers.get("user-agent") || undefined;
-
-    const rateLimit = await checkRateLimit(`contact:${ipAddress}`, 3, 60 * 60 * 1000);
-    if (!rateLimit.success) {
-      logger.warn("Contact form rate limit exceeded", { ipAddress });
-      return ApiResponse.tooManyRequests(
-        "Submission limit reached. You can submit a maximum of 3 inquiries per hour.",
-      );
-    }
 
     const body = await req.json().catch(() => ({}));
 
@@ -41,6 +37,33 @@ export async function POST(req: NextRequest) {
       return ApiResponse.badRequest(
         turnstileResult.error || "Turnstile security check failed.",
         "TURNSTILE_FAILED",
+      );
+    }
+
+    // Limits are checked only after validation and Turnstile, so typos and failed checks don't use
+    // up anyone's allowance. Each sender gets 3 enquiries an hour. The per-IP cap is looser because
+    // a home Wi-Fi, an office or a mobile network can put many genuine visitors behind one address.
+    const senderLimit = await checkRateLimit(
+      `contact:email:${email.toLowerCase()}`,
+      CONTACT_LIMIT_PER_EMAIL,
+      CONTACT_LIMIT_WINDOW_MS,
+    );
+    if (!senderLimit.success) {
+      logger.warn("Contact form limit reached for sender", { ipAddress });
+      return ApiResponse.tooManyRequests(
+        "You've already sent 3 enquiries in the last hour. Please wait a little before sending another, or message us on WhatsApp.",
+      );
+    }
+
+    const networkLimit = await checkRateLimit(
+      `contact:ip:${ipAddress}`,
+      CONTACT_LIMIT_PER_IP,
+      CONTACT_LIMIT_WINDOW_MS,
+    );
+    if (!networkLimit.success) {
+      logger.warn("Contact form limit reached for network", { ipAddress });
+      return ApiResponse.tooManyRequests(
+        "Too many enquiries have come from your network in the last hour. Please try again later, or message us on WhatsApp.",
       );
     }
 

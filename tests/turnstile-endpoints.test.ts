@@ -62,6 +62,54 @@ describe("Protected Form Endpoints & Database Isolation Suite", () => {
     });
   });
 
+  describe("Contact Form Rate Limits (/api/contact)", () => {
+    const ip = `10.${Date.now() % 250}.${Math.floor(Math.random() * 250)}.7`;
+    const stamp = Date.now();
+    const sender = `limit_a_${stamp}@example.test`;
+    const otherSender = `limit_b_${stamp}@example.test`;
+
+    const submit = (body: Record<string, unknown>) =>
+      contactRoute(
+        new NextRequest("http://localhost:3000/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-forwarded-for": ip },
+          body: JSON.stringify(body),
+        }),
+      );
+
+    const valid = (email: string) => ({
+      name: "Rate Limit Tester",
+      email,
+      message: "Checking that the contact form limits each sender, not the whole network.",
+    });
+
+    it("does not count failed submissions, and limits each sender rather than the whole network", async () => {
+      delete process.env.TURNSTILE_SECRET_KEY;
+      try {
+        // Invalid submissions are rejected before the limiter, so they never use up the allowance.
+        for (let i = 0; i < 5; i += 1) {
+          const res = await submit({});
+          assert.equal(res.status, 400);
+        }
+
+        for (let i = 0; i < 3; i += 1) {
+          const res = await submit(valid(sender));
+          assert.equal(res.status, 201, `submission ${i + 1} from the first sender should succeed`);
+        }
+
+        const fourth = await submit(valid(sender));
+        assert.equal(fourth.status, 429, "a fourth enquiry from the same sender within the hour is limited");
+
+        // Someone else on the same network (same IP) is not blocked by the first sender's limit.
+        const other = await submit(valid(otherSender));
+        assert.equal(other.status, 201, "a different sender on the same IP can still submit");
+      } finally {
+        process.env = { ...originalEnv };
+        await prisma.lead.deleteMany({ where: { email: { in: [sender, otherSender] } } });
+      }
+    });
+  });
+
   // ---------------------------------------------------------------------------
   // 2. Newsletter Route Protection
   // ---------------------------------------------------------------------------
