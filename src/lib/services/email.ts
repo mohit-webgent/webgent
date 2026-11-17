@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { render } from "@react-email/components";
 import * as React from "react";
 import { logger } from "@/lib/logger";
+import { siteConfig } from "@/config/site";
 
 import {
   ContactConfirmationEmail,
@@ -236,7 +237,7 @@ class ResendEmailService implements EmailService {
       name,
     });
 
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || siteConfig.url).replace(/\/$/, "");
     const confirmUrl = `${appUrl}/api/newsletter/confirm?token=${encodeURIComponent(token)}`;
 
     const plainText = `Hello${name ? ` ${name}` : ""},\n\nPlease confirm your subscription to the Webgent Newsletter by visiting:\n${confirmUrl}\n\nThis verification link is valid for 24 hours.\n\nBest regards,\nWebgent`;
@@ -254,7 +255,7 @@ class ResendEmailService implements EmailService {
     name?: string | null,
     unsubscribeToken?: string | null,
   ): Promise<boolean> {
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://webgent.com").replace(/\/$/, "");
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || siteConfig.url).replace(/\/$/, "");
     const unsubUrl = unsubscribeToken
       ? `${appUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
       : `${appUrl}/api/newsletter/unsubscribe`;

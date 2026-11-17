@@ -34,7 +34,6 @@ const defaultContactMetadata: Metadata = {
     title: "Contact Us — Webgent",
     description: "Get in touch! I'll respond within 24 hours.",
     images: [`${siteConfig.url}/api/og?title=Have+a+Project+in+Mind%3F+Let's+Talk!&badge=Contact+Webgent`],
-    creator: "@webgent",
   },
 };
 

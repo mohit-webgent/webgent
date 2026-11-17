@@ -35,8 +35,6 @@ const defaultServicesMetadata: Metadata = {
     description:
       "Explore Webgent's full-stack web engineering, custom Next.js applications, and digital platforms.",
     images: [`${siteConfig.url}/api/og?title=Services+%26+Capabilities&badge=Web+Engineering`],
-    creator: "@webgent",
-    site: "@webgent",
   },
 };
 

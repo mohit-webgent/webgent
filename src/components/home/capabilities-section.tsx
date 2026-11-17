@@ -509,7 +509,7 @@ export function CapabilitiesSection({ projects = [] }: { projects?: HomeProject[
         <SectionHeading
           eyebrow="What we build"
           title="From a first website to a full product."
-          description="One developer, involved from the first conversation to launch day."
+          description="Built by Mohit Verma, the founder of Webgent: one developer, involved from the first conversation to launch day."
         />
         <Link href="/services" className="btn btn-secondary hidden shrink-0 lg:inline-flex">
           <span>All services</span>

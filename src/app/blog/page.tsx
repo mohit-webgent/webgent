@@ -41,7 +41,6 @@ const defaultBlogMetadata: Metadata = {
     description:
       "Explore engineering insights, product design case studies, and modern web architecture articles.",
     images: [`${siteConfig.url}/api/og?title=Blog+%26+Insights&badge=Engineering`],
-    creator: "@webgent",
   },
 };
 

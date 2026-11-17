@@ -28,7 +28,7 @@ const DEFAULT_SETTINGS: Record<string, { value: string; description: string; isP
       isPublic: true,
     },
     office_address: {
-      value: "Gurugram / Noida, India",
+      value: "Noida, India",
       description: "Physical Headquarters Address",
       isPublic: true,
     },

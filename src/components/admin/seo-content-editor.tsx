@@ -523,7 +523,7 @@ export function SeoContentEditor({ initialSettings }: SeoContentEditorProps) {
                   value={settings.global.twitterHandle}
                   onChange={(e) => updateGlobal("twitterHandle", e.target.value)}
                   className="w-full px-3.5 py-2 text-xs rounded-xl bg-background border border-border/60 focus:outline-none focus:ring-1 focus:ring-primary"
-                  placeholder="@webgent"
+                  placeholder="@yourhandle"
                 />
               </div>
 

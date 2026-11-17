@@ -37,8 +37,6 @@ const defaultPricingMetadata: Metadata = {
     description:
       "Transparent starting rates and interactive budget calculator for web applications, SaaS MVPs, and integrations.",
     images: [`${siteConfig.url}/api/og?title=Website+Pricing+%26+Cost+Estimator&badge=Pricing`],
-    creator: "@webgent",
-    site: "@webgent",
   },
 };
 

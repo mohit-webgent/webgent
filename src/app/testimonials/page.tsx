@@ -38,7 +38,6 @@ const defaultTestimonialsMetadata: Metadata = {
     title: "Client Testimonials & Feedback | Webgent",
     description: "Client feedback on web development projects built by Mohit Verma.",
     images: [`${siteConfig.url}/api/og?title=Client+Testimonials&badge=Reviews`],
-    creator: "@webgent",
   },
 };
 

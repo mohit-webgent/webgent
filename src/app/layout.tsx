@@ -103,8 +103,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: seo.global.defaultTitle,
       description: seo.global.defaultDescription,
       images: [seo.global.defaultOgImage],
-      creator: seo.global.twitterHandle,
-      site: seo.global.twitterHandle,
+      ...(seo.global.twitterHandle
+        ? { creator: seo.global.twitterHandle, site: seo.global.twitterHandle }
+        : {}),
     },
     robots: {
       index: seo.global.defaultRobotsIndex,
@@ -138,6 +139,10 @@ export default async function RootLayout({
   // Tells search engines who Webgent is: an Indian web development business founded by Mohit Verma.
   // This is what separates it from unrelated businesses that share the name.
   const founderId = `${originUrl}/#mohit-verma`;
+  // Indian numbers are stored without a country code; search engines expect the international form.
+  const phoneDigits = (contactInfo.phone || "").replace(/\D/g, "");
+  const telephone =
+    phoneDigits.length === 10 ? `+91-${phoneDigits}` : phoneDigits ? `+${phoneDigits}` : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -146,21 +151,29 @@ export default async function RootLayout({
         "@id": `${originUrl}/#organization`,
         name: seoConfig.global.siteName,
         alternateName: `${seoConfig.global.siteName} by Mohit Verma`,
-        url: originUrl,
-        logo: `${originUrl}/api/og?title=${encodeURIComponent(seoConfig.global.siteName)}`,
+        // Another, unrelated web-design business also uses the Webgent name. This says which one this is.
+        disambiguatingDescription:
+          "Web design and development studio in Noida, India, founded and run by Mohit Verma. Not affiliated with other businesses that use the Webgent name.",
+        url: `${originUrl}/`,
+        logo: {
+          "@type": "ImageObject",
+          url: `${originUrl}/logo.png`,
+          width: 512,
+          height: 512,
+        },
         image: seoConfig.global.defaultOgImage,
         description: seoConfig.global.defaultDescription,
         email: contactInfo.email,
-        telephone: contactInfo.phone,
+        ...(telephone ? { telephone } : {}),
         address: {
           "@type": "PostalAddress",
-          addressLocality: "Gurugram",
-          addressRegion: "Haryana",
+          addressLocality: "Noida",
+          addressRegion: "Uttar Pradesh",
           addressCountry: "IN",
         },
         areaServed: { "@type": "Country", name: "India" },
         founder: { "@id": founderId },
-        sameAs: [siteConfig.links.github, siteConfig.links.linkedin],
+        // No sameAs: Webgent has no official profiles of its own yet. The founder's profiles are on the Person.
         knowsAbout: [
           "Corporate websites",
           "E-commerce websites",
@@ -175,18 +188,25 @@ export default async function RootLayout({
         "@type": "Person",
         "@id": founderId,
         name: FOUNDER_PROFILE.name,
-        jobTitle: "Founder & Web Developer",
+        jobTitle: "Founder & Web Developer, Webgent",
+        description: "Founder and web developer of Webgent, a web design and development studio in Noida, India.",
         url: `${originUrl}/about`,
         image: `${originUrl}${FOUNDER_PROFILE.avatarUrl}`,
         worksFor: { "@id": `${originUrl}/#organization` },
-        address: { "@type": "PostalAddress", addressLocality: "Gurugram", addressCountry: "IN" },
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Noida",
+          addressRegion: "Uttar Pradesh",
+          addressCountry: "IN",
+        },
         sameAs: [FOUNDER_PROFILE.linkedinUrl, FOUNDER_PROFILE.githubUrl, FOUNDER_PROFILE.portfolioUrl],
       },
       {
         "@type": "WebSite",
         "@id": `${originUrl}/#website`,
-        url: originUrl,
+        url: `${originUrl}/`,
         name: seoConfig.global.siteName,
+        inLanguage: "en",
         publisher: {
           "@id": `${originUrl}/#organization`,
         },

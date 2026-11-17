@@ -49,6 +49,14 @@ export function Footer({ data }: FooterProps = {}) {
               {siteConfig.name}
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-fg-muted">{config.brandTagline}</p>
+            {/* Fixed, factual ownership line: it tells visitors and search engines which Webgent this is. */}
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-fg-muted">
+              {siteConfig.name} is a web design and development studio founded and run by{" "}
+              <Link href="/about" className="text-fg-soft underline decoration-line-strong underline-offset-2 hover:text-fg">
+                Mohit Verma
+              </Link>
+              , based in Noida, India.
+            </p>
             <Link href="/contact" className="btn btn-light btn-sm mt-5">
               <span>Start a project</span>
               <ArrowUpRight className="h-3.5 w-3.5" />

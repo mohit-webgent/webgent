@@ -57,23 +57,23 @@ export const FOUNDER_PROFILE = {
   name: "Mohit Verma",
   badge: "ABOUT / THE PERSON BEHIND WEBGENT",
   headline: "Building digital experiences. Engineering real-world solutions.",
-  roleTitle: "Software Developer at DBA Lounge · Founder of Webgent Studio",
-  subTitle: "Software Developer at DBA Lounge | Founder & Developer at Webgent Studio",
+  roleTitle: "Software Developer at DBA Lounge · Founder of Webgent",
+  subTitle: "Software Developer at DBA Lounge | Founder & Developer at Webgent",
   avatarUrl: "/images/mohit-verma.jpeg",
   identities: [
     "Software Developer at DBA Lounge",
-    "Founder & Developer at Webgent Studio",
+    "Founder & Developer at Webgent",
     "Frontend & React Engineer",
     "MERN Stack Developer",
   ],
-  location: "Gurugram / Noida, India",
+  location: "Noida, India",
   email: "mohitvermag75@gmail.com",
   portfolioUrl: "https://vermamohit.in/",
   githubUrl: "https://github.com/mohitvermag",
   linkedinUrl: "https://linkedin.com/in/webmohitverma",
 
   introParagraphs: [
-    "I'm Mohit Verma, a software developer focused on building responsive web interfaces and practical web applications. Alongside my professional role at DBA Lounge, I run Webgent Studio, where I work on independent web projects and digital experiences for businesses.",
+    "I'm Mohit Verma, the founder of Webgent, a web design and development studio based in Noida, India. Through Webgent I design and build websites and web applications for businesses, alongside my full-time role as a software developer at DBA Lounge.",
     "My background combines formal computer science education (MCA), hands-on full-stack development, production project work, and continued learning across modern web technologies.",
   ],
 
@@ -100,13 +100,13 @@ export const FOUNDER_PROFILE = {
   },
 
   studioRole: {
-    venture: "Webgent Studio",
+    venture: "Webgent",
     role: "Founder & Developer",
     focus: "Web Development & Digital Solutions",
-    location: "Gurugram / Noida, India",
+    location: "Noida, India",
     period: "Active",
     label: "PERSONAL VENTURE",
-    title: "Founder & Developer at Webgent Studio",
+    title: "Founder & Developer at Webgent",
     description:
       "Building an independent web development studio focused on responsive business websites, modern web applications, and practical digital solutions tailored to client requirements.",
     highlights: [

@@ -86,7 +86,6 @@ export function isTrustedCanonicalOrigin(val: string): boolean {
       process.env.NEXT_PUBLIC_APP_URL,
       "https://www.webgent.online",
       "https://webgent.online",
-      "https://webgent.com",
     ].filter(Boolean) as string[];
 
     const allowedHosts = new Set<string>();
@@ -109,11 +108,8 @@ export function isTrustedCanonicalOrigin(val: string): boolean {
       return true;
     }
 
-    // 4. Subdomains of the project's own domains. Shared hosts such as *.vercel.app are not trusted:
+    // 4. Subdomains of the project's own domain. webgent.com belongs to someone else and is not trusted. Shared hosts such as *.vercel.app are not trusted:
     //    anyone can publish there, and the old preview address must not win over the real domain.
-    if (host.endsWith(".webgent.com") || host === "webgent.com") {
-      return true;
-    }
     if (host.endsWith(".webgent.online")) {
       return true;
     }
@@ -584,7 +580,7 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
 export const DEFAULT_CONTACT_INFO: ContactInfo = {
   email: "mohitvermag75@gmail.com",
   phone: "+91 8800241462",
-  officeAddress: "Gurugram / Noida, India",
+  officeAddress: "Noida, India",
   businessHours: "Replies by email or WhatsApp",
   githubUrl: "https://github.com/mohitvermag",
   linkedinUrl: "https://linkedin.com/in/webmohitverma",
@@ -640,7 +636,8 @@ export const DEFAULT_GLOBAL_SEO: GlobalSeoConfig = {
   canonicalBaseUrl: "https://www.webgent.online",
   defaultOgImage: "https://www.webgent.online/api/og?title=Webgent&badge=Web+Engineering",
   twitterCard: "summary_large_image",
-  twitterHandle: "@webgent",
+  // Webgent has no X account; @webgent belongs to someone else. Set one in Admin → SEO if that changes.
+  twitterHandle: "",
   defaultRobotsIndex: true,
   defaultRobotsFollow: true,
 };

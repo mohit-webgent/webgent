@@ -146,8 +146,6 @@ export async function verifyTurnstileToken(
         "webgent.vercel.app",
         "webgent.online",
         "www.webgent.online",
-        "webgent.com",
-        "www.webgent.com",
       ];
 
       const configuredSiteUrl =

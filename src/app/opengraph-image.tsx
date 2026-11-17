@@ -160,7 +160,7 @@ export default async function OpenGraphImage() {
             color: "#F0EEE8",
           }}
         >
-          <span style={{ fontSize: "18px", fontWeight: 700, color: "#F26A1F" }}>webgent.com</span>
+          <span style={{ fontSize: "18px", fontWeight: 700, color: "#F26A1F" }}>webgent.online</span>
         </div>
 
         <div

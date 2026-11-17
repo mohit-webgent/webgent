@@ -181,7 +181,7 @@ describe("Centralized CMS Data Access Layer Suite", () => {
     it("verifies DEFAULT_CONTACT_INFO fields", () => {
       assert.strictEqual(DEFAULT_CONTACT_INFO.email, "mohitvermag75@gmail.com");
       assert.strictEqual(DEFAULT_CONTACT_INFO.phone, "+91 8800241462");
-      assert.strictEqual(DEFAULT_CONTACT_INFO.officeAddress, "Gurugram / Noida, India");
+      assert.strictEqual(DEFAULT_CONTACT_INFO.officeAddress, "Noida, India");
     });
   });
 
@@ -1146,10 +1146,9 @@ describe("Centralized CMS Data Access Layer Suite", () => {
       it("enforces trusted canonical origin security (rejects untrusted hosts)", () => {
         // Trusted origins allowed
         assert.strictEqual(isTrustedCanonicalOrigin("https://www.webgent.online"), true);
-        assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.com"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("http://localhost:3000"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("http://127.0.0.1:3000"), true);
-        assert.strictEqual(isTrustedCanonicalOrigin("https://subdomain.webgent.com"), true);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://subdomain.webgent.online"), true);
         assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.online"), true);
         // Shared hosting domains are not trusted, because anyone can publish on them.
         assert.strictEqual(isTrustedCanonicalOrigin("https://preview-deploy.vercel.app"), false);
@@ -1159,6 +1158,9 @@ describe("Centralized CMS Data Access Layer Suite", () => {
         assert.strictEqual(isTrustedCanonicalOrigin("https://evil-phishing.org"), false);
         assert.strictEqual(isTrustedCanonicalOrigin("https://malware-distributor.net"), false);
         assert.strictEqual(isTrustedCanonicalOrigin("https://fake-webgent.com.evil.com"), false);
+        // webgent.com is an unrelated domain, so it must not be accepted as this site's canonical origin.
+        assert.strictEqual(isTrustedCanonicalOrigin("https://webgent.com"), false);
+        assert.strictEqual(isTrustedCanonicalOrigin("https://www.webgent.com"), false);
 
         // Schema rejects untrusted canonical origin
         const untrustedPayload = {

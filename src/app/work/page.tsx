@@ -39,7 +39,6 @@ const defaultWorkMetadata: Metadata = {
     description:
       "Explore Webgent's portfolio of web engineering, SaaS products, cloud architectures, and digital experiences.",
     images: [`${siteConfig.url}/api/og?title=Work&badge=Portfolio`],
-    creator: "@webgent",
   },
 };
 

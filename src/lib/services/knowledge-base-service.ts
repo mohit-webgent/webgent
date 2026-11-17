@@ -32,7 +32,7 @@ export const DEFAULT_APPROVED_KNOWLEDGE: ApprovedKnowledgeItem[] = [
     title: "Webgent Company Overview & Business Model",
     category: "about",
     content:
-      "Webgent is a next-generation web solutions and digital engineering agency based in Gurugram / Noida, India. We specialize in Next.js 14, React, PostgreSQL, and custom web applications. Milestone payments: 50% upfront, 50% upon final launch review. Clients receive 100% full source code ownership with zero platform lock-in.",
+      "Webgent is a next-generation web solutions and digital engineering agency based in Noida, India, founded and run by Mohit Verma. We specialize in Next.js 14, React, PostgreSQL, and custom web applications. Milestone payments: 50% upfront, 50% upon final launch review. Clients receive 100% full source code ownership with zero platform lock-in.",
     keywords: ["company", "webgent", "overview", "payments", "milestones", "ownership"],
     enabled: true,
     updatedAt: new Date().toISOString(),

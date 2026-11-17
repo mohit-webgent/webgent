@@ -72,7 +72,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
 
   const contactEmail = contactInfo?.email || FOUNDER_PROFILE.email || "mohitvermag75@gmail.com";
   const contactPhone = contactInfo?.phone || WHATSAPP_CONFIG.displayNumber;
-  const contactAddress = contactInfo?.officeAddress || FOUNDER_PROFILE.location || "Gurugram / Noida, India";
+  const contactAddress = contactInfo?.officeAddress || FOUNDER_PROFILE.location || "Noida, India";
   const whatsappUrl = buildWhatsAppUrl({
     serviceName: prefilledService || undefined,
   });

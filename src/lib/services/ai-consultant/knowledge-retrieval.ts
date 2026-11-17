@@ -82,7 +82,7 @@ export async function getWebgentKnowledgeIndex(): Promise<KnowledgeDocument[]> {
     content: `Webgent (${siteConfig.url}) is a web development studio founded and led by Mohit Verma.
 Tagline: "${siteConfig.tagline}".
 Mission: Webgent designs, builds, and scales high-performance web applications, cloud infrastructure, and conversion-focused digital platforms for ambitious modern brands, local businesses, and fast-growing startups.
-Location: Gurugram / Noida, India.
+Location: Noida, India.
 Contact: ${FOUNDER_PROFILE.email} / direct contact form at /contact.
 Core philosophy: Milestone-based payments (50% upfront, 50% upon final launch review), 100% full source code ownership transferred to the client, zero platform lock-in, and a free post-launch bug-fix warranty of ${warrantySummary}.`,
     keywords: [
@@ -130,7 +130,7 @@ Verified Profiles & Contact:
 - GitHub: ${FOUNDER_PROFILE.githubUrl}
 - LinkedIn: ${FOUNDER_PROFILE.linkedinUrl}
 - Direct Email: ${FOUNDER_PROFILE.email}
-- Location: Gurugram / Noida, India.`,
+- Location: Noida, India.`,
     keywords: [
       "mohit",
       "verma",

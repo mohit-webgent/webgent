@@ -1150,8 +1150,9 @@ export async function resolveRouteMetadata(
         title: ogTitle,
         description: ogDesc,
         images: [ogImg],
-        creator: seo.global.twitterHandle,
-        site: seo.global.twitterHandle,
+        ...(seo.global.twitterHandle
+          ? { creator: seo.global.twitterHandle, site: seo.global.twitterHandle }
+          : {}),
       },
     };
   } catch (error) {

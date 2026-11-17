@@ -50,8 +50,6 @@ const defaultHomeMetadata: Metadata = {
     title: "Webgent — Modern Web Development & Engineering Solutions",
     description: "High-performance web applications, scalable cloud backends, and digital systems.",
     images: [`${siteConfig.url}/api/og?title=Webgent&badge=Web+Engineering`],
-    creator: "@webgent",
-    site: "@webgent",
   },
 };
 

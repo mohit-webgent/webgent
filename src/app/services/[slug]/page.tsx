@@ -54,8 +54,6 @@ export async function generateMetadata({ params: routeParams }: ServicePageProps
       title,
       description,
       images: [ogImage],
-      creator: "@webgent",
-      site: "@webgent",
     },
     };
   } catch {

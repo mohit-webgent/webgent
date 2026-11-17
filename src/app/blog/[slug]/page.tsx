@@ -80,7 +80,6 @@ export async function generateMetadata({
         title: fullTitle,
         description,
         images: [ogImage],
-        creator: "@webgent",
       },
     };
   } catch {

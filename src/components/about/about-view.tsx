@@ -150,7 +150,7 @@ export function AboutView() {
             <div className="group relative mx-auto aspect-[4/5] max-w-[20rem] overflow-hidden rounded-2xl border border-line lg:max-w-none">
               <Image
                 src="/images/mohit-verma.jpeg"
-                alt="Mohit Verma, Software Developer at DBA Lounge and Founder of Webgent Studio"
+                alt="Mohit Verma, Software Developer at DBA Lounge and Founder of Webgent"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, (max-width: 1440px) 480px, 34vw"
