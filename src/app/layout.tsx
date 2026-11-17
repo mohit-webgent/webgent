@@ -13,6 +13,7 @@ import {
 } from "@/lib/services/cms";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleTag } from "@/components/analytics/google-tag";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 
 const sans = Geist({
   subsets: ["latin"],
@@ -194,8 +195,10 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className="dark">
+    // The boot script may switch <html> to light before React loads, so its attributes can differ.
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

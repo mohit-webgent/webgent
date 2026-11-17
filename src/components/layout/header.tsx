@@ -10,6 +10,7 @@ import { gsap, isReducedMotion } from "@/components/animations/gsap-core";
 import { CtaLink } from "@/components/ui/cta-link";
 import { siteConfig } from "@/config/site";
 import type { NavItem } from "@/lib/services/cms-shared";
+import { ThemeToggle } from "./theme-toggle";
 
 export interface HeaderProps {
   navItems?: NavItem[];
@@ -169,6 +170,7 @@ export function Header({ navItems }: HeaderProps = {}) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <CtaLink href="/contact" label="Header Start Project" magnetic={false} className="btn btn-light btn-sm hidden sm:inline-flex">
             <span>Start a project</span>
             <ArrowRight className="h-3.5 w-3.5" />

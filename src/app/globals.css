@@ -16,20 +16,92 @@
   --color-accent-hover: 255 128 56;
   --color-accent-fg: 20 8 2;
   --color-success: 255 159 87;
+  --color-accent-text: 242 106 31;
+
+  /* "ink" is the high-contrast colour (white here, near-black in light mode); "shade" is its
+     opposite. Tailwind's white and black point at these, so overlays such as bg-white/5 or
+     text-white follow the theme without touching every component. */
+  --color-ink: 255 255 255;
+  --color-shade: 0 0 0;
+  /* Text that sits on a permanently dark control, such as btn-dark, in either theme. */
+  --color-on-dark: 240 238 232;
+
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 20px 40px -24px rgb(0 0 0 / 0.65);
+  --shadow-lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 36px 70px -32px rgb(0 0 0 / 0.8);
+  --shadow-glow: 0 0 0 1px rgb(242 106 31 / 0.3), 0 12px 28px -16px rgb(0 0 0 / 0.7);
+
+  /* The slate scale (used by the admin console and a few shared dialogs). */
+  --slate-50: 248 247 243;
+  --slate-100: 244 243 238;
+  --slate-200: 224 224 218;
+  --slate-300: 200 200 194;
+  --slate-400: 166 166 160;
+  --slate-500: 150 150 143;
+  --slate-600: 126 126 120;
+  --slate-700: 44 44 48;
+  --slate-800: 34 34 37;
+  --slate-900: 12 12 13;
+  --slate-950: 4 4 5;
 
   /* Textured black: a fine-grained black material in place of flat black. Each layer is a faint
      white veil over the element's own background colour, so it stays black and works on canvas
      and surface alike. Grain and fibre are small fractal-noise tiles the browser renders once.
      The clouds are soft gradients on tiles of unrelated sizes, so their pattern never visibly repeats. */
-  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.08 0 0 0 -0.031'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
-  --texture-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.045 0.085' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.028 0 0 0 -0.006'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
-  --texture-cloud-a: radial-gradient(34% 30% at 28% 36%, rgb(255 255 255 / 0.016), rgb(255 255 255 / 0.008) 45%, transparent);
-  --texture-cloud-b: radial-gradient(30% 36% at 66% 62%, rgb(255 255 255 / 0.014), rgb(255 255 255 / 0.006) 45%, transparent);
-  --texture-cloud-c: radial-gradient(40% 28% at 50% 50%, rgb(255 255 255 / 0.012), rgb(255 255 255 / 0.005) 45%, transparent);
+  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2 0 0 0 -0.085'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  --texture-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.045 0.085' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.045 0 0 0 -0.012'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  --texture-cloud-a: radial-gradient(34% 30% at 28% 36%, rgb(255 255 255 / 0.034), rgb(255 255 255 / 0.017) 45%, transparent);
+  --texture-cloud-b: radial-gradient(30% 36% at 66% 62%, rgb(255 255 255 / 0.029), rgb(255 255 255 / 0.013) 45%, transparent);
+  --texture-cloud-c: radial-gradient(40% 28% at 50% 50%, rgb(255 255 255 / 0.025), rgb(255 255 255 / 0.011) 45%, transparent);
 
   --gutter: clamp(1.25rem, 4.5vw, 4.5rem);
   --section-space: clamp(3rem, 5vw, 4.5rem);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light mode, chosen with the header toggle (stored as data-theme="light" on <html>). Warm-neutral
+   paper with near-black ink; the orange is a shade deeper so it holds contrast on white. The admin
+   console never switches, so these only ever apply to the public site. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-canvas: 245 245 243;
+  --color-surface: 255 255 255;
+  --color-surface-2: 238 238 235;
+  --color-surface-3: 224 224 220;
+  --color-fg: 20 20 22;
+  --color-fg-soft: 58 58 62;
+  --color-fg-muted: 96 96 100;
+  /* Orange fills stay the brand orange (dark text on it reads well); orange text is deeper. */
+  --color-accent: 242 106 31;
+  --color-accent-hover: 255 128 56;
+  --color-accent-fg: 20 8 2;
+  --color-accent-text: 170 56 9;
+  --color-success: 242 106 31;
+
+  --color-ink: 20 20 22;
+  --color-shade: 255 255 255;
+
+  --shadow-card: 0 1px 2px rgb(20 20 22 / 0.04), 0 18px 36px -24px rgb(20 20 22 / 0.18);
+  --shadow-lift: 0 1px 2px rgb(20 20 22 / 0.05), 0 30px 60px -32px rgb(20 20 22 / 0.28);
+  --shadow-glow: 0 0 0 1px rgb(242 106 31 / 0.35), 0 12px 28px -16px rgb(20 20 22 / 0.25);
+
+  --slate-50: 18 18 20;
+  --slate-100: 26 26 28;
+  --slate-200: 48 48 52;
+  --slate-300: 66 66 70;
+  --slate-400: 90 90 94;
+  --slate-500: 104 104 108;
+  --slate-600: 124 124 128;
+  --slate-700: 214 214 210;
+  --slate-800: 226 226 222;
+  --slate-900: 255 255 255;
+  --slate-950: 245 245 243;
+
+  /* The same material in light: faint dark grain on paper instead of light grain on black. */
+  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0 0 0 -0.07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  --texture-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='t' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.045 0.085' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.035 0 0 0 -0.01'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  --texture-cloud-a: radial-gradient(34% 30% at 28% 36%, rgb(0 0 0 / 0.022), rgb(0 0 0 / 0.011) 45%, transparent);
+  --texture-cloud-b: radial-gradient(30% 36% at 66% 62%, rgb(0 0 0 / 0.019), rgb(0 0 0 / 0.009) 45%, transparent);
+  --texture-cloud-c: radial-gradient(40% 28% at 50% 50%, rgb(0 0 0 / 0.016), rgb(0 0 0 / 0.007) 45%, transparent);
 }
 
 @layer base {
@@ -222,7 +294,7 @@
 
   .btn-dark {
     background: rgb(var(--color-accent-fg));
-    color: rgb(var(--color-fg));
+    color: rgb(var(--color-on-dark));
   }
 
   .btn-dark:hover {
@@ -230,13 +302,13 @@
   }
 
   .btn-secondary {
-    border-color: rgb(255 255 255 / 0.2);
+    border-color: rgb(var(--color-ink) / 0.2);
     color: rgb(var(--color-fg));
   }
 
   .btn-secondary:hover {
-    border-color: rgb(255 255 255 / 0.45);
-    background: rgb(255 255 255 / 0.05);
+    border-color: rgb(var(--color-ink) / 0.45);
+    background: rgb(var(--color-ink) / 0.05);
   }
 
   .btn-sm {
@@ -269,7 +341,7 @@
   }
 
   .card {
-    border: 1px solid rgb(255 255 255 / 0.07);
+    border: 1px solid rgb(var(--color-ink) / 0.07);
     border-radius: 1rem;
     background-color: rgb(var(--color-surface));
   }
@@ -281,7 +353,7 @@
   }
 
   .card-hover:hover {
-    border-color: rgb(255 255 255 / 0.22);
+    border-color: rgb(var(--color-ink) / 0.22);
     transform: translateY(-4px);
   }
 
@@ -301,7 +373,7 @@
     transition: opacity 300ms ease;
     background: radial-gradient(
       320px circle at var(--spot-x, 50%) var(--spot-y, 50%),
-      rgb(255 255 255 / 0.045),
+      rgb(var(--color-ink) / 0.045),
       transparent 70%
     );
   }
@@ -315,7 +387,7 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.3125rem 0.75rem;
-    border: 1px solid rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(var(--color-ink) / 0.1);
     border-radius: 0.5rem;
     font-size: 0.75rem;
     line-height: 1.2;
@@ -326,7 +398,7 @@
     width: 100%;
     min-height: 2.75rem;
     padding: 0.625rem 0.875rem;
-    border: 1px solid rgb(255 255 255 / 0.12);
+    border: 1px solid rgb(var(--color-ink) / 0.12);
     border-radius: 0.75rem;
     background: rgb(var(--color-surface));
     color: rgb(var(--color-fg));
@@ -412,7 +484,7 @@
     gap: 0.375rem;
     min-height: 2.25rem;
     padding: 0.375rem 0.75rem;
-    border: 1px solid rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(var(--color-ink) / 0.08);
     border-radius: 0.625rem;
     font-size: 0.8125rem;
     color: rgb(var(--color-fg-muted));
@@ -425,7 +497,7 @@
 
   .tab-pill:hover {
     color: rgb(var(--color-fg));
-    border-color: rgb(255 255 255 / 0.18);
+    border-color: rgb(var(--color-ink) / 0.18);
   }
 
   .tab-pill[aria-pressed="true"],
@@ -461,14 +533,14 @@
     background: linear-gradient(
       90deg,
       rgb(var(--color-accent)) var(--fill, 0%),
-      rgb(255 255 255 / 0.12) var(--fill, 0%)
+      rgb(var(--color-ink) / 0.12) var(--fill, 0%)
     );
   }
 
   input[type="range"].range::-moz-range-track {
     height: 4px;
     border-radius: 9999px;
-    background: rgb(255 255 255 / 0.12);
+    background: rgb(var(--color-ink) / 0.12);
   }
 
   input[type="range"].range::-moz-range-progress {
@@ -704,7 +776,7 @@ html {
 .scrollbar-thin,
 [data-lenis-prevent] {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  scrollbar-color: rgb(var(--color-ink) / 0.2) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -763,4 +835,30 @@ fieldset {
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Status colours in light mode. The pale amber, red and rose shades read well on black but wash
+   out on white, so light mode swaps them for deeper tones and turns the dark tinted panels light. */
+:root[data-theme="light"] :is(.text-amber-200, .text-amber-300, .text-amber-400) {
+  color: rgb(161 72 6);
+}
+
+:root[data-theme="light"] .text-amber-500\/70 {
+  color: rgb(180 83 9 / 0.85);
+}
+
+:root[data-theme="light"] :is(.text-red-200, .text-red-300, .text-red-400, .text-rose-300, .text-rose-400) {
+  color: rgb(185 28 28);
+}
+
+:root[data-theme="light"] .bg-red-950\/40 {
+  background-color: rgb(254 226 226 / 0.7);
+}
+
+:root[data-theme="light"] :is(.bg-rose-950\/80, .bg-rose-900\/80) {
+  background-color: rgb(255 228 230 / 0.95);
+}
+
+:root[data-theme="light"] .bg-amber-950\/30 {
+  background-color: rgb(254 243 199 / 0.6);
 }

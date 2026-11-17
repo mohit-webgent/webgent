@@ -58,7 +58,7 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
               <button
                 type="button"
                 onClick={() => setIsSubmitModalOpen(false)}
-                className="absolute top-4 right-4 z-20 p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 z-20 p-2 rounded-xl text-fg-muted hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -75,12 +75,12 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
                     <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       Request Submitted Successfully!
                     </h3>
-                    <p className="text-xs sm:text-sm text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                    <p className="text-xs sm:text-sm text-fg-muted max-w-sm mx-auto leading-relaxed">
                       We have received your configured project plan. Mohit will review it and get in touch via email within 24 hours.
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-canvas border border-line text-xs font-mono text-left space-y-1 text-neutral-300">
+                  <div className="p-3.5 rounded-xl bg-canvas border border-line text-xs font-mono text-left space-y-1 text-fg-soft">
                     <div className="text-accent font-semibold">
                       Plan: {flowMode === "custom_only" ? "Custom Feature Build" : `${currentPackage.name} Package`}
                     </div>
@@ -92,7 +92,7 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
                     <button
                       type="button"
                       onClick={() => setIsSubmitModalOpen(false)}
-                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors cursor-pointer"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white hover:bg-white/85 text-black font-semibold text-xs transition-colors cursor-pointer"
                     >
                       Done
                     </button>
@@ -113,7 +113,7 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
                     <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
                       Submit Your Project Plan
                     </h3>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-fg-muted">
                       Enter your details below to submit your configuration and dispatch the inquiry directly.
                     </p>
                   </div>
@@ -121,13 +121,13 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
                   {/* Config Snapshot */}
                   <div className="p-3 rounded-xl bg-canvas border border-line flex items-center justify-between text-xs font-mono">
                     <div>
-                      <span className="text-xs uppercase text-neutral-500 block">Plan Selection:</span>
+                      <span className="text-xs uppercase text-fg-muted block">Plan Selection:</span>
                       <span className="text-white font-bold">
                         {flowMode === "custom_only" ? "Custom Build" : `${currentPackage.name} Package`}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs uppercase text-neutral-500 block">Estimated Cost:</span>
+                      <span className="text-xs uppercase text-fg-muted block">Estimated Cost:</span>
                       <span className="text-accent font-bold">{formatCurrencyINR(grandTotalOnetime)}</span>
                     </div>
                   </div>
@@ -141,51 +141,51 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
 
                   {/* Name */}
                   <div className="space-y-1">
-                    <label className="block text-xs font-medium text-neutral-300">Your Name *</label>
+                    <label className="block text-xs font-medium text-fg-soft">Your Name *</label>
                     <input
                       type="text"
                       required
                       value={modalName}
                       onChange={(e) => setModalName(e.target.value)}
                       placeholder="e.g. Rahul Sharma"
-                      className="w-full px-3.5 py-2.5 bg-canvas border border-line rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors"
+                      className="w-full px-3.5 py-2.5 bg-canvas border border-line rounded-xl text-white text-xs placeholder-fg-muted focus:outline-none focus:border-white transition-colors"
                     />
                   </div>
 
                   {/* Email & Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="block text-xs font-medium text-neutral-300">Email Address *</label>
+                      <label className="block text-xs font-medium text-fg-soft">Email Address *</label>
                       <input
                         type="email"
                         required
                         value={modalEmail}
                         onChange={(e) => setModalEmail(e.target.value)}
                         placeholder="name@company.com"
-                        className="w-full px-3.5 py-2.5 bg-canvas border border-line rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-canvas border border-line rounded-xl text-white text-xs placeholder-fg-muted focus:outline-none focus:border-white transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-xs font-medium text-neutral-300">Phone (Optional)</label>
+                      <label className="block text-xs font-medium text-fg-soft">Phone (Optional)</label>
                       <input
                         type="tel"
                         value={modalPhone}
                         onChange={(e) => setModalPhone(e.target.value)}
                         placeholder="+91 98765 43210"
-                        className="w-full px-3.5 py-2.5 bg-canvas border border-line rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-canvas border border-line rounded-xl text-white text-xs placeholder-fg-muted focus:outline-none focus:border-white transition-colors"
                       />
                     </div>
                   </div>
 
                   {/* Project Notes */}
                   <div className="space-y-1">
-                    <label className="block text-xs font-medium text-neutral-300">Project Notes (Optional)</label>
+                    <label className="block text-xs font-medium text-fg-soft">Project Notes (Optional)</label>
                     <textarea
                       rows={2}
                       value={modalNotes}
                       onChange={(e) => setModalNotes(e.target.value)}
                       placeholder="Reference links, deadline expectations, or specific features..."
-                      className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-white transition-colors resize-none"
+                      className="w-full px-3.5 py-2 bg-canvas border border-line rounded-xl text-white text-xs placeholder-fg-muted focus:outline-none focus:border-white transition-colors resize-none"
                     />
                   </div>
 
@@ -206,7 +206,7 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
                     <button
                       type="submit"
                       disabled={isSubmittingPlan}
-                      className="w-full py-3 px-5 rounded-xl bg-accent hover:bg-accent active:scale-[0.99] text-black font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-40"
+                      className="w-full py-3 px-5 rounded-xl bg-accent hover:bg-accent active:scale-[0.99] text-accent-fg font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-40"
                     >
                       {isSubmittingPlan ? (
                         <>
@@ -221,11 +221,11 @@ export function PricingPlanModal({ configurator }: { configurator: PricingConfig
                       )}
                     </button>
 
-                    <div className="flex items-center justify-between text-xs font-mono text-neutral-500 pt-1">
+                    <div className="flex items-center justify-between text-xs font-mono text-fg-muted pt-1">
                       <span>Response SLA &lt; 24h</span>
                       <Link
                         href={quotationUrl}
-                        className="text-neutral-400 hover:text-white underline transition-colors"
+                        className="text-fg-muted hover:text-white underline transition-colors"
                         onClick={() => setIsSubmitModalOpen(false)}
                       >
                         Review on Full Contact Page →

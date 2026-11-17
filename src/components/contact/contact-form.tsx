@@ -346,7 +346,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   onFocus={handleFieldFocus}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Rahul Sharma"
-                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-fg-muted text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
@@ -362,7 +362,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   onFocus={handleFieldFocus}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="rahul@company.com"
-                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-fg-muted text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
             </div>
@@ -379,7 +379,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-fg-muted text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
@@ -394,7 +394,7 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="Acme Corp or Personal"
-                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-fg-muted text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
             </div>
@@ -497,9 +497,9 @@ export function ContactForm({ contactInfo }: ContactFormProps = {}) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tell us about your project, timeline, target audience, and goals..."
-                className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-neutral-600 text-sm focus:outline-none transition-all duration-200 resize-none min-h-[120px]"
+                className="w-full px-4 py-3.5 bg-surface border border-line focus:border-line-strong rounded-xl text-white placeholder-fg-muted text-sm focus:outline-none transition-all duration-200 resize-none min-h-[120px]"
               />
-              <span className={`block text-xs font-mono ${message.length >= 20 ? "text-neutral-500" : "text-neutral-600"}`}>
+              <span className={`block text-xs font-mono ${message.length >= 20 ? "text-fg-muted" : "text-fg-muted"}`}>
                 {message.length}/20 characters minimum
               </span>
             </div>

@@ -114,7 +114,7 @@ export function PricingCostLedger({ configurator }: { configurator: PricingConfi
                       }`}
                     >
                       <span>Standard</span>
-                      <span className="block text-xs opacity-75">Included</span>
+                      <span className="block text-xs opacity-90">Included</span>
                     </button>
 
                     <button
@@ -127,7 +127,7 @@ export function PricingCostLedger({ configurator }: { configurator: PricingConfi
                       }`}
                     >
                       <span>Express</span>
-                      <span className="block text-xs opacity-75">+20% Speedup</span>
+                      <span className="block text-xs opacity-90">+20% Speedup</span>
                     </button>
                   </div>
                 </div>
@@ -337,7 +337,7 @@ export function PricingCostLedger({ configurator }: { configurator: PricingConfi
                       setSubmitPlanSuccess(false);
                       setSubmitPlanError(null);
                     }}
-                    className="w-full min-h-[46px] px-5 py-3 rounded-xl bg-accent hover:bg-accent active:scale-[0.99] text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full min-h-[46px] px-5 py-3 rounded-xl bg-accent hover:bg-accent active:scale-[0.99] text-accent-fg font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>
                       {flowMode === "custom_only"

@@ -246,7 +246,7 @@ export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(
       return (
         <div
           id={id}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-line text-xs font-mono text-neutral-400 select-none ${className}`}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-line text-xs font-mono text-fg-muted select-none ${className}`}
         >
           <ShieldCheck className="w-4 h-4 text-accent shrink-0" />
           <span>Cloudflare Turnstile</span>

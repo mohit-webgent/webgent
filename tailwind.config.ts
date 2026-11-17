@@ -41,13 +41,16 @@ const config: Config = {
         },
         success: withAlpha("--color-success"),
         whatsapp: "#25D366",
+        // Theme-aware: white is the high-contrast ink and black its opposite, so they swap in light mode.
+        white: withAlpha("--color-ink"),
+        black: withAlpha("--color-shade"),
         line: {
-          DEFAULT: "rgb(255 255 255 / 0.09)",
-          strong: "rgb(255 255 255 / 0.17)",
+          DEFAULT: "rgb(var(--color-ink) / 0.09)",
+          strong: "rgb(var(--color-ink) / 0.17)",
         },
 
         // Compatibility tokens for shadcn-style utility names.
-        border: "rgb(255 255 255 / 0.1)",
+        border: "rgb(var(--color-ink) / 0.1)",
         background: withAlpha("--color-canvas"),
         foreground: withAlpha("--color-fg"),
         primary: { DEFAULT: withAlpha("--color-fg"), foreground: withAlpha("--color-canvas") },
@@ -71,17 +74,17 @@ const config: Config = {
           950: "#14211A",
         },
         slate: {
-          50: "#F8F7F3",
-          100: "#F4F3EE",
-          200: "#E0E0DA",
-          300: "#C8C8C2",
-          400: "#A6A6A0",
-          500: "#96968F",
-          600: "#7E7E78",
-          700: "#2C2C30",
-          800: "#222225",
-          900: "#0C0C0D",
-          950: "#040405",
+          50: withAlpha("--slate-50"),
+          100: withAlpha("--slate-100"),
+          200: withAlpha("--slate-200"),
+          300: withAlpha("--slate-300"),
+          400: withAlpha("--slate-400"),
+          500: withAlpha("--slate-500"),
+          600: withAlpha("--slate-600"),
+          700: withAlpha("--slate-700"),
+          800: withAlpha("--slate-800"),
+          900: withAlpha("--slate-900"),
+          950: withAlpha("--slate-950"),
         },
         indigo: {
           50: "#FFF3EB",
@@ -97,14 +100,20 @@ const config: Config = {
           950: "#3A1405",
         },
       },
+      // Orange used as text needs a deeper shade on light backgrounds than orange used as a fill.
+      textColor: {
+        accent: {
+          DEFAULT: withAlpha("--color-accent-text"),
+        },
+      },
       borderRadius: {
         pill: "9999px",
         card: "1rem",
       },
       boxShadow: {
-        card: "0 1px 0 rgb(255 255 255 / 0.03) inset, 0 20px 40px -24px rgb(0 0 0 / 0.65)",
-        lift: "0 1px 0 rgb(255 255 255 / 0.04) inset, 0 36px 70px -32px rgb(0 0 0 / 0.8)",
-        glow: "0 0 0 1px rgb(242 106 31 / 0.3), 0 12px 28px -16px rgb(0 0 0 / 0.7)",
+        card: "var(--shadow-card)",
+        lift: "var(--shadow-lift)",
+        glow: "var(--shadow-glow)",
       },
       transitionTimingFunction: {
         "expo-out": "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -120,7 +129,7 @@ const config: Config = {
             "--tw-prose-invert-code": "rgb(var(--color-fg))",
             "--tw-prose-invert-bullets": "rgb(var(--color-accent))",
             "--tw-prose-invert-counters": "rgb(var(--color-accent))",
-            "--tw-prose-invert-hr": "rgb(255 255 255 / 0.1)",
+            "--tw-prose-invert-hr": "rgb(var(--color-ink) / 0.1)",
             "--tw-prose-invert-quote-borders": "rgb(var(--color-accent))",
             "--tw-prose-invert-pre-bg": "rgb(var(--color-surface))",
           },

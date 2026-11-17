@@ -171,12 +171,12 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                         onClick={() => setActiveCategoryKey(cat.key)}
                         className={`px-2.5 py-1.5 rounded-lg text-xs font-mono shrink-0 flex items-center gap-1.5 transition-all ${
                           isActive
-                            ? "bg-accent text-black font-semibold shadow-sm"
+                            ? "bg-accent text-accent-fg font-semibold shadow-sm"
                             : "bg-surface-2 text-fg-muted hover:text-white border border-line"
                         }`}
                       >
                         <span>{cat.shortLabel}</span>
-                        <span className="text-xs opacity-75 font-mono">({cat.featureCount})</span>
+                        <span className="text-xs font-mono">({cat.featureCount})</span>
                       </button>
                     );
                   })}
@@ -232,7 +232,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                   className="max-h-[600px] sm:max-h-[660px] 2xl:max-h-[760px] overflow-y-auto divide-y divide-white/[0.04] scrollbar-thin select-text"
                   style={{
                     scrollbarWidth: "thin",
-                    scrollbarColor: "rgba(52, 211, 153, 0.4) rgba(255, 255, 255, 0.04)",
+                    scrollbarColor: "rgba(52, 211, 153, 0.4) rgb(var(--color-ink) / 0.04)",
                     WebkitOverflowScrolling: "touch",
                     touchAction: "pan-y",
                   }}
@@ -264,7 +264,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                             className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-3 sm:px-5 py-2.5 flex items-center justify-between cursor-pointer border-y border-line hover:bg-surface-2 transition-colors group"
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className="p-1 rounded bg-white/[0.05] text-accent group-hover:bg-accent group-hover:text-black transition-colors shrink-0">
+                              <span className="p-1 rounded bg-white/[0.05] text-accent group-hover:bg-accent group-hover:text-accent-fg transition-colors shrink-0">
                                 {renderCategoryIcon(category.iconName, "w-3.5 h-3.5")}
                               </span>
                               <div className="flex items-center gap-2 truncate">
@@ -281,7 +281,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                             </div>
 
                             <div className="flex items-center gap-2 text-xs font-mono text-fg-muted shrink-0">
-                              <span className="text-xs hidden lg:inline opacity-75 max-w-[200px] truncate">{category.description}</span>
+                              <span className="text-xs hidden lg:inline opacity-90 max-w-[200px] truncate">{category.description}</span>
                               {isCategoryExpanded ? (
                                 <ChevronUp className="w-4 h-4 text-fg-muted" />
                               ) : (
@@ -380,7 +380,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                                           onClick={() => toggleAddon(feat.id)}
                                           className={`px-2 py-1 rounded text-xs font-mono font-medium transition-all ${
                                             isSelectedAsQuote
-                                              ? "bg-accent text-black font-semibold shadow-sm"
+                                              ? "bg-accent text-accent-fg font-semibold shadow-sm"
                                               : "bg-accent/40 text-accent border border-accent/30 hover:bg-accent/50"
                                           }`}
                                           title="Add to custom quote scope"
@@ -393,7 +393,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                                           onClick={() => toggleAddon(feat.id)}
                                           className={`px-2 py-1 rounded text-xs font-mono font-medium tabular-nums transition-all flex items-center gap-1 ${
                                             isSelectedAsAddon
-                                              ? "bg-accent text-black font-bold shadow-sm"
+                                              ? "bg-accent text-accent-fg font-bold shadow-sm"
                                               : "bg-surface-2 text-fg-soft border border-line hover:border-accent/40 hover:text-white"
                                           }`}
                                           title={`Add ${feat.name} to estimate`}
@@ -436,7 +436,7 @@ export function PricingFeatureMatrix({ configurator }: { configurator: PricingCo
                         setSubmitPlanSuccess(false);
                         setSubmitPlanError(null);
                       }}
-                      className="px-4 py-1.5 rounded-lg bg-accent/20 text-accent border border-accent/30 hover:bg-accent hover:text-black font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                      className="px-4 py-1.5 rounded-lg bg-accent/20 text-accent border border-accent/30 hover:bg-accent hover:text-accent-fg font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
                     >
                       <span>
                         {activeSelectedAddons.length === 0

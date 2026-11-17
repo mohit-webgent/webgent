@@ -104,7 +104,7 @@ export function PricingPackageSection({ configurator }: { configurator: PricingC
                         className="space-y-2 text-xs sm:text-[0.8125rem] text-fg-soft max-h-56 overflow-y-auto pr-1"
                         style={{
                           scrollbarWidth: "thin",
-                          scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
+                          scrollbarColor: "rgb(var(--color-ink) / 0.15) transparent",
                           WebkitOverflowScrolling: "touch",
                           touchAction: "pan-y",
                         }}
@@ -135,7 +135,7 @@ export function PricingPackageSection({ configurator }: { configurator: PricingC
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all ${
                           isSelected
-                            ? "bg-accent text-black shadow-sm"
+                            ? "bg-accent text-accent-fg shadow-sm"
                             : "bg-white/[0.06] text-white hover:bg-white/10"
                         }`}
                       >
@@ -169,7 +169,7 @@ export function PricingPackageSection({ configurator }: { configurator: PricingC
                       el.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent text-black font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 active:scale-[0.99] shrink-0"
+                  className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent text-accent-fg font-semibold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2 active:scale-[0.99] shrink-0"
                 >
                   <span>Add Extra Features</span>
                   <ChevronDown className="w-4 h-4" />

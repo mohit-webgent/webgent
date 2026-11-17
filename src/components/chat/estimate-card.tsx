@@ -320,7 +320,7 @@ export function EstimateCard({ estimate, onInquireNow }: EstimateCardProps) {
       <button
         type="button"
         onClick={onInquireNow}
-        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-accent to-accent hover:from-accent hover:to-accent active:scale-[0.99] text-black font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-accent to-accent hover:from-accent hover:to-accent active:scale-[0.99] text-accent-fg font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
       >
         <span>Prepare Project Inquiry with this Scope</span>
         <ArrowRight className="w-3.5 h-3.5" />

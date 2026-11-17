@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   AdditiveBlending,
+  NormalBlending,
   BufferAttribute,
   BufferGeometry,
   Color,
@@ -229,6 +230,8 @@ export default function AssemblyScene({ scrollTrigger, cloudOnly = false, classN
 
     const reducedMotion = isReducedMotion();
     const isSmall = window.innerWidth < 768;
+    // Additive light particles vanish on a light page, so light mode draws dark ink normally.
+    const isLight = document.documentElement.dataset.theme === "light";
     const pixelRatio = Math.min(window.devicePixelRatio || 1, isSmall ? 1.5 : 1.75);
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
@@ -253,7 +256,7 @@ export default function AssemblyScene({ scrollTrigger, cloudOnly = false, classN
       fragmentShader: FRAGMENT_SHADER,
       transparent: true,
       depthWrite: false,
-      blending: AdditiveBlending,
+      blending: isLight ? NormalBlending : AdditiveBlending,
       uniforms: {
         uProgress: { value: reducedMotion && !cloudOnly ? 1 : 0 },
         uExplode: { value: 0 },
@@ -261,8 +264,8 @@ export default function AssemblyScene({ scrollTrigger, cloudOnly = false, classN
         uSize: { value: isSmall ? 2 : 1.9 },
         uPixelRatio: { value: pixelRatio },
         uPointer: { value: new Vector2(99, 99) },
-        uBase: { value: new Color("#F4F3EE") },
-        uAccent: { value: new Color("#F26A1F") },
+        uBase: { value: new Color(isLight ? "#141416" : "#F4F3EE") },
+        uAccent: { value: new Color(isLight ? "#EA580C" : "#F26A1F") },
       },
     });
 

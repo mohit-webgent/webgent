@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { Footer } from "./footer";
@@ -13,6 +13,7 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { ScrollProgressBar } from "@/components/animations/scroll-progress";
 import { PageTransition } from "@/components/animations/page-transition";
 import type { NavItem, FooterConfig } from "@/lib/services/cms-shared";
+import { applyTheme, getStoredTheme } from "@/lib/theme";
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -34,7 +35,12 @@ export function MainLayout({
   contact,
 }: MainLayoutProps) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin");
+  const isAdmin = Boolean(pathname?.startsWith("/admin"));
+
+  // The admin console is dark-only. Moving between it and the site in one tab swaps the theme.
+  useEffect(() => {
+    applyTheme(isAdmin ? "dark" : getStoredTheme());
+  }, [isAdmin]);
 
   if (maintenanceMode && !isAdmin) {
     return <MaintenanceScreen email={contact?.email} phone={contact?.phone} />;
